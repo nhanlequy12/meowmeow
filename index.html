@@ -173,6 +173,34 @@ a{color:var(--blue)}
 #panel>*{animation:pIn .18s ease-out}
 @keyframes pIn{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
 #app[data-tab=home] #panel>*,#app[data-tab=trip] #panel>*{animation:none}
+/* ===== bố cục rộng: khung phòng chiếm gần hết cửa sổ, menu cạnh bên trên máy tính ===== */
+#app{max-width:none;padding:8px 14px 104px}
+#app:not([data-tab=home]) #panel,#app:not([data-tab=home]) .hdr,#app:not([data-tab=home]) #top{max-width:1100px;margin-left:auto;margin-right:auto}
+#roomwrap{position:relative}
+#app:not([data-tab=home]) #roomwrap{display:none}
+canvas#room{touch-action:none}
+#folcard{display:none;position:absolute;left:10px;top:10px;width:min(330px,calc(100% - 20px));background:var(--panel);border:3px solid #e8b83a;border-radius:14px;padding:8px 10px;font-size:13px;box-shadow:0 4px 12px rgba(40,24,12,.25);z-index:3;text-align:left}
+#zoomb{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:6px;z-index:3}
+#zoomb button{min-height:44px;width:44px;padding:0;font-size:20px;opacity:.92}
+.tabs{padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.card.sel{border-style:solid;border-color:#e58aa0;background:var(--panel2)}
+.bye{display:inline-block;margin:0 4px;animation:bye 1.9s ease-in both}
+@keyframes bye{0%,50%{transform:none;opacity:1}8%,24%,40%{transform:rotate(-10deg) translateY(-7px)}16%,32%{transform:rotate(10deg) translateY(-7px)}100%{transform:translateX(120%) translateY(0);opacity:0}}
+@media(min-width:700px){.grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}.tabs button{font-size:13px}}
+@media(min-width:1024px){
+  .tabs{left:0;top:0;bottom:0;right:auto;width:150px;grid-template-columns:1fr;grid-auto-rows:min-content;align-content:start;border-top:0;border-right:3px dotted var(--line);padding:14px 10px;overflow:auto}
+  .tabs button{min-height:66px;font-size:14px}
+  #app{margin-left:150px;padding-bottom:16px}
+  #panel{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:0 10px;align-items:start}
+  #panel>:not(.card){grid-column:1/-1}
+}
+@media(orientation:landscape) and (max-height:520px) and (max-width:1023px){
+  .tabs{left:0;top:0;bottom:0;right:auto;width:76px;grid-template-columns:1fr;grid-auto-rows:min-content;align-content:start;border-top:0;border-right:3px dotted var(--line);padding:6px;overflow:auto}
+  .tabs button{min-height:46px;font-size:10.5px}.tabs button span{font-size:18px}
+  #app{margin-left:76px;padding:4px 10px 10px}
+  #folcard{width:auto;max-width:300px;padding:4px 8px}#folcard .ft{display:none}
+  h1{font-size:15px;margin:0}#top{padding:3px 0}.chip{padding:3px 8px;font-size:13px}
+}
 @media(max-width:420px){.prev{flex-direction:column;align-items:stretch}.prev .pv{width:100%}.tabs button{font-size:11px}}
 </style>
 </head>
@@ -181,7 +209,7 @@ a{color:var(--blue)}
   <div class="hdr"><h1 style="user-select:none">🐾 MÈO XU</h1><button class="sm" onclick="openSettings()">⚙️ Cài đặt</button></div>
   <div class="top" id="top"></div>
   <div id="roomnav"></div>
-  <canvas id="room" width="240" height="170"></canvas>
+  <div id="roomwrap"><canvas id="room" width="240" height="170"></canvas><div id="folcard"></div><div id="zoomb"><button aria-label="Phóng to" onclick="zoomStep(1,.5,.5)">＋</button><button aria-label="Thu nhỏ" onclick="zoomStep(-1,.5,.5)">－</button></div></div>
   <div class="tabs" id="tabs"></div>
   <div id="panel"></div>
 </div>

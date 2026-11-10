@@ -10,6 +10,7 @@ function fresh(){
   S={v:2,coins:300,tickets:1,xp:0,level:1,cats:[],trips:[null],items:[],rooms:{living:{bowlAt:0}},pity:0,seen:{},nid:1,last:now(),scratchAt:now()+600000};
   const c=newCat(SP.muop,1); c.name='Mướp'; c.room='living'; S.cats.push(c); markSeen(c);
   S.items.push({iid:S.nid++,fid:'box',room:'living',x:330,y:150,flip:false,broken:false});
+  giveBowl('living');S.bowlMig=1;
 }
 function load(){
   let raw=null; try{raw=JSON.parse(localStorage.getItem(KEY))}catch(e){}
@@ -21,6 +22,7 @@ function load(){
   S.cats=S.cats.filter(c=>SP[c.sp]); S.cats.forEach(c=>{c.traits=c.traits.filter(t=>TRAITS[t]); if(!S.rooms[c.room])c.room='wait'});
   S.items=S.items.filter(i=>FURN[i.fid]);
   S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
+  if(!S.bowlMig){for(const rid in S.rooms)giveBowl(rid,S.rooms[rid].bowlAt);S.bowlMig=1} // bản cũ: mỗi phòng có 1 bát cố định, nay thành món đồ
   fixSlots();
   const el=clamp((now()-(S.last||now()))/1000,0,8*3600); if(el>1)tick(el);
 }
@@ -105,7 +107,7 @@ function roomHappy(rid){
 function happyTarget(c){
   const fx=tE(c,'fixedHappy'); if(fx)return fx;
   let h=50+roomHappy(c.room)+tE(c,'self');
-  c.traits.forEach(t=>{const e=TRAITS[t].e;if(e.like&&roomHas(c.room,e.like[0]))h+=e.like[1];if(e.outdoor&&ROOM[c.room].outdoor)h+=e.outdoor;if(e.bigRoom&&catsIn(c.room).length>=6)h+=e.bigRoom});
+  c.traits.forEach(t=>{const e=TRAITS[t].e;if(e.like&&(roomHas(c.room,e.like[0])||(e.like[0]==='tree'&&itemsIn(c.room).some(i=>FURN[i.fid].lv&&!i.broken))))h+=e.like[1];if(e.outdoor&&ROOM[c.room].outdoor)h+=e.outdoor;if(e.bigRoom&&catsIn(c.room).length>=6)h+=e.bigRoom});
   homeCats(c.room).forEach(o=>{if(o!==c)h+=tE(o,'aura')});
   if(ROOM[c.room].water){const w=tE(c,'water');h+=w>0?10:w<0?-10:0}
   if(c.full<20)h-=25;
@@ -128,6 +130,14 @@ function tick(dt){
       const t=happyTarget(c),step=tE(c,'fixedHappy')?100:dt/60;
       c.hp=Math.abs(t-c.hp)<=step?t:c.hp+Math.sign(t-c.hp)*step;
     }
+  });
+  // máy cho ăn tự đổ hạt khô; mèo đói tự ra ăn phần còn lại trong bát
+  ownedRooms().forEach(r=>{
+    const bs=bowlsIn(r.id); if(!bs.length)return;
+    bs.forEach(b=>{if(FURN[b.fid].bowl.auto&&now()>=(b.at||0)&&homeCats(r.id).length){const p=bowlCost(b,'kibble');if(S.coins>=p){S.coins-=p;fillBowl(b,'kibble')}}});
+    if(bs.some(b=>b.left>0))eatCheck(r.id,false);
+    const st=S.rooms[r.id];
+    if(homeCats(r.id).some(c=>c.full<20)&&!bs.some(b=>b.left>0)&&bowlCap(r.id)<homeCats(r.id).length&&now()>=(st.warnAt||0)){st.warnAt=now()+300000;notify('🍽️ Thiếu bát ăn ở '+r.n+': '+homeCats(r.id).length+' bé nhưng chỉ có '+bowlCap(r.id)+' suất. Mua thêm bát ở Cửa hàng.')}
   });
   let n=0;
   while(now()>=S.scratchAt&&n++<3){S.scratchAt+=600000;scratchCheck()}
@@ -211,23 +221,43 @@ function claimTrip(slot){
 }
 
 /* ---------- cho ăn ---------- */
-const bowlReady=rid=>now()>=(S.rooms[rid].bowlAt||0);
-function feedRoom(rid,fid){
-  const f=FOOD[fid],cats=homeCats(rid);
-  if(!bowlReady(rid)||S.coins<f.price||!cats.length)return null;
-  S.coins-=f.price;
-  const chef=cats.some(c=>tE(c,'chef')),thank=4+(roomHas(rid,'tank')?2:0)+(ROOM[rid].thank||0),loved=[];
-  cats.forEach(c=>{
-    const fav=favs(c).includes(fid); if(fav)loved.push(c.name);
-    let gain=f.full*(fav?1.2:1)*(chef?1.25:1); if(fid==='kibble'&&tE(c,'picky'))gain*=.5;
-    c.full=clamp(c.full+gain,0,100);
-    c.hp=clamp(c.hp+(f.hp||0)+(fav?10:0),0,100);
-    c.en=clamp(c.en+(f.en||0),0,100);
-    if(f.buff)c.buff=Object.assign({food:fid,until:now()+f.min*60000*(fav?1.5:1)},f.buff);
+const bowlsIn=rid=>S.items.filter(i=>i.room===rid&&FURN[i.fid].bowl);
+const bowlCap=rid=>bowlsIn(rid).reduce((a,b)=>a+FURN[b.fid].bowl.cap,0);
+const bowlReady=rid=>bowlsIn(rid).some(b=>now()>=(b.at||0));
+const bowlNext=rid=>bowlsIn(rid).reduce((m,b)=>Math.min(m,b.at||0),Infinity);
+const bowlCost=(b,fid)=>Math.max(1,Math.round(FOOD[fid].price*FURN[b.fid].bowl.cap/8)); // giá món ăn tính cho 8 suất
+function giveBowl(rid,at){S.items.push({iid:S.nid++,fid:'bowl',room:rid,x:70,y:158,flip:false,broken:false,left:0,at:at||0})}
+function fillBowl(b,fid){b.food=fid;b.left=FURN[b.fid].bowl.cap;b.at=now()+600000}
+let pickBowl=(c,bs)=>bs[0]; // giao diện thay bằng hàm chọn bát gần bé nhất
+// một bé ăn một suất trong bát
+function serve(b,c){
+  const B=FURN[b.fid].bowl,f=FOOD[b.food],rid=b.room,fav=favs(c).includes(b.food),chef=homeCats(rid).some(o=>tE(o,'chef'));
+  let gain=f.full*(fav?1.2:1)*(chef?1.25:1)*(B.eff||1); if(b.food==='kibble'&&tE(c,'picky'))gain*=.5;
+  c.full=clamp(c.full+gain,0,100);
+  c.hp=clamp(c.hp+(f.hp||0)+(fav?10:0)+(B.hp||0),0,100);
+  c.en=clamp(c.en+(f.en||0),0,100);
+  if(f.buff)c.buff=Object.assign({food:b.food,until:now()+f.min*60000*(fav?1.5:1)},f.buff);
+  b.left--;c.eat={iid:b.iid,t:now()};
+  const coins=Math.round((4+(roomHas(rid,'tank')?2:0)+(ROOM[rid].thank||0)+(B.coin||0))*gMult());S.coins+=coins;
+  return {coins,fav};
+}
+// all = vừa đổ thức ăn: bé nào cũng ra ăn; còn lại chỉ bé đói (dưới 50) mới ăn phần thừa
+function eatCheck(rid,all){
+  const res={coins:0,loved:[],n:0};
+  homeCats(rid).filter(c=>all||c.full<50).sort((a,b)=>a.full-b.full).forEach(c=>{
+    const bs=bowlsIn(rid).filter(b=>b.left>0&&b.food); if(!bs.length)return;
+    const r=serve(pickBowl(c,bs)||bs[0],c);res.coins+=r.coins;res.n++;if(r.fav)res.loved.push(c.name);
   });
-  const coins=Math.round(thank*cats.length*gMult()); S.coins+=coins;
-  S.rooms[rid].bowlAt=now()+600000; addXp(5); save();
-  return {coins,loved,n:cats.length};
+  return res;
+}
+function feedRoom(rid,fid){
+  const cats=homeCats(rid),ready=bowlsIn(rid).filter(b=>now()>=(b.at||0));
+  if(!ready.length||!cats.length)return null;
+  let cost=0,n=0;
+  ready.forEach(b=>{const p=bowlCost(b,fid);if(S.coins<p)return;S.coins-=p;cost+=p;n++;fillBowl(b,fid)});
+  if(!n)return null;
+  const r=eatCheck(rid,true); addXp(5); save();
+  return Object.assign(r,{cost,bowls:n,miss:cats.length-r.n});
 }
 function petCat(c){
   if(now()-(c.petAt||0)<20000)return 0;
@@ -261,9 +291,11 @@ function gachaRoll(useTicket,opt){
   S.cats.push(c); markSeen(c); addXp(3); save();
   return {cat:c};
 }
+// phóng sinh: nhận lại ít xu theo sao, mèo 5★ tặng thêm 1 vé gacha. Bộ sưu tập vẫn ghi nhận đã từng sở hữu.
+const releaseGift=c=>({coins:STAR[c.star].sell,ticket:c.star===5?1:0});
 function rehome(uid){
-  const c=catBy(uid); if(!c||onTrip(uid)||S.cats.length<=1)return 0;
-  S.cats=S.cats.filter(x=>x!==c); const v=STAR[c.star].sell; S.coins+=v; save(); return v;
+  const c=catBy(uid); if(!c||onTrip(uid)||S.cats.length<=1)return null;
+  S.cats=S.cats.filter(x=>x!==c); const g=releaseGift(c); S.coins+=g.coins; S.tickets+=g.ticket; S.released=(S.released||0)+1; save(); return g;
 }
 function moveCat(uid,rid){
   const c=catBy(uid); if(!c||!(S.rooms[rid]||rid==='wait')||onTrip(uid)||catsIn(rid).length>=ROOM[rid].cap)return false;
@@ -280,7 +312,7 @@ function buyItem(fid,rid,x){
 function sellItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it)return 0;S.items=S.items.filter(i=>i!==it);const v=Math.round(FURN[it.fid].price*.25);S.coins+=v;save();return v}
 function repairCost(it){return Math.round(FURN[it.fid].price*.3)}
 function repairItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it||!it.broken||S.coins<repairCost(it))return false;S.coins-=repairCost(it);it.broken=false;save();return true}
-function buyRoom(rid){const r=ROOM[rid];if(S.rooms[rid]||S.coins<r.price)return false;S.coins-=r.price;S.rooms[rid]={bowlAt:0};addXp(20);save();return true}
+function buyRoom(rid){const r=ROOM[rid];if(S.rooms[rid]||S.coins<r.price)return false;S.coins-=r.price;S.rooms[rid]={bowlAt:0};giveBowl(rid);addXp(20);save();return true}
 function clampItem(it){
   const f=FURN[it.fid];
   it.x=clamp(it.x,f.w/2,WORLD_W-f.w/2);
@@ -288,7 +320,7 @@ function clampItem(it){
 }
 function skipTime(){
   S.trips.forEach(p=>{if(p)p.end-=600000});
-  for(const k in S.rooms)S.rooms[k].bowlAt-=600000;
+  S.items.forEach(i=>{if(i.at)i.at-=600000});
   S.cats.forEach(c=>{if(c.buff)c.buff.until-=600000});
   S.scratchAt-=600000; tick(600); save();
 }

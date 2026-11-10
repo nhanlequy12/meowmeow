@@ -160,6 +160,7 @@ const TRAITS={
  sleeper:{n:'Ngủ 16 tiếng',k:'g',d:'Hồi năng lượng nhanh hơn 50%, nhưng viễn chinh chậm hơn 20%.',e:{regen:1.5,speed:-.20}},
  lapcat:{n:'Mèo ôm ấp',k:'g',d:'Vuốt ve được thêm 2 xu, +5 độ vui.',e:{pet:2,self:5}},
  swimmer:{n:'Thích nước',k:'g',d:'+25% xu ở các điểm viễn chinh gần nước.',e:{water:.25,fav:'salmon'}},
+ highup:{n:'Thích chỗ cao',k:'g',d:'Hay trèo lên tầng cao nhất. +10 độ vui khi phòng có đồ leo trèo.',e:{like:['tree',10]}},
  climber:{n:'Leo trèo giỏi',k:'g',d:'+12 độ vui khi phòng có tháp mèo, viễn chinh nhanh hơn 5%.',e:{like:['tree',12],speed:.05}},
  lucky:{n:'Mèo thần tài',k:'g',d:'+8% cơ hội mang vé gacha về.',e:{ticket:.08}},
  gentle:{n:'Hiền như bụt',k:'g',d:'Mèo khác cùng phòng +5 độ vui. Không bao giờ cào đồ.',e:{aura:5,noScratch:1}},
@@ -411,7 +412,7 @@ function look(key){
 
 /* ============ NỘI THẤT BỔ SUNG ============ */
 // cat: nhóm trong cửa hàng. art: hàm vẽ dùng chung, a: tham số màu. set: tên bộ chủ đề.
-const FCATS=[['bed','Giường & nệm'],['tree','Tháp & trụ cào'],['toy','Đồ chơi'],['seat','Bàn ghế & sofa'],['plant','Cây cảnh'],['lamp','Đèn'],['rug','Thảm'],['art','Tranh'],['shelf','Kệ'],['window','Cửa sổ'],['deco','Trang trí'],['season','Theo mùa'],['set','Bộ chủ đề']];
+const FCATS=[['bed','Giường & nệm'],['tree','Tháp & trụ cào'],['toy','Đồ chơi'],['seat','Bàn ghế & sofa'],['plant','Cây cảnh'],['lamp','Đèn'],['rug','Thảm'],['art','Tranh'],['shelf','Kệ'],['climb','Leo trèo nhiều tầng'],['bowl','Bát ăn'],['window','Cửa sổ'],['deco','Trang trí'],['season','Theo mùa'],['set','Bộ chủ đề']];
 Object.entries({box:'toy',yarn:'toy',mouse:'toy',picture:'art',bed:'bed',plant:'plant',rug:'rug',lamp:'lamp',post:'tree',shelf:'shelf',window:'window',sofa:'seat',tank:'deco',catnip:'plant',tree:'tree'}).forEach(e=>FURN[e[0]].cat=e[1]);
 const F=(id,n,price,kind,w,h,cat,art,a,o)=>Object.assign({id,n,price,kind,w,h,cat,art,a},o);
 const NAP={dx:0,dy:-5,front:1,sleep:1,emo:'z'},PLAY={dx:13,dy:1,front:1,emo:'note'};
@@ -504,3 +505,24 @@ const QUOTE={v_thunder:'Zzz… Thần tốc… nhất thức…',v_gojo:'Yên t�
  v_nyan:'Nya nya nya nya nya nya nya~',v_maneki:'Vẫy một cái, tiền vô như nước.',v_astro:'Một bước nhỏ của mèo, một cú nhảy dài của loài mèo.',v_royal:'Ngươi được phép gãi cằm ta.',
  khaomanee:'Một mắt nhìn trời xanh, một mắt nhìn vàng ròng.',lykoi:'Awoooo… à nhầm, meo.',savannah:'Hai mét à? Nhảy khởi động thôi.',sokoke:'Rừng dạy ta đi không một tiếng động.',suphalak:'Hiếm như đồng đỏ, quý hơn vàng.'};
 BREEDS.concat(VARIANTS).forEach(s=>{if(QUOTE[s.id])s.q=QUOTE[s.id]});
+
+/* ---------- nội thất nhiều tầng: lv = danh sách chỗ đứng từ thấp lên cao [lệch ngang so với tâm, độ cao so với chân đồ] ---------- */
+const towerLv=(w,h,n)=>{const a=[];for(let i=0;i<n-1;i++)a.push([(i%2?1:-1)*Math.round(w*.23),-22-20*i]);a.push([0,-(h-5)]);return a};
+FURN.tree.lv=FURN.treegreen.lv=[[-6,-36],[2,-71]];
+[
+ F('tower3','Tháp mèo 3 tầng',900,'floor',44,72,'climb','tower',['#86b2dc',3],{happy:6,lv:towerLv(44,72,3),d:'+6 độ vui. Ba tầng để mèo nhảy lên nằm.'}),
+ F('tower5','Tháp mèo 5 tầng',2200,'floor',52,112,'climb','tower',['#e8a0b0',5],{happy:9,g:{coin:.04},lv:towerLv(52,112,5),d:'+9 độ vui, +4% xu viễn chinh. Năm tầng cao gần chạm trần.'}),
+ F('climbrack','Giá leo gỗ',700,'floor',48,66,'climb','rack',[],{happy:5,lv:[[-8,-22],[8,-42],[0,-63]],d:'+5 độ vui. Ba bậc gỗ so le.'}),
+ F('tallcase','Tủ sách cao',1100,'floor',36,84,'climb','tallcase',[],{happy:6,g:{coin:.04},lv:[[0,-27],[0,-83]],d:'+6 độ vui, +4% xu viễn chinh. Có ngăn trống và nóc tủ cho mèo.'}),
+ F('hammock','Võng treo',400,'floor',54,36,'climb','hammock',['#f2c84a'],{happy:3,regen:1.1,lv:[[0,-15]],lvs:1,d:'+3 độ vui, hồi năng lượng nhanh hơn 10%. Mèo nhảy lên nằm đung đưa.'}),
+ F('treehouse','Nhà gỗ trên cao',3200,'floor',60,100,'climb','treehouse',[],{happy:10,lv:[[-20,-24],[-16,-48],[8,-87]],d:'+10 độ vui. Có bậc thang, sàn gỗ và mái nhà để trèo.'}),
+ F('gianttree','Cây mèo khổng lồ',4000,'floor',72,124,'climb','gtree',[],{happy:12,g:{coin:.05},lv:[[-20,-24],[20,-46],[-20,-68],[20,-90],[0,-113]],d:'+12 độ vui, +5% xu viễn chinh. Năm tán lá cho cả đàn cùng trèo.'}),
+ F('stairs','Kệ bậc thang',450,'wall',64,40,'climb','stairs',['#cea074'],{happy:4,lv:[[-21,-10],[0,-22],[21,-34]],d:'+4 độ vui. Ba bậc kệ treo tường để mèo nhảy dần lên.'}),
+ F('bridge','Cầu treo',550,'wall',80,16,'climb','bridge',[],{happy:4,lv:[[-24,-7],[22,-7]],d:'+4 độ vui. Cầu dây nối hai đầu, mèo đi qua đi lại trên cao.'}),
+ /* bát ăn: cap = số suất mỗi lần đổ, eff = hiệu quả thức ăn, hp = độ vui thêm khi ăn, coin = xu cảm ơn thêm, auto = tự đổ hạt khô */
+ F('bowl','Bát nhựa',60,'floor',18,10,'bowl','bowl',[],{bowl:{cap:4},d:'4 suất mỗi lần đổ. Mỗi phòng được tặng sẵn một cái.'}),
+ F('bowlsteel','Bát inox',280,'floor',22,11,'bowl','bowl',['#b8c0cc','#96a0b0'],{bowl:{cap:6},d:'Bền và to: 6 suất mỗi lần đổ.'}),
+ F('bowlclay','Bát gốm',350,'floor',18,10,'bowl','bowl',['#e8a888','#c98468'],{bowl:{cap:4,hp:5},d:'4 suất. Mỗi bé ăn ở bát này được thêm 5 độ vui.'}),
+ F('feeder','Máy cho ăn tự động',1500,'floor',20,28,'bowl','feeder',[],{bowl:{cap:4,auto:1},d:'4 suất. Cứ 10 phút tự đổ hạt khô (vẫn trừ xu), kể cả khi bạn vắng.'}),
+ F('bowlgold','Bát vàng',3000,'floor',22,11,'bowl','bowl',['#f2c84a','#d6a020'],{bowl:{cap:6,eff:1.25,coin:2},d:'6 suất. Thức ăn hiệu quả hơn 25%, mỗi bé cảm ơn thêm 2 xu.'}),
+].forEach(f=>{FURNS.push(f);FURN[f.id]=f});
