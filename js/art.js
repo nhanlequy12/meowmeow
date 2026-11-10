@@ -227,6 +227,7 @@ const P={
 
 /* ---------- vẽ mèo: lưới 36x40, chân chạm hàng 38 ---------- */
 function cat(s,pose){
+  if(SIDE[pose])return side(s,pose);
   const b=new Buf(36,40),col=colorer(s),M=x=>35-x,sym=f=>{f(x=>x);f(M)};
   const parts=Array.isArray(s.cos)?s.cos:[],old=typeof s.cos==='string'?(COS[s.cos]||{}):{};
   const flag={};parts.forEach(p=>{if(p[0]==='flag')flag[p[1]]=1});if(old.noEars)flag.noEars=1;
@@ -311,6 +312,166 @@ const FSIZE={bowl:[18,10],gift:[28,28]};
 function furn(id,v){
   const f=(typeof FURN!=='undefined'&&FURN[id])||{},sz=FSIZE[id]||[f.w,f.h],b=new Buf(sz[0],sz[1]);
   FART[id](b,v);b.pastel(.1);b.shade(.1);b.outline(OUT);return b;
+}
+/* ---------- mèo nhìn ngang (đầu quay trái): dùng khi đi, chạy, nhảy. Lưới 50x40, chân chạm hàng 38 ---------- */
+// legs: [chân trước xa, chân trước gần, chân sau xa, chân sau gần], mỗi chân [lệch bàn chân, độ dài]
+const SIDE={
+  walk0:{legs:[[-2,7],[2,7],[2,7],[-2,7]]},
+  walk1:{legs:[[0,7],[0,7],[0,7],[0,7]],up:1},
+  walk2:{legs:[[2,7],[-2,7],[-2,7],[2,7]]},
+  run0:{rx:12.5,ry:5,legs:[[-6,5],[-5,5],[5,5],[6,5]],hx:-2,hy:-1,tail:'back',up:2},
+  run1:{rx:11,ry:5.6,sl:-.06,legs:[[-3,7],[-1,6],[3,5],[5,4]],tail:'back'},
+  run2:{rx:9.5,ry:6.6,legs:[[3,6],[2,6],[-4,6],[-3,6]],hx:1,hy:1,tail:'back',up:1},
+  run3:{rx:11,ry:5.6,sl:.06,legs:[[-1,5],[1,4],[1,7],[3,7]],tail:'back'},
+  crouch0:{cy:3,ry:5,sl:-.1,legs:[[-1,5],[1,5],[0,5],[1,5]],hy:3,tail:'low'},
+  crouch1:{cy:3,ry:5,sl:-.1,legs:[[-1,5],[1,5],[1,5],[2,5]],hy:3,tail:'low',rear:1},
+  leapU:{rx:13,ry:4.8,sl:.2,legs:[[-6,4],[-5,4],[5,5],[6,5]],hx:-2,hy:-3,tail:'back',up:3},
+  leapD:{rx:13,ry:4.8,sl:-.18,legs:[[-5,6],[-4,6],[5,4],[6,4]],hx:-2,hy:2,tail:'up',up:2},
+  land:{rx:10.5,ry:5.6,sl:-.12,cy:1,legs:[[-1,6],[0,6],[3,4],[4,4]],hy:2,tail:'up'},
+};
+function shEll(b,cx,cy,rx,ry,sl,col,reg){
+  const m=Math.abs(sl)*rx+1;
+  for(let x=Math.floor(cx-rx);x<=Math.ceil(cx+rx);x++)for(let y=Math.floor(cy-ry-m);y<=Math.ceil(cy+ry+m);y++){
+    const yy=y-cy-sl*(x-cx);if(((x-cx)/rx)**2+(yy/ry)**2<=1)b.set(x,y,col,reg(x,y,yy));
+  }
+}
+function sideCol(s){
+  const c=hex(s.c),c2=hex(s.c2||s.c),c3=hex(s.c3||s.c2||s.c),W=hex('#fdfaf4'),w=s.w||0,p=s.pat;
+  const h2=(x,y,n)=>((((x>>1)*73856093)^((y>>1)*19349663))>>>0)%n,h1=(x,y,n)=>(((x*73856093)^(y*19349663))>>>0)%n;
+  const soft=lum(c)>100?.38:.12,limb=r=>r==='leg'||r==='paw';
+  return (x,y,reg)=>{
+    if(w>=1&&(reg==='muz'||reg==='chest'))return W;
+    if((w>=2||s.mit)&&reg==='paw')return W;
+    if(w>=2&&reg==='head'&&y>=21&&x<=13)return W;
+    if(p==='van')return (reg==='tail'||((reg==='head'||reg==='ear')&&y<17))?c2:W;
+    if(p==='calico'){
+      if(reg==='tail')return c3;if(reg==='ear')return x<12?c2:c3;
+      if(reg==='head'&&y<19)return x<12?c2:c3;
+      if((reg==='body'||reg==='chest')&&x>30)return c2;if(reg==='body'&&x<24)return c3;
+      return c;
+    }
+    if(p==='cow'){if(reg==='tail')return c2;if(reg==='ear')return x>12?c2:c;if(reg==='head'&&x>13&&y<19)return c2;if(reg==='body'&&x>29)return c2;return c}
+    if(p==='tortie')return h2(x,y,5)<2?c2:c;
+    if(p==='lykoi'){if(reg==='muz'||(reg==='head'&&y>=17&&x<16))return c3;return h1(x,y,3)===0?c2:c}
+    if(p==='point'){
+      if(reg==='ear'||reg==='tail'||limb(reg))return c2;
+      if((reg==='head'||reg==='muz')&&((x-9)/6.5)**2+((y-21)/5.5)**2<1)return c2;
+      return reg==='chest'?lt(c,.3):c;
+    }
+    let b=(reg==='muz'||reg==='chest')?lt(c,soft):c;
+    if(p==='smoke'&&(reg==='ear'||reg==='tail'||(reg==='head'&&y<17)||reg==='body'))b=c2;
+    if(p==='ticked'){if((reg==='head'&&y<15)||reg==='ear')b=dk(c,.18);if(reg==='tail'&&(x>42||y<17))b=c2}
+    if(p==='tabby'||p==='tiger'){
+      const T=p==='tiger';
+      if(reg==='head'&&y<=15&&(x===8||x===11||x===14))b=c2;
+      if(reg==='body'&&x%(T?3:4)===0)b=c2;
+      if(reg==='tail'&&(x+y)%3===0)b=c2;
+      if(T&&reg==='leg'&&y%3===0)b=c2;
+    }
+    if(p==='spot'&&(reg==='body'||reg==='tail'||(reg==='head'&&y<16))&&h2(x,y,4)===0)b=c2;
+    return b;
+  };
+}
+const RB=[[255,128,128],[255,196,120],[255,240,140],[156,226,150],[140,196,255],[196,160,240]];
+const faceZ=(G,x,y)=>((x-(G.hcx-3))/6.5)**2+((y-(G.hcy+1.5))/5)**2<1;
+const neck=(b,G,c)=>recolor(b,(x,y,r)=>isBody(r)&&x<=G.cx-G.rx+5,c,'x');
+const backStick=(b,G,c)=>{b.line(G.cx-4,G.cy-4,G.cx+8,G.cy-13,c,'x');b.line(G.cx-3,G.cy-4,G.cx+9,G.cy-13,c,'x')};
+// phiên bản rút gọn của trang phục cho góc nhìn ngang: giữ màu áo, tóc, mũ và vài đạo cụ chính
+const PS={
+  twintails:['back',(b,s,G,c)=>b.ell(G.hcx+8,G.hcy+3,2.6,6.5,H(c),'hair')],
+  longhair:['back',(b,s,G,c)=>b.ell(G.hcx+5,G.hcy+2,7.5,9,H(c),'hair')],
+  rainbow:['back',(b,s,G)=>RB.forEach((c,i)=>b.rect(G.cx+G.rx-2,G.cy-5+i*2,30,2,c,'x'))],
+  breadhead:['back',(b,s,G)=>{b.rect(G.hcx-11,G.hcy-11,22,21,[214,156,96],'hat');b.rect(G.hcx-9,G.hcy-9,18,17,[250,228,180],'hat')}],
+  haircap:['mid',(b,s,G,c,y1,jag)=>recolor(b,(x,y,r)=>r==='head'&&y<=G.hcy-4+(jag&&x%4<2?1:0),H(c),'hair')],
+  spikes:['mid',(b,s,G,c)=>{const C=H(c),x=G.hcx,y=G.hcy;b.tri(x-8,y-4,x-5,y-13,x-1,y-6,C,'hair');b.tri(x-3,y-6,x+1,y-15,x+5,y-6,C,'hair');b.tri(x+3,y-6,x+7,y-12,x+9,y-3,C,'hair');recolor(b,(X,Y,r)=>r==='head'&&Y<=y-4+(X%4<2?1:0),C,'hair')}],
+  hood:['mid',(b,s,G,c)=>each(b,(x,y,r)=>{if((r==='head'||r==='ear'||(r==='x'&&y<G.hcy-3))&&!faceZ(G,x,y))b.set(x,y,H(c),'hood')})],
+  fullmask:['mid',(b,s,G,c)=>each(b,(x,y,r)=>{if(r==='head'||r==='ear'||(r==='x'&&y<G.hcy-3))b.set(x,y,H(c),'head')})],
+  faceplate:['mid',(b,s,G,c)=>recolor(b,(x,y,r)=>(r==='head'||r==='hood')&&faceZ(G,x,y),H(c),'head')],
+  strawhat:['mid',(b,s,G)=>{const Y=[244,214,120];b.ell(G.hcx,G.hcy-7,11.5,2.2,Y,'hat');b.ell(G.hcx,G.hcy-10,6.5,3.8,Y,'hat');b.rect(G.hcx-6,G.hcy-9,13,2,RED,'x')}],
+  pointhat:['mid',(b,s,G,c)=>{b.ell(G.hcx,G.hcy-7,11.5,2.2,H(c),'hat');b.tri(G.hcx-6,G.hcy-7,G.hcx+3,G.hcy-18,G.hcx+6,G.hcy-7,H(c),'hat')}],
+  tricorn:['mid',(b,s,G)=>{const C=[92,80,112];b.ell(G.hcx,G.hcy-8,11,2.1,C,'hat');b.ell(G.hcx,G.hcy-11,6.5,3.6,C,'hat');b.rect(G.hcx-8,G.hcy-8,17,1,GOLDC,'x')}],
+  headband:['mid',(b,s,G,c,plate)=>{recolor(b,(x,y,r)=>(r==='head'||r==='hair')&&(y===G.hcy-4||y===G.hcy-3),H(c),'x');if(plate)b.rect(G.hcx-7,G.hcy-5,6,3,[205,210,222],'x')}],
+  leaf:['mid',(b,s,G)=>{b.ell(G.hcx,G.hcy-9,3.4,1.7,[130,196,120],'hat');b.rect(G.hcx,G.hcy-8,1,2,[110,160,100],'hat')}],
+  buns:['mid',(b,s,G,c)=>b.ell(G.hcx+6,G.hcy-9,3,3,H(c),'hair')],
+  horns:['mid',(b,s,G,c)=>{b.rect(G.hcx-6,G.hcy-10,3,3,H(c),'hat');b.rect(G.hcx+4,G.hcy-10,3,3,H(c),'hat')}],
+  crown:['mid',(b,s,G)=>{const x=G.hcx,y=G.hcy;b.rect(x-5,y-11,10,4,GOLDC,'hat');b.rect(x-5,y-14,2,3,GOLDC,'hat');b.rect(x-1,y-15,2,4,GOLDC,'hat');b.rect(x+3,y-14,2,3,GOLDC,'hat');b.rect(x-1,y-10,2,2,RED,'x')}],
+  chefhat:['mid',(b,s,G)=>{const C=[252,252,255],x=G.hcx,y=G.hcy;b.ell(x,y-13,6,3.6,C,'hat');b.rect(x-5,y-11,10,4,C,'hat');b.rect(x-5,y-8,10,1,[214,216,228],'x')}],
+  phones:['mid',(b,s,G)=>{const D=[92,92,120],x=G.hcx,y=G.hcy;b.rect(x-3,y-10,9,2,D,'hat');b.ell(x+5,y-1,2.6,4,D,'hat');b.rect(x+5,y-2,1,3,[130,230,230],'x')}],
+  suit:['front',(b,s,G,c,top,paws)=>recolor(b,(x,y,r)=>isBody(r)||(paws&&(r==='leg'||r==='paw')),H(c))],
+  checker:['front',(b,s,G,c1,c2)=>recolor(b,(x,y,r)=>isBody(r),(x,y)=>((x>>1)+(y>>1))%2?H(c1):H(c2))],
+  tripat:['front',(b,s,G,c1,c2)=>recolor(b,(x,y,r)=>isBody(r),(x,y)=>(x+2*y)%6===0?WH:(y>G.cy+1?H(c2):H(c1)))],
+  sides:['front',(b,s,G,c)=>recolor(b,(x,y,r)=>r==='body',H(c))],
+  poptart:['front',(b,s,G)=>{recolor(b,(x,y,r)=>isBody(r),[244,206,160]);recolor(b,(x,y,r)=>isBody(r)&&Math.abs(y-G.cy)<G.ry-1.5&&Math.abs(x-G.cx)<G.rx-2.5,(x,y)=>(x*7+y*13)%11===0?[236,80,160]:[255,170,206],'x')}],
+  cape:['front',(b,s,G,c)=>{recolor(b,(x,y,r)=>r==='body'&&x>=G.cx-5,H(c));b.tri(G.cx+G.rx-4,G.cy-4,G.cx+G.rx+4,G.cy+4,G.cx+G.rx-4,G.cy+4,H(c),'cape')}],
+  belly:['front',(b,s,G,c)=>recolor(b,(x,y,r)=>r==='chest',H(c))],
+  collar:['front',(b,s,G,c)=>neck(b,G,H(c))],scarf:['front',(b,s,G,c)=>neck(b,G,H(c))],sailor:['front',(b,s,G,c)=>neck(b,G,H(c))],
+  bow:['front',(b,s,G,c)=>neck(b,G,H(c))],tie:['front',(b,s,G,c)=>neck(b,G,H(c))],cravat:['front',(b,s,G)=>neck(b,G,WH)],
+  sword:['front',(b,s,G)=>backStick(b,G,[205,210,222])],saber:['front',(b,s,G,c)=>backStick(b,G,H(c))],staff:['front',(b,s,G,c)=>backStick(b,G,H(c))],
+  glasses:['front',(b,s,G,c)=>{const C=H(c||'#4a3f55');[G.hcx-7,G.hcx].forEach(x0=>{for(let i=0;i<4;i++){b.set(x0+i,G.hcy-2,C,'x');b.set(x0+i,G.hcy+2,C,'x')}for(let j=-1;j<2;j++){b.set(x0,G.hcy+j,C,'x');b.set(x0+3,G.hcy+j,C,'x')}});b.set(G.hcx-3,G.hcy-1,C,'x')}],
+  shades:['front',(b,s,G)=>{b.rect(G.hcx-8,G.hcy-2,11,3,[70,60,90],'x');b.set(G.hcx-7,G.hcy-1,WH,'x')}],
+  blindfold:['front',(b,s,G,c)=>recolor(b,(x,y,r)=>(r==='head'||r==='hair'||r==='x')&&y>=G.hcy-2&&y<=G.hcy+1&&x<=G.hcx+9,H(c),'x')],
+  lenses:['front',(b,s,G,c)=>{b.rect(G.hcx-7,G.hcy-1,3,3,H(c),'x');b.rect(G.hcx,G.hcy-1,3,3,H(c),'x')}],
+  cheeks:['front',(b,s,G,c)=>b.rect(G.hcx+3,G.hcy+2,3,2,H(c),'x')],
+  eartips:['front',(b,s,G,c)=>recolor(b,(x,y,r)=>r==='ear'&&y<=G.hcy-9,H(c))],
+  tailbase:['front',(b,s,G,c)=>recolor(b,(x,y,r)=>r==='tail'&&x<=G.cx+G.rx+3&&y>=G.cy-5,H(c))],
+  beard:['front',(b,s,G,c)=>b.ell(G.hcx-2,G.hcy+7,4.5,4,H(c),'x',(x,y)=>y>=G.hcy+4)],
+  bamboo:['front',(b,s,G)=>{b.rect(G.hcx-7,G.hcy+3,7,2,[166,210,146],'x');b.rect(G.hcx-7,G.hcy+3,1,2,[120,170,110],'x')}],
+  marks:['front',(b,s,G)=>{b.rect(G.hcx+3,G.hcy+1,3,1,EY,'x');b.rect(G.hcx+3,G.hcy+3,3,1,EY,'x')}],
+  scar:['front',(b,s,G,k)=>{if(k==='bolt')[[-2,-6],[-3,-5],[-2,-4]].forEach(p=>b.set(G.hcx+p[0],G.hcy+p[1],RED,'x'));if(k==='tanjiro')b.rect(G.hcx-6,G.hcy-6,3,2,[176,70,76],'x')}],
+  helmet:['front',(b,s,G)=>{for(let y=G.hcy-13;y<=G.hcy+11;y++)for(let x=G.hcx-12;x<=G.hcx+12;x++){const d=Math.hypot(x-G.hcx,y-G.hcy+1);if(d<=11.6){if(d>10.5)b.set(x,y,[196,230,248],'x');else b.set(x,y,[170,225,255,60],b.reg(x,y)||'x')}}}],
+  qmark:['post',(b,s,G)=>{[".##.","#..#","...#","..#.","..#.","....","..#."].forEach((row,j)=>{for(let i=0;i<4;i++)if(row[i]==='#')b.set(G.hcx+10+i,G.hcy-17+j,[200,120,90],'x')})}],
+};
+const OLD2={tank:[['suit','#fafaff']],ninja:[['hood','#3e446e'],['headband','#e2484e']],chef:[['chefhat'],['collar','#e2484e']],astro:[['suit','#f2f4fa',0,1],['helmet']],royal:[['cape','#c8465a'],['crown']],bread:[['flag','noEars'],['breadhead']],dj:[['phones'],['shades']]};
+function side(s,pose){
+  const q=SIDE[pose],b=new Buf(50,40),col=sideCol(s),up=q.up||0;
+  const parts=Array.isArray(s.cos)?s.cos:(OLD2[s.cos]||[]);
+  const flag={};parts.forEach(p=>{if(p[0]==='flag')flag[p[1]]=1});
+  const cx=27,cy=27+(q.cy||0)-up,rx=q.rx||11,ry=q.ry||6,sl=q.sl||0,rear=q.rear||0;
+  const hcx=12+(q.hx||0),hcy=19+(q.hy||0)-up,G={hcx,hcy,cx,cy,rx,ry};
+  const run=st=>parts.forEach(p=>{const d=PS[p[0]];if(d&&d[0]===st)d[1](b,s,G,...p.slice(1))});
+  run('back');
+  const tl=s.tail||'n',tm=q.tail||'up',f=tl==='fluff'?1.2:0,tx=cx+rx-1+rear,ty=Math.round(cy+sl*rx-2);
+  if(tl==='bob')b.ell(tx+1.5,ty,2.3,2.3,col,'tail');
+  else if(tl!=='none'){
+    if(tm==='back')b.ell(tx+4.5,ty,5,1.9+f,col,'tail');
+    else if(tm==='low')b.ell(tx+4,ty+3,4.5,1.8+f,col,'tail');
+    else{b.ell(tx+2.5,ty-3,2+f,5,col,'tail');b.ell(tx+4,ty-8.5,1.9+f,2.6,col,'tail')}
+  }
+  const HX=[21,18,33+rear,36+rear],far=(x,y,r)=>dk(col(x,y,r),.22);
+  const leg=(i,isFar)=>{
+    const dx=q.legs[i][0],len=q.legs[i][1],hy=Math.round(cy+sl*(HX[i]-cx)+ry-2);
+    for(let t=0;t<=len;t++){const x=Math.round(HX[i]+dx*t/len),r=t>=len-1?'paw':'leg';for(let k=(t===len?-2:-1);k<=1;k++)b.set(x+k,hy+t,isFar?far:col,r)}
+  };
+  leg(0,1);leg(2,1);
+  shEll(b,cx,cy,rx,ry,sl,col,(x,y,yy)=>yy>ry*.3?'chest':'body');
+  leg(1);leg(3);
+  const ear=s.ear||'n',eh=ear==='big'?2:ear==='small'?-2:0,inE=mix(col(hcx-5,hcy-8,'ear'),PINK,.8);
+  if(!flag.noEars){
+    if(ear==='fold'){b.ell(hcx-5,hcy-6.5,3,1.8,col,'ear');b.ell(hcx+4,hcy-7,3,1.8,col,'ear')}
+    else{
+      b.tri(hcx+5,hcy-11-eh,hcx+1,hcy-6,hcx+8,hcy-3.5,col,'ear');
+      b.tri(hcx-5,hcy-11-eh,hcx-8.5,hcy-3,hcx-1,hcy-6.5,col,'ear');
+      b.tri(hcx-4.6,hcy-8.5-eh,hcx-6.5,hcy-4.5,hcx-3,hcy-6,inE,'x');
+    }
+  }
+  b.ell(hcx,hcy,9,7.5,col,'head');
+  if(s.fur===1)b.ell(hcx+6,hcy+4,3.5,3,col,'head');
+  run('mid');
+  if(!flag.noMuz)b.ell(hcx-2.5,hcy+3,3.6,2.4,col,'muz');
+  const eye=(x0,ic)=>{
+    const u=b.get(x0,hcy)||[230,230,230],dark=lum(u)<110;
+    if(s.closed){const lc=dark?lt(u,.6):EY;b.rect(x0,hcy+1,2,1,lc,'x');b.set(x0-1,hcy,lc,'x');b.set(x0+2,hcy,lc,'x')}
+    else if(dark){b.rect(x0,hcy-1,2,3,lt(ic,.25),'x');b.rect(x0,hcy,2,1,EY,'x')}
+    else{b.rect(x0,hcy-1,2,2,EY,'x');b.rect(x0,hcy+1,2,1,lt(ic,.15),'x')}
+  };
+  if(!flag.noFace){eye(hcx-6,hex(s.eye||'#f59ab0'));eye(hcx+1,hex(s.eye2||s.eye||'#f59ab0'));b.rect(hcx-3,hcy+2,2,1,[232,110,120],'x');b.rect(hcx+4,hcy+2,2,2,PINK,'x')}
+  else if(!parts.some(p=>p[0]==='lenses')){const ec=s.eye?hex(s.eye):WH;b.rect(hcx-6,hcy-1,2,2,ec,'x');b.rect(hcx+1,hcy-1,2,2,ec,'x')}
+  run('front');
+  b.pastel(.2);b.shade(.12);b.outline(OUT);
+  [[hcx-11,hcy+2],[hcx-12,hcy+2],[hcx-11,hcy+5],[hcx-12,hcy+5]].forEach(p=>{if(!b.get(p[0],p[1]))b.set(p[0],p[1],OUT,'o')});
+  if(ear==='tuft'){b.set(hcx-5,hcy-13-eh,OUT,'o');b.set(hcx+5,hcy-13-eh,OUT,'o')}
+  run('post');
+  return b;
 }
 return {cat,furn,Buf,hex};
 })();

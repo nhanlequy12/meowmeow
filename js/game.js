@@ -95,6 +95,7 @@ function TRAITS_M(c,k){return tM(c,k)}
 
 /* ---------- thời gian trôi ---------- */
 function tick(dt){
+  if(S.adm&&S.adm.inf)S.coins=999999999;
   S.cats.forEach(c=>{
     const away=onTrip(c.uid),bf=buffOf(c);
     if(c.buff&&c.buff.until<=now())c.buff=null;
@@ -214,17 +215,19 @@ function petCat(c){
 }
 
 /* ---------- gacha ---------- */
-function gachaRoll(useTicket){
-  if(S.cats.length>=totalCap())return {err:'Nhà hết chỗ rồi. Hãy mở thêm phòng hoặc cho bớt mèo đi nhận nuôi.'};
-  if(useTicket){if(S.tickets<1)return {err:'Hết vé.'};S.tickets--}else{if(S.coins<GACHA_COST)return {err:'Không đủ xu.'};S.coins-=GACHA_COST}
+function gachaRoll(useTicket,opt){
+  opt=opt||{}; // opt chỉ dùng cho Admin: {free, star}
+  if(!opt.free&&S.cats.length>=totalCap())return {err:'Nhà hết chỗ rồi. Hãy mở thêm phòng hoặc cho bớt mèo đi nhận nuôi.'};
+  if(!opt.free){if(useTicket){if(S.tickets<1)return {err:'Hết vé.'};S.tickets--}else{if(S.coins<GACHA_COST)return {err:'Không đủ xu.'};S.coins-=GACHA_COST}}
   S.pity++;
   let r=Math.random()*100,star=1,acc=0;
   for(let s=5;s>=1;s--){acc+=STAR[s].p;if(r<acc){star=s;break}}
   if(S.pity>=PITY&&star<4)star=4;
+  if(opt.star)star=opt.star;
   if(star>=4)S.pity=0;
   const vs=VARIANTS.filter(v=>v.r===star),bs=BREEDS.filter(b=>b.r===star);
   const sp=(vs.length&&Math.random()<.45)?pick(vs):pick(bs);
-  const c=newCat(sp,star); c.room=freeRoom(); c.isNew=!S.seen[sp.id];
+  const c=newCat(sp,star); c.room=freeRoom()||'living'; c.isNew=!S.seen[sp.id];
   S.cats.push(c); S.seen[sp.id]=1; addXp(3); save();
   return {cat:c};
 }

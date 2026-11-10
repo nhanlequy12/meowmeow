@@ -3,20 +3,31 @@
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=ms=>{const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
-const BS=5; // mỗi ô vẽ thành một hạt cườm tròn 4px, hở 1px
-function bufCanvas(b){
-  const c=document.createElement('canvas');c.width=b.w*BS;c.height=b.h*BS;const g=c.getContext('2d');
+let BS=3; // số điểm ảnh thật cho mỗi ô lưới trong phòng, luôn là số nguyên (fitCanvas tính lại theo màn hình)
+const DPR=()=>window.devicePixelRatio||1;
+// k < 3: ô vuông đặc; k >= 3: mỗi ô là một hạt cườm, hở 1 điểm ảnh, có nền nhạt để không xuyên thấu
+function bufCanvas(b,k){
+  const c=document.createElement('canvas');c.width=b.w*k;c.height=b.h*k;c.lw=b.w;c.lh=b.h;const g=c.getContext('2d'),d=k-1;
   for(let y=0;y<b.h;y++)for(let x=0;x<b.w;x++){const p=b.c[y*b.w+x];if(!p)continue;
-    const a=p.length===4?p[3]/255:1,L=v=>Math.round(v+(255-v)*.42);
-    g.fillStyle='rgba('+L(p[0])+','+L(p[1])+','+L(p[2])+','+a+')';g.fillRect(x*BS,y*BS,BS,BS); // nền nhạt để khe giữa các hạt không bị xuyên thấu
-    g.fillStyle='rgba('+p[0]+','+p[1]+','+p[2]+','+a+')';g.fillRect(x*BS+1,y*BS,2,4);g.fillRect(x*BS,y*BS+1,4,2)}
+    const a=p.length===4?p[3]/255:1,L=v=>Math.round(v+(255-v)*.42),full='rgba('+p[0]+','+p[1]+','+p[2]+','+a+')';
+    if(k<3){g.fillStyle=full;g.fillRect(x*k,y*k,k,k);continue}
+    g.fillStyle='rgba('+L(p[0])+','+L(p[1])+','+L(p[2])+','+a+')';g.fillRect(x*k,y*k,k,k);
+    g.fillStyle=full;
+    if(k<5)g.fillRect(x*k,y*k,d,d);else{g.fillRect(x*k+1,y*k,d-2,d);g.fillRect(x*k,y*k+1,d,d-2)}}
   return c;
 }
 const CC={},CI={},FC={},FI={};
-const catCv=(sp,pose)=>{const k=sp+'|'+(pose||'sit');return CC[k]||(CC[k]=bufCanvas(Art.cat(SP[sp],pose)))};
-const catImg=sp=>CI[sp]||(CI[sp]=catCv(sp).toDataURL());
-const furnCv=(id,v)=>{const k=id+'|'+(v||'');return FC[k]||(FC[k]=bufCanvas(Art.furn(id,v)))};
-const furnImg=(id,v)=>{const k=id+'|'+(v||'');return FI[k]||(FI[k]=furnCv(id,v).toDataURL())};
+const catCv=(sp,pose,k)=>{k=k||BS;const key=sp+'|'+(pose||'sit')+'|'+k;return CC[key]||(CC[key]=bufCanvas(Art.cat(SP[sp],pose),k))};
+const furnCv=(id,v,k)=>{k=k||BS;const key=id+'|'+(v||'')+'|'+k;return FC[key]||(FC[key]=bufCanvas(Art.furn(id,v),k))};
+// ảnh trong giao diện: phóng đúng bội số nguyên rồi hiển thị 1:1 với điểm ảnh màn hình
+const kk=k=>Math.max(1,Math.round(k*DPR()));
+const catSrc=(sp,k)=>{const n=kk(k),key=sp+'|'+n;return CI[key]||(CI[key]=catCv(sp,'sit',n).toDataURL())};
+const catTag=(sp,k)=>{const n=kk(k),d=DPR();return '<img class="px" width="'+36*n/d+'" height="'+40*n/d+'" src="'+catSrc(sp,k)+'">'};
+function furnTag(id,v,mw,mh){
+  const d=DPR(),sz=id==='gift'?[28,28]:[FURN[id].w,FURN[id].h],n=Math.max(1,Math.floor(Math.min((mw||48)*d/sz[0],(mh||40)*d/sz[1])));
+  const key=id+'|'+(v||'')+'|'+n,src=FI[key]||(FI[key]=furnCv(id,v,n).toDataURL());
+  return '<img class="px" width="'+sz[0]*n/d+'" height="'+sz[1]*n/d+'" src="'+src+'">';
+}
 const sexIc=c=>c.sex==='f'?'<span class="f">♀</span>':'<span class="m">♂</span>';
 const starsOf=n=>'<span style="color:'+STAR[n].c+'">'+'★'.repeat(n)+'</span>';
 const tagOf=(t,extra)=>'<span class="tag '+TRAITS[t].k+'" tabindex="0" data-tip="'+esc(TRAITS[t].d)+'">'+TRAITS[t].n+(extra?' · '+extra:'')+'</span>';
@@ -43,9 +54,16 @@ function toast(msg,o){
 notify=toast;
 
 /* ============ PHÒNG ============ */
-const VW=240,VH=170,BOWL={x:70,y:158};
+let VW=240;const VH=170,BOWL={x:70,y:158};
 const room=$('room'),RX=room.getContext('2d');
-room.width=VW*BS;room.height=VH*BS;
+// canvas khớp đúng số điểm ảnh thật của màn hình (theo devicePixelRatio) và phóng lưới theo bội số nguyên
+function fitCanvas(){
+  const d=DPR(),bw=Math.max(240,Math.round(room.clientWidth*d)),k=Math.max(2,Math.round(bw/175));
+  if(room.width===bw&&BS===k)return;
+  BS=k;room.width=bw;room.height=VH*k;room.style.height=VH*k/d+'px';VW=bw/k;
+  if(typeof camX==='number')camX=clamp(camX,0,WORLD_W-VW);
+}
+addEventListener('resize',fitCanvas);
 let cur='living',camX=0,edit=false,sel=null,ents=[];
 const ACTIVE=['fast','zoomies','playful','hunter','climber','v_pika','v_eleven','v_hero','v_nyan','v_spider','v_naruto','v_goku','v_thunder'];
 const LAZY=['sleeper','lazy','gentle','glutton','v_garfield','v_totoro','v_nezuko','v_frieren','v_wednesday'];
@@ -93,6 +111,7 @@ function choose(e){
   a+=.12; if(r<a){e.state='idle';e.t=rnd(1.5,4);return}
   const p=freeSpot(e);e.tx=p.x;e.ty=p.y;e.state='walk';
 }
+const JP=.36,JL=.22; // thời gian thu mình lấy đà và khựng lại khi tiếp đất
 const usePos=(it)=>{const u=FURN[it.fid].use;return {x:it.x+(it.flip?-1:1)*u.dx,y:it.y+u.dy}};
 function arrive(e){
   if(e.goal&&e.goal.bowl){e.state='use';e.t=rnd(5,9);e.emo='heart';return}
@@ -116,7 +135,7 @@ function stepEnt(e,dt){
     else{e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt;if(Math.abs(dx)>.5)e.flip=dx>0}
   }else if(e.state==='jump'){
     e.jt+=dt;
-    if(e.jt>=e.jd){
+    if(e.jt>=JP+e.jd+JL){
       if(e.j.next==='use'){const it=S.items.find(i=>i.iid===e.goal.iid);e.state='use';e.t=rnd(5,10);e.emo=it?FURN[it.fid].use.emo:null}
       else{e.x=e.j.tx;e.y=e.j.ty;e.goal=null;e.state='idle';e.t=rnd(.5,1.5)}
     }
@@ -125,7 +144,7 @@ function stepEnt(e,dt){
     if(e.t<=0){
       e.emo=null;
       const it=e.state==='use'&&e.goal&&e.goal.iid&&S.items.find(i=>i.iid===e.goal.iid&&i.room===cur);
-      if(it&&!FURN[it.fid].use.floor&&FURN[it.fid].use.dy<=-4){const q=usePos(it);e.j={fx:q.x,fy:q.y,tx:e.x,ty:e.y,sy:it.y+.5,next:'idle'};e.jt=0;e.jd=clamp(Math.abs(q.y-e.y)/90+.35,.35,.9);e.state='jump'}
+      if(it&&!FURN[it.fid].use.floor&&FURN[it.fid].use.dy<=-4){const q=usePos(it);e.j={fx:q.x,fy:q.y,tx:e.x,ty:e.y,sy:it.y+.5,next:'idle'};e.flip=e.x>q.x;e.jt=0;e.jd=clamp(Math.abs(q.y-e.y)/90+.35,.35,.9);e.state='jump'}
       else choose(e);
     }
   }
@@ -133,15 +152,18 @@ function stepEnt(e,dt){
 // vị trí vẽ, thứ tự trước sau và tư thế của một bé
 function entPos(e){
   if(e.state==='jump'){
-    const k=clamp(e.jt/e.jd,0,1),j=e.j;
-    return {x:j.fx+(j.tx-j.fx)*k,y:j.fy+(j.ty-j.fy)*k-Math.sin(Math.PI*k)*(10+Math.abs(j.ty-j.fy)*.25),sy:j.sy,pose:'jump'};
+    const j=e.j,t=e.jt;
+    if(t<JP)return {x:j.fx,y:j.fy,sy:j.sy,pose:'crouch'+Math.floor(t*10)%2};   // chuẩn bị: hạ người, ngoáy mông
+    if(t>=JP+e.jd)return {x:j.tx,y:j.ty,sy:j.sy,pose:'land'};                  // tiếp đất: chân trước chạm trước
+    const k=(t-JP)/e.jd;                                                       // bật lên theo đường parabol
+    return {x:j.fx+(j.tx-j.fx)*k,y:j.fy+(j.ty-j.fy)*k-Math.sin(Math.PI*k)*(12+Math.abs(j.ty-j.fy)*.25),sy:j.sy,pose:k<.55?'leapU':'leapD'};
   }
   if(e.state==='use'&&e.goal&&e.goal.iid){
     const it=S.items.find(i=>i.iid===e.goal.iid);
     if(!it||it.room!==cur){e.state='idle';e.goal=null;e.t=1;e.emo=null}
     else{const u=FURN[it.fid].use;if(!u.floor){const q=usePos(it);return {x:q.x,y:q.y,sy:it.y+(u.front?.5:-.5),pose:u.sleep?'sleep':'sit'}}}
   }
-  const pose=e.state==='nap'?'sleep':e.state==='groom'?'groom'+Math.floor(e.wt*3)%2:e.state==='walk'?'walk'+Math.floor(e.wt*4)%2:e.state==='run'?'run'+Math.floor(e.wt*10)%2:'sit';
+  const pose=e.state==='nap'?'sleep':e.state==='groom'?'groom'+Math.floor(e.wt*3)%2:e.state==='walk'?'walk'+[0,1,2,1][Math.floor(e.wt*6)%4]:e.state==='run'?'run'+Math.floor(e.wt*13)%4:'sit';
   return {x:e.x,y:e.y,sy:e.y,pose};
 }
 const EMO={z:["###","..#",".#.","#..","###"],heart:[".#.#.","#####","#####",".###.","..#.."],note:["..##","..#.","..#.","###.","###."],excl:["#","#","#",".","#"]};
@@ -177,13 +199,14 @@ function drawItem(i){
 }
 function drawEnt(e,p){
   const c=catBy(e.uid); if(!c)return;
-  const cv=catCv(c.sp,p.pose),hop=p.pose==='walk1'?1:p.pose==='run1'?2.4:0;
-  const px=Math.round((p.x-18)*BS)/BS,py=Math.round((p.y-39-hop)*BS)/BS; // bước 1/5 ô để chuyển động mượt
-  if(e.flip){RX.save();RX.translate(px+36,py);RX.scale(-1,1);RX.drawImage(cv,0,0,36,40);RX.restore()}else RX.drawImage(cv,px,py,36,40);
-  const t=performance.now()/1000,ex=Math.round(px),by=Math.round(py+Math.sin(t*3+ex));
-  if(e.emoT>0)drawEmo('heart',ex+26,by);
-  else if(c.full<20)drawEmo('excl',ex+28,by,'#d95a5a');
-  else if(e.emo&&e.state!=='jump')drawEmo(e.emo,ex+26,by);
+  // sprite ngồi rộng 36 ô (tâm 18); sprite nhìn ngang rộng 50 ô, đầu quay trái (tâm 22). Đổi hướng bằng cách lật, không xoay.
+  const cv=catCv(c.sp,p.pose),w=cv.lw,ax=w===36?18:22;
+  const px=Math.round((p.x-(e.flip?w-ax:ax))*BS)/BS,py=Math.round((p.y-39)*BS)/BS;
+  if(e.flip){RX.save();RX.translate(px+w,py);RX.scale(-1,1);RX.drawImage(cv,0,0,w,40);RX.restore()}else RX.drawImage(cv,px,py,w,40);
+  const t=performance.now()/1000,ex=Math.round(p.x),by=Math.round(py+Math.sin(t*3+ex));
+  if(e.emoT>0)drawEmo('heart',ex+8,by);
+  else if(c.full<20)drawEmo('excl',ex+10,by,'#d95a5a');
+  else if(e.emo&&e.state!=='jump')drawEmo(e.emo,ex+8,by);
 }
 function drawRoom(){
   const g=RX;g.imageSmoothingEnabled=false;g.setTransform(BS,0,0,BS,0,0);g.clearRect(0,0,VW,VH);g.translate(-Math.round(camX),0);
@@ -202,7 +225,7 @@ function drawRoom(){
 }
 /* --- chuột/chạm: kéo để cuộn, chạm mèo để vuốt, chế độ sắp xếp thì kéo đồ --- */
 let ptr=null;
-const ppos=ev=>{const b=room.getBoundingClientRect();return {x:(ev.clientX-b.left)/b.width*VW,y:(ev.clientY-b.top)/b.height*VH}};
+const ppos=ev=>{const b=room.getBoundingClientRect();return {x:(ev.clientX-b.left-room.clientLeft)/room.clientWidth*VW,y:(ev.clientY-b.top-room.clientTop)/room.clientHeight*VH}};
 function hitItem(wx,y){
   const order={rug:0,wall:1,floor:2};
   return itemsIn(cur).slice().sort((a,b)=>(order[FURN[b.fid].kind]-order[FURN[a.fid].kind])||(b.y-a.y)).find(i=>{const f=FURN[i.fid];return wx>=i.x-f.w/2-2&&wx<=i.x+f.w/2+2&&y>=i.y-f.h-2&&y<=i.y+2});
@@ -256,7 +279,7 @@ function drawPicker(){
     DESTS.map(x=>'<button class="sm '+(x.id===pk.dest?'on':'')+'" '+(x.lvl>S.level?'disabled':'')+' onclick="pk.dest=\''+x.id+'\';drawPicker()">'+x.ic+' '+x.n+(x.lvl>S.level?' 🔒 cấp '+x.lvl:'')+'</button>').join('')+
     '</div><div class="dim" style="margin-top:6px">'+d.min+' phút · '+d.coin+' xu gốc · tốn '+d.en+'⚡'+(d.tags.length?' · '+d.tags.map(t=>TAGN[t]).join(', '):'')+' · bây giờ là '+(night?'ban đêm 🌙':'ban ngày ☀')+'</div><h3>Chọn mèo</h3>'+
     (cats.length?cats.map(o=>{const c=o.c,sp=SP[c.sp];
-      return '<div class="card '+(o.inf.why?'':'tap')+'" style="'+(o.inf.why?'opacity:.5':'')+'" '+(o.inf.why?'':'onclick="doTrip('+c.uid+')"')+'><img width="36" height="40" src="'+catImg(c.sp)+'"><div class="g"><b>'+esc(c.name)+'</b> '+sexIc(c)+' '+starsOf(c.star)+'<br><small>'+sp.n+' · '+(o.inf.why||('~'+o.inf.est+' xu · '+fmt(o.inf.dur)+' · −'+o.inf.cost+'⚡'))+'</small><br>'+stats(c)+'</div></div>'}).join(''):'<div class="dim">Không còn bé nào ở nhà.</div>')+
+      return '<div class="card '+(o.inf.why?'':'tap')+'" style="'+(o.inf.why?'opacity:.5':'')+'" '+(o.inf.why?'':'onclick="doTrip('+c.uid+')"')+'>'+catTag(c.sp,1)+'<div class="g"><b>'+esc(c.name)+'</b> '+sexIc(c)+' '+starsOf(c.star)+'<br><small>'+sp.n+' · '+(o.inf.why||('~'+o.inf.est+' xu · '+fmt(o.inf.dur)+' · −'+o.inf.cost+'⚡'))+'</small><br>'+stats(c)+'</div></div>'}).join(''):'<div class="dim">Không còn bé nào ở nhà.</div>')+
     '<button onclick="closeModal()">Đóng</button>');
 }
 function doTrip(uid){
@@ -271,7 +294,7 @@ function showPop(r){popQ.push(r);if(!popOn)nextPop()}
 function nextPop(){
   const r=popQ.shift(),el=$('pop'); if(!r){popOn=false;return}
   popOn=true;
-  el.innerHTML='<div class="hd">🎒 '+esc(r.cat.name)+' đã về từ '+r.dest.n+'!</div><div class="row"><img width="72" height="80" src="'+catImg(r.cat.sp)+'"><div style="flex:1;text-align:left">'+
+  el.innerHTML='<div class="hd">🎒 '+esc(r.cat.name)+' đã về từ '+r.dest.n+'!</div><div class="row">'+catTag(r.cat.sp,2)+'<div style="flex:1;text-align:left">'+
     '<div class="big">+'+(r.coins+r.bonus)+' 🪙</div><div class="dim">Ngậm theo '+r.item+' · +'+r.xp+' kinh nghiệm'+(r.ticket?'<br>🎟 Nhặt được 1 vé gacha!':'')+'</div></div></div>'+
     (r.acts.length?'<div style="text-align:left;margin-top:6px"><span class="dim">Trait đã kích hoạt:</span><br>'+r.acts.map(a=>tagOf(a.t,a.txt)).join('')+'</div>':'<div class="dim" style="text-align:left;margin-top:6px">Chuyến này không có trait nào kích hoạt.</div>')+
     '<div style="text-align:right;margin-top:8px"><button class="go sm" onclick="closePop()">Nhận'+(popQ.length?' (còn '+popQ.length+')':'')+'</button></div>';
@@ -301,7 +324,7 @@ const glide=(f0,f1,d,type,v)=>snd(t=>{const o=AC.createOscillator(),g=AC.createG
 const fxClear=()=>{const f=$('gfx');f.innerHTML='';f.style.background='';$('gfly').className=''};
 function fxEl(css,html){const d=document.createElement('div');d.style.cssText='position:absolute;'+css;if(html)d.innerHTML=html;$('gfx').appendChild(d);return d}
 const fxTint=bg=>{$('gfx').style.background=bg};
-const fxCat=(anim,extra)=>fxEl('left:50%;top:50%;width:144px;height:160px;margin:-80px 0 0 -72px;animation:'+anim+';'+(extra||''),'<img src="'+catImg(gz.cat.sp)+'" style="width:100%;height:100%">');
+const fxCat=(anim,extra)=>fxEl('left:50%;top:50%;width:144px;height:160px;margin:-80px 0 0 -72px;animation:'+anim+';'+(extra||''),'<img class="px" src="'+catSrc(gz.cat.sp,4)+'" style="width:100%;height:100%">');
 function bolt(x,col){
   const pts=[];let px=x;for(let y=0;y<=innerHeight*.78;y+=innerHeight*.065){pts.push(Math.round(px)+','+Math.round(y));px+=rnd(-38,38)}
   const d=fxEl('inset:0','<svg width="100%" height="100%"><polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="9" stroke-linejoin="bevel" opacity=".85"/><polyline points="'+pts.join(' ')+'" fill="none" stroke="#fff" stroke-width="3"/></svg>');
@@ -315,7 +338,7 @@ function coinRain(){rain(['#f2c230','#f2c230','#fff3b0'],5)}
 const every=(T,t0,t1,step,f)=>{for(let t=t0;t<t1;t+=step)T(t,f)};
 const INTRO={
   v_nyan:{dur:2100,run(T){
-    const f=$('gfly');f.innerHTML='<div class="fl"><div class="rb"></div><img src="'+catImg(gz.cat.sp)+'"></div>';f.className='';void f.offsetWidth;f.className='go';
+    const f=$('gfly');f.innerHTML='<div class="fl"><div class="rb"></div><img class="px" src="'+catSrc(gz.cat.sp,3)+'"></div>';f.className='';void f.offsetWidth;f.className='go';
     seq([659,784,1047,784,659,784,1175,988,1047,1319,1175,988,1047,784,659,523,587,784,988,784,1047,1319,1568,2093],.085,.08);
     every(T,0,2000,100,()=>{for(let k=0;k<4;k++)part({x:rnd(0,innerWidth),y:rnd(0,innerHeight),vx:-rnd(3,7),life:rnd(20,40),sz:Math.random()<.5?4:8})});
   }},
@@ -373,7 +396,7 @@ const INTRO={
   savannah:{dur:2500,run(T){
     fxTint('linear-gradient(#f0a040,#7a3a12)');
     fxEl('left:50%;top:30%;width:150px;height:150px;margin-left:-75px;border-radius:50%;background:#ffe9a0;box-shadow:0 0 70px 26px rgba(255,220,130,.5)');
-    const dash=dl=>fxEl('left:0;top:56%;width:144px;height:160px;animation:dash .8s '+dl+'s cubic-bezier(.5,0,.3,1) both','<img src="'+catImg(gz.cat.sp)+'" style="width:100%;height:100%;transform:scaleX(-1)">');
+    const dash=dl=>fxEl('left:0;top:56%;width:144px;height:160px;animation:dash .8s '+dl+'s cubic-bezier(.5,0,.3,1) both','<img class="px" src="'+catSrc(gz.cat.sp,4)+'" style="width:100%;height:100%;transform:scaleX(-1)">');
     dash(.3);dash(1.4);[300,1400].forEach(t=>T(t,()=>glide(300,1300,.6,'triangle',.05)));
     every(T,300,2300,45,()=>part({x:rnd(0,innerWidth),y:innerHeight*.56+150+rnd(-8,8),vx:-rnd(2,6),vy:-rnd(0,1),life:30,col:pick(['#e6c08a','#fff0c8'])}));
   }},
@@ -399,7 +422,7 @@ function playGacha(c){
   gz.cat=c;gz.done=false;gz.parts=[];fxClear();gz.timers.forEach(clearTimeout);gz.timers=[];
   el.className='on';el.style.setProperty('--rc',col);
   $('grev').style.display='none';$('gskip').style.display='block';
-  box.style.display='block';box.src=furnImg('gift',st>=3?col:'#aab0bd');box.className='s';
+  box.style.display='block';box.src=furnCv('gift',st>=3?col:'#aab0bd',kk(5)).toDataURL();box.className='s';
   if(!gz.raf)gz.raf=requestAnimationFrame(gpLoop);
   if(st<=2){T(850,()=>gReveal())}
   else if(st===3){box.classList.add('glow');for(let t=0;t<1300;t+=80)T(t,()=>sparkle(col,3));T(1400,()=>gReveal())}
@@ -426,7 +449,7 @@ function gReveal(skipped){
   }else if(st>=3&&!skipped)burst(innerWidth/2,innerHeight/2,col);
   let stars='';for(let i=0;i<st;i++)stars+='<span class="st" style="animation-delay:'+(.25+i*.24)+'s">★</span>';
   rev.innerHTML='<div class="pop">'+(st===5?'<div class="legend">HUYỀN THOẠI</div>':'')+
-    '<img width="144" height="160" src="'+catImg(c.sp)+'"><div>'+stars+'</div>'+
+    ''+catTag(c.sp,4)+'<div>'+stars+'</div>'+
     '<div style="color:'+col+'">'+STAR[st].n+(c.isNew?' · <span style="color:#2b8750">MỚI!</span>':'')+'</div>'+
     '<h2 style="margin:4px 0">'+sp.n+' '+sexIc(c)+'</h2><div class="dim">'+sp.d+'</div>'+
     '<div style="margin:6px 0">'+c.traits.map(t=>tagOf(t)).join('')+'</div>'+
@@ -444,7 +467,7 @@ function gachaDone(){
 /* --- mèo --- */
 function openCat(uid){
   const c=catBy(uid); if(!c)return; const sp=SP[c.sp],away=onTrip(uid),bf=buffOf(c);
-  modal('<img width="108" height="120" src="'+catImg(c.sp)+'"><h2 style="margin:2px 0">'+esc(c.name)+' '+sexIc(c)+'</h2><div>'+starsOf(c.star)+' <span style="color:'+STAR[c.star].c+'">'+STAR[c.star].n+'</span></div>'+
+  modal(''+catTag(c.sp,3)+'<h2 style="margin:2px 0">'+esc(c.name)+' '+sexIc(c)+'</h2><div>'+starsOf(c.star)+' <span style="color:'+STAR[c.star].c+'">'+STAR[c.star].n+'</span></div>'+
     '<div><b>'+sp.n+'</b></div><div class="dim">'+sp.d+'</div><div style="margin:8px 0">'+stats(c)+'</div>'+
     '<div class="dim">'+(away?'Đang đi viễn chinh':'Đang ở '+ROOM[c.room].n+' · độ vui hướng tới '+Math.round(happyTarget(c)))+' · Khoái khẩu: '+favs(c).map(f=>FOOD[f].ic+' '+FOOD[f].n).join(', ')+(bf.food?'<br>Đang có buff '+FOOD[bf.food].n+' (còn '+fmt(bf.until-now())+')':'')+'</div>'+
     '<div style="margin:8px 0;text-align:left">'+c.traits.map(t=>tagOf(t)).join('')+'</div>'+
@@ -485,14 +508,14 @@ function renderTop(){
 }
 function renderPanel(){$('panel').innerHTML=PANEL[tab]()}
 function render(){renderTop();renderPanel()}
-const catCard=c=>{const sp=SP[c.sp];return '<div class="card tap" onclick="openCat('+c.uid+')"><img width="36" height="40" src="'+catImg(c.sp)+'"><div class="g"><b>'+esc(c.name)+'</b> '+sexIc(c)+' '+starsOf(c.star)+' <small>'+sp.n+(onTrip(c.uid)?' · đang viễn chinh':'')+'</small><br>'+stats(c)+'</div></div>'};
+const catCard=c=>{const sp=SP[c.sp];return '<div class="card tap" onclick="openCat('+c.uid+')">'+catTag(c.sp,1)+'<div class="g"><b>'+esc(c.name)+'</b> '+sexIc(c)+' '+starsOf(c.star)+' <small>'+sp.n+(onTrip(c.uid)?' · đang viễn chinh':'')+'</small><br>'+stats(c)+'</div></div>'};
 const PANEL={
  home(){
   if(edit){
     const it=S.items.find(i=>i.iid===sel),kho=S.items.filter(i=>!i.room);
     return '<div class="card"><div class="g"><b>Chế độ sắp xếp</b><br><small>Kéo đồ trong phòng để di chuyển. Chạm vào món đồ để chọn, rồi xoay hoặc cất vào kho.</small></div><button class="go" onclick="toggleEdit()">✓ Xong</button></div>'+
-     (it?'<div class="card"><img style="max-width:48px;max-height:40px" src="'+furnImg(it.fid)+'"><div class="g"><b>'+FURN[it.fid].n+'</b>'+(it.broken?' <span style="color:#b83a2e">(hỏng)</span>':'')+'<br><small>'+FURN[it.fid].d+'</small></div><div class="row wrap" style="justify-content:flex-end">'+(it.broken?'<button class="sm" onclick="doRepair('+it.iid+')">🔧 Sửa '+repairCost(it)+'</button>':'')+'<button class="sm" onclick="doFlip()">↔ Xoay</button><button class="sm" onclick="doStore()">📦 Cất kho</button></div></div>':'')+
-     '<h3>Kho đồ ('+kho.length+')</h3>'+(kho.length?kho.map(i=>'<div class="card"><img style="max-width:48px;max-height:40px" src="'+furnImg(i.fid)+'"><div class="g"><b>'+FURN[i.fid].n+'</b>'+(i.broken?' <span style="color:#b83a2e">(hỏng)</span>':'')+'</div><button class="sm" onclick="doPlace('+i.iid+')">Đặt vào '+ROOM[cur].n+'</button></div>').join(''):'<div class="dim">Kho trống. Đồ mua ở Cửa hàng sẽ được đặt thẳng vào phòng đang xem.</div>');
+     (it?'<div class="card">'+furnTag(it.fid)+'<div class="g"><b>'+FURN[it.fid].n+'</b>'+(it.broken?' <span style="color:#b83a2e">(hỏng)</span>':'')+'<br><small>'+FURN[it.fid].d+'</small></div><div class="row wrap" style="justify-content:flex-end">'+(it.broken?'<button class="sm" onclick="doRepair('+it.iid+')">🔧 Sửa '+repairCost(it)+'</button>':'')+'<button class="sm" onclick="doFlip()">↔ Xoay</button><button class="sm" onclick="doStore()">📦 Cất kho</button></div></div>':'')+
+     '<h3>Kho đồ ('+kho.length+')</h3>'+(kho.length?kho.map(i=>'<div class="card">'+furnTag(i.fid)+'<div class="g"><b>'+FURN[i.fid].n+'</b>'+(i.broken?' <span style="color:#b83a2e">(hỏng)</span>':'')+'</div><button class="sm" onclick="doPlace('+i.iid+')">Đặt vào '+ROOM[cur].n+'</button></div>').join(''):'<div class="dim">Kho trống. Đồ mua ở Cửa hàng sẽ được đặt thẳng vào phòng đang xem.</div>');
   }
   const cats=catsIn(cur),ready=bowlReady(cur),broken=itemsIn(cur).filter(i=>i.broken);
   return '<div class="row" style="margin-bottom:8px"><button style="flex:1" class="'+(ready?'go':'')+'" '+(ready?'':'disabled')+' onclick="openFeed()">🍚 '+(ready?'Cho ăn':'Bát đầy lại sau '+fmt(S.rooms[cur].bowlAt-now()))+'</button><button onclick="toggleEdit()">✏️ Sắp xếp</button></div>'+
@@ -508,13 +531,13 @@ const PANEL={
     const p=S.trips[i];
     if(!p){h+='<div class="card"><div class="g">Ô viễn chinh '+(i+1)+'<br><small>Đang trống</small></div><button onclick="openPicker('+i+')">Chọn mèo</button></div>';continue}
     const c=catBy(p.uid),d=DEST[p.dest],left=p.end-now(),done=left<=0;
-    h+='<div class="card"><img width="36" height="40" src="'+catImg(c.sp)+'"><div class="g"><b>'+esc(c.name)+'</b> '+starsOf(c.star)+'<br><small>'+d.ic+' '+d.n+' · '+(done?'đã về, đang ngồi chờ trước cửa!':'còn '+fmt(left))+'</small><div class="bar"><i style="width:'+Math.min(100,(1-left/p.dur)*100)+'%"></i></div></div>'+(done?'<button class="go" onclick="doClaim('+i+')">Nhận quà</button>':'')+'</div>';
+    h+='<div class="card">'+catTag(c.sp,1)+'<div class="g"><b>'+esc(c.name)+'</b> '+starsOf(c.star)+'<br><small>'+d.ic+' '+d.n+' · '+(done?'đã về, đang ngồi chờ trước cửa!':'còn '+fmt(left))+'</small><div class="bar"><i style="width:'+Math.min(100,(1-left/p.dur)*100)+'%"></i></div></div>'+(done?'<button class="go" onclick="doClaim('+i+')">Nhận quà</button>':'')+'</div>';
   }
   return h+'<div class="dim">Mèo cần no trên 20 và đủ năng lượng mới đi được. Ô mở thêm ở cấp 3, 5, 7, 9; điểm đến mới mở dần theo cấp.</div>';
  },
  gacha(){
   const full=S.cats.length>=totalCap();
-  return '<div class="card" style="flex-direction:column;text-align:center"><img width="84" height="84" src="'+furnImg('gift','#ffd24a')+'"><div>Hộp quà mèo</div>'+
+  return '<div class="card" style="flex-direction:column;text-align:center">'+furnTag('gift','#ffd24a',84,84)+'<div>Hộp quà mèo</div>'+
    (full?'<div style="color:#b83a2e">Nhà đã đủ '+totalCap()+' mèo. Mở thêm phòng hoặc cho bớt mèo đi nhận nuôi.</div>':'')+
    '<div class="row wrap" style="justify-content:center"><button class="on" '+(S.coins<GACHA_COST||full?'disabled':'')+' onclick="doGacha(false)">Mở · '+GACHA_COST+' xu</button><button '+(S.tickets<1||full?'disabled':'')+' onclick="doGacha(true)">Dùng vé 🎟 ('+S.tickets+')</button></div>'+
    '<small>'+[1,2,3,4,5].map(s=>'<span style="color:'+STAR[s].c+'">'+s+'★ '+STAR[s].n+' '+STAR[s].p+'%</span>').join(' · ')+'</small>'+
@@ -523,24 +546,61 @@ const PANEL={
  shop(){
   return '<h3>Mở rộng nhà</h3>'+ROOMS.filter(r=>r.price).map(r=>'<div class="card"><div style="font-size:26px">🚪</div><div class="g"><b>'+r.n+'</b> <small>· chứa '+r.cap+' mèo</small><br><small>'+r.d+'</small></div>'+(S.rooms[r.id]?'<button class="sm" onclick="setRoom(\''+r.id+'\');setTab(\'home\')">Vào xem</button>':'<button class="sm" '+(S.coins<r.price?'disabled':'')+' onclick="doBuyRoom(\''+r.id+'\')">🪙 '+r.price+'</button>')+'</div>').join('')+
    '<h3>Nội thất <small class="dim">· đặt vào '+ROOM[cur].n+'</small></h3>'+FURNS.map(f=>{const n=S.items.filter(i=>i.fid===f.id).length;
-     return '<div class="card"><div style="width:48px;text-align:center"><img style="max-width:48px;max-height:40px" src="'+furnImg(f.id)+'"></div><div class="g"><b>'+f.n+'</b>'+(n?' <small>· đang có '+n+'</small>':'')+'<br><small>'+f.d+'</small></div><button class="sm" '+(S.coins<f.price?'disabled':'')+' onclick="doBuy(\''+f.id+'\')">🪙 '+f.price+'</button></div>'}).join('')+
+     return '<div class="card"><div style="width:48px;text-align:center">'+furnTag(f.id)+'</div><div class="g"><b>'+f.n+'</b>'+(n?' <small>· đang có '+n+'</small>':'')+'<br><small>'+f.d+'</small></div><button class="sm" '+(S.coins<f.price?'disabled':'')+' onclick="doBuy(\''+f.id+'\')">🪙 '+f.price+'</button></div>'}).join('')+
    '<div class="dim">Hiệu ứng của mỗi loại đồ chỉ tính một lần (độ vui tính theo từng phòng, xu và tốc độ tính cho cả nhà). Mua thêm cái thứ hai chỉ để trang trí.</div>';
  },
  cats(){
   return '<div class="dim" style="margin-bottom:8px">'+S.cats.length+'/'+totalCap()+' bé. Chạm vào một bé để xem trait, đổi tên, chuyển phòng.</div>'+
-   S.cats.slice().sort((a,b)=>b.star-a.star).map(c=>'<div class="card tap" onclick="openCat('+c.uid+')"><img width="45" height="50" src="'+catImg(c.sp)+'"><div class="g"><b>'+esc(c.name)+'</b> '+sexIc(c)+' '+starsOf(c.star)+'<br><small>'+SP[c.sp].n+' · '+(onTrip(c.uid)?'đang viễn chinh':ROOM[c.room].n)+'</small><br>'+stats(c)+'<div onclick="event.stopPropagation()">'+c.traits.map(t=>tagOf(t)).join('')+'</div></div></div>').join('');
+   S.cats.slice().sort((a,b)=>b.star-a.star).map(c=>'<div class="card tap" onclick="openCat('+c.uid+')">'+catTag(c.sp,1.5)+'<div class="g"><b>'+esc(c.name)+'</b> '+sexIc(c)+' '+starsOf(c.star)+'<br><small>'+SP[c.sp].n+' · '+(onTrip(c.uid)?'đang viễn chinh':ROOM[c.room].n)+'</small><br>'+stats(c)+'<div onclick="event.stopPropagation()">'+c.traits.map(t=>tagOf(t)).join('')+'</div></div></div>').join('');
  },
  album(){
   const of=g=>g==='breed'?BREEDS:VARIANTS.filter(v=>v.g===g);
   const all=of(albumG).slice().sort((a,b)=>a.r-b.r);
   return '<div class="row wrap" style="margin-bottom:8px">'+GROUPS.map(g=>'<button class="sm '+(albumG===g[0]?'on':'')+'" onclick="albumG=\''+g[0]+'\';renderPanel()">'+g[1]+' '+of(g[0]).filter(x=>S.seen[x.id]).length+'/'+of(g[0]).length+'</button>').join('')+'</div><div class="grid">'+all.map(s=>
-    S.seen[s.id]?'<div class="cell"><img src="'+catImg(s.id)+'"><br><b style="color:'+STAR[s.r].c+'">'+s.n+'</b><br><span style="color:'+STAR[s.r].c+'">'+'★'.repeat(s.r)+'</span><br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span></div>'
-               :'<div class="cell unk"><img src="'+catImg(s.id)+'"><br><b style="color:'+STAR[s.r].c+'">???</b><br><span style="color:'+STAR[s.r].c+'">'+'★'.repeat(s.r)+'</span></div>').join('')+'</div>';
+    S.seen[s.id]?'<div class="cell">'+catTag(s.id,1.5)+'<br><b style="color:'+STAR[s.r].c+'">'+s.n+'</b><br><span style="color:'+STAR[s.r].c+'">'+'★'.repeat(s.r)+'</span><br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span></div>'
+               :'<div class="cell unk">'+catTag(s.id,1.5)+'<br><b style="color:'+STAR[s.r].c+'">???</b><br><span style="color:'+STAR[s.r].c+'">'+'★'.repeat(s.r)+'</span></div>').join('')+'</div>';
  }
 };
 
+/* ============ ADMIN (chỉ để test): Ctrl+Shift+A, hoặc chạm 7 lần liên tiếp vào tên game ============ */
+const MAXC=999999999;
+function openAdmin(){
+  S.adm=S.adm||{};
+  const og=g=>'<optgroup label="'+g[1]+'">'+(g[0]==='breed'?BREEDS:VARIANTS.filter(v=>v.g===g[0])).slice().sort((a,b)=>b.r-a.r).map(x=>'<option value="'+x.id+'">'+x.r+'★ '+esc(x.n)+'</option>').join('')+'</optgroup>';
+  const stars='<option value="0">theo mặc định</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">'+n+'★</option>').join('');
+  const sel='font:inherit;color:var(--ink);background:#fbf5ea;border:2px solid var(--line);border-radius:10px;padding:6px;min-width:0;flex:1';
+  const box=(t,h)=>'<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>'+t+'</b>'+h+'</div>';
+  modal('<h3>🛠 Bảng Admin <span class="dim">· chỉ để test</span></h3>'+
+    box('Xu (đang có '+S.coins.toLocaleString('vi-VN')+')','<div class="row"><input id="axu" type="number" min="0" value="'+S.coins+'"><button class="sm on" onclick="admCoins(\'set\')">Đặt</button></div><div class="row wrap"><button class="sm" onclick="admCoins(1000)">+1.000</button><button class="sm" onclick="admCoins(100000)">+100.000</button><button class="sm" onclick="admCoins(\'max\')">Max xu</button><button class="sm '+(S.adm.inf?'go':'')+'" onclick="admInf()">Xu vô hạn: '+(S.adm.inf?'BẬT':'tắt')+'</button></div>')+
+    box('Nhận mèo bất kỳ','<div class="row"><select id="asp" style="'+sel+'">'+GROUPS.map(og).join('')+'</select></div><div class="row"><select id="ast" style="'+sel+'">'+stars+'</select><label class="dim" style="white-space:nowrap"><input id="aintro" type="checkbox" checked style="flex:none"> xem hoạt ảnh</label><button class="sm on" onclick="admCat()">Nhận</button></div><div class="dim">Muốn test intro 5★ thì chọn một bé 5★ và để số sao mặc định.</div>')+
+    box('Gacha miễn phí','<div class="row"><select id="ags" style="'+sel+'"><option value="0">sao ngẫu nhiên</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">ép ra '+n+'★</option>').join('')+'</select><button class="sm on" onclick="admGacha()">Quay</button></div>')+
+    box('Mở khóa','<div class="row wrap"><button class="sm" onclick="admRooms()">Mở mọi phòng</button><button class="sm" onclick="admFurn()">Nhận đủ nội thất</button><button class="sm" onclick="admBowl()">Bát ăn sẵn sàng ngay</button><button class="sm" onclick="admLevel()">Lên cấp 9</button></div><div class="dim">Thức ăn vốn không bị khóa; bật xu vô hạn là mua được mọi món.</div>')+
+    box('Mèo và viễn chinh','<div class="row wrap"><button class="sm" onclick="admTrips()">Hoàn tất viễn chinh ngay</button><button class="sm" onclick="admStats()">Hồi đầy no, vui, năng lượng</button></div>')+
+    '<div class="row" style="justify-content:center"><button class="sm bad" onclick="closeModal();resetAll()">Reset toàn bộ dữ liệu</button><button class="sm" onclick="closeModal()">Đóng</button></div>');
+}
+const admDone=(msg,keep)=>{save();render();if(keep)openAdmin();toast(msg,{icon:'🛠',title:'Admin'})};
+function admCoins(v){
+  if(v==='max')S.coins=MAXC;else if(v==='set')S.coins=clamp(Math.floor(+$('axu').value||0),0,MAXC);else S.coins=Math.min(MAXC,S.coins+v);
+  admDone('Xu hiện có: '+S.coins.toLocaleString('vi-VN'),1);
+}
+function admInf(){S.adm.inf=!S.adm.inf;if(S.adm.inf)S.coins=MAXC;admDone('Xu vô hạn: '+(S.adm.inf?'bật':'tắt'),1)}
+function admCat(){
+  const sp=SP[$('asp').value],star=+$('ast').value||sp.r,show=$('aintro').checked;
+  const c=newCat(sp,star);c.room=freeRoom()||cur;c.isNew=!S.seen[sp.id];S.cats.push(c);S.seen[sp.id]=1;save();closeModal();
+  if(show){render();playGacha(c)}else{delete c.isNew;syncEnts();admDone('Đã nhận '+sp.n+' '+star+'★')}
+}
+function admGacha(){const r=gachaRoll(false,{free:1,star:+$('ags').value});closeModal();render();playGacha(r.cat)}
+function admRooms(){ROOMS.forEach(r=>{if(!S.rooms[r.id])S.rooms[r.id]={bowlAt:0}});admDone('Đã mở cả '+ROOMS.length+' phòng',1)}
+function admFurn(){let n=0;FURNS.forEach(f=>{if(!S.items.some(i=>i.fid===f.id)){S.items.push({iid:S.nid++,fid:f.id,room:null,x:120,y:140,flip:false,broken:false});n++}});admDone(n?'Đã thêm '+n+' món vào kho (Nhà → Sắp xếp để đặt)':'Bạn đã có đủ mọi loại nội thất',1)}
+function admBowl(){for(const k in S.rooms)S.rooms[k].bowlAt=0;admDone('Mọi bát ăn đã sẵn sàng',1)}
+function admLevel(){if(S.level<9){S.level=9;S.xp=0;fixSlots()}admDone('Đang ở cấp '+S.level+': đủ 5 ô viễn chinh và mọi điểm đến',1)}
+function admTrips(){let n=0;S.trips.forEach(p=>{if(p&&p.end>now()){p.end=now();n++}});admDone(n?n+' chuyến đã về, vào tab Viễn chinh để nhận':'Không có chuyến nào đang đi',1)}
+function admStats(){S.cats.forEach(c=>{c.full=100;c.en=100;c.hp=100});admDone('Cả '+S.cats.length+' bé đã no, vui và đầy năng lượng',1)}
+addEventListener('keydown',ev=>{if(ev.ctrlKey&&ev.shiftKey&&ev.code==='KeyA'){ev.preventDefault();openAdmin()}});
+{let n=0,t0=0;document.querySelector('h1').addEventListener('click',()=>{const t=Date.now();n=t-t0<600?n+1:1;t0=t;if(n>=7){n=0;openAdmin()}})}
+
 /* ============ VÒNG LẶP ============ */
-load();syncEnts();render();
+load();fitCanvas();syncEnts();render();
 let last=performance.now();
 function loop(t){const dt=Math.min(.1,(t-last)/1000);last=t;ents.forEach(e=>stepEnt(e,dt));drawRoom();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
