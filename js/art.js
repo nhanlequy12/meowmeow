@@ -260,6 +260,56 @@ const vgrille=(b,cx,cy,w,h)=>{
   fine(b,cx-w-1,cy-h-1,cx+w+1,cy+h+1,(u,v,X,Y)=>{const d=Math.abs(u-cx);if(rrect(u,v,cx,cy,w,h,.9))b.put(X,Y,(d===.75||d===2.25)&&Math.abs(v-cy)<h-.4?VK2:VSI,'x')});
   [-.25,.25].forEach(d=>{b.dot(cx+d,cy-h-.75,[196,192,210],'x');b.dot(cx+d,cy-h-.25,[196,192,210],'x')});
 };
+/* ---------- Goku và Naruto (5★): tóc chĩa của Naruto, võ phục và các dạng biến hình ---------- */
+// Mỗi chỏm tóc là một tam giác [x1,y1,x2,y2,xĐỉnh,yĐỉnh] tính từ tâm đầu. Tóc vẽ ở lớp 'back' nên tai mèo và khuôn mặt nằm đè lên trên.
+// SPK: nhìn thẳng (tâm đầu 17.5, 17). SPKS: nhìn ngang, mặt quay trái nên tóc chĩa về phía sau (+x).
+const SPK={
+  naruto:[[-9,-5,-8,-9,-14.5,-11],[-10,-2,-9.5,-6,-16,-5.5],[-9.5,1,-10,-2.5,-15,0],[-6.5,-7.5,-2.5,-9,-6.5,-15.5],[-3.5,-8.5,3.5,-8.5,0,-16.5],[2.5,-9,6.5,-7.5,6.5,-15.5],[9,-5,8,-9,14.5,-11],[10,-2,9.5,-6,16,-5.5],[9.5,1,10,-2.5,15,0]],
+};
+SPK.kurama=SPK.naruto.concat([[-7,-7,-3.5,-9,-8,-17],[3.5,-9,7,-7,8,-17]]);   // hai chỏm dài như sừng của dạng Cửu Vĩ
+const SPKS={
+  naruto:[[-9,-3.5,-5,-7.5,-10.5,-10.5],[-5.5,-7.5,-.5,-8.5,-3.5,-15],[.5,-8.5,6,-6.5,6.5,-14.5],[5.5,-7,9,-2.5,13.5,-10],[8.5,-3.5,9.8,1,15.5,-2.5],[9,.5,7.5,5,13.5,4.5]],
+};
+SPKS.kurama=SPKS.naruto.concat([[-6,-7,-2,-8.5,-6.5,-16.5],[2,-8.5,6,-6.5,8,-16]]);
+// tóc mái: các lọn nhọn rủ xuống trán. BANG: nhìn thẳng (toạ độ tuyệt đối). BANGS: nhìn ngang (tính từ tâm đầu)
+const BANG={
+  naruto:[[10.4,9.8,13.5,9.8,10.9,13.2],[21.5,9.8,24.6,9.8,24.1,13.2]],
+  kurama:[[10.4,10.5,14,10.5,11.4,14],[21,10.5,24.6,10.5,23.6,14],[15.5,10.5,19.5,10.5,17.5,13]],
+};
+const BANGS={naruto:[[-7.8,-5,-5,-5,-8,-1.8]],kurama:[[-7.8,-5,-4.5,-5,-7,-1.8],[-4,-5,0,-5,-1.4,-2.2]]};
+const spikes2=(b,list,ox,oy,C)=>{const hl=lt(C,.3);list.forEach(t=>{
+  b.tri(ox+t[0],oy+t[1],ox+t[2],oy+t[3],ox+t[4],oy+t[5],C,'hair');
+  const mx=(t[0]+t[2])/2,my=(t[1]+t[3])/2;b.cap(ox+mx+(t[4]-mx)*.2,oy+my+(t[5]-my)*.2,ox+mx+(t[4]-mx)*.62,oy+my+(t[5]-my)*.62,.3,hl,'hair')})};   // vệt sáng dọc mỗi chỏm
+const GO=[244,134,40],GBL=[52,84,186],GTAIL=[156,100,64];                                       // Goku: võ phục cam, áo lót và đai xanh, đuôi nâu
+const NO=[244,138,40],NK=[52,48,66],NB=[46,62,124],NB2=[34,46,96];                              // Naruto: cam, đen, xanh băng trán
+const KY=[255,208,64],KY2=[255,236,146],KK=[44,40,56];                                          // áo choàng chakra Cửu Vĩ
+const HW=[250,248,244],HW2=[222,218,212],HR=[214,52,58];                                        // áo choàng và mũ Hokage
+const HFL=(u,v,y0)=>v>y0-1.6*Math.abs(Math.sin(u*1.15+.4));                                     // mép các ngọn lửa đỏ ở gấu áo Hokage
+// vòng hào quang lơ lửng trên đầu Goku: vẽ sau viền nên không có viền nâu, lõi vàng sáng giữa hai mép hổ phách sẫm
+const haloRing=(b,cx,cy,rx)=>{ring(b,cx,cy,rx+.25,2.05,1.05,[196,126,22],'x');ring(b,cx,cy,rx,1.8,.55,[255,228,112],'x');[-.5,0,.5].forEach(k=>b.dot(cx-rx*.55+k,cy-1.5,[255,250,214],'x'))};
+// nét chữ nhỏ từ bảng điểm: tâm (cx, cy) nằm giữa các ô mịn
+const glyph=(b,cx,cy,rows,col)=>rows.forEach((row,j)=>{for(let i=0;i<row.length;i++)if(row[i]==='#')b.dot(cx-(row.length-1)*.25+i*.5,cy-(rows.length-1)*.25+j*.5,col,'x')});
+const GK_MARK=["#.##","#.#.","#.##","#..#"];                              // gợi chữ "悟" trên ngực áo Goku
+const LEAF=["..##..","##..#.",".#.##.","##.##.","#.##.."];                // ký hiệu làng Lá: vòng xoáy có đuôi nhọn
+const FIRE=["#.##.#","..##..","..##..",".####.","##..##","#....#"];       // chữ "火" trên mũ Hokage
+// mắt tiên nhân Cửu Vĩ: mống cam, con ngươi chữ thập (khe dọc của cáo và vạch ngang của cóc), quầng cam phía trên
+const kEye=(b,cx,cy)=>{b.ell(cx,cy,1.25,1.3,[255,180,48],'x');
+  for(let i=-1.25;i<=1.25;i+=.5){b.dot(cx+i,cy-.25,KK,'x');b.dot(cx+i,cy+.25,KK,'x');b.dot(cx-.25,cy+i,KK,'x');b.dot(cx+.25,cy+i,KK,'x');b.dot(cx+i,cy-1.75,[236,112,40],'x')}};
+// băng trán: tấm kim loại bo góc có ký hiệu làng Lá
+const plate=(b,cx,cy,w)=>{fine(b,cx-w-1,cy-3,cx+w+1,cy+3,(u,v,X,Y)=>{if(rrect(u,v,cx,cy,w,1.75,.7))b.put(X,Y,Math.abs(u-cx)>w-.7||Math.abs(v-cy)>1.2?[150,156,172]:[216,220,230],'x')});glyph(b,cx,cy+.25,LEAF,[92,98,120])};
+// tô lại thân và chân ở góc nhìn ngang mà vẫn giữ chân phía xa sẫm hơn chân phía gần. f(vùng, xa?, cột gốc) trả màu mới, hoặc null để giữ nguyên
+const dress=(b,s,f)=>{const base=lum(hex(s.c));each(b,(x,y,r)=>{if(!r||r==='o')return;const o=b.getF(b.fX,b.fY),c=f(r,(r==='leg'||r==='paw')&&lum(o)<base-10,x);if(c)b.set(x,y,c,r)})};
+// Luồng khí bốc quanh thân: vẽ sau cùng (sau viền) lên các ô còn trống quanh hình. Ngọn lửa cao thấp theo nhiễu kéo dọc, vươn lên trên nhiều hơn xuống dưới; càng xa thân càng trong.
+function auraFx(b,C,seed){
+  const W=b.W,Hh=b.H,D=new Int8Array(W*Hh).fill(99),q=[];
+  for(let i=0;i<W*Hh;i++)if(b.c[i]){D[i]=0;q.push(i)}
+  for(let h=0;h<q.length;h++){const i=q[h],d=D[i];if(d>=10)continue;const x=i%W,y=(i-x)/W;
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(o=>{const X=x+o[0],Y=y+o[1];if(X<0||Y<0||X>=W||Y>=Hh)return;const j=Y*W+X;if(D[j]>d+1){D[j]=d+1;q.push(j)}})}
+  const hi=lt(C,.62);
+  for(let Y=0;Y<Hh;Y++)for(let X=0;X<W;X++){const d=D[Y*W+X];if(!d||d>10)continue;
+    const u=X/2,v=Y/2,above=Y+d<Hh&&b.c[(Y+d)*W+X]?1.3:.75,low=v>b.h-7?.4:1,A=(1.8+7.5*vnoise(u+seed*5.3,v*.42+seed*2.1,1.7))*above*low;
+    if(d<=A){const t=d/A;b.put(X,Y,[...(t<.38?hi:C),t<.38?235:t<.72?185:115],'x')}}
+}
 const P={
   // sau lưng
   cape:['back',(b,s,c)=>b.tri(17.5,21,2,38,33,38,H(c),'cape')],
@@ -363,6 +413,56 @@ const P={
   }],
   nstars:['post',b=>{spark(b,3,8,[255,255,255]);spark(b,33,5,[255,236,150]);spark(b,33.5,16,[255,255,255])}],
   // mèo quỷ (chỉ xuất hiện trong intro của Zenitsu)
+  // --- Goku và Naruto ---
+  spk:['back',(b,s,c,st)=>spikes2(b,SPK[st],17.5,17,H(c))],
+  gears:['mid',(b,s,c)=>recolor(b,(x,y,r)=>r==='ear',H(c),'ear')],       // Goku không có tóc: hai tai mang màu của dạng (đen, vàng Siêu Saiyan, đỏ Siêu Saiyan God)
+  halo:['post',b=>haloRing(b,17.5,2.6,6.2)],
+  hcap:['mid',(b,s,c,st)=>{const C=H(c);recolor(b,(x,y,r)=>r==='head'&&y<=(st==='naruto'?9:10),C,'hair');BANG[st].forEach(t=>b.tri(t[0],t[1],t[2],t[3],t[4],t[5],C,'hair'))}],
+  // võ phục cam của Goku: cổ chữ V lộ áo lót xanh, đai xanh thắt nút, phù hiệu trắng trên ngực, băng cổ tay và giày xanh viền vàng, đuôi nâu. shiny: bản lấp lánh của dạng hiếm
+  ggi:['front',(b,s,shiny)=>{
+    const O=shiny?[255,152,48]:GO,O2=dk(O,.36),BL=shiny?[64,108,226]:GBL,BL2=dk(BL,.3),TR=shiny?GOLDC:O2;
+    recolor(b,(x,y,r)=>isBody(r)&&y>=25,(x,y,r,u,v)=>v>33.4&&Math.abs(u-17.5)<.6?O2:O,'body');
+    recolor(b,(x,y,r)=>r==='body'&&y>=35&&(x<=12||x>=23),(x,y,r,u,v)=>v<35.4?GOLDC:BL,'body');
+    [10,24].forEach(x=>b.rect(x,36,2,1,BL2,'x'));
+    recolor(b,(x,y,r)=>r==='paw'&&y>=34&&y<=35,BL,'paw');
+    fine(b,13,24.5,22,29,(u,v,X,Y)=>{const d=Math.abs(u-17.5),h=(28.6-v)*.8;if(h>0&&isBody(b.regF(X,Y))){if(d<h)b.put(X,Y,BL,'x');else if(d<h+.7)b.put(X,Y,TR,'x')}});
+    recolor(b,(x,y,r)=>isBody(r)&&y===32,shiny?(x,y,r,u,v)=>v<31.9?GOLDC:BL:BL,'x');
+    b.rect(21,31.5,1.5,2,BL2,'x');b.rect(21,33.5,.5,2,BL,'x');b.rect(22,33.5,.5,1.5,BL,'x');
+    b.ell(21,28.5,1.5,1.5,WH,'x');glyph(b,21,28.5,GK_MARK,NK);
+    recolor(b,(x,y,r)=>r==='tail',GTAIL,'tail');
+    if(shiny)[[12.5,30.5],[23.5,30.5],[15,34.5]].forEach(p=>spark(b,p[0],p[1],[255,246,200]));
+  }],
+  // Naruto: băng trán làng Lá (hai dải băng bay sau đầu), áo cam vai đen có khoá kéo, xoáy đỏ Uzumaki, túi kunai, dép ninja
+  nbandT:['back',b=>{b.cap(27,12,32.5,14.5,.75,NB,'cape');b.cap(27,13,31.5,19,.75,NB2,'cape')}],
+  nband:['mid',b=>{recolor(b,(x,y,r)=>(r==='head'||r==='hair')&&(y===11||y===12),NB,'x');plate(b,17.5,11.5,4.6)}],
+  nsuit:['front',b=>{
+    recolor(b,(x,y,r)=>isBody(r)&&y>=25,(x,y,r,u,v)=>v<28.4||Math.abs(u-17.5)<1.1?NK:NO,'body');
+    [26.75,27.25,27.75].forEach(v=>{b.dot(17.25,v,[204,208,220],'x');b.dot(17.75,v,[204,208,220],'x')});
+    recolor(b,(x,y,r)=>r==='body'&&y>=35&&(x<=12||x>=23),NB,'body');[10,24].forEach(x=>b.rect(x,36,2,1,NB2,'x'));
+    b.ell(12,30.5,1,1,[226,60,60],'x');b.dot(11.75,30.25,WH,'x');
+    b.rect(22,33.5,2.5,1,[240,236,226],'x');b.rect(22.5,34.5,1.5,1,NK,'x');
+  }],
+  // Tiên nhân Cửu Vĩ: áo choàng chakra vàng có gấu như ngọn lửa, áo trong đen, sáu dấu magatama quanh cổ, vòng ấn trên bụng, ria đậm, mắt chữ thập
+  kcape:['back',b=>{b.tri(17.5,21,3,31.5,32,31.5,KY,'cape');for(let i=0;i<8;i++){const x=3.5+i*4.1;b.tri(x-2.7,30.5,x+2.7,30.5,x+(i%2?.9:-.9),38.6-(i%3)*.9,KY,'cape')}}],
+  kface:['front',b=>{[-1,0,1].forEach(k=>{b.cap(7.4,21+k*2.4,10.6,21+k*1.7,.45,KK,'x');b.cap(27.6,21+k*2.4,24.4,21+k*1.7,.45,KK,'x')});kEye(b,12.5,17);kEye(b,22.5,17)}],
+  kcloak:['front',b=>{
+    recolor(b,(x,y,r)=>isBody(r)&&y>=25,(x,y,r,u,v)=>{const d=Math.abs(u-17.5);return d<3?KK:d<3.6?KY2:KY},'body');
+    recolor(b,(x,y,r)=>r==='body'&&y>=35&&(x<=12||x>=23),KK,'body');
+    [[13.25,26.25],[12.25,27.75],[11.25,29.75]].forEach(p=>[1,-1].forEach(k=>{const u=k>0?p[0]:35-p[0];b.dot(u,p[1],KK,'x');b.dot(u+k*.5,p[1],KK,'x');b.dot(u,p[1]+.5,KK,'x')}));
+    ring(b,17.5,31,1.9,1.9,.55,KY,'x');b.dot(17.25,31.25,KY,'x');b.dot(17.75,30.75,KY,'x');
+  }],
+  // Hokage Đệ Thất: mũ trắng có mảng đỏ mang chữ "火", khăn trắng rủ sau mũ, áo choàng trắng gấu lửa đỏ khoác ngoài áo cam
+  hcape:['back',b=>b.tri(17.5,21,2.5,38,32.5,38,(x,y,r,u,v)=>HFL(u,v,37.7)?HR:HW,'cape')],
+  hveil:['back',b=>b.ell(17.5,16.5,13.2,9.5,HW,'cape')],
+  hbangs:['mid',(b,s,c)=>[[10.4,11.5,13.5,11.5,11.3,14.8],[13.5,11.5,17,11.5,15.8,14.2],[18.5,11.5,22,11.5,20.2,14.2],[22,11.5,24.8,11.5,24.2,14.8]].forEach(t=>b.tri(t[0],t[1],t[2],t[3],t[4],t[5],H(c),'hair'))],
+  hhat:['mid',b=>{b.tri(8.5,10.5,17.5,1.2,26.5,10.5,HW,'hat');b.ell(17.5,10.4,14.2,2.3,HW,'hat');b.tri(12.6,10.6,17.5,3.4,22.4,10.6,HR,'hat');glyph(b,17.5,7.5,FIRE,WH);
+    b.cap(4.6,11.6,30.4,11.6,.3,HW2,'x')}],
+  hcloak:['front',b=>{
+    recolor(b,(x,y,r)=>isBody(r)&&y>=25,(x,y,r,u,v)=>{const d=Math.abs(u-17.5);return d<2.3?(d<.6?NK:NO):d<2.9?HW2:HFL(u,v,37.3)?HR:HW},'body');
+  }],
+  // ninja phản bội (kẻ địch trong intro của Naruto): mây đỏ viền trắng trên áo choàng đen
+  aclouds:['front',b=>[[12.8,30],[21.8,33.2]].forEach(p=>{b.ell(p[0],p[1],2,1.3,WH,'x');b.ell(p[0],p[1],1.5,.8,HR,'x')})],
+  aura:['post',(b,s,c)=>auraFx(b,H(c),0)],
   dhorns:['mid',b=>{[1,-1].forEach(k=>b.tri(17.5+k*4.6,8.8,17.5+k*3.4,2.6,17.5+k*1.2,8.2,[230,218,198],'hat'))}],
   fangs:['front',b=>{b.rect(16,22.5,1,1.5,WH,'x');b.rect(19,22.5,1,1.5,WH,'x')}],
   // sau khi viền
@@ -697,6 +797,41 @@ const PS={
     recolor(b,(x,y,r)=>isBody(r)&&x<x0&&y<=cy+2,(x,y,r,u,v)=>hsh(Math.floor(u*2)+7,Math.floor(v*2))<.11?SP:WH,'x');
     drape(b,G,x0,cx+rx+6,1,(u,v,d,du)=>d<1.5?(Math.floor(u)%3===0&&u-Math.floor(u)<.5&&d>.35&&d<1.15?SP:WH):d<2.1||du<.55?GD:(Math.floor(u*2+v)%8===0?V2:V));
     b.ell(x0-.3,cy-2.4,1,1,GD,'x');b.dot(x0-.5,cy-2.5,[230,60,80],'x');b.dot(x0,cy-2.5,[230,60,80],'x')}],
+  // --- Goku và Naruto ---
+  spk:['back',(b,s,G,c,st)=>spikes2(b,SPKS[st],G.hcx,G.hcy,H(c))],
+  gears:['mid',(b,s,G,c)=>recolor(b,(x,y,r)=>r==='ear',H(c),'ear')],
+  halo:['post',(b,s,G)=>haloRing(b,G.hcx,Math.max(2.6,G.hcy-13.5),5.6)],
+  hcap:['mid',(b,s,G,c,st)=>{const C=H(c),x=G.hcx,y=G.hcy;recolor(b,(X,Y,r)=>r==='head'&&Y<=y-5,C,'hair');BANGS[st].forEach(t=>b.tri(x+t[0],y+t[1],x+t[2],y+t[3],x+t[4],y+t[5],C,'hair'))}],
+  ggi:['front',(b,s,G,shiny)=>{const O=shiny?[255,152,48]:GO,BL=shiny?[64,108,226]:GBL,{cx,cy,ry}=G;
+    dress(b,s,(r,far)=>isBody(r)?O:r==='leg'?(far?dk(O,.24):O):r==='paw'?(far?dk(BL,.24):BL):r==='tail'?GTAIL:null);
+    recolor(b,(x,y,r)=>isBody(r)&&x<=cx-G.rx+4&&y<=cy+1,BL,'x');
+    recolor(b,(x,y,r)=>isBody(r)&&x===cx+2,BL,'x');b.ell(cx+2,cy+ry-.6,.9,.9,dk(BL,.3),'x');
+    b.ell(cx-3,cy-1.5,1.5,1.5,WH,'x');glyph(b,cx-3,cy-1.5,GK_MARK,NK);
+    if(shiny)[[cx+5.5,cy-2.5],[cx-1,cy+3]].forEach(p=>spark(b,p[0],p[1],[255,246,200]));
+  }],
+  nband:['mid',(b,s,G)=>{const x=G.hcx,y=G.hcy,w=(G.ph>>1)%2;
+    b.cap(x+9.4,y-3.6,x+15.5,y-2.2+w,.7,NB,'x');b.cap(x+9.4,y-3.2,x+14.5,y+2-w,.7,NB2,'x');
+    recolor(b,(X,Y,r)=>(r==='head'||r==='hair')&&(Y===y-4||Y===y-3),NB,'x');plate(b,x-4.5,y-3.5,3.4)}],
+  nsuit:['front',(b,s,G)=>{const {cx,cy,rx}=G;
+    dress(b,s,(r,far,x)=>isBody(r)?(x<=cx-rx+8?NK:NO):r==='leg'?(far?dk(NO,.24):NO):r==='paw'?(far?NB2:NB):null);
+    b.ell(cx-2.5,cy-1.5,1.1,1.1,[226,60,60],'x');b.dot(cx-2.75,cy-1.75,WH,'x');
+    b.rect(cx+4,cy+1.5,2.5,1,[240,236,226],'x');
+  }],
+  kface:['front',(b,s,G)=>{const x=G.hcx,y=G.hcy;[0,1.8,3.6].forEach(k=>b.cap(x+2.8,y+.6+k,x+6,y+.2+k*1.25,.45,KK,'x'));kEye(b,x-5.5,y);kEye(b,x+1.5,y)}],
+  kcloak:['front',(b,s,G)=>{const {cx,cy,rx}=G,x0=cx-6;
+    dress(b,s,(r,far)=>isBody(r)?KK:r==='leg'?(far?[34,30,44]:KK):null);
+    drape(b,G,x0,cx+rx+6,1.4,(u,v,d,du)=>d<1.7*Math.abs(Math.sin(u*1.7+G.ph*.9))?null:du<.6?KY2:KY);
+    [-2.5,-.5,1.5].forEach(k=>{b.dot(x0+1.25,cy+k,KK,'x');b.dot(x0+1.75,cy+k,KK,'x');b.dot(x0+1.25,cy+k+.5,KK,'x')});
+  }],
+  hveil:['back',(b,s,G)=>b.ell(G.hcx+5.5,G.hcy+1,6.5,9,HW,'cape')],
+  hbangs:['mid',(b,s,G,c)=>{const x=G.hcx,y=G.hcy;[[-7.8,-5,-4.5,-5,-7.4,-1.6],[-4.5,-5,-1,-5,-2.4,-2]].forEach(t=>b.tri(x+t[0],y+t[1],x+t[2],y+t[3],x+t[4],y+t[5],H(c),'hair'))}],
+  hhat:['mid',(b,s,G)=>{const x=G.hcx,y=G.hcy-6.5;b.tri(x-8.5,y,x,y-9.5,x+8.5,y,HW,'hat');b.ell(x,y,13,2.2,HW,'hat');b.tri(x-7.5,y+.2,x-1.5,y-7.6,x+1.5,y+.2,HR,'hat');glyph(b,x-2.5,y-2.5,FIRE,WH)}],
+  hcloak:['front',(b,s,G)=>{const {cx,rx}=G;
+    dress(b,s,(r,far)=>isBody(r)?NO:r==='leg'?(far?dk(NO,.24):NO):r==='paw'?(far?NB2:NB):null);
+    neck(b,G,HW2);
+    drape(b,G,cx-6,cx+rx+6,1.6,(u,v,d,du)=>d<.4+1.6*Math.abs(Math.sin(u*1.15+.4))?HR:du<.6?HW2:HW);
+  }],
+  aura:['post',(b,s,G,c)=>auraFx(b,H(c),G.ph+1)],
   dhorns:['mid',(b,s,G)=>{const x=G.hcx,y=G.hcy;b.tri(x-3.4,y-7.6,x-2.4,y-13,x+.4,y-8,[230,218,198],'hat')}],
   fangs:['front',(b,s,G)=>b.rect(G.hcx-4,G.hcy+5,1,1.5,WH,'x')],
   qmark:['post',(b,s,G)=>{[".##.","#..#","...#","..#.","..#.","....","..#."].forEach((row,j)=>{for(let i=0;i<4;i++)if(row[i]==='#')b.set(G.hcx+10+i,G.hcy-17+j,[200,120,90],'x')})}],

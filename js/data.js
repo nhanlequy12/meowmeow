@@ -102,9 +102,10 @@ const BREEDS=[
 const V=(id,n,r,g,o,cos,xt,d,fav)=>Object.assign({id,n,r,g,cos,xt,d,fav,pat:'solid'},o);
 const VARIANTS=[
  // --- Anime ---
- V('v_naruto','Mèo Naruto',4,'anime',{c:ORG,c2:DORG,w:1},[['spikes','#f5cf3a'],['headband','#3d4f8f',1],['marks'],['suit','#f08a2a'],['collar','#3d4f8f']],'v_naruto','Hét “dattebayo” mỗi khi thấy bát mì.','chicken'),
+ // Naruto và Goku (5★): trang phục nằm ở từng "dạng" trong COATS (gkBase, nrBase…), xem FORMS bên dưới
+ V('v_naruto','Mèo Naruto',5,'anime',{c:CRM,c2:CRM,eye:'#3d8fe8',noRare:1},[],'v_naruto','Ninja làng Lá tóc vàng. Hét “dattebayo” mỗi khi thấy bát mì ramen.','chicken'),
  V('v_luffy','Mèo Luffy',4,'anime',{c:CRM,c2:CRM,w:1},[['haircap','#3a3448',12,1],['strawhat'],['scar','under'],['suit','#e0483c',26],['belt','#f2d04a',33]],'v_luffy','Sẽ trở thành Vua Mèo Hải Tặc. Trước hết phải ăn đã.','chicken'),
- V('v_goku','Mèo Goku',4,'anime',{c:CRM,c2:CRM},[['spikes','#3a3448'],['suit','#f08a2a'],['belt','#3d5fc0',31],['emblem','#ffffff']],'v_goku','Càng đói càng mạnh, ăn xong lại càng mạnh.','chicken'),
+ V('v_goku','Mèo Goku',5,'anime',{c:CRM,c2:CRM,eye:'#3a3448',noRare:1},[],'v_goku','Võ phục cam, vòng hào quang trên đầu, cưỡi Cân Đẩu Vân. Càng đói càng mạnh, ăn xong lại càng mạnh.','chicken'),
  V('v_tanjiro','Mèo Tanjiro',4,'anime',{c:CRM,c2:CRM,eye:'#b0303a'},[['haircap','#7a2a2e',12,1],['scar','tanjiro'],['earrings'],['checker','#3fa06a','#3a3448']],'v_tanjiro','Ngửi được mùi cá khô từ đầu ngõ.','salmon'),
  V('v_nezuko','Mèo Nezuko',4,'anime',{c:WHT,c2:WHT,eye:'#f59ab5'},[['longhair','#3a3448',13,12,22],['haircap','#3a3448',11,1],['mr',21,8,4,2,'#f59ab5'],['bamboo'],['suit','#f7b3c6'],['belt','#c0392b',30]],'v_nezuko','Ngậm ống tre, thích chui hộp ngủ cả ngày.','churu'),
  V('v_thunder','Mèo Zenitsu',5,'anime',{c:CRM,c2:CRM,closed:1},[['sword'],['haircap','#f5cf3a',12,1],['tripat','#f5cf3a','#f08a2a'],['sparks','#f2c230']],'v_thunder','Nhát gan khi thức, nhưng ngủ gật là ra đòn nhanh như chớp.','chicken'),
@@ -321,6 +322,14 @@ const HAIRLESS=['sphynx','peterbald','donskoy','bambino','dwelf'];
 /* ============ MÀU LÔNG ============ */
 // u: màu ít gặp hơn trong giống (tỉ lệ ra thấp). f: tỉ lệ ra mèo cái của riêng màu đó.
 const COATS={
+ // Dạng của mèo trang phục 5★ (Goku, Naruto): mỗi dạng là một "màu lông" có bộ trang phục riêng (cos).
+ // form:1 = dạng hiếm (sao cầu vồng, có trait riêng tr); aura = màu luồng khí bốc quanh thân khi ở trong phòng. gkSSJ là dạng biến hình tạm thời, không rơi từ gacha.
+ gkBase:{n:'Dạng thường',c:CRM,eye:'#3a3448',cos:[['gears','#35303f'],['ggi'],['halo']]},
+ gkGod:{n:'Siêu Saiyan God (đỏ)',c:CRM,eye:'#e8324a',gem:1,aura:'#ff6a7a',cos:[['gears','#e8405e'],['ggi',1],['aura','#ff6a7a'],['halo']],u:1,rw:.12,form:1,tr:'f_god'},
+ gkSSJ:{n:'Siêu Saiyan',c:CRM,eye:'#2fc4a0',gem:1,aura:'#ffd83a',cos:[['gears','#ffd83a'],['ggi'],['aura','#ffd83a'],['halo']]},
+ nrBase:{n:'Ninja làng Lá',c:CRM,eye:'#3d8fe8',cos:[['spk','#f7cf3a','naruto'],['nbandT'],['nband'],['hcap','#f7cf3a','naruto'],['marks'],['nsuit']]},
+ nrKurama:{n:'Tiên nhân Cửu Vĩ',c:'#ffbe3a',eye:'#ff9a28',aura:'#ffd83a',cos:[['kcape'],['spk','#ffe27a','kurama'],['hcap','#ffec9c','kurama'],['kface'],['kcloak'],['aura','#ffd83a']],u:1,rw:.12,form:1,tr:'f_kurama'},
+ nrHokage:{n:'Hokage Đệ Thất',c:CRM,eye:'#3d8fe8',cos:[['hcape'],['hveil'],['hbangs','#f7cf3a'],['hhat'],['marks'],['hcloak']],u:1,rw:.12,form:1,tr:'f_hokage'},
  kmIce:{n:'Trắng, mắt xanh băng & hổ phách',c:WHT,eye:'#8fdcff',eye2:'#ffab2e'},kmSapphire:{n:'Trắng, mắt sapphire & vàng kim',c:WHT,eye:'#2f66ee',eye2:'#ffd23a',u:1,rw:.12,jewel:1},
  kmEmerald:{n:'Trắng, mắt ngọc lục bảo & hổ phách',c:WHT,eye:'#1fc47c',eye2:'#ff962e',u:1,rw:.12,jewel:1},kmAmethyst:{n:'Trắng, mắt thạch anh tím & xanh băng',c:WHT,eye:'#a65cf2',eye2:'#8fdcff',u:1,rw:.12,jewel:1},kmRuby:{n:'Trắng, mắt hồng ngọc & bạc',c:WHT,eye:'#ee3050',eye2:'#c2cee0',u:1,rw:.12,jewel:1},
  white:{n:'Trắng',c:WHT},whiteY:{n:'Trắng mắt vàng',c:WHT,eye:eY},oddWhite:{n:'Trắng mắt hai màu',c:WHT,eye:eB,eye2:eY,u:1},
@@ -372,6 +381,8 @@ const BREED_COATS={
  toybob:'sealPt bluePt lynxPt',khaomanee:'kmIce kmSapphire kmEmerald kmAmethyst kmRuby',lykoi:'lyBlack lyBlue',savannah:'spotGold spotSilver black smoke',sokoke:'tigerBrown tigerDark',suphalak:'copper copperDark',
  lambkin:'white cream cow redTabby',bambino:'hlPink hlCream hlPied',kinkalow:'brownTabby black calico cream',skookum:'redTabbyW cow blue',dwelf:'hlPink hlGray hlBlack',genetta:'spotBrown spotSilver',
 };
+const FORMS={v_goku:'gkBase gkGod',v_naruto:'nrBase nrKurama nrHokage'};
+VARIANTS.forEach(v=>{if(FORMS[v.id])v.coats=FORMS[v.id].split(' ')});
 BREEDS.forEach(b=>{b.coats=BREED_COATS[b.id].split(' ');if(SHORT_LEGS.includes(b.id))b.short=1;if(HAIRLESS.includes(b.id)){b.hl=1;b.noRare=1}if(b.id==='lykoi')b.noRare=1});
 
 /* ============ MÀU HIẾM (luôn 4★, áp lên bất kỳ giống nào) ============ */
@@ -399,17 +410,21 @@ Object.assign(TRAITS,{
  c_mcalico:{n:'Vạn con có một',k:'x',d:'Tam thể đực cực hiếm ngoài đời. +12% cơ hội nhặt vé gacha.',e:{ticket:.12}},
  c_nacre:{n:'Ánh xà cừ',k:'x',d:'Màu hiếm. +6 độ vui cho bé và cho mèo khác cùng phòng.',e:{self:6,aura:6}},
  c_sheen:{n:'Ánh xanh dưới đèn',k:'x',d:'Màu hiếm. Viễn chinh nhanh hơn 10%.',e:{speed:.10}},
+ f_god:{n:'Thần khí Saiyan',k:'x',d:'Dạng hiếm Siêu Saiyan God. +20% xu mọi chuyến viễn chinh.',e:{coin:.20}},
+ f_kurama:{n:'Chakra Cửu Vĩ',k:'x',d:'Dạng hiếm Tiên nhân Cửu Vĩ. Viễn chinh nhanh hơn 15%, mèo khác cùng phòng +8 độ vui.',e:{speed:.15,aura:8}},
+ f_hokage:{n:'Hokage Đệ Thất',k:'x',d:'Dạng hiếm Hokage. +10% xu, và mọi mèo khác cùng phòng +5% xu viễn chinh.',e:{coin:.10,auraCoin:.05}},
 });
 GROUPS.push(['rare','Màu hiếm']);
 // "ngoại hình" của một bé: giống + màu lông. Khóa dạng 'giống~màu'.
-const LOOKS={x_demon:{id:'x_demon',n:'Mèo quỷ',c:'#4a3a66',c2:'#4a3a66',pat:'solid',eye:'#ff3030',cos:[['dhorns'],['fangs']]}}; // mèo quỷ chỉ dùng trong intro của Zenitsu
+const LOOKS={x_demon:{id:'x_demon',n:'Mèo quỷ',c:'#4a3a66',c2:'#4a3a66',pat:'solid',eye:'#ff3030',cos:[['dhorns'],['fangs']]}, // mèo quỷ chỉ dùng trong intro của Zenitsu
+ x_rogue:{id:'x_rogue',n:'Ninja phản bội',c:'#8a8498',c2:'#8a8498',pat:'solid',eye:'#ff4040',cos:[['cape','#26222e'],['headband','#3a3448',1],['mr',14,11.5,8,.5,'#4a4460'],['suit','#26222e',24,1],['aclouds'],['fangs']]}}; // kẻ địch trong intro của Naruto
 function look(key){
   if(LOOKS[key])return LOOKS[key];
   if(key.indexOf('!')>0){const b=look(key.split('!')[0]);return LOOKS[key]=Object.assign({},b,{cos:b.cos.filter(p=>p[0]!=='blindfold'),eye:'#38b6ff',gem:1,lash:1})} // dáng "kéo băng mắt"
   const [id,ct]=key.split('~'),sp=BREEDS.concat(VARIANTS).find(s=>s.id===id);
   if(!sp.coats)return LOOKS[key]=sp;
   const coat=ALLCOAT[ct]||COATS[sp.coats[0]];
-  const L=Object.assign({},sp,{c2:undefined,c3:undefined,w:0,mit:0,pat:'solid',eye2:undefined},coat,{eye:coat.eye||sp.eye,c2:coat.c2||coat.c,rare:RARE[ct]?1:0});
+  const L=Object.assign({},sp,{c2:undefined,c3:undefined,w:0,mit:0,pat:'solid',eye2:undefined},coat,{eye:coat.eye||sp.eye,c2:coat.c2||coat.c,rare:RARE[ct]||coat.form?1:0});
   if(sp.odd&&!coat.eye2){L.eye=sp.odd[0];L.eye2=sp.odd[1]} // giống luôn có hai mắt hai màu (Khao Manee), kể cả khi mang màu lông hiếm
   return LOOKS[key]=L;
 }
@@ -504,7 +519,7 @@ FURNS.forEach(f=>FURN[f.id]=f);
 const HAPPY_CAP=35; // tổng độ vui từ nội thất trong một phòng không vượt quá mức này
 
 /* ============ CÂU THOẠI CỦA MÈO 5★ (hiện ở thẻ giới thiệu sau intro) ============ */
-const QUOTE={v_thunder:'Zzz… Thần tốc… nhất thức…',v_gojo:'Yên tâm đi. Vì ta là mạnh nhất mà.',v_harry:'Tôi long trọng thề rằng tôi sắp làm đổ cốc nước.',v_vader:'Hãy gia nhập mặt tối. Ở đây có pate.',
+const QUOTE={v_goku:'Chào! Tớ là Goku! Nhà mình còn gì ăn không?',v_naruto:'Tớ sẽ trở thành Hokage, dattebayo!',v_thunder:'Zzz… Thần tốc… nhất thức…',v_gojo:'Yên tâm đi. Vì ta là mạnh nhất mà.',v_harry:'Tôi long trọng thề rằng tôi sắp làm đổ cốc nước.',v_vader:'Hãy gia nhập mặt tối. Ở đây có pate.',
  v_nyan:'Nya nya nya nya nya nya nya~',v_maneki:'Vẫy một cái, tiền vô như nước.',v_astro:'Một bước nhỏ của mèo, một cú nhảy dài của loài mèo.',v_royal:'Ngươi được phép gãi cằm ta.',
  khaomanee:'Một mắt nhìn trời xanh, một mắt nhìn vàng ròng.',lykoi:'Awoooo… à nhầm, meo.',savannah:'Hai mét à? Nhảy khởi động thôi.',sokoke:'Rừng dạy ta đi không một tiếng động.',suphalak:'Hiếm như đồng đỏ, quý hơn vàng.'};
 BREEDS.concat(VARIANTS).forEach(s=>{if(QUOTE[s.id])s.q=QUOTE[s.id]});

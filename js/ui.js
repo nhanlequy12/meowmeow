@@ -25,7 +25,7 @@ const furnCv=(id,v,k)=>{const f=fk(k||BS),key=id+'|'+(v||'')+'|'+f;return FC[key
 // ảnh trong giao diện: phóng đúng bội số nguyên rồi hiển thị 1:1 với điểm ảnh màn hình
 const kk=k=>2*fk(k*DPR());
 const catSrc=(sp,k)=>{const n=kk(k),key=sp+'|'+n;return CI[key]||(CI[key]=catCv(sp,'sit',n).toDataURL())};
-const catTag=(sp,k)=>{const n=kk(k),d=DPR();return '<img class="px'+(sp.indexOf('~r_')>0?' rareglow':'')+'" width="'+36*n/d+'" height="'+40*n/d+'" src="'+catSrc(sp,k)+'">'};
+const catTag=(sp,k)=>{const n=kk(k),d=DPR();return '<img class="px'+(sp.indexOf('~r_')>0||(COATS[sp.split('~')[1]]||{}).form?' rareglow':'')+'" width="'+36*n/d+'" height="'+40*n/d+'" src="'+catSrc(sp,k)+'">'};
 function furnTag(id,v,mw,mh){
   const d=DPR(),sz=id==='gift'?[28,28]:[FURN[id].w,FURN[id].h],fit=Math.min((mw||48)*d/sz[0],(mh||40)*d/sz[1]),n=2*Math.max(1,Math.floor(fit/2)),sh=Math.min(n,Math.max(1,Math.floor(fit)));
   const key=id+'|'+(v||'')+'|'+n,src=FI[key]||(FI[key]=furnCv(id,v,n).toDataURL());
@@ -35,14 +35,16 @@ const sexIc=c=>c.sex==='f'?'<span class="f">♀</span>':'<span class="m">♂</sp
 // sao theo độ hiếm: 1★ trắng, 2★ xanh lục, 3★ xanh biển, 4★ tím, 5★ vàng lấp lánh; rb = cầu vồng 7 màu lấp lánh (màu hiếm, ưu tiên hơn số sao).
 // --d là độ trễ âm theo đồng hồ thật, để hiệu ứng không chạy lại từ đầu mỗi lần giao diện vẽ lại (mọi chu kỳ đều là ước của 6 giây)
 const starsOf=(n,rb)=>'<span class="stars '+(rb?'rb':'s'+n)+'"'+(rb||n===5?' style="--d:-'+(Date.now()%6000)+'ms"':'')+'>'+'★'.repeat(n)+'</span>';
-const isRb=c=>isRare(c)||!!(coatOf(c)||{}).jewel;   // màu lông hiếm hoặc cặp mắt quý hiếm của Khao Manee
+const isRb=c=>{const ct=coatOf(c)||{};return isRare(c)||!!ct.jewel||!!ct.form};   // màu lông hiếm, cặp mắt quý hiếm của Khao Manee, hoặc dạng hiếm của Goku và Naruto
+const formOf=c=>c&&(coatOf(c)||{}).form;                 // bé đang mang dạng hiếm (Siêu Saiyan God, Tiên nhân Cửu Vĩ, Hokage)
+const coatLbl=c=>SP[c.sp].xt?'Dạng':'Màu lông';          // mèo trang phục có "dạng", giống thật có "màu lông"
 const starsC=c=>starsOf(c.star,isRb(c));
 const big=c=>c.sp==='v_gojo'?'v_gojo!open':lk(c);  // ảnh chân dung lớn: Gojo kéo băng mắt để lộ đôi mắt
 const tagOf=(t,extra)=>'<span class="tag '+TRAITS[t].k+'" tabindex="0" data-tip="'+esc(TRAITS[t].d)+'">'+TRAITS[t].n+(extra?' · '+extra:'')+'</span>';
-const kind=c=>{const ct=coatOf(c),st=c.born?ageStage(c):1;return SP[c.sp].n+(ct?' · '+(isRare(c)?'✨ ':ct.jewel?'💎 ':ct.u?'✦ ':'')+ct.n:'')+(st===0?' · 🍼 mèo con':st===2?' · 🧓 mèo già':'')};
+const kind=c=>{const ct=coatOf(c),st=c.born?ageStage(c):1;return SP[c.sp].n+(ct?' · '+(isRare(c)||ct.form?'✨ ':ct.jewel?'💎 ':ct.u?'✦ ':'')+ct.n:'')+(st===0?' · 🍼 mèo con':st===2?' · 🧓 mèo già':'')};
 const ageTxt=c=>{const st=ageStage(c),n=Math.floor(ageDays(c));return AGE_IC[st]+' '+AGE_N[st]+' · '+(n<1?'chưa đầy 1 ngày tuổi':n+' ngày tuổi')};
 const AGE_TIP=['Mèo con (dưới '+AGE_ADULT+' ngày): hiếu động, chạy nhảy và trèo nhiều hơn.','Trưởng thành: sinh hoạt bình thường. Từ '+AGE_OLD+' ngày tuổi sẽ thành mèo già.','Mèo già (từ '+AGE_OLD+' ngày): đi chậm, hay ngủ, ít trèo và không lên tầng cao.'];
-const coatTags=c=>{const ct=coatOf(c);return isRare(c)?'<span class="tag x" tabindex="0" data-tip="Màu lông hiếm: luôn 4★ và có một trait riêng của màu.">✨ Màu hiếm</span>':ct&&ct.jewel?'<span class="tag x" tabindex="0" data-tip="Cặp màu mắt quý hiếm của Khao Manee: mỗi cặp chỉ xuất hiện ở khoảng 8% số bé Khao Manee.">💎 Mắt quý hiếm</span>':ct&&ct.u?'<span class="tag g" tabindex="0" data-tip="Màu ít gặp trong giống này, tỉ lệ ra thấp hơn các màu khác.">✦ Màu ít gặp</span>':''};
+const coatTags=c=>{const ct=coatOf(c);return isRare(c)?'<span class="tag x" tabindex="0" data-tip="Màu lông hiếm: luôn 4★ và có một trait riêng của màu.">✨ Màu hiếm</span>':ct&&ct.form?'<span class="tag x" tabindex="0" data-tip="Dạng hiếm: chỉ khoảng 10% số bé '+SP[c.sp].n+' mang dạng này. Sao chuyển bảy màu và có một trait riêng của dạng.">✨ Dạng hiếm</span>':ct&&ct.jewel?'<span class="tag x" tabindex="0" data-tip="Cặp màu mắt quý hiếm của Khao Manee: mỗi cặp chỉ xuất hiện ở khoảng 8% số bé Khao Manee.">💎 Mắt quý hiếm</span>':ct&&ct.u?'<span class="tag g" tabindex="0" data-tip="Màu ít gặp trong giống này, tỉ lệ ra thấp hơn các màu khác.">✦ Màu ít gặp</span>':''};
 const stat=(ic,v,col)=>'<span class="stat">'+ic+'<span class="bar"><i style="width:'+Math.round(v)+'%;background:'+col+'"></i></span></span>';
 const stats=c=>stat('🍗',c.full,c.full<20?'#ff6b6b':'#ffb347')+stat('⚡',c.en,'#7fb7ff')+stat('😊',c.hp,'#5fd08a');
 /* --- tooltip (data-tip): một khối nổi gắn thẳng vào body nên không bị khung cuộn của thẻ gacha hay hộp thoại cắt mất, không sinh thanh cuộn.
@@ -120,6 +122,7 @@ function drawParts(g){
 const on=(r,run)=>Math.random()<r*FDT*(run?2.2:1);
 function zig(bd,len,n,amp){const pts=[];let x=0,y=0;for(let i=0;i<n;i++){x+=bd*len/n;y+=rnd(-amp,amp);pts.push([x,y])}return pts}
 const K={
+  cloud:(e,p,bx,bd,run,gy,o)=>{if(on(run?18:9))rp(bx-bd*5+rnd(-2,2),p.y-rnd(0,4),pick(o.c),{vx:bd*rnd(5,14),vy:rnd(-3,3),life:rnd(.35,.7),sz:run?3:2,a:.85})}, // mây vàng tan dần sau Cân Đẩu Vân
   dust:(e,p,bx,bd,run,gy,o)=>{if(on(run?12:1.2))rp(bx-bd*5,gy-1,o.c||'#a58f76',{vx:bd*rnd(4,14),vy:-rnd(4,12),g:24,life:rnd(.25,.45),sz:run?2:1,a:.7})},
   sparkle:(e,p,bx,bd,run,gy,o)=>{if(on(o.r||4))rp(bx+rnd(-4,4),p.y-rnd(6,26),pick(o.c),{sh:'star',life:rnd(.4,.7),vy:-5})},
   bolt:(e,p,bx,bd,run,gy,o)=>{
@@ -144,6 +147,8 @@ const K={
 const TRAIL={
   // 5★
   v_thunder:[['bolt',{c:'#ffd83a'}]],
+  v_goku:[['cloud',{c:['#ffe07a','#fff3b0','#ffd24a']}]],
+  v_naruto:[['petals',{c:['#6fbf6f','#3f9a55','#b5e08a']}],['lines',{c:['#f08a2a','#ffd83a']}]],
   v_nyan:[['rainbow']],
   v_maneki:[['coins']],
   v_harry:[['magic',{c:['#ffe9a0','#ffffff','#f2c230']}]],
@@ -157,9 +162,7 @@ const TRAIL={
   sokoke:[['petals',{c:['#6fd26f','#3f9a55','#b5e08a']}]],
   suphalak:[['embers',{c:['#ffb060','#e88a3a']}],['sparkle',{c:['#ffd89a']}]],
   // mèo trang phục 4★
-  v_naruto:[['petals',{c:['#6fbf6f','#3f9a55']}],['lines',{c:['#f08a2a']}]],
   v_luffy:[['water',{c:['#8cc4ff','#d6ecff']}]],
-  v_goku:[['flame',{c:['#ffd83a','#ffb347','#fff3b0']}]],
   v_tanjiro:[['water',{c:['#5a9ae0','#bfe2ff']}],['lines',{c:['#8cc4ff']}]],
   v_nezuko:[['flame',{c:['#f59ab5','#ff6a8a']}]],
   v_anya:[['glyph',{c:['#f59ab5'],g:'heart'}],['sparkle',{c:['#ffe9a0'],r:3}]],
@@ -200,9 +203,39 @@ function trail(e,c,p){
   const bd=e.flip?-1:1,run=e.state!=='walk',gy=p.gy||p.y;
   list.forEach(t=>K[t[0]](e,p,p.x+bd*11,bd,run,gy,t[1]||{}));
 }
+/* --- Goku và Naruto trong phòng ---
+   Goku: khi di chuyển thì đứng trên Cân Đẩu Vân (entPos trả cloud:1); thỉnh thoảng hóa Siêu Saiyan trong 60 giây: hai tai chuyển vàng, hào quang vàng bốc lên (e.fm = {key: ngoại hình tạm, t: giây còn lại, aura}).
+   Naruto: thỉnh thoảng phân thân thành ba trong 60 giây. Phân thân là ent có clone:1, cùng uid với bản thể (bản thể luôn đứng trước trong mảng ents nên các chỗ tìm theo uid vẫn ra bản thể).
+   Phân thân tan thành khói khi hết giờ, khi bị chạm, hoặc khi cho phòng ăn. e.cd là số giây chờ trước lần diễn kế tiếp. */
+const SSJK='v_goku~gkSSJ',SMOKE=['#ffffff','#eceef4','#cfd3de'],NIM={};
+function nimbusCv(f){
+  f=f||fk(BS);if(NIM[f])return NIM[f];
+  const b=new Art.Buf(30,11),Y=[255,214,84],Y2=[255,240,160];
+  b.ell(15,7.2,11.5,2.8,Y,'c');b.ell(7.5,5.8,4.6,3.3,Y,'c');b.ell(15,4.9,6.2,4.1,Y,'c');b.ell(22,5.9,4.6,3.2,Y,'c');b.ell(26.8,7.6,2.4,1.8,Y,'c');
+  b.ell(6.6,4.7,2.2,1.1,Y2,'x');b.ell(14,3.4,3.2,1.4,Y2,'x');b.ell(21.4,4.8,2.2,1,Y2,'x');
+  b.pastel(.06);b.shade(.16);b.outline([152,98,64]);
+  return NIM[f]=bufCanvas(b,f);
+}
+function poof(x,y){for(let i=0;i<14;i++)rp(x+rnd(-9,9),y-rnd(2,30),pick(SMOKE),{vx:rnd(-16,16),vy:-rnd(4,20),life:rnd(.35,.75),sz:ch(.5)?3:2,a:.9})}
+function dispel(uid){ents.forEach(o=>{if(o.clone&&!o.dead&&(uid==null||o.uid===uid)){const p=entPos(o);poof(p.x,p.y);o.dead=1}})}
+function spawnClones(e){
+  const c=entCat(e);if(!c)return;
+  [-1,1].forEach(k=>{const x=clamp(e.x+k*rnd(15,24),16,WORLD_W-16),y=clamp(e.y+rnd(-3,3),FLOOR_MIN,FLOOR_MAX);
+    ents.push({uid:e.uid,clone:1,life:60,x,y,tx:x,ty:y,state:'idle',t:rnd(.4,1.4),flip:k>0,goal:null,emo:null,emoT:0,wt:rnd(0,5),left:0,eatT:(c.eat&&c.eat.t)||0});poof(x,y)});
+  e.cd=60+rnd(60,150);
+}
 const orbit=(p,r,n,cols,sp)=>{const t=performance.now()/1000;for(let i=0;i<n;i++){const a=t*sp+i*6.283/n;rp(p.x+Math.cos(a)*r,p.y-18+Math.sin(a)*r*.6,pick(cols),{life:.25})}};
 // S5: hành động đặc trưng của mèo 5★, thỉnh thoảng tự diễn. pose: tư thế, hover: độ lơ lửng theo tiến độ k (0..1), fx: hạt mỗi khung hình
 const S5={
+  v_goku:{n:'gồng mình hóa Siêu Saiyan trong 1 phút',dur:2.6,pose:'sit',look:(k,e)=>k>.6&&!formOf(entCat(e))?SSJK:undefined,start(e){e.sgB=0},
+    draw(g,e,p,k){g.fillStyle=(formOf(entCat(e))?'rgba(255,90,110,':'rgba(255,214,70,')+(.4*Math.min(1,k/.6)).toFixed(3)+')';g.beginPath();g.ellipse(p.x,p.y-17,15+6*k,22+8*k,0,0,6.283);g.fill()},
+    fx:(e,p,k)=>{const col=formOf(entCat(e))?'#ff6a7a':'#ffd83a';
+      if(k<.6){if(on(34)){const a=rnd(0,6.283),r=rnd(18,30);rp(p.x+Math.cos(a)*r,p.y-17+Math.sin(a)*r*.8,pick([col,'#ffffff']),{vx:-Math.cos(a)*r*2.8,vy:-Math.sin(a)*r*2.2,life:.32})}
+        if(on(12))rp(p.x+rnd(-18,18),e.y-1,'#a58f76',{vy:-rnd(14,30),life:.6,sz:2})}
+      else{if(!e.sgB){e.sgB=1;for(let i=0;i<26;i++){const a=rnd(0,6.283),s=rnd(30,80);rp(p.x,p.y-17,pick([col,'#ffffff']),{vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rnd(.3,.5),sz:2})}rp(p.x,p.y-17,col,{sh:'ring',r:4,vr:60,life:.5})}
+        if(on(30))rp(p.x+rnd(-12,12),p.y-rnd(0,30),pick([col,'#fff7d0']),{vy:-rnd(24,50),life:rnd(.3,.55),sz:ch(.4)?2:1})}},
+    end(e){const rf=formOf(entCat(e));e.fm={key:rf?null:SSJK,t:60,aura:rf?'#ff6a7a':'#ffd83a'}}},
+  v_naruto:{n:'kết ấn phân thân thành ba trong 1 phút',dur:1.5,pose:'sit',fx:(e,p)=>{if(on(18))rp(p.x+rnd(-14,14),p.y-rnd(2,30),pick(SMOKE),{vx:rnd(-8,8),vy:-rnd(4,16),life:rnd(.3,.6),sz:ch(.5)?3:2,a:.8})},end(e){spawnClones(e)}},
   v_nyan:{n:'bay lơ lửng kéo cầu vồng',dur:3.4,pose:k=>'run'+Math.floor(k*14)%8,hover:k=>9+Math.sin(k*16)*2,glide:30,fx:(e,p)=>K.rainbow(e,p,p.x+(e.flip?-11:11),e.flip?-1:1,true)},
   v_maneki:{n:'vẫy tay rơi xu',dur:3,pose:'sit',start(){S.coins+=2},hover:k=>Math.abs(Math.sin(k*18))*2,fx:(e,p)=>{if(on(7))rp(p.x+10,p.y-28,'#f2c230',{sh:'coin',vx:rnd(-16,16),vy:-36,g:120,gy:e.y-1,life:1.1});if(on(5))rp(p.x+rnd(-12,12),p.y-rnd(8,34),'#ffe9a0',{sh:'star',life:.5})}},
   v_harry:{n:'vung đũa phép',dur:2.6,pose:'sit',fx:(e,p)=>{if(on(40))rp(p.x+14,p.y-24,pick(['#ffe9a0','#ffffff','#f2c230']),{vx:rnd(8,46),vy:-rnd(8,46),life:.5});if(on(10))rp(p.x+14+rnd(4,26),p.y-24-rnd(4,26),'#ffe9a0',{sh:'star',life:.5})}},
@@ -284,7 +317,7 @@ function climbJump(e,it,dir){
   if(Math.abs(b.x-a.x)>.5)e.flip=b.x>a.x;e.state='jump';e.emo=null;
 }
 pickBowl=(c,bs)=>{const e=ents.find(e=>e.uid===c.uid);return e?bs.slice().sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y))[0]:bs[0]};
-function byeEnt(c){const e=ents.find(e=>e.uid===c.uid);if(!e)return;e.ghost=c;e.state='bye';e.t=1.7;e.emo='heart';e.goal=null;if(fol&&fol.uid===c.uid)unfollow(true)}
+function byeEnt(c){dispel(c.uid);const e=ents.find(e=>e.uid===c.uid);if(!e)return;e.ghost=c;e.state='bye';e.t=1.7;e.emo='heart';e.goal=null;if(fol&&fol.uid===c.uid)unfollow(true)}
 const ACTIVE=['fast','zoomies','playful','hunter','climber','v_pika','v_eleven','v_hero','v_nyan','v_spider','v_naruto','v_goku','v_thunder'];
 const LAZY=['sleeper','lazy','gentle','glutton','v_garfield','v_totoro','v_nezuko','v_frieren','v_wednesday'];
 const vigor=c=>c.traits.some(t=>ACTIVE.includes(t))?1:c.traits.some(t=>LAZY.includes(t))?-1:0;
@@ -325,7 +358,7 @@ function choose(e){
     const b=bowlsIn(cur).slice().sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y))[0];
     if(b){e.tx=clamp(b.x+rnd(-14,14),14,WORLD_W-14);e.ty=clamp(b.y+rnd(0,5),FLOOR_MIN,FLOOR_MAX);e.state='walk';e.pre=.2;e.goal={wait:1};return}
   }
-  if(c.star===5&&S5[c.sp]&&ch(.2)){const sg=S5[c.sp];e.state='sig';e.t=sg.dur;if(sg.start)sg.start(e);return} // mèo 5★ thỉnh thoảng diễn hành động riêng
+  if(c.star===5&&S5[c.sp]&&!e.clone&&!e.fm&&!(e.cd>0)&&ch(.2)){const sg=S5[c.sp];e.state='sig';e.t=sg.dur;if(sg.start)sg.start(e);return} // mèo 5★ thỉnh thoảng diễn hành động riêng
   let a=(k<0?.32:k>0?.06:.14)+(ag===2?.12:ag===0?-.03:0); // mèo già ngủ nhiều hơn
   if(r<a||c.en<25){e.state='nap';e.t=rnd(6,12);e.emo='z';return}
   a+=.14; if(r<a){e.state='groom';e.t=rnd(3,6);return}
@@ -369,7 +402,11 @@ function stepEnt(e,dt){
   if(e.post>0)e.post-=dt;
   e.wt+=dt;
   const c=entCat(e); if(!c)return;
+  if(e.cd>0)e.cd-=dt;
+  if(e.clone&&(e.life-=dt)<=0){const q=entPos(e);poof(q.x,q.y);e.dead=1;return}                    // phân thân hết giờ thì tan thành khói
+  if(e.fm&&(e.fm.t-=dt)<=0){e.fm=null;e.cd=rnd(90,180);for(let i=0;i<12;i++)rp(e.x+rnd(-11,11),e.y-rnd(2,32),'#fff7d0',{vy:-rnd(6,16),life:rnd(.3,.6)})} // hết 1 phút biến hình
   if(c.eat&&c.eat.t>(e.eatT||0)){ // vừa được chia một suất: chạy ra đúng cái bát đó
+    if(e.clone){const q=entPos(e);poof(q.x,q.y);e.dead=1;return}                                     // được cho ăn: các phân thân biến mất, chỉ bản thể ra bát
     e.eatT=c.eat.t;const b=S.items.find(i=>i.iid===c.eat.iid&&i.room===cur);
     if(b&&now()-c.eat.t<4000&&!e.ghost&&e.state!=='jump'&&!(e.state==='use'&&e.goal&&e.goal.at>=0)){e.goal={bowl:b.iid};e.tx=clamp(b.x+rnd(-13,13),14,WORLD_W-14);e.ty=clamp(b.y+rnd(1,5),FLOOR_MIN,FLOOR_MAX);e.state='run';e.pre=0;e.left=0;e.emo=null}
   }
@@ -427,12 +464,13 @@ function entPos(e){
     else{const u=FURN[it.fid].use;if(!u.floor){const q=usePos(it);return {x:q.x,y:q.y,sy:it.y+(u.front?.5:-.5),pose:u.sleep?'sleep'+(Math.floor(e.wt*.8)%2):idlePose(e)}}}
   }
   if(e.state==='bye')return {x:e.x,y:e.y-Math.abs(Math.sin(e.wt*9))*3,gy:e.y,sy:e.y,pose:'sitt'};
-  if(e.state==='sig'){const c5=entCat(e),sg=c5&&S5[c5.sp];if(sg){const k=1-clamp(e.t/sg.dur,0,1);return {x:e.x,y:e.y-(sg.hover?sg.hover(k):0),gy:sg.hover?e.y:0,sy:e.y,pose:typeof sg.pose==='function'?sg.pose(k):sg.pose,look:sg.look,k,sg}}}
+  if(e.state==='sig'){const c5=entCat(e),sg=c5&&S5[c5.sp];if(sg){const k=1-clamp(e.t/sg.dur,0,1);return {x:e.x,y:e.y-(sg.hover?sg.hover(k):0),gy:sg.hover?e.y:0,sy:e.y,pose:typeof sg.pose==='function'?sg.pose(k):sg.pose,look:typeof sg.look==='function'?sg.look(k,e):sg.look,k,sg}}}
   const cc=entCat(e),lo=cc&&SP[cc.sp].short,moving=e.state==='walk'||e.state==='run';
   // một chu kỳ bước đi được đúng 10 ô (chân ngắn: 6 ô) nên bàn chân không trượt trên sàn
   // đi 12 khung và chạy 8 khung mỗi chu kỳ, tính theo quãng đường nên chân khớp với sàn ở mọi tốc độ và mọi máy
   const pose=(moving&&e.pre>0)||(e.post>0&&(e.state==='idle'||e.state==='use'))?'stand':e.state==='nap'?'sleep'+(Math.floor(e.wt*.8)%2):e.state==='groom'?'groom'+Math.floor(e.wt*5)%4
     :e.state==='walk'?'walk'+Math.floor((e.wd||0)/(lo?6:10)*12)%12:e.state==='run'?'run'+Math.floor((e.wd||0)/(lo?13:19)*8)%8:idlePose(e);
+  if(cc&&cc.sp==='v_goku'&&moving&&!(e.pre>0))return {x:e.x,y:e.y-9+Math.sin(e.wt*5)*.8,gy:e.y,sy:e.y,pose:'stand',cloud:1}; // Goku đứng trên Cân Đẩu Vân lướt đi
   return {x:e.x,y:e.y,sy:e.y,pose};
 }
 const EMO={z:["###","..#",".#.","#..","###"],heart:[".#.#.","#####","#####",".###.","..#.."],note:["..##","..#.","..#.","###.","###."],excl:["#","#","#",".","#"]};
@@ -504,24 +542,28 @@ function drawItem(i){
 function drawEnt(e,p){
   const c=entCat(e); if(!c)return;
   // sprite ngồi rộng 36 ô (tâm 18); sprite nhìn ngang rộng 50 ô, đầu quay trái (tâm 22). Đổi hướng bằng cách lật, không xoay.
-  const cv=catCv(p.look||lk(c),p.pose),w=cv.lw,ax=w===36?18:20;
+  const key=p.look||(e.fm&&e.fm.key)||lk(c),cv=catCv(key,p.pose),w=cv.lw,ax=w===36?18:20;
   if(p.sg&&p.sg.draw)p.sg.draw(RX,e,p,p.k);
   RX.fillStyle='rgba(70,42,28,.24)';RX.beginPath();RX.ellipse(p.x,(p.gy||p.y)-1,p.gy?9:(w===36?11:15),p.gy?2.2:3,0,0,6.283);RX.fill(); // bóng đổ dưới chân
-  const px=Math.round((p.x-(e.flip?w-ax:ax))*ZC)/ZC,py=Math.round((p.y-39)*ZC)/ZC,F=fol&&fol.uid===e.uid&&!e.ghost;
+  const px=Math.round((p.x-(e.flip?w-ax:ax))*ZC)/ZC,py=Math.round((p.y-39)*ZC)/ZC,F=fol&&fol.uid===e.uid&&!e.ghost&&!e.clone;
   if(F){const t=performance.now()/1000;RX.strokeStyle='rgba(255,236,150,'+(.55+.3*Math.sin(t*4))+')';RX.lineWidth=1;RX.beginPath();RX.ellipse(p.x,(p.gy||p.y)-1,16,4.5,0,0,6.283);RX.stroke();RX.shadowColor='rgba(255,244,170,.95)';RX.shadowBlur=ZC*2.5} // viền sáng quanh bé đang theo dõi
   if(e.flip){RX.save();RX.translate(px+w,py);RX.scale(-1,1);RX.drawImage(cv,0,0,w,40);RX.restore()}else RX.drawImage(cv,px,py,w,40);
   RX.shadowBlur=0;
+  if(p.cloud){const nc=nimbusCv(),nx=Math.round((p.x+(e.flip?-20:-10))*ZC)/ZC,ny=Math.round((p.y-5)*ZC)/ZC;   // đám mây vẽ đè lên bàn chân
+    if(e.flip){RX.save();RX.translate(nx+30,ny);RX.scale(-1,1);RX.drawImage(nc,0,0,30,11);RX.restore()}else RX.drawImage(nc,nx,ny,30,11)}
+  const au=(e.fm&&e.fm.aura)||look(key).aura;                                                          // luồng khí bốc lên quanh thân
+  if(au&&on(e.fm?22:11))rp(p.x+rnd(-11,11),p.y-rnd(0,30),pick([au,au,'#fff7d0']),{vy:-rnd(20,44),vx:rnd(-3,3),life:rnd(.3,.6),sz:ch(.4)?2:1});
   const t=performance.now()/1000,ex=Math.round(p.x),by=Math.round(py+Math.sin(t*3+ex));
   if(isRare(c)){const k=Math.floor(t*4+c.uid)%6,sx=ex+[-12,9,-4,13,-9,3][k],sy=Math.round(p.y)+[-30,-34,-20,-14,-8,-26][k];RX.fillStyle='#ffe07a';RX.fillRect(sx-1,sy,3,1);RX.fillRect(sx,sy-1,1,3);RX.fillStyle='#fff';RX.fillRect(sx,sy,1,1)} // màu hiếm lấp lánh nhẹ
   if((e.state==='walk'||e.state==='run'||(e.state==='jump'&&p.gy))&&!(e.pre>0))trail(e,c,p); // vệt riêng khi di chuyển
   if(c.star===5){
     if(on(4))rp(p.x+rnd(-13,13),p.y-rnd(4,36),pick(['#ffd24a','#fff3b0']),{vy:-7,life:.7});   // hào quang vàng nhẹ
     if(p.sg&&p.sg.fx)p.sg.fx(e,p,p.k);
-    RX.font='bold 5px system-ui,sans-serif';const tw=Math.ceil(RX.measureText(c.name).width)+4,nx=Math.round(p.x-tw/2),ny=Math.round(py)-5;
-    RX.fillStyle='#c9961c';RX.fillRect(nx-1,ny-1,tw+2,8);RX.fillStyle='#fff3c4';RX.fillRect(nx,ny,tw,6);RX.fillStyle='#5a3a04';RX.textBaseline='top';RX.fillText(c.name,nx+2,ny+.4); // khung tên vàng kim
+    if(!e.clone){RX.font='bold 5px system-ui,sans-serif';const tw=Math.ceil(RX.measureText(c.name).width)+4,nx=Math.round(p.x-tw/2),ny=Math.round(py)-5;
+    RX.fillStyle='#c9961c';RX.fillRect(nx-1,ny-1,tw+2,8);RX.fillStyle='#fff3c4';RX.fillRect(nx,ny,tw,6);RX.fillStyle='#5a3a04';RX.textBaseline='top';RX.fillText(c.name,nx+2,ny+.4)} // khung tên vàng kim (phân thân không có khung tên)
   }
   if(e.emoT>0)drawEmo('heart',ex+8,by);
-  else if(c.full<20)drawEmo('excl',ex+10,by,'#d95a5a');
+  else if(c.full<20&&!e.clone)drawEmo('excl',ex+10,by,'#d95a5a');
   else if(e.emo&&e.state!=='jump')drawEmo(e.emo,ex+8,by);
 }
 function drawRoom(){
@@ -571,6 +613,7 @@ function ptrEnd(ev){
   if(was.moved||edit)return;
   const wx=p.x+camX,wy=p.y+camY,hit=ents.filter(e=>!e.ghost).map(e=>({e,p:entPos(e)})).sort((a,b)=>b.p.sy-a.p.sy).find(o=>wx>=o.p.x-12&&wx<=o.p.x+12&&wy>=o.p.y-35&&wy<=o.p.y+1);
   if(!hit){unfollow(true);return} // chạm khoảng trống: thôi theo dõi, camera về chỗ cũ
+  if(hit.e.clone){poof(hit.p.x,hit.p.y);hit.e.dead=1;return} // chạm vào phân thân của Naruto: tan thành khói
   const c=catBy(hit.e.uid);hit.e.emoT=1.5;follow(c.uid);
   const n=petCat(c);
   if(n){toast('kêu grừ grừ… ❤️ +'+3*(tE(c,'petHappy')||1)+' độ vui',{type:'pet',title:c.name,coins:n});render()}
@@ -596,6 +639,7 @@ function openFeed(){
 }
 function doFeed(fid){
   const r=feedRoom(cur,fid); if(!r)return;
+  dispel(); // cho ăn thì mọi phân thân của Naruto trong phòng biến lại thành một
   closeModal();
   toast(r.n+' bé chạy ra ăn và cảm ơn bạn'+(r.loved.length?' · ❤️ món khoái khẩu của '+r.loved.join(', '):''),{type:'feed',title:FOOD[fid].n+' · '+r.bowls+' bát · '+ROOM[cur].n,coins:r.coins});
   if(r.miss>0)toast(r.miss+' bé chưa có suất. Mỗi bát chỉ đủ cho số suất ghi trên bát, hãy mua thêm bát.',{type:'warn',title:'Thiếu bát ăn'});
@@ -662,7 +706,7 @@ function tone(f,t0,d,type,v){const o=AC.createOscillator(),g=AC.createGain();o.t
 function snd(f){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();f(AC.currentTime+.05)}catch(e){}}
 const seq=(notes,step,d,type,v)=>snd(t=>notes.forEach((f,i)=>{if(f)tone(f,t+i*step,d,type,v)}));
 const glide=(f0,f1,d,type,v)=>snd(t=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+d);g.gain.setValueAtTime(v||.06,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)});
-const fxClear=()=>{const f=$('gfx');f.innerHTML='';f.style.background='';$('gfly').className=''};
+const fxClear=()=>{const f=$('gfx');f.innerHTML='';f.style.background='';f.style.animation='';$('gfly').className=''};
 function fxEl(css,html){const d=document.createElement('div');d.style.cssText='position:absolute;'+css;if(html)d.innerHTML=html;$('gfx').appendChild(d);return d}
 const fxTint=bg=>{$('gfx').style.background=bg};
 function bolt(x,col){
@@ -691,6 +735,107 @@ const mixc=(c,p,w)=>'color-mix(in srgb,'+c+' '+p+'%,'+(w||'#fff')+')';          
 const money=(t,o)=>part(Object.assign({t,x:rnd(0,innerWidth),y:-24,vx:rnd(-1.2,1.2),vy:rnd(2.5,6),g:.09,life:150,a:rnd(0,6.283),va:rnd(.08,.22)*(Math.random()<.5?-1:1),sz:t==='coin'?rnd(7,11):t==='bar'?rnd(13,19):rnd(15,21)},o));
 /* Mỗi bé 5★ có một cảnh riêng kể đúng "tính cách" của bé. Mọi thứ hẹn giờ qua T nên bấm Bỏ qua là dừng ngay. */
 const INTRO={
+  // Goku: cưỡi Cân Đẩu Vân bay tới, gồng mình hóa Siêu Saiyan (hai tai chuyển vàng, hào quang vàng), tụ chưởng "KA-ME-HA-ME" rồi "HAAA!": luồng chưởng xanh thổi bay nửa trên ngọn núi
+  v_goku:{dur:5000,run(T){
+    fxTint('linear-gradient(#58aef0 0,#a6dcf8 54%,#f2dca6 80%)');
+    const k=K5(),d=cell(k),BASE='v_goku~gkBase',W=innerWidth,Hh=innerHeight,gx=W*.24,gy=Hh*.8-18*d,nsrc=nimbusCv(fk(kk(k))).toDataURL();
+    [[10,13,1],[55,8,1.3],[82,19,.9]].forEach(c=>{const w=d*30*c[2];fxEl('left:'+c[0]+'%;top:'+c[1]+'%;width:'+w+'px;height:'+w*.3+'px;border-radius:50%;background:#fff;opacity:.8;box-shadow:'+w*.3+'px '+w*.09+'px 0 '+(-w*.05)+'px #fff,'+(-w*.28)+'px '+w*.1+'px 0 '+(-w*.07)+'px #fff;animation:floaty 2.4s ease-in-out infinite alternate')});
+    fxEl('left:0;bottom:0;width:100%;height:20%;background:linear-gradient(#b98b58,#86603a)');
+    // ngọn núi gồm hai mảnh: chân núi ở lại, nửa trên sẽ bị chưởng thổi bay
+    const MW=46*d,MH=32*d,mx=W*.76,mc='left:'+(mx-MW/2)+'px;top:'+(Hh*.8-MH)+'px;width:'+MW+'px;height:'+MH+'px;background:linear-gradient(100deg,#a58462 0 47%,#765a40 47%);';
+    fxEl(mc+'clip-path:polygon(0 100%,10% 66%,90% 66%,100% 100%)');
+    const top=fxEl(mc+'clip-path:polygon(10% 66%,26% 30%,40% 16%,50% 0,61% 18%,74% 32%,90% 66%)');
+    // 1. cưỡi Cân Đẩu Vân bay tới rồi nhảy xuống
+    let cat=fxSpr('stand',k,gx+'px',(gy-6*d)+'px','z-index:2;animation:runIn .7s cubic-bezier(.2,.7,.3,1) both',{flip:1,key:BASE}),aur,orb;
+    cat.insertAdjacentHTML('beforeend','<img class="px" src="'+nsrc+'" style="position:absolute;left:'+10*d+'px;top:'+34*d+'px;width:'+30*d+'px;height:'+11*d+'px;transform:scaleX(-1)">');
+    glide(500,1100,.6,'sine',.04);
+    T(800,()=>{cat.remove();
+      fxEl('left:'+(gx-15*d)+'px;top:'+(gy+8*d)+'px;width:'+30*d+'px;height:'+11*d+'px;z-index:1;animation:nimAway .8s ease-in forwards','<img class="px" src="'+nsrc+'" style="width:100%;height:100%;display:block;transform:scaleX(-1)">');
+      cat=fxSpr('sit',k,gx+'px',gy+'px','z-index:2;animation:pop .3s ease-out both',{key:BASE});seq([659,784],.08,.1,'square',.04)});
+    // 2. gồng mình: đất đá bay lên, hào quang lớn dần, rồi hóa Siêu Saiyan
+    T(1150,()=>{cat.style.animation='trem .09s linear infinite';glide(110,520,.85,'sawtooth',.05);
+      fxTxt('HAAAAAA!!',50,20,'color:#fff;font-size:min(10vw,56px);text-shadow:0 0 16px #ffb000,3px 3px 0 #7a4a00','count .85s ease-out both');
+      aur=fxEl('left:'+(gx-24*d)+'px;top:'+(gy-48*d)+'px;width:'+48*d+'px;height:'+68*d+'px;z-index:1;transform-origin:50% 100%;animation:auraUp .85s ease-in both','<div style="width:100%;height:100%;border-radius:50% 50% 44% 44%/70% 70% 30% 30%;background:radial-gradient(ellipse at 50% 72%,rgba(255,255,255,.95) 0,rgba(255,226,96,.8) 36%,rgba(255,186,40,0) 70%);transform-origin:50% 100%;animation:flick .11s linear infinite alternate"></div>')});
+    every(T,1150,2000,40,()=>part({x:gx+rnd(-34,34)*d,y:Hh*.8-rnd(0,3)*d,vx:rnd(-.4,.4),vy:-rnd(2,6),life:rnd(18,36),col:pick(['#86603a','#c9a878','#ffe07a','#fff']),sz:Math.random()<.5?4:8}));
+    T(2000,()=>{flash();cat.style.animation='none';cat.firstChild.src=sprSrc(SSJK,'sit',k);
+      for(let i=0;i<46;i++){const a=rnd(0,6.283),s=rnd(2,8);part({x:gx,y:gy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rnd(26,50),col:pick(['#ffd83a','#fff7c0','#fff']),sz:Math.random()<.5?4:8})}
+      fxTxt('SIÊU SAIYAN!',50,20,'color:#ffe066;font-size:min(11vw,64px);letter-spacing:2px;text-shadow:0 0 18px #ffb000,4px 4px 0 #6a4a00','count .8s ease-out both');seq([523,659,784,1047,1319],.06,.16,'square',.05)});
+    every(T,2000,4600,50,()=>part({x:gx+rnd(-16,16)*d,y:gy+rnd(-16,18)*d,vx:rnd(-.4,.4),vy:-rnd(2,5.5),life:rnd(14,30),col:pick(['#ffd83a','#fff7c0','#ffffff']),sz:Math.random()<.5?4:8}));
+    // 3. tụ chưởng giữa hai chân trước
+    const ox=gx+24*d,oy=gy+6*d,S=10*d;
+    T(2750,()=>{cat.remove();cat=fxSpr('crouch1',k,gx+'px',gy+'px','z-index:2',{flip:1,key:SSJK});
+      orb=fxEl('left:'+(ox-S/2)+'px;top:'+(oy-S/2)+'px;width:'+S+'px;height:'+S+'px;z-index:3;border-radius:50%;background:radial-gradient(circle,#fff 0,#cfeeff 38%,#48a8ff 72%,rgba(72,168,255,0) 100%);box-shadow:0 0 '+3*d+'px '+d+'px #7cc8ff;animation:kame 1s ease-in both')});
+    ['KA','ME','HA','ME'].forEach((s,i)=>T(2750+i*250,()=>{fxTxt(s,26+i*16,14,'color:#cfeeff;font-size:min(9vw,54px);text-shadow:0 0 14px #2f86e6,3px 3px 0 #0a3a7a','pop .25s ease-out both');seq([330+i*110],.1,.2,'square',.05)}));
+    every(T,2750,3750,45,()=>{const a=rnd(0,6.283),r=rnd(9,16)*d;part({x:ox+Math.cos(a)*r,y:oy+Math.sin(a)*r,vx:-Math.cos(a)*r/9,vy:-Math.sin(a)*r/9,life:9,col:pick(['#fff','#8fd0ff','#48a8ff']),sz:4})});
+    // 4. bắn: luồng chưởng xuyên qua và thổi bay nửa trên ngọn núi
+    T(3750,()=>{flash();cat.firstChild.src=sprSrc(SSJK,'stand',k);orb.style.animation='flick .08s linear infinite alternate';
+      fxTxt('HAAA!!!',50,27,'color:#fff;font-size:min(13vw,76px);font-style:italic;text-shadow:0 0 18px #48a8ff,4px 4px 0 #0a3a7a','pop .25s ease-out both');
+      fxEl('left:'+ox+'px;top:'+(oy-5.5*d)+'px;width:'+(W-ox+40)+'px;height:'+11*d+'px;z-index:3;border-radius:'+5.5*d+'px 0 0 '+5.5*d+'px;background:linear-gradient(rgba(72,168,255,0),#7cc8ff 20%,#fff 40% 60%,#7cc8ff 80%,rgba(72,168,255,0));box-shadow:0 0 '+5*d+'px '+1.5*d+'px rgba(124,200,255,.75);transform-origin:0 50%;animation:beam 1s ease-out both');
+      glide(1800,120,1,'sawtooth',.06);$('gfx').style.animation='quake .25s linear 4'});
+    T(3880,()=>{top.style.setProperty('--tx',W*.3+'px');top.style.setProperty('--ty',-Hh*.34+'px');top.style.setProperty('--rot','55deg');top.style.animation='shard 1.1s ease-out forwards';
+      fxEl('left:'+(mx-MW*.4)+'px;top:'+(Hh*.8-MH*.34-3)+'px;width:'+MW*.8+'px;height:6px;border-radius:3px;background:#ffd08a;box-shadow:0 0 14px 5px #ff8a2a;animation:fadeIn .15s both');
+      for(let i=0;i<46;i++){const a=rnd(-2.6,.2),s=rnd(3,11);part({x:mx+rnd(-18,18)*d,y:Hh*.8-MH*.5+rnd(-8,8)*d,vx:Math.cos(a)*s+3,vy:Math.sin(a)*s,g:.22,life:rnd(30,60),col:pick(['#765a40','#a58462','#ffd08a','#fff']),sz:Math.random()<.5?8:12})}
+      glide(160,40,.8,'sawtooth',.07)});
+    // 5. thu chưởng: trở lại đúng dạng của bé (dạng hiếm Siêu Saiyan God thì bùng hào quang đỏ)
+    T(4650,()=>{if(orb)orb.remove();if(aur)aur.remove();cat.remove();const rf=formOf(gz.cat);
+      fxSpr('sit',k,gx+'px',gy+'px','z-index:2;animation:pop .35s ease-out both');
+      if(rf){flash();for(let i=0;i<40;i++){const a=rnd(0,6.283),s=rnd(2,8);part({x:gx,y:gy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rnd(26,50),col:pick(['#ff6a7a','#ffd0d6','#fff']),sz:Math.random()<.5?4:8})}}
+      seq([784,988,1175,1568],.08,.16,'square',.04)});
+  }},
+  // Naruto: giữa rừng cây, kết ấn phân thân thành ba; cả ba nhảy qua các cành cây và bụi cỏ áp sát kẻ địch; hai phân thân tan thành khói, bản thể tụ Rasengan rồi ném thẳng vào địch
+  v_naruto:{dur:5200,run(T){
+    fxTint('linear-gradient(#10301a,#3a7036)');
+    const k=K5(),d=cell(k),key=lk(gz.cat),W=innerWidth,Hh=innerHeight,X=p=>W*p/100,gy=Hh*.8-18*d,GR=['#1f5a2a','#2c7236','#18481f','#368542','#2a6a33'],LF=['#6fd26f','#3f9a55','#b5e08a','#2c7236'];
+    [3,21,48,72,92].forEach((x,i)=>fxEl('left:'+x+'%;top:0;width:'+(i%2?4:7)+'vw;height:100%;background:linear-gradient(90deg,#2e2014,#54391f 55%,#2e2014);opacity:.85'));
+    [33,60].forEach((x,i)=>fxEl('left:'+x+'%;top:-10%;width:11vw;height:120%;background:linear-gradient(rgba(240,240,170,.22),transparent 85%);transform:skewX(-14deg);animation:fadeIn 1.2s '+i*.4+'s ease-out both'));
+    fxEl('left:0;top:0;width:100%;height:13%;background:radial-gradient(ellipse 16vw 100% at 12% 0,#18481f 98%,transparent),radial-gradient(ellipse 20vw 100% at 40% 0,#1f5a2a 98%,transparent),radial-gradient(ellipse 18vw 100% at 68% 0,#18481f 98%,transparent),radial-gradient(ellipse 16vw 100% at 92% 0,#1f5a2a 98%,transparent)');
+    fxEl('left:0;bottom:0;width:100%;height:20%;background:#0d2612');
+    const blob=(c,i)=>'<div style="position:absolute;left:'+c[0]+'%;top:'+c[1]+'%;width:'+c[2]+'%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 35% 30%,'+GR[(i+3)%5]+','+GR[i%5]+' 70%)"></div>',
+      bush=(x,w,z)=>fxEl('left:'+(x-w/2)+'px;top:'+(Hh*.83-.62*w)+'px;width:'+w+'px;height:'+.62*w+'px;overflow:hidden;z-index:'+z,[[50,56,62],[22,72,46],[78,72,46],[36,39,44],[66,41,42]].map(blob).join(''));
+    // cành cây: [tâm x theo %, mặt trên theo % chiều cao, dài theo vw]; bTop(i) là chỗ đứng trên cành
+    const BR=[[22,37,26],[45,50,22],[65,29,24]],bTop=i=>[X(BR[i][0]),Hh*BR[i][1]/100-18*d];
+    BR.forEach(b=>{const w=W*b[2]/100;fxEl('left:'+(X(b[0])-w/2)+'px;top:'+b[1]+'%;width:'+w+'px;height:'+2.6*d+'px;border-radius:'+1.3*d+'px;background:linear-gradient(#6e4c2c,#49311b)',
+      [[3,30,5],[97,20,6],[86,120,4.4]].map((c,i)=>'<div style="position:absolute;left:'+c[0]+'%;top:'+c[1]+'%;width:'+c[2]*d+'px;height:'+c[2]*d*.66+'px;transform:translate(-50%,-50%);border-radius:50%;background:'+GR[i+1]+'"></div>').join(''))});
+    const smoke=(x,y,n)=>{for(let i=0;i<(n||18);i++)part({x:x+rnd(-12,12)*d,y:y+rnd(-14,12)*d,vx:rnd(-2.4,2.4),vy:-rnd(.4,2.6),life:rnd(22,44),col:pick(SMOKE),sz:Math.random()<.5?8:12})},
+      leaf=(x,y)=>part({x:x+rnd(-20,20)*d,y:y+rnd(-8,8)*d,vx:rnd(-3,3),vy:-rnd(1,4),g:.16,life:rnd(26,46),col:pick(LF),sz:Math.random()<.5?4:8});
+    // ba Naruto: bản thể R đi đường giữa, phân thân A đi đường trên cành cao, phân thân C nhảy qua các bụi cỏ
+    const mk=p=>({p,el:null}),R=mk([X(26),gy]),A=mk([X(26)-22*d,gy]),C=mk([X(26)+22*d,gy]),cx0=C.p[0];
+    const put=(o,pose,css)=>{if(o.el)o.el.remove();o.el=fxSpr(pose,k,o.p[0]+'px',o.p[1]+'px','z-index:2;'+(css||''),{flip:pose!=='sit'})};
+    const hop=(o,to,t0,dur,arc)=>{
+      T(t0,()=>{if(o.el)o.el.remove();
+        o.el=fxSpr('leap1',k,o.p[0]+'px',o.p[1]+'px','z-index:2;--dx:'+(to[0]-o.p[0])+'px;--dy:'+(to[1]-o.p[1])+'px;animation:hopTo '+dur+'ms linear both',{flip:1,img:'--dy:'+(-arc)+'px;animation:leapY '+dur+'ms both'});
+        o.p=to;glide(320,900,dur/1000*.8,'triangle',.035)});
+      T(t0+dur*.55,()=>{if(o.el)o.el.firstChild.src=sprSrc(key,'leap2',k)});
+      T(t0+dur,()=>{put(o,'land1');for(let i=0;i<5;i++)leaf(to[0],to[1]+16*d)})};
+    bush(X(8),30*d,1);bush(X(70),26*d,1);[8.5,26].forEach(o=>bush(cx0+o*d,15*d,3));
+    // kẻ địch: ninja phản bội đứng chờ bên phải
+    const EX=X(86),EK={key:'x_rogue',img:'filter:drop-shadow(0 0 8px #d03a4a)'},en=fxSpr('sit',k,EX+'px',gy+'px','z-index:2;animation:pop .4s .7s ease-out both',EK);
+    T(1500,()=>{en.style.animation='shH .5s linear infinite'});
+    // cảnh 1: kết ấn, hai phân thân hiện ra trong khói
+    put(R,'sit','animation:pop .35s ease-out both');seq([523,659,784],.07,.1,'square',.04);
+    T(350,()=>fxTxt('ẢNH PHÂN THÂN!',50,18,'color:#ffe07a;font-size:min(9vw,52px);letter-spacing:2px;text-shadow:0 0 14px #f08a2a,3px 3px 0 #5a2a00','count 1.5s ease-out both'));
+    T(500,()=>{[A,C].forEach(o=>{smoke(o.p[0],o.p[1]);put(o,'sit','animation:pop .3s ease-out both')});glide(900,200,.25,'square',.04)});
+    // cảnh 2: cả ba nhảy qua cành cây và bụi cỏ
+    hop(A,bTop(0),1050,480,16*d);hop(A,bTop(2),1700,520,12*d);
+    hop(R,bTop(1),1150,480,14*d);hop(R,[X(52),gy],1800,480,10*d);
+    hop(C,[cx0+17*d,gy],1100,360,13*d);hop(C,[cx0+35*d,gy],1560,360,13*d);
+    // cảnh 3: hai phân thân tan thành khói, bản thể tụ Rasengan
+    const S=12*d,rx=()=>R.p[0]+25*d,ry=()=>R.p[1]+5*d;let orb;
+    T(2400,()=>{[A,C].forEach(o=>{smoke(o.p[0],o.p[1]);if(o.el)o.el.remove()});glide(700,160,.25,'square',.04);put(R,'crouch1')});
+    T(2500,()=>{orb=fxEl('left:'+(rx()-S/2)+'px;top:'+(ry()-S/2)+'px;width:'+S+'px;height:'+S+'px;z-index:3;animation:kame .8s ease-out both','<div style="width:100%;height:100%;border-radius:50%;background:conic-gradient(#fff,#8fd0ff,#2f86e6,#fff,#8fd0ff,#2f86e6,#fff);box-shadow:0 0 '+3*d+'px '+d+'px #7cc8ff,inset 0 0 '+2*d+'px #fff;animation:spin .22s linear infinite"></div>');glide(240,1400,.8,'sine',.05)});
+    every(T,2500,3350,40,()=>{const a=rnd(0,6.283),r=rnd(10,18)*d;part({x:rx()+Math.cos(a)*r,y:ry()+Math.sin(a)*r,vx:-Math.cos(a)*r/9,vy:-Math.sin(a)*r/9,life:9,col:pick(['#fff','#8fd0ff','#2f86e6']),sz:4})});
+    T(3000,()=>fxTxt('RASENGAN!',50,18,'color:#bfe8ff;font-size:min(13vw,76px);letter-spacing:3px;font-style:italic;text-shadow:0 0 18px #2f86e6,4px 4px 0 #0a3a7a','skewIn 1.5s ease-out both'));
+    // cảnh 4: ném Rasengan trúng địch, địch bị thổi bay
+    T(3400,()=>{put(R,'stand');orb.style.setProperty('--dx',(EX-rx())+'px');orb.style.setProperty('--dy',(-3*d)+'px');orb.style.animation='hopTo .36s ease-in forwards';glide(1400,300,.36,'sawtooth',.05)});
+    T(3760,()=>{flash();orb.remove();en.remove();
+      fxEl('left:'+(EX-7*d)+'px;top:'+(gy-7*d)+'px;width:'+14*d+'px;height:'+14*d+'px;z-index:3;border-radius:50%;background:radial-gradient(circle,#fff 0,#8fd0ff 45%,rgba(47,134,230,0) 72%);animation:ring .55s ease-out forwards');
+      fxSpr('sit',k,EX+'px',gy+'px','z-index:2;--tx:'+Math.min(30*d,W*.2)+'px;--ty:'+(-Hh*.55)+'px;--rot:560deg;animation:shard 1s ease-out both',EK);
+      for(let i=0;i<50;i++){const a=i*.5,s=2+i*.14;part({x:EX,y:gy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rnd(24,46),col:pick(['#fff','#8fd0ff','#2f86e6']),sz:Math.random()<.5?4:8})}
+      smoke(EX,gy,14);for(let i=0;i<14;i++)leaf(EX,gy);glide(600,50,.7,'sawtooth',.06)});
+    T(4350,()=>{put(R,'sit','animation:pop .35s ease-out both');seq([784,988,1175,1568],.08,.16,'square',.04);
+      fxTxt('Dattebayo!',50,18,'color:#ffe07a;font-size:min(9vw,48px);text-shadow:0 0 14px #f08a2a,3px 3px 0 #5a2a00','pop .35s ease-out both')});
+    every(T,0,5100,90,()=>rain(LF,1));
+  }},
   // Nyan Cat: bay ngang trời sao pixel kéo cầu vồng, chữ "nya" chạy ngược chiều
   v_nyan:{dur:2700,run(T){
     fxTint('linear-gradient(#0b1a4a,#1d2f7a)');
@@ -972,8 +1117,8 @@ function gReveal(skipped){
   stars=isRb(c)?'<div class="pop" style="font-size:26px">'+starsC(c)+'</div>':'<div class="stars s'+st+'" style="font-size:26px;--d:-'+(Date.now()%6000)+'ms">'+stars+'</div>';
   // bố cục thẻ: ảnh, hàng sao riêng một dòng, bậc hiếm, tên, câu thoại; rồi khung thông tin và khung thuộc tính; cuối cùng là đặt tên
   const ct=coatOf(c),row=(k,v)=>'<div class="k">'+k+'</div><div>'+v+'</div>',
-    info=(ct?row('Màu lông','<b>'+ct.n+'</b> '+coatTags(c)):'')+(c.replay?'':row('Tuổi',ageTxt(c)));
-  rev.innerHTML='<div class="pop gv">'+(st===5?'<div class="legend">HUYỀN THOẠI</div>':isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
+    info=(ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+(c.replay?'':row('Tuổi',ageTxt(c)));
+  rev.innerHTML='<div class="pop gv">'+(st===5?'<div class="legend">HUYỀN THOẠI</div>'+(ct&&ct.form?'<div class="legend" style="font-size:17px;letter-spacing:3px;color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">✨ DẠNG HIẾM ✨</div>':''):isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
     '<div class="gv-pic">'+catTag(big(c),innerHeight<860&&innerWidth<520?3:4)+'</div><div class="gv-stars">'+stars+'</div>'+
     '<div class="gv-rank" style="color:'+col+'">'+STAR[st].n+(c.isNew?' · <span style="color:var(--good)">MỚI!</span>':'')+'</div>'+
     '<h2 class="gv-name">'+sp.n+' '+sexIc(c)+'</h2>'+(sp.q&&st===5?'<div class="quote">“'+sp.q+'”</div>':'')+
@@ -1006,7 +1151,7 @@ function openCat(uid){
     // hồ sơ
     '<div class="cd-sec"><h4>Hồ sơ</h4><div class="cd-grid">'+
       row('Giống','<b>'+sp.n+'</b>'+(sp.base?' <span class="dim">· gốc '+SP[sp.base].n+(sp.short?' (chân ngắn)':'')+'</span>':''))+
-      (ct?row('Màu lông','<b>'+ct.n+'</b> '+coatTags(c)):'')+
+      (ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+
       row('Tuổi','<span class="tag g" tabindex="0" data-tip="'+esc(AGE_TIP[ageStage(c)])+'">'+ageTxt(c)+'</span>')+
       row('Nơi ở',away?'Đang đi viễn chinh':ROOM[c.room].n)+
       row('Khoái khẩu',favs(c).map(f=>FOOD[f].ic+' '+FOOD[f].n).join(', '))+
@@ -1172,15 +1317,15 @@ const PANEL={
              :'<div class="cell" style="opacity:.75"><div style="font-size:44px;line-height:80px;color:var(--dim)">?</div><b style="color:'+scol(4)+'">???</b></div>').join('')+'</div>';
   const all=of(albumG).slice().sort((a,b)=>a.r-b.r);
   return tabs+(albumG==='breed'?'<div class="dim" style="margin-bottom:8px">Chạm vào một giống đã gặp để xem các màu lông của giống đó.</div>':'')+'<div class="grid">'+all.map(s=>
-    S.seen[s.id]?'<div class="cell'+(s.coats?' tap" onclick="openBreed(\''+s.id+'\')':'')+'">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">'+s.n+'</b><br>'+starsOf(s.r)+(s.coats?'<br><b>Màu: '+nCoat(s)+'/'+s.coats.length+'</b>':'')+'<br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span>'+(s.r===5?'<br><button class="sm" onclick="event.stopPropagation();replayIntro(\''+s.id+'\')">▶ Xem lại intro</button>':'')+'</div>'
+    S.seen[s.id]?'<div class="cell'+(s.coats?' tap" onclick="openBreed(\''+s.id+'\')':'')+'">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">'+s.n+'</b><br>'+starsOf(s.r)+(s.coats?'<br><b>'+(s.xt?'Dạng':'Màu')+': '+nCoat(s)+'/'+s.coats.length+'</b>':'')+'<br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span>'+(s.r===5?'<br><button class="sm" onclick="event.stopPropagation();replayIntro(\''+s.id+'\')">▶ Xem lại intro</button>':'')+'</div>'
                :'<div class="cell unk">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">???</b><br>'+starsOf(s.r)+'</div>').join('')+'</div>';
  }
 };
 function openBreed(id){
   const b=SP[id],sc=S.seenCoat||{};
   modal('<h3>'+b.n+' '+starsOf(b.r)+'</h3><div class="dim">'+b.d+(b.short?' Giống chân ngắn.':'')+'</div><div class="grid" style="grid-template-columns:repeat(2,1fr);margin:10px 0">'+b.coats.map(k=>{const ct=COATS[k];
-    return sc[id+'~'+k]?'<div class="cell">'+catTag(id+'~'+k,2)+'<br><b>'+(ct.u?'✦ ':'')+ct.n+'</b>'+(ct.f>=.99?'<br><span class="dim">gần như luôn là cái</span>':ct.f<=.25?'<br><span class="dim">đa số là đực</span>':'')+'</div>'
-                       :'<div class="cell unk">'+catTag(id+'~'+k,2)+'<br><b>???</b>'+(ct.u?'<br><span class="dim">màu ít gặp</span>':'')+'</div>'}).join('')+'</div><button onclick="closeModal()">Đóng</button>');
+    return sc[id+'~'+k]?'<div class="cell">'+catTag(id+'~'+k,2)+'<br><b>'+(ct.form?'✨ ':ct.u?'✦ ':'')+ct.n+'</b>'+(ct.f>=.99?'<br><span class="dim">gần như luôn là cái</span>':ct.f<=.25?'<br><span class="dim">đa số là đực</span>':'')+'</div>'
+                       :'<div class="cell unk">'+catTag(id+'~'+k,2)+'<br><b>???</b>'+(ct.form?'<br><span class="dim">dạng hiếm</span>':ct.u?'<br><span class="dim">màu ít gặp</span>':'')+'</div>'}).join('')+'</div><button onclick="closeModal()">Đóng</button>');
 }
 
 /* ============ ADMIN (chỉ để test): Ctrl+Shift+A, hoặc chạm 7 lần liên tiếp vào tên game ============ */
@@ -1193,7 +1338,7 @@ function openAdmin(){
   const box=(t,h)=>'<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>'+t+'</b>'+h+'</div>';
   modal('<h3>🛠 Bảng Admin <span class="dim">· chỉ để test</span></h3>'+
     box('Xu (đang có '+S.coins.toLocaleString('vi-VN')+')','<div class="row"><input id="axu" type="number" min="0" value="'+S.coins+'"><button class="sm on" onclick="admCoins(\'set\')">Đặt</button></div><div class="row wrap"><button class="sm" onclick="admCoins(1000)">+1.000</button><button class="sm" onclick="admCoins(100000)">+100.000</button><button class="sm" onclick="admCoins(\'max\')">Max xu</button><button class="sm '+(S.adm.inf?'go':'')+'" onclick="admInf()">Xu vô hạn: '+(S.adm.inf?'BẬT':'tắt')+'</button></div>')+
-    box('Nhận mèo bất kỳ','<div class="row"><select id="asp" style="'+sel+'">'+GROUPS.map(og).join('')+'</select></div><div class="row"><select id="ast" style="'+sel+'">'+stars+'</select><select id="act" style="'+sel+'"><option value="">màu ngẫu nhiên</option>'+RARES.map(r=>'<option value="'+r.id+'">✨ '+r.n+'</option>').join('')+'</select></div><div class="row"><label class="dim" style="white-space:nowrap"><input id="aintro" type="checkbox" checked style="flex:none"> xem hoạt ảnh</label><button class="sm on" onclick="admCat()">Nhận</button></div><div class="dim">Muốn test intro 5★ thì chọn một bé 5★ và để số sao mặc định. Màu hiếm chỉ áp cho giống thật có lông.</div>')+
+    box('Nhận mèo bất kỳ','<div class="row"><select id="asp" style="'+sel+'">'+GROUPS.map(og).join('')+'</select></div><div class="row"><select id="ast" style="'+sel+'">'+stars+'</select><select id="act" style="'+sel+'"><option value="">màu ngẫu nhiên</option>'+RARES.map(r=>'<option value="'+r.id+'">✨ '+r.n+'</option>').join('')+Object.keys(COATS).filter(k=>COATS[k].form).map(k=>'<option value="'+k+'">⚡ Dạng hiếm: '+COATS[k].n+'</option>').join('')+'</select></div><div class="row"><label class="dim" style="white-space:nowrap"><input id="aintro" type="checkbox" checked style="flex:none"> xem hoạt ảnh</label><button class="sm on" onclick="admCat()">Nhận</button></div><div class="dim">Muốn test intro 5★ thì chọn một bé 5★ và để số sao mặc định. Màu hiếm chỉ áp cho giống thật có lông; dạng hiếm ⚡ chỉ áp cho Goku (Siêu Saiyan God) và Naruto (Cửu Vĩ, Hokage).</div>')+
     box('Gacha miễn phí','<div class="row"><select id="ags" style="'+sel+'"><option value="0">sao ngẫu nhiên</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">ép ra '+n+'★</option>').join('')+'</select><button class="sm on" onclick="admGacha()">Quay</button></div>')+
     box('Mở khóa','<div class="row wrap"><button class="sm" onclick="admRooms()">Mở mọi phòng</button><button class="sm" onclick="admFurn()">Nhận đủ nội thất</button><button class="sm" onclick="admBowl()">Bát ăn sẵn sàng ngay</button><button class="sm" onclick="admLevel()">Lên cấp 9</button></div><div class="dim">Thức ăn vốn không bị khóa; bật xu vô hạn là mua được mọi món.</div>')+
     box('Mèo và viễn chinh','<div class="row wrap"><button class="sm" onclick="admTrips()">Hoàn tất viễn chinh ngay</button><button class="sm" onclick="admStats()">Hồi đầy no, vui, năng lượng</button></div><div class="row wrap"><button class="sm" onclick="admAge(10)">Cả đàn già thêm 10 ngày</button><button class="sm" onclick="admAge(0)">Cả đàn thành mèo con</button></div>')+
@@ -1206,8 +1351,8 @@ function admCoins(v){
 }
 function admInf(){S.adm.inf=!S.adm.inf;if(S.adm.inf)S.coins=MAXC;admDone('Xu vô hạn: '+(S.adm.inf?'bật':'tắt'),1)}
 function admCat(){
-  const sp=SP[$('asp').value],rc=sp.coats&&!sp.noRare?$('act').value:'',star=+$('ast').value||(rc?4:sp.r),show=$('aintro').checked;
-  const c=newCat(sp,star,rc||undefined);c.room=freeRoom();c.isNew=!S.seen[sp.id];S.cats.push(c);markSeen(c);save();closeModal();
+  const sp=SP[$('asp').value],av=$('act').value,rc=sp.coats&&(sp.coats.includes(av)||(RARE[av]&&!sp.noRare))?av:'',star=+$('ast').value||(RARE[rc]?4:sp.r),show=$('aintro').checked;
+  const c=newCat(sp,star,rc||undefined);c.room=freeRoom();c.isNew=!S.seen[sp.id]||!!(sp.coats&&!RARE[rc]&&!(S.seenCoat||{})[lk(c)]);S.cats.push(c);markSeen(c);save();closeModal();
   if(show){render();playGacha(c)}else{delete c.isNew;syncEnts();admDone('Đã nhận '+sp.n+' '+star+'★')}
 }
 function admGacha(){const r=gachaRoll(false,{free:1,star:+$('ags').value});closeModal();render();playGacha(r.cat)}

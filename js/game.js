@@ -26,6 +26,8 @@ function load(){
   S.cats.forEach(c=>{if(!c.born)c.born=now()-(5+(c.uid*7)%20)*DAY}); // bản lưu cũ chưa có tuổi: coi như mèo trưởng thành 5–24 ngày
   // Khao Manee nay luôn hai mắt hai màu: các màu cũ (trắng, trắng mắt vàng, trắng mắt hai màu) chuyển về cặp mắt mặc định
   S.cats.forEach(c=>{if(c.sp==='khaomanee'&&!RARE[c.coat]&&!/^km/.test(c.coat||''))c.coat='kmIce'});
+  // Naruto và Goku lên 5★ (2026-11-10): bé 4★ trong bản lưu cũ được nâng lên 5★ và nhận thêm một trait cho đủ 5
+  if(!S.mig5){S.cats.forEach(c=>{if((c.sp==='v_goku'||c.sp==='v_naruto')&&c.star===4){c.star=5;const t=rollTraits(SP[c.sp],5).find(t=>!c.traits.includes(t)&&!c.traits.some(o=>conflict(o,t)));if(t)c.traits.push(t)}});S.mig5=1}
   S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
   if(!S.bowlMig){for(const rid in S.rooms)giveBowl(rid,S.rooms[rid].bowlAt);S.bowlMig=1} // bản cũ: mỗi phòng có 1 bát cố định, nay thành món đồ
   fixSlots();
