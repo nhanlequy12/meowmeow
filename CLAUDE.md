@@ -63,7 +63,7 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 | 5 | Huyền thoại | 1% | ×3,2 | 88% | 1.000 (và 1 vé gacha) |
 
 ### Gacha
-- 100 xu hoặc 1 vé một lượt. Sau 30 lượt không ra 4★ trở lên thì lượt tiếp theo chắc chắn từ 4★.
+- 100 xu hoặc 1 vé một lượt. Bảo hiểm 10 lượt (`PITY=10`, đổi từ 30 ngày 2026-11-10 theo yêu cầu người dùng): sau 9 lượt liên tiếp không ra 4★ trở lên thì lượt thứ 10 chắc chắn từ 4★. Bản lưu cũ đang đếm quá 10 thì lượt kế tiếp được bảo đảm.
 - Khi đã chọn được sao, 45% là mèo trang phục của bậc đó (nếu có), còn lại là giống thật.
 - Mỗi bậc sao có hoạt ảnh mở hộp riêng, bỏ qua được. Mọi 5★ có intro riêng 2,7–4,4 giây (bảng `INTRO`), thẻ câu thoại (`QUOTE`) và xem lại được trong Bộ sưu tập.
 - Mèo mới vào phòng còn chỗ đầu tiên; hết chỗ thì vào Phòng chờ (không giới hạn, bị trừ 10 độ vui).
@@ -147,7 +147,7 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 - Responsive: từ 1024px, `.tabs` là cột trái 150px và `#panel` là lưới nhiều cột (phần tử không phải `.card` chiếm cả hàng). Điện thoại ngang (cao dưới 520px): `.tabs` là cột 76px. Còn lại: `.tabs` là thanh dưới cùng. Khung phòng và các nút của nó chỉ hiện ở tab Phòng.
 
 ### `js/data.js`
-- `STAR`, `GACHA_COST=100`, `PITY=30`.
+- `STAR`, `GACHA_COST=100`, `PITY=10`.
 - `BREEDS` (hàm `B(id, tên, sao, màu, màu2, hoa văn, tùy chọn, mô tả, trait hay gặp, món khoái khẩu)`), `VARIANTS` (hàm `V(id, tên, sao, nhóm, …, trang phục, trait độc quyền, mô tả, khoái khẩu)`), `GROUPS` (breed, anime, film, meme, thêm rare).
 - `TRAITS[id]={n, k, d, e}`: `k` là `g` tốt, `b` xấu, `x` độc quyền; `e` là hiệu ứng (ví dụ `coin`, `speed`, `hunger`, `regen`, `like:[fid, điểm]`, `crowd`, `water`, `nature`, `night`, `scratch`, `pet`, `ticket`). `CONFLICT` là các cặp trait không đi cùng nhau.
 - Màu lông: `COATS`, `BREED_COATS`, `RARES`/`RARE`, `RARE_P=.04`, `ALLCOAT`, `look(key)` trả mô tả ngoại hình đã gộp giống và màu. Key là `giống`, `giống~màu`, hoặc `v_gojo!open` (bản mở mắt cho hành động riêng, ảnh chân dung ở thẻ gacha và màn chi tiết). Trường của màu: `u` (ít gặp, trọng số 0,35), `rw` (trọng số riêng), `jewel` (cặp mắt quý hiếm), `eye`, `eye2`. Trường của giống: `odd:[màu1, màu2]` (luôn hai mắt hai màu), `gem` (vẽ mắt đá quý), `lash` (thêm lông mi trắng). `LOOKS.x_demon` là mèo quỷ chỉ dùng trong intro của Zenitsu, không nằm trong `BREEDS` hay `VARIANTS`.

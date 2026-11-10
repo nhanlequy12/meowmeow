@@ -6,7 +6,7 @@ const STAR=[null,
  {n:'Hiếm',c:'#2464aa',g:'#5aa9ff',m:1.7,p:14,good:.65,sell:100},
  {n:'Sử thi',c:'#7a4ccc',g:'#b98bff',m:2.3,p:5,good:.75,sell:300},
  {n:'Huyền thoại',c:'#855a05',g:'#ffd24a',m:3.2,p:1,good:.88,sell:1000}];
-const GACHA_COST=100, PITY=30;
+const GACHA_COST=100, PITY=10;
 
 /* ============ GIỐNG MÈO ============ */
 const BLK='#3a3448',WHT='#fbf7f0',ORG='#f0a050',DORG='#c96f28',CRM='#f6dfb8',GRY='#9aa3b5',DGRY='#646c80',BLU='#8794ad',BRN='#a8754a',DBRN='#5e3d28',SEAL='#5a4032',CHOC='#7a5238',SIL='#cfd4dc',GOLD='#e0b060',PNK='#f1c3b8',RUD='#c9783c',FAWN='#d9b48a',SAB='#6b4630';

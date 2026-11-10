@@ -1138,7 +1138,7 @@ const PANEL={
    (full?'<div class="dim">Các phòng đã đầy: bé mới sẽ vào Phòng chờ cho đến khi bạn xếp phòng.</div>':'')+
    '<div class="row wrap" style="justify-content:center"><button class="on" '+(S.coins<GACHA_COST?'disabled':'')+' onclick="doGacha(false)">Mở · '+GACHA_COST+' xu</button><button '+(S.tickets<1?'disabled':'')+' onclick="doGacha(true)">Dùng vé 🎟 ('+S.tickets+')</button></div>'+
    '<small>'+[1,2,3,4,5].map(s=>'<span style="color:'+scol(s)+'">'+s+'★ '+STAR[s].n+' '+STAR[s].p+'%</span>').join(' · ')+'</small>'+
-   '<small>Bảo hiểm: chắc chắn 4★ trở lên sau '+PITY+' lượt (đã mở '+S.pity+'/'+PITY+'). Số trait bằng số sao. Mèo trang phục chỉ có ở 4★–5★; màu lông hiếm rơi khoảng '+Math.round(RARE_P*100)+'% mỗi lượt.</small></div>';
+   '<small>Bảo hiểm: chắc chắn 4★ trở lên sau '+PITY+' lượt (đã mở '+Math.min(S.pity,PITY)+'/'+PITY+'). Số trait bằng số sao. Mèo trang phục chỉ có ở 4★–5★; màu lông hiếm rơi khoảng '+Math.round(RARE_P*100)+'% mỗi lượt.</small></div>';
  },
  shop(){
   const tabs='<div class="row wrap" style="margin-bottom:8px"><button class="sm '+(shopT==='rooms'?'on':'')+'" onclick="shopT=\'rooms\';renderPanel()">🚪 Phòng</button>'+FCATS.map(c=>'<button class="sm '+(shopT===c[0]?'on':'')+'" onclick="shopT=\''+c[0]+'\';shopSel=null;renderPanel()">'+c[1]+'</button>').join('')+'</div>';
