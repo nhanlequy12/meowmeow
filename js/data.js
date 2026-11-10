@@ -273,21 +273,21 @@ const FURN=Object.fromEntries(FURNS.map(f=>[f.id,f]));
 /* ============ PHÒNG ============ */
 const ROOMS=[
  {id:'living',n:'Phòng khách',price:0,cap:8,d:'Căn phòng đầu tiên, ấm cúng.'},
- {id:'bedroom',n:'Phòng ngủ',price:1500,cap:8,regen:1.25,d:'Yên tĩnh: hồi năng lượng nhanh hơn 25%.'},
- {id:'kitchen',n:'Bếp',price:2500,cap:6,hunger:.8,d:'Gần đồ ăn: mèo ở đây đói chậm hơn 20%.'},
- {id:'balcony',n:'Ban công',price:3000,cap:6,happy:8,outdoor:1,d:'Ngoài trời: +8 độ vui, hợp với mèo thích tắm nắng.'},
- {id:'bathroom',n:'Phòng tắm',price:4000,cap:5,happy:4,regen:1.1,d:'Sạch sẽ, mát mẻ: +4 độ vui, hồi năng lượng nhanh hơn 10%.'},
- {id:'playroom',n:'Phòng chơi',price:6000,cap:10,happy:6,d:'Rộng và nhiều màu: +6 độ vui.'},
- {id:'dining',n:'Phòng ăn',price:8000,cap:8,thank:2,d:'Mỗi bữa ăn được thêm 2 xu cảm ơn từ mỗi bé.'},
- {id:'attic',n:'Gác mái',price:10000,cap:6,regen:1.2,happy:3,d:'Góc riêng yên ắng: hồi năng lượng nhanh hơn 20%, +3 độ vui.'},
- {id:'garden',n:'Sân vườn',price:12000,cap:12,happy:10,outdoor:1,d:'Ngoài trời, rộng: +10 độ vui.'},
- {id:'library',n:'Thư viện',price:16000,cap:8,coin:.06,d:'Mèo ở đây +6% xu viễn chinh.'},
- {id:'gameroom',n:'Phòng game',price:20000,cap:10,happy:9,d:'Đèn neon và máy chơi game: +9 độ vui.'},
- {id:'greenhouse',n:'Nhà kính',price:26000,cap:8,happy:7,hunger:.9,outdoor:1,d:'Đầy cây xanh: +7 độ vui, đói chậm hơn 10%, tính là ngoài trời.'},
- {id:'tatami',n:'Phòng Nhật',price:32000,cap:8,regen:1.25,happy:5,d:'Chiếu tatami và cửa giấy: hồi năng lượng nhanh hơn 25%, +5 độ vui.'},
- {id:'basement',n:'Tầng hầm',price:40000,cap:10,night:.10,d:'Mèo ở đây +10% xu khi xuất phát ban đêm.'},
- {id:'pool',n:'Hồ bơi',price:50000,cap:10,happy:8,outdoor:1,water:1,d:'+8 độ vui. Mèo thích nước thêm +10, mèo sợ nước −10.'},
- {id:'rooftop',n:'Sân thượng',price:65000,cap:12,happy:6,outdoor:1,ticket:.03,d:'Ngoài trời: +6 độ vui, +3% cơ hội nhặt vé gacha.'},
+ {id:'bedroom',n:'Phòng ngủ',price:600,cap:8,regen:1.25,d:'Yên tĩnh: hồi năng lượng nhanh hơn 25%.'},
+ {id:'kitchen',n:'Bếp',price:850,cap:6,hunger:.8,d:'Gần đồ ăn: mèo ở đây đói chậm hơn 20%.'},
+ {id:'balcony',n:'Ban công',price:1200,cap:6,happy:8,outdoor:1,d:'Ngoài trời: +8 độ vui, hợp với mèo thích tắm nắng.'},
+ {id:'bathroom',n:'Phòng tắm',price:1700,cap:5,happy:4,regen:1.1,d:'Sạch sẽ, mát mẻ: +4 độ vui, hồi năng lượng nhanh hơn 10%.'},
+ {id:'playroom',n:'Phòng chơi',price:2400,cap:10,happy:6,d:'Rộng và nhiều màu: +6 độ vui.'},
+ {id:'dining',n:'Phòng ăn',price:3300,cap:8,thank:2,d:'Mỗi bữa ăn được thêm 2 xu cảm ơn từ mỗi bé.'},
+ {id:'attic',n:'Gác mái',price:4600,cap:6,regen:1.2,happy:3,d:'Góc riêng yên ắng: hồi năng lượng nhanh hơn 20%, +3 độ vui.'},
+ {id:'garden',n:'Sân vườn',price:6500,cap:12,happy:10,outdoor:1,d:'Ngoài trời, rộng: +10 độ vui.'},
+ {id:'library',n:'Thư viện',price:9000,cap:8,coin:.06,d:'Mèo ở đây +6% xu viễn chinh.'},
+ {id:'gameroom',n:'Phòng game',price:12500,cap:10,happy:9,d:'Đèn neon và máy chơi game: +9 độ vui.'},
+ {id:'greenhouse',n:'Nhà kính',price:17500,cap:8,happy:7,hunger:.9,outdoor:1,d:'Đầy cây xanh: +7 độ vui, đói chậm hơn 10%, tính là ngoài trời.'},
+ {id:'tatami',n:'Phòng Nhật',price:24500,cap:8,regen:1.25,happy:5,d:'Chiếu tatami và cửa giấy: hồi năng lượng nhanh hơn 25%, +5 độ vui.'},
+ {id:'basement',n:'Tầng hầm',price:34000,cap:10,night:.10,d:'Mèo ở đây +10% xu khi xuất phát ban đêm.'},
+ {id:'pool',n:'Hồ bơi',price:48000,cap:10,happy:8,outdoor:1,water:1,d:'+8 độ vui. Mèo thích nước thêm +10, mèo sợ nước −10.'},
+ {id:'rooftop',n:'Sân thượng',price:67000,cap:12,happy:6,outdoor:1,ticket:.03,d:'Ngoài trời: +6 độ vui, +3% cơ hội nhặt vé gacha.'},
  {id:'royal',n:'Phòng hoàng gia',price:90000,cap:12,happy:8,coin:.10,d:'Thảm đỏ, cột vàng: +8 độ vui, +10% xu viễn chinh.'},
 ];
 const ROOM=Object.fromEntries(ROOMS.map(r=>[r.id,r]));
@@ -295,11 +295,11 @@ ROOM.wait={id:'wait',n:'Phòng chờ',cap:Infinity,wait:1,d:'Nơi ở tạm củ
 
 /* ============ ĐIỂM VIỄN CHINH ============ */
 const DESTS=[
- {id:'alley',n:'Quanh xóm',ic:'🏘',min:10,coin:50,en:30,lvl:1,tags:[],d:'Gần nhà, an toàn.'},
- {id:'park',n:'Công viên',ic:'🌳',min:10,coin:55,en:30,lvl:1,tags:['nature'],d:'Thiên nhiên.'},
- {id:'market',n:'Chợ cá',ic:'🐟',min:10,coin:65,en:35,lvl:2,tags:['crowd'],d:'Đông người.'},
- {id:'lake',n:'Bờ hồ',ic:'🎣',min:20,coin:120,en:45,lvl:3,tags:['water','nature'],d:'Gần nước, thiên nhiên.'},
- {id:'harbor',n:'Bến cảng',ic:'⚓',min:30,coin:200,en:55,lvl:5,tags:['water','crowd'],d:'Gần nước, đông người.'},
+ {id:'alley',n:'Quanh xóm',ic:'🏘',min:10,coin:50,en:25,lvl:1,tags:[],d:'Gần nhà, an toàn.'},
+ {id:'park',n:'Công viên',ic:'🌳',min:10,coin:55,en:25,lvl:1,tags:['nature'],d:'Thiên nhiên.'},
+ {id:'market',n:'Chợ cá',ic:'🐟',min:10,coin:65,en:30,lvl:2,tags:['crowd'],d:'Đông người.'},
+ {id:'lake',n:'Bờ hồ',ic:'🎣',min:20,coin:115,en:40,lvl:3,tags:['water','nature'],d:'Gần nước, thiên nhiên.'},
+ {id:'harbor',n:'Bến cảng',ic:'⚓',min:30,coin:165,en:50,lvl:5,tags:['water','crowd'],d:'Gần nước, đông người.'},
 ];
 const DEST=Object.fromEntries(DESTS.map(d=>[d.id,d]));
 const TAGN={crowd:'đông người',water:'gần nước',nature:'thiên nhiên'};
@@ -525,33 +525,39 @@ FURNS.push(
  F('banhchung','Bánh chưng',180,'floor',16,12,'season','banhchung',[],{hunger:.95,set:'Tết',d:'Mèo trong phòng đói chậm hơn 5%.',use:PLAY}),
  F('pumpkin','Bí ngô Halloween',240,'floor',20,18,'season','pumpkin',[],{happy:4,set:'Halloween',d:'+4 độ vui.',use:PLAY}),
  F('batgar','Dây dơi',260,'wall',60,12,'season','garland',['#5a4a7a','#f0a050'],{g:{night:.04},set:'Halloween',d:'+4% xu ban đêm.'}),
- F('xmastree','Cây thông Noel',800,'floor',30,46,'season','xmastree',[],{happy:8,set:'Noel',d:'+8 độ vui.'}),
- F('wreath','Vòng nguyệt quế',220,'wall',20,20,'season','wreath',[],{happy:3,set:'Noel',d:'+3 độ vui.'}),
- F('snowman','Người tuyết',300,'floor',18,28,'season','snowman',[],{happy:4,set:'Noel',d:'+4 độ vui.'}),
- F('giftpile','Chồng quà',350,'floor',26,18,'season','giftpile',[],{happy:3,g:{ticket:.02},set:'Noel',d:'+3 độ vui, +2% cơ hội nhặt vé.',use:{dx:0,dy:-16,front:1,emo:'note'}}),
- F('winsnow','Cửa sổ tuyết rơi',450,'wall',46,38,'season','window',['snow'],{happy:6,set:'Noel',d:'+6 độ vui.',use:{floor:1,emo:'excl'}}),
+ F('xmastree','Cây thông Noel',1200,'floor',30,46,'season','xmastree',[],{happy:8,set:'Noel',d:'+8 độ vui.'}),
+ F('wreath','Vòng nguyệt quế',350,'wall',20,20,'season','wreath',[],{happy:3,set:'Noel',d:'+3 độ vui.'}),
+ F('snowman','Người tuyết',450,'floor',18,28,'season','snowman',[],{happy:4,set:'Noel',d:'+4 độ vui.'}),
+ F('giftpile','Chồng quà',500,'floor',26,18,'season','giftpile',[],{happy:3,g:{ticket:.02},set:'Noel',d:'+3 độ vui, +2% cơ hội nhặt vé.',use:{dx:0,dy:-16,front:1,emo:'note'}}),
+ F('winsnow','Cửa sổ tuyết rơi',700,'wall',46,38,'season','window',['snow'],{happy:6,set:'Noel',d:'+6 độ vui.',use:{floor:1,emo:'excl'}}),
  // bộ chủ đề
- F('tatamimat','Chiếu tatami',320,'rug',80,24,'set','rugr',['#b8c48a','#8a9a5e',0],{happy:4,regen:1.05,set:'Nhật',d:'+4 độ vui, hồi năng lượng nhanh hơn 5%.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}}),
- F('kotatsu','Bàn sưởi kotatsu',900,'floor',44,22,'set','kotatsu',['#e2484e'],{happy:7,regen:1.1,set:'Nhật',d:'+7 độ vui, hồi năng lượng nhanh hơn 10%.',use:{dx:-14,dy:-2,front:1,sleep:1,emo:'z'}}),
- F('bonsai','Bonsai',420,'floor',26,26,'set','bonsai',[],{happy:4,set:'Nhật',d:'+4 độ vui.'}),
- F('paperlamp','Đèn lồng giấy',300,'wall',14,22,'set','lantern',['#f6eedc'],{happy:3,set:'Nhật',d:'+3 độ vui.'}),
- F('throne','Ngai vàng',2500,'floor',30,46,'set','throne',[],{happy:8,g:{coin:.06},set:'Hoàng gia',d:'+8 độ vui, +6% xu viễn chinh.',use:{dx:0,dy:-19,front:1,sleep:1,emo:'z'}}),
- F('redcarpet','Thảm đỏ',600,'rug',80,24,'set','rugr',['#c8465a','#f2c84a',0],{happy:5,set:'Hoàng gia',d:'+5 độ vui.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}}),
- F('royalbed','Giường hoàng gia',1200,'floor',44,18,'set','bed',['#c8465a','#fbe7a8'],{happy:5,regen:1.15,set:'Hoàng gia',d:'+5 độ vui, hồi năng lượng nhanh hơn 15%.',use:NAP}),
- F('goldmirror','Gương mạ vàng',700,'wall',16,24,'set','mirror',['#e8b83a'],{happy:5,set:'Hoàng gia',d:'+5 độ vui.'}),
- F('cauldron','Vạc độc dược',650,'floor',24,22,'set','cauldron',[],{happy:4,g:{ticket:.03},set:'Harry Potter',d:'+4 độ vui, +3% cơ hội nhặt vé.',use:{dx:17,dy:2,front:1,emo:'excl'}}),
- F('hbanner','Cờ nhà sư tử',380,'wall',14,30,'set','banner',['#b8323a','#f2c230'],{happy:3,g:{coin:.03},set:'Harry Potter',d:'+3 độ vui, +3% xu.'}),
- F('hbanner2','Cờ nhà rắn',380,'wall',14,30,'set','banner',['#2f7a52','#cfd4dc'],{happy:3,g:{night:.04},set:'Harry Potter',d:'+3 độ vui, +4% xu ban đêm.'}),
- F('gdesk','Bàn máy tính',1100,'floor',44,30,'set','gdesk',[],{happy:7,set:'Gaming',d:'+7 độ vui.',use:{dx:-10,dy:-17,front:1,sleep:1,emo:'z'}}),
- F('gchair','Ghế gaming',700,'floor',22,34,'set','gchair',['#3a3448','#e2484e'],{happy:5,set:'Gaming',d:'+5 độ vui.',use:{dx:0,dy:-14,front:1,sleep:1,emo:'z'}}),
- F('neon','Đèn neon',450,'wall',30,16,'set','neon',['#f06ad0'],{happy:4,g:{night:.03},set:'Gaming',d:'+4 độ vui, +3% xu ban đêm.'}),
- F('tv','Tivi',900,'floor',36,30,'set','tv',[],{happy:6,set:'Gaming',d:'+6 độ vui.',use:{dx:-24,dy:2,front:1,emo:'excl'}}),
- F('rocket','Tên lửa đồ chơi',800,'floor',16,30,'set','rocket',[],{happy:5,g:{speed:.04},set:'Vũ trụ',d:'+5 độ vui, viễn chinh nhanh hơn 4%.',use:PLAY}),
- F('planet','Hành tinh treo',420,'wall',22,16,'set','planet',['#f0a050'],{happy:4,set:'Vũ trụ',d:'+4 độ vui.'}),
- F('winspace','Cửa sổ phi thuyền',650,'wall',46,38,'set','window',['space'],{happy:6,g:{night:.04},set:'Vũ trụ',d:'+6 độ vui, +4% xu ban đêm.',use:{floor:1,emo:'excl'}}),
- F('rugmoon','Thảm thiên hà',400,'rug',70,22,'set','rug',['#3d4f8f','#5a6fb0','#fff3b0'],{happy:5,set:'Vũ trụ',d:'+5 độ vui.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}})
+ F('tatamimat','Chiếu tatami',650,'rug',80,24,'set','rugr',['#b8c48a','#8a9a5e',0],{happy:4,regen:1.05,set:'Nhật',d:'+4 độ vui, hồi năng lượng nhanh hơn 5%.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}}),
+ F('kotatsu','Bàn sưởi kotatsu',1800,'floor',44,22,'set','kotatsu',['#e2484e'],{happy:7,regen:1.1,set:'Nhật',d:'+7 độ vui, hồi năng lượng nhanh hơn 10%.',use:{dx:-14,dy:-2,front:1,sleep:1,emo:'z'}}),
+ F('bonsai','Bonsai',850,'floor',26,26,'set','bonsai',[],{happy:4,set:'Nhật',d:'+4 độ vui.'}),
+ F('paperlamp','Đèn lồng giấy',600,'wall',14,22,'set','lantern',['#f6eedc'],{happy:3,set:'Nhật',d:'+3 độ vui.'}),
+ F('throne','Ngai vàng',7500,'floor',30,46,'set','throne',[],{happy:8,g:{coin:.06},set:'Hoàng gia',d:'+8 độ vui, +6% xu viễn chinh.',use:{dx:0,dy:-19,front:1,sleep:1,emo:'z'}}),
+ F('redcarpet','Thảm đỏ',1800,'rug',80,24,'set','rugr',['#c8465a','#f2c84a',0],{happy:5,set:'Hoàng gia',d:'+5 độ vui.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}}),
+ F('royalbed','Giường hoàng gia',3600,'floor',44,18,'set','bed',['#c8465a','#fbe7a8'],{happy:5,regen:1.15,set:'Hoàng gia',d:'+5 độ vui, hồi năng lượng nhanh hơn 15%.',use:NAP}),
+ F('goldmirror','Gương mạ vàng',2100,'wall',16,24,'set','mirror',['#e8b83a'],{happy:5,set:'Hoàng gia',d:'+5 độ vui.'}),
+ F('cauldron','Vạc độc dược',1000,'floor',24,22,'set','cauldron',[],{happy:4,g:{ticket:.03},set:'Harry Potter',d:'+4 độ vui, +3% cơ hội nhặt vé.',use:{dx:17,dy:2,front:1,emo:'excl'}}),
+ F('hbanner','Cờ nhà sư tử',550,'wall',14,30,'set','banner',['#b8323a','#f2c230'],{happy:3,g:{coin:.03},set:'Harry Potter',d:'+3 độ vui, +3% xu.'}),
+ F('hbanner2','Cờ nhà rắn',550,'wall',14,30,'set','banner',['#2f7a52','#cfd4dc'],{happy:3,g:{night:.04},set:'Harry Potter',d:'+3 độ vui, +4% xu ban đêm.'}),
+ F('gdesk','Bàn máy tính',1600,'floor',44,30,'set','gdesk',[],{happy:7,set:'Gaming',d:'+7 độ vui.',use:{dx:-10,dy:-17,front:1,sleep:1,emo:'z'}}),
+ F('gchair','Ghế gaming',1000,'floor',22,34,'set','gchair',['#3a3448','#e2484e'],{happy:5,set:'Gaming',d:'+5 độ vui.',use:{dx:0,dy:-14,front:1,sleep:1,emo:'z'}}),
+ F('neon','Đèn neon',700,'wall',30,16,'set','neon',['#f06ad0'],{happy:4,g:{night:.03},set:'Gaming',d:'+4 độ vui, +3% xu ban đêm.'}),
+ F('tv','Tivi',1400,'floor',36,30,'set','tv',[],{happy:6,set:'Gaming',d:'+6 độ vui.',use:{dx:-24,dy:2,front:1,emo:'excl'}}),
+ F('rocket','Tên lửa đồ chơi',1600,'floor',16,30,'set','rocket',[],{happy:5,g:{speed:.04},set:'Vũ trụ',d:'+5 độ vui, viễn chinh nhanh hơn 4%.',use:PLAY}),
+ F('planet','Hành tinh treo',850,'wall',22,16,'set','planet',['#f0a050'],{happy:4,set:'Vũ trụ',d:'+4 độ vui.'}),
+ F('winspace','Cửa sổ phi thuyền',1300,'wall',46,38,'set','window',['space'],{happy:6,g:{night:.04},set:'Vũ trụ',d:'+6 độ vui, +4% xu ban đêm.',use:{floor:1,emo:'excl'}}),
+ F('rugmoon','Thảm thiên hà',800,'rug',70,22,'set','rug',['#3d4f8f','#5a6fb0','#fff3b0'],{happy:5,set:'Vũ trụ',d:'+5 độ vui.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}})
 );
 FURNS.forEach(f=>FURN[f.id]=f);
+/* ============ MỞ KHÓA CỬA HÀNG THEO CẤP ============
+   Mỗi phòng, món ăn và món nội thất có trường ul: cấp tối thiểu để MUA (đồ đã có thì vẫn dùng bình thường).
+   Cách gán: phòng mở lần lượt theo giá, gần như mỗi cấp một phòng; món ăn có buff mở dần trong 8 cấp đầu;
+   nội thất mặc định theo bậc giá (priceLv), trừ vài món gán tay cho hợp lý (ITEM_LV: bát ăn, tháp leo theo thứ tự từ thấp lên cao, sofa, bể cá);
+   đồ theo mùa mở ở cấp 5, 7, 9; mỗi bộ chủ đề mở cùng lúc với căn phòng hợp với nó (SET_LV). MAX_LV là cấp mở món cuối cùng. */
+// (các bảng và phép gán nằm ở cuối file, sau khi mọi món nội thất đã được khai báo)
 const HAPPY_CAP=35; // tổng độ vui từ nội thất trong một phòng không vượt quá mức này
 
 /* ============ CÂU THOẠI CỦA MÈO 5★ (hiện ở thẻ giới thiệu sau intro) ============ */
@@ -565,12 +571,12 @@ const towerLv=(w,h,n)=>{const a=[];for(let i=0;i<n-1;i++)a.push([(i%2?1:-1)*Math
 FURN.tree.lv=FURN.treegreen.lv=[[-6,-36],[2,-71]];
 [
  F('tower3','Tháp mèo 3 tầng',900,'floor',44,72,'climb','tower',['#86b2dc',3],{happy:6,lv:towerLv(44,72,3),d:'+6 độ vui. Ba tầng để mèo nhảy lên nằm.'}),
- F('tower5','Tháp mèo 5 tầng',2200,'floor',52,112,'climb','tower',['#e8a0b0',5],{happy:9,g:{coin:.04},lv:towerLv(52,112,5),d:'+9 độ vui, +4% xu viễn chinh. Năm tầng cao gần chạm trần.'}),
+ F('tower5','Tháp mèo 5 tầng',3300,'floor',52,112,'climb','tower',['#e8a0b0',5],{happy:9,g:{coin:.04},lv:towerLv(52,112,5),d:'+9 độ vui, +4% xu viễn chinh. Năm tầng cao gần chạm trần.'}),
  F('climbrack','Giá leo gỗ',700,'floor',48,66,'climb','rack',[],{happy:5,lv:[[-8,-22],[8,-42],[0,-63]],d:'+5 độ vui. Ba bậc gỗ so le.'}),
  F('tallcase','Tủ sách cao',1100,'floor',36,84,'climb','tallcase',[],{happy:6,g:{coin:.04},lv:[[0,-27],[0,-83]],d:'+6 độ vui, +4% xu viễn chinh. Có ngăn trống và nóc tủ cho mèo.'}),
  F('hammock','Võng treo',400,'floor',54,36,'climb','hammock',['#f2c84a'],{happy:3,regen:1.1,lv:[[0,-15]],lvs:1,d:'+3 độ vui, hồi năng lượng nhanh hơn 10%. Mèo nhảy lên nằm đung đưa.'}),
- F('treehouse','Nhà gỗ trên cao',3200,'floor',60,100,'climb','treehouse',[],{happy:10,lv:[[-20,-24],[-16,-48],[8,-87]],d:'+10 độ vui. Có bậc thang, sàn gỗ và mái nhà để trèo.'}),
- F('gianttree','Cây mèo khổng lồ',4000,'floor',72,124,'climb','gtree',[],{happy:12,g:{coin:.05},lv:[[-20,-24],[20,-46],[-20,-68],[20,-90],[0,-113]],d:'+12 độ vui, +5% xu viễn chinh. Năm tán lá cho cả đàn cùng trèo.'}),
+ F('treehouse','Nhà gỗ trên cao',4800,'floor',60,100,'climb','treehouse',[],{happy:10,lv:[[-20,-24],[-16,-48],[8,-87]],d:'+10 độ vui. Có bậc thang, sàn gỗ và mái nhà để trèo.'}),
+ F('gianttree','Cây mèo khổng lồ',12000,'floor',72,124,'climb','gtree',[],{happy:12,g:{coin:.05},lv:[[-20,-24],[20,-46],[-20,-68],[20,-90],[0,-113]],d:'+12 độ vui, +5% xu viễn chinh. Năm tán lá cho cả đàn cùng trèo.'}),
  F('stairs','Kệ bậc thang',450,'wall',64,40,'climb','stairs',['#cea074'],{happy:4,lv:[[-21,-10],[0,-22],[21,-34]],d:'+4 độ vui. Ba bậc kệ treo tường để mèo nhảy dần lên.'}),
  F('bridge','Cầu treo',550,'wall',80,16,'climb','bridge',[],{happy:4,lv:[[-24,-7],[22,-7]],d:'+4 độ vui. Cầu dây nối hai đầu, mèo đi qua đi lại trên cao.'}),
  /* bát ăn: cap = số suất mỗi lần đổ, eff = hiệu quả thức ăn, hp = độ vui thêm khi ăn, coin = xu cảm ơn thêm, auto = tự đổ hạt khô */
@@ -580,3 +586,14 @@ FURN.tree.lv=FURN.treegreen.lv=[[-6,-36],[2,-71]];
  F('feeder','Máy cho ăn tự động',1500,'floor',20,28,'bowl','feeder',[],{bowl:{cap:4,auto:1},d:'4 suất. Cứ 10 phút tự đổ thêm hạt khô cho đầy, kể cả khi bạn vắng (tối đa 8 giờ). Chỉ trừ xu cho số suất mèo đã ăn.'}),
  F('bowlgold','Bát vàng',3000,'floor',22,11,'bowl','bowl',['#f2c84a','#d6a020'],{bowl:{cap:8,eff:1.25,coin:3},d:'8 suất. Thức ăn hiệu quả hơn 25%, mỗi bé cảm ơn thêm 3 xu.'}),
 ].forEach(f=>{FURNS.push(f);FURN[f.id]=f});
+// gán cấp mở khóa (trường ul; trường lv của nội thất là các tầng leo trèo, đừng nhầm)
+const priceLv=p=>p<=150?1:p<=260?2:p<=400?3:p<=600?4:p<=900?5:p<=1200?6:p<=1500?7:p<=2200?8:p<=3200?10:12;
+const ROOM_LV={living:1,bedroom:2,kitchen:3,balcony:4,bathroom:5,playroom:6,dining:7,attic:8,garden:9,library:10,gameroom:11,greenhouse:12,tatami:13,basement:14,pool:15,rooftop:16,royal:18};
+const FOOD_LV={kibble:1,pate:1,churu:2,tuna:3,chicken:4,catnip:5,salmon:6,premium:8};
+const SET_LV={'Tết':5,'Halloween':7,'Noel':9,'Harry Potter':10,'Gaming':11,'Nhật':13,'Vũ trụ':16,'Hoàng gia':18}; // Harry Potter đi với Thư viện, Gaming với Phòng game, Nhật với Phòng Nhật, Vũ trụ với Sân thượng, Hoàng gia với Phòng hoàng gia
+const ITEM_LV={rug:1,sofa:3,tree:4,treegreen:5,tank:6,bowl:1,bowlsteel:3,bowlclay:4,feeder:7,bowlgold:10,tower3:6,tallcase:7,tower5:9,treehouse:11,gianttree:17};
+const MAX_LV=18;
+FURNS.forEach(f=>{f.ul=ITEM_LV[f.id]||(f.set&&SET_LV[f.set])||priceLv(f.price)});
+ROOMS.forEach(r=>{r.ul=ROOM_LV[r.id]||1});
+FOODS.forEach(f=>{f.ul=FOOD_LV[f.id]||1});
+const unlocksAt=n=>[...ROOMS.filter(r=>r.ul===n).map(r=>r.n),...FOODS.filter(f=>f.ul===n).map(f=>f.n),...FURNS.filter(f=>f.ul===n).map(f=>f.n)]; // tên mọi thứ mở ở đúng cấp n

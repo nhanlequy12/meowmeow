@@ -47,12 +47,16 @@ function save(){S.last=now(); try{localStorage.setItem(KEY,JSON.stringify(S))}ca
 /* ---------- cấp độ ---------- */
 const slotCount=()=>Math.min(5,1+Math.floor((S.level-1)/2));
 function fixSlots(){while(S.trips.length<slotCount())S.trips.push(null)}
-const xpNeed=()=>30*S.level;
+// Kinh nghiệm cần để lên cấp kế: 30 ở cấp 1, mỗi cấp nhiều hơn cấp trước 45% (làm tròn tới 5). Đo bằng bot chơi đều tay: cấp 5 sau hơn 1 giờ, cấp 9 sau khoảng 3,5 giờ,
+// cấp 18 sau khoảng 32 giờ, tức mỗi căn phòng vừa đủ tiền mua không lâu sau khi được mở khóa. Sau cấp 18 (mở hết cửa hàng) thì không tăng nữa.
+const xpNeed=()=>Math.round(30*Math.pow(1.45,Math.min(S.level,MAX_LV)-1)/5)*5;
+const locked=x=>!!x&&S.level<(x.ul||1);   // phòng, món ăn hay nội thất chưa đủ cấp để mua
 function addXp(n){
   S.xp+=Math.round(n);
   while(S.xp>=xpNeed()){S.xp-=xpNeed();S.level++;const b=S.trips.length;fixSlots();
     const d=DESTS.filter(x=>x.lvl===S.level).map(x=>x.n);
-    notify('🎉 Lên cấp '+S.level+'!'+(S.trips.length>b?' Mở thêm 1 ô viễn chinh.':'')+(d.length?' Mở điểm mới: '+d.join(', ')+'.':''));}
+    const un=unlocksAt(S.level);
+    notify('🎉 Lên cấp '+S.level+'!'+(S.trips.length>b?' Mở thêm 1 ô viễn chinh.':'')+(d.length?' Mở điểm mới: '+d.join(', ')+'.':'')+(un.length?' Cửa hàng mở: '+un.slice(0,4).join(', ')+(un.length>4?' và '+(un.length-4)+' món khác':'')+'.':''));}
 }
 
 /* ---------- mèo ---------- */
@@ -283,17 +287,18 @@ function eatCheck(rid,all){
 }
 function feedRoom(rid,fid){
   const cats=homeCats(rid),ready=bowlsIn(rid).filter(b=>now()>=(b.at||0));
-  if(!ready.length||!cats.length)return null;
+  if(!ready.length||!cats.length||locked(FOOD[fid]))return null;
   let cost=0,n=0;
   ready.forEach(b=>{const p=bowlCost(b,fid);if(S.coins<p)return;S.coins-=p;cost+=p;n++;fillBowl(b,fid)});
   if(!n)return null;
   const r=eatCheck(rid,true); addXp(5); save();
   return Object.assign(r,{cost,bowls:n,miss:cats.length-r.n});
 }
+const PET_CD=600000; // mỗi bé nhận xu vuốt ve 10 phút một lần (trước là 20 giây: bấm liên tục kiếm xu và kinh nghiệm nhanh hơn cả viễn chinh)
 function petCat(c){
-  if(now()-(c.petAt||0)<20000)return 0;
+  if(now()-(c.petAt||0)<PET_CD)return 0;
   c.petAt=now();
-  const n=Math.round((1+gEff().pet+tE(c,'pet'))*gMult()); S.coins+=n;
+  const n=Math.round((c.star+gEff().pet+tE(c,'pet'))*gMult()); S.coins+=n;   // mỗi bé cho số xu bằng số sao, cùng nhịp 10 phút với bát ăn và viễn chinh
   c.hp=clamp(c.hp+3*(tE(c,'petHappy')||1),0,100);
   addXp(1); save(); return n;
 }
@@ -335,7 +340,7 @@ function moveCat(uid,rid){
 
 /* ---------- mua sắm ---------- */
 function buyItem(fid,rid,x){
-  const f=FURN[fid]; if(S.coins<f.price)return null;
+  const f=FURN[fid]; if(locked(f)||S.coins<f.price)return null;
   S.coins-=f.price;
   const it={iid:S.nid++,fid,room:rid,x:clamp(x,f.w/2,WORLD_W-f.w/2),y:f.kind==='wall'?70:rnd(125,160),flip:false,broken:false};
   S.items.push(it); addXp(8); save(); return it;
@@ -343,7 +348,7 @@ function buyItem(fid,rid,x){
 function sellItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it)return 0;S.items=S.items.filter(i=>i!==it);const v=Math.round(FURN[it.fid].price*.25);S.coins+=v;save();return v}
 function repairCost(it){return Math.round(FURN[it.fid].price*.3)}
 function repairItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it||!it.broken||S.coins<repairCost(it))return false;S.coins-=repairCost(it);it.broken=false;save();return true}
-function buyRoom(rid){const r=ROOM[rid];if(S.rooms[rid]||S.coins<r.price)return false;S.coins-=r.price;S.rooms[rid]={bowlAt:0};giveBowl(rid);addXp(20);save();return true}
+function buyRoom(rid){const r=ROOM[rid];if(S.rooms[rid]||locked(r)||S.coins<r.price)return false;S.coins-=r.price;S.rooms[rid]={bowlAt:0};giveBowl(rid);addXp(20);save();return true}
 function clampItem(it){
   const f=FURN[it.fid];
   it.x=clamp(it.x,f.w/2,WORLD_W-f.w/2);

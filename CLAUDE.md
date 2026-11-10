@@ -42,7 +42,8 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 | `ec7543c` | Naruto và Goku lên 5★: tạo hình mới, dạng hiếm, intro riêng, Cân Đẩu Vân, biến hình và phân thân trong phòng (mục 10) |
 | `eba7f4e` | 13 bé 5★ còn lại có trạng thái đặc trưng 60 giây trong phòng; giọng meo tổng hợp trong intro của cả 15 bé (mục 11) |
 | `24557f0` | Thuộc tính riêng cho năm giống thật 5★; Admin chọn màu hiếm; giọng meo một chất giọng; máy chủ nhỏ `server.py` và quản lý nhiều người chơi (mục 12, 13) |
-| chưa commit | Trang phục hiếm cho mọi 5★, 5★ không còn màu hiếm, giọng meo thanh hơn (mục 14) |
+| `34daae6` | Trang phục hiếm cho mọi 5★, 5★ không còn màu hiếm, giọng meo thanh hơn (mục 14) |
+| chưa commit | Mở khóa cửa hàng theo cấp (mục 15); cân lại kinh tế (mục 16) |
 
 ## 3. Luật chơi và số liệu hiện tại
 
@@ -79,8 +80,8 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 - Mèo mới vào phòng còn chỗ đầu tiên; hết chỗ thì vào Phòng chờ (không giới hạn, bị trừ 10 độ vui).
 
 ### Viễn chinh
-- Số ô viễn chinh: `min(5, 1 + (cấp−1)/2)`. Lên cấp cần `30 × cấp` kinh nghiệm.
-- 5 điểm đến: Quanh xóm (10 phút, 50 xu, cấp 1), Công viên (10 phút, 55 xu, cấp 1), Chợ cá (10 phút, 65 xu, cấp 2), Bờ hồ (20 phút, 120 xu, cấp 3), Bến cảng (30 phút, 200 xu, cấp 5). Mỗi điểm có thẻ `crowd`, `water`, `nature` để trait cộng hoặc trừ xu.
+- Số ô viễn chinh: `min(5, 1 + (cấp−1)/2)`. Lên cấp cần `30 × 1,45^(cấp−1)` kinh nghiệm, làm tròn tới 5 (30, 45, 65, 90, 135, 190, 280, 405, 585, 850…; từ cấp 18 trở đi giữ 16.610).
+- 5 điểm đến (thời gian, xu gốc, năng lượng, cấp mở): Quanh xóm (10 phút, 50 xu, 25⚡, cấp 1), Công viên (10 phút, 55 xu, 25⚡, cấp 1), Chợ cá (10 phút, 65 xu, 30⚡, cấp 2), Bờ hồ (20 phút, 115 xu, 40⚡, cấp 3), Bến cảng (30 phút, 165 xu, 50⚡, cấp 5). Chuyến dài tiện và đỡ tốn sức hơn, nhưng xu mỗi phút thấp hơn Chợ cá. Mỗi điểm có thẻ `crowd`, `water`, `nature` để trait cộng hoặc trừ xu.
 - Xu = xu gốc × hệ số sao × (1 + tổng bonus) × hệ số độ vui × các hệ số nhân. Mèo đói dưới 20 hoặc thiếu năng lượng thì không đi được.
 - Về tới nơi hiện popup trượt xuống từ trên (popup viễn chinh).
 
@@ -104,7 +105,7 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 - Thiếu suất: bé đói dưới 20 ra đứng chờ cạnh bát với dấu chấm than đỏ, và có thông báo "Thiếu bát ăn" tối đa 5 phút một lần mỗi phòng.
 
 ### Vuốt ve
-Chạm vào mèo: mỗi bé 20 giây cho xu một lần, cộng 3 độ vui. Từ commit `91b4319`, chạm vào mèo còn bật camera theo dõi.
+Chạm vào mèo: mỗi bé 10 phút nhận xu một lần (`PET_CD`), số xu bằng số sao của bé (cộng thêm từ Cuộn len và trait), cộng 3 độ vui và 1 kinh nghiệm. Từ commit `91b4319`, chạm vào mèo còn bật camera theo dõi.
 
 ### Cài đặt
 Chủ đề sáng hoặc tối, độ tối nền phòng, và cỡ hạt cườm (`S.set.bead`): "Tự động" hoặc "Hạt to, rõ" (ép mức zoom nhỏ nhất lên 6, tức mỗi hạt ít nhất 3 điểm ảnh thật).
@@ -115,21 +116,21 @@ Chủ đề sáng hoặc tối, độ tối nền phòng, và cỡ hạt cườm
 | Phòng | Giá | Chứa | Bonus |
 |---|---|---|---|
 | Phòng khách | 0 | 8 | Không |
-| Phòng ngủ | 1.500 | 8 | Hồi năng lượng +25% |
-| Bếp | 2.500 | 6 | Đói chậm hơn 20% |
-| Ban công | 3.000 | 6 | +8 vui, ngoài trời |
-| Phòng tắm | 4.000 | 5 | +4 vui, hồi năng lượng +10% |
-| Phòng chơi | 6.000 | 10 | +6 vui |
-| Phòng ăn | 8.000 | 8 | +2 xu cảm ơn mỗi bé mỗi bữa |
-| Gác mái | 10.000 | 6 | Hồi năng lượng +20%, +3 vui |
-| Sân vườn | 12.000 | 12 | +10 vui, ngoài trời |
-| Thư viện | 16.000 | 8 | +6% xu viễn chinh |
-| Phòng game | 20.000 | 10 | +9 vui |
-| Nhà kính | 26.000 | 8 | +7 vui, đói chậm hơn 10%, ngoài trời |
-| Phòng Nhật | 32.000 | 8 | Hồi năng lượng +25%, +5 vui |
-| Tầng hầm | 40.000 | 10 | +10% xu khi đi ban đêm |
-| Hồ bơi | 50.000 | 10 | +8 vui, mèo thích nước +10, sợ nước −10 |
-| Sân thượng | 65.000 | 12 | +6 vui, +3% cơ hội nhặt vé, ngoài trời |
+| Phòng ngủ | 600 | 8 | Hồi năng lượng +25% |
+| Bếp | 850 | 6 | Đói chậm hơn 20% |
+| Ban công | 1.200 | 6 | +8 vui, ngoài trời |
+| Phòng tắm | 1.700 | 5 | +4 vui, hồi năng lượng +10% |
+| Phòng chơi | 2.400 | 10 | +6 vui |
+| Phòng ăn | 3.300 | 8 | +2 xu cảm ơn mỗi bé mỗi bữa |
+| Gác mái | 4.600 | 6 | Hồi năng lượng +20%, +3 vui |
+| Sân vườn | 6.500 | 12 | +10 vui, ngoài trời |
+| Thư viện | 9.000 | 8 | +6% xu viễn chinh |
+| Phòng game | 12.500 | 10 | +9 vui |
+| Nhà kính | 17.500 | 8 | +7 vui, đói chậm hơn 10%, ngoài trời |
+| Phòng Nhật | 24.500 | 8 | Hồi năng lượng +25%, +5 vui |
+| Tầng hầm | 34.000 | 10 | +10% xu khi đi ban đêm |
+| Hồ bơi | 48.000 | 10 | +8 vui, mèo thích nước +10, sợ nước −10 |
+| Sân thượng | 67.000 | 12 | +6 vui, +3% cơ hội nhặt vé, ngoài trời |
 | Phòng hoàng gia | 90.000 | 12 | +8 vui, +10% xu viễn chinh |
 
 Mỗi phòng có kiểu tường và sàn riêng (`THEMES` trong ui.js). Thế giới của một phòng rộng 480 × 170 ô; tường kết thúc ở hàng 96, mèo đi trên sàn từ hàng 106 đến 166.
@@ -142,7 +143,7 @@ Mỗi phòng có kiểu tường và sàn riêng (`THEMES` trong ui.js). Thế g
 - Nội thất nhiều tầng: Tháp mèo 3 tầng, Tháp mèo 5 tầng, Giá leo gỗ, Tủ sách cao, Võng treo, Nhà gỗ trên cao, Cây mèo khổng lồ, Kệ bậc thang (treo tường), Cầu treo (treo tường). Tháp mèo cũ (`tree`, `treegreen`) có 2 tầng.
 
 ### Admin
-Mở bằng Ctrl+Shift+A hoặc bấm 7 lần liên tiếp vào tiêu đề. Có: cộng xu, xu vô hạn, lấy mèo bất kỳ (ô màu `admCoats()` liệt kê đúng màu của giống đang chọn: màu thường, 💎 mắt quý hiếm, ⚡ dạng hiếm, ✨ màu hiếm), gacha miễn phí ép sao hoặc ép ra màu hiếm, mở hết phòng, nhận hết nội thất, bát sẵn sàng, lên cấp, cho viễn chinh về ngay, đặt lại chỉ số, cho cả đàn già thêm 10 ngày hoặc thành mèo con, xóa dữ liệu.
+Mở bằng Ctrl+Shift+A hoặc bấm 7 lần liên tiếp vào tiêu đề. Nút "Lên cấp" đưa thẳng lên `MAX_LV` (18) để mở hết cửa hàng. Có: cộng xu, xu vô hạn, lấy mèo bất kỳ (ô màu `admCoats()` liệt kê đúng màu của giống đang chọn: màu thường, 💎 mắt quý hiếm, ⚡ dạng hiếm, ✨ màu hiếm), gacha miễn phí ép sao hoặc ép ra màu hiếm, mở hết phòng, nhận hết nội thất, bát sẵn sàng, lên cấp, cho viễn chinh về ngay, đặt lại chỉ số, cho cả đàn già thêm 10 ngày hoặc thành mèo con, xóa dữ liệu.
 
 ## 4. Kiến trúc mã nguồn
 
@@ -382,7 +383,7 @@ Người dùng muốn Admin quản lý và theo dõi được khi có nhiều ng
 - Đã thử trên localhost bằng trình duyệt của Claude với một người chơi: vào tên, đồng bộ, sai và đúng mã quản trị, tặng xu, vé, mèo, thông báo, lệnh không bị áp dụng hai lần, cảnh báo xu bất thường, đặt lại, xóa hồ sơ. Chưa thử: nhiều máy thật cùng lúc qua LAN, điện thoại, tường lửa Windows.
 - Hạn chế: bản lưu trên máy chủ chỉ để xem, chưa có nút khôi phục về máy người chơi; người chơi vẫn sửa được localStorage của mình (máy chủ chỉ phát hiện qua cảnh báo); không có HTTPS, chỉ nên dùng trong mạng nhà; mỗi trình duyệt là một người chơi riêng, chưa có đăng nhập để chơi tiếp trên máy khác.
 
-## 14. Trang phục hiếm cho mọi 5★ (2026-11-10, chưa commit)
+## 14. Trang phục hiếm cho mọi 5★ (2026-11-10, commit `34daae6`)
 
 Luật do người dùng chốt: mèo trang phục không có màu hiếm; màu hiếm `r_*` chỉ dành cho giống thật từ 4★ trở xuống; 5★ thì có "trang phục hiếm" (trước gọi là "dạng hiếm", mọi chữ trong game đã đổi). Mỗi 5★ có ít nhất một trang phục hiếm gắn với chính nhân vật, phải đẹp và nổi hơn 5★ thường.
 
@@ -394,3 +395,37 @@ Luật do người dùng chốt: mèo trang phục không có màu hiếm; màu 
 - Giọng meo: người dùng chê bản trước rè và vang. Đổi sang sóng mềm ít bồi âm (`mewWave`, `createPeriodicWave`), bộ lọc Q thấp (0,8 và 1,6), bỏ hơi thở và rung nhanh. Vẫn chưa ai nghe thử.
 - Đã kiểm tra: vẽ thử mọi ngoại hình không lỗi; tỉ lệ; màu hiếm không còn rơi vào 5★ và mèo trang phục; xem bảng sprite, phòng và thẻ gacha trong trình duyệt. Chưa có người chơi thật xem.
 - Sửa theo yêu cầu người dùng sau khi xem bảng: Vader Trắng dùng bảng đảo sáng tối `INVT` (giáp trắng, mặt nạ xám nhạt, gân và viền xám xanh đậm, kim loại thép sẫm) thay cho công thức tuyến tính làm mất chi tiết; Tiên nhân Cửu Vĩ tách ba tông (tóc vàng nhạt, lông cam, áo chakra vàng chuyển cam ở gấu `kGrad`), lưỡi lửa gấu áo ít và to hơn, thêm các quả cầu đen `korbs`. Siêu Saiyan God và Hokage giữ nguyên.
+
+## 15. Mở khóa cửa hàng theo cấp (2026-11-10, chưa commit)
+
+Người dùng yêu cầu lên cấp mới mở khóa vật dụng trong cửa hàng và để Claude tự nghĩ cách mở cho hợp lý. Đã làm:
+
+- Mỗi phòng, món ăn, món nội thất có trường `ul` (cấp tối thiểu để mua), gán ở cuối `data.js`. Lưu ý: trường `lv` của nội thất là các tầng leo trèo, không phải cấp; lần đầu Claude đặt nhầm tên `lv` và phải đổi.
+- Chỉ khóa việc MUA: `locked(x)` trong game.js chặn `buyItem`, `buyRoom`, `feedRoom`. Thứ đã có (phòng, đồ trong kho, đồ đã đặt) vẫn dùng bình thường, kể cả ở bản lưu cũ. Quà của quản trị viên và các nút Admin không bị khóa.
+- Cách gán:
+  - Phòng (`ROOM_LV`): theo thứ tự giá, gần như mỗi cấp một phòng: Phòng ngủ 2, Bếp 3, Ban công 4, Phòng tắm 5, Phòng chơi 6, Phòng ăn 7, Gác mái 8, Sân vườn 9, Thư viện 10, Phòng game 11, Nhà kính 12, Phòng Nhật 13, Tầng hầm 14, Hồ bơi 15, Sân thượng 16, Phòng hoàng gia 18.
+  - Món ăn (`FOOD_LV`): Hạt khô và Pate 1, Súp thưởng 2, Cá ngừ 3, Ức gà 4, Cỏ mèo 5, Cá hồi 6, Hộp cao cấp 8.
+  - Nội thất: mặc định theo bậc giá `priceLv` (tới 150 xu cấp 1, 260 cấp 2, 400 cấp 3, 600 cấp 4, 900 cấp 5, 1.200 cấp 6, 1.500 cấp 7, 2.200 cấp 8, 3.200 cấp 10, hơn nữa cấp 12). Gán tay (`ITEM_LV`): bát nhựa 1, inox 3, gốm 4, máy cho ăn 7, bát vàng 10; đồ leo trèo lên dần theo độ cao (Tháp mèo 4, Tháp 3 tầng 6, Tủ sách cao 7, Tháp 5 tầng 9, Nhà gỗ trên cao 11, Cây mèo khổng lồ 17); Sofa 3, Bể cá 6.
+  - Theo mùa và bộ chủ đề (`SET_LV`): Tết 5, Halloween 7, Noel 9; bộ chủ đề mở cùng căn phòng hợp với nó: Harry Potter 10 (Thư viện), Gaming 11 (Phòng game), Nhật 13 (Phòng Nhật), Vũ trụ 16 (Sân thượng), Hoàng gia 18 (Phòng hoàng gia).
+  - Cấp nào từ 2 tới 18 cũng mở ít nhất một thứ. `MAX_LV=18`.
+- Giao diện: cửa hàng có dòng "Lên cấp N sẽ mở: …"; món chưa mở bị mờ, xếp cuối, ghi "🔒 Cấp N"; hộp chọn món ăn cũng vậy; thông báo lên cấp kể tên những thứ vừa mở (`unlocksAt`).
+- Tốc độ lên cấp đã được chỉnh ở mục 16.
+- Đã kiểm tra bằng Node (khóa và mở đúng cấp, thông báo lên cấp) và xem cửa hàng, hộp cho ăn trong trình duyệt ở cỡ PC. Chưa thử điện thoại, chưa có người chơi thật đánh giá nhịp mở khóa.
+
+## 16. Cân lại kinh tế (2026-11-11, chưa commit)
+
+Người dùng yêu cầu tự chỉnh giá mua hàng, thức ăn, viễn chinh, vuốt ve cho hợp lý, tham khảo các game cùng kiểu. Claude viết một bot (script Node ngoài repo, chơi theo chu kỳ 10 phút bằng đúng mã game: nhận viễn chinh, cho ăn hạt khô, vuốt mỗi bé một lần, gửi viễn chinh xu mỗi phút cao nhất, gacha khi còn chỗ, mua phòng khi đầy) để đo trước và sau.
+
+Trước khi chỉnh: bot lên cấp 18 sau 9,5 giờ nhưng mới đủ tiền mua 7 trong 17 phòng, nên khóa theo cấp gần như vô nghĩa; vuốt ve 20 giây một lần cho cả xu lẫn kinh nghiệm, bấm liên tục thì vượt cả viễn chinh; Bến cảng tốt nhất về mọi mặt nên các điểm khác thừa.
+
+Đã chỉnh:
+- Giá phòng theo cấp số nhân, mỗi phòng đắt hơn phòng trước khoảng 1,4 lần (bảng ở mục 3): phòng đầu rẻ hẳn (1.500 xuống 600), các phòng cuối gần như cũ; tổng 323.650 xu (trước 365.500).
+- Kinh nghiệm lên cấp tăng 45% mỗi cấp (`xpNeed`). Các cấp đầu vẫn nhanh như cũ nên ô viễn chinh mở đúng nhịp cũ.
+- Vuốt ve: 10 phút một lần mỗi bé, số xu bằng số sao.
+- Viễn chinh: Bờ hồ 120 xuống 115, Bến cảng 200 xuống 165; năng lượng 25, 25, 30, 40, 50 (trước 30, 30, 35, 45, 55).
+- Nội thất mở ở cấp cao đắt hơn theo cấp mở khóa: cấp 9–12 nhân 1,5; cấp 13–16 nhân 2; cấp 17–18 nhân 3 (27 món, ví dụ Ngai vàng 2.500 lên 7.500, Cây mèo khổng lồ 4.000 lên 12.000). Bát ăn và nội thất cấp thấp giữ giá.
+- Giá thức ăn giữ nguyên: đã rà lại, giá tăng dần đúng theo cấp mở khóa và theo độ mạnh của buff; hạt khô vẫn lãi nhẹ, món buff lỗ trực tiếp và bù bằng buff.
+
+Kết quả đo bằng bot sau khi chỉnh (giờ chơi đều tay, 6 lần ghé mỗi giờ): cấp 5 sau 1,5 giờ, cấp 9 sau 3,7 giờ, cấp 13 sau 8,7 giờ, cấp 18 sau 31,5 giờ; phòng đầu mua lúc 1,5 giờ, phòng thứ 9 lúc 8,8 giờ, phòng cuối lúc gần 40 giờ. Mỗi phòng đủ tiền mua sau khi mở khóa 0–3 cấp. Thu nhập của bot: viễn chinh khoảng 62%, cảm ơn bữa ăn 18%, vuốt ve 19% (bot vuốt đủ mọi bé mỗi lần ghé).
+
+Chưa đụng tới, cần người dùng quyết: gacha 100 xu cố định và tiền phóng sinh (trung bình hoàn khoảng 60% giá một lượt gacha, nên quay rồi phóng sinh để săn 5★ khá rẻ); giá bán lại và sửa nội thất vẫn theo 25% và 30% giá mới. Bot không phải người chơi thật: chưa ai chơi thử nhịp mới.
