@@ -114,7 +114,7 @@ const VARIANTS=[
  V('v_levi','Mèo Levi',4,'anime',{c:CRM,c2:CRM,eye:'#8a8f9c'},[['cape','#4f7a52'],['haircap','#3a3448',12,1],['suit','#f4f0e6'],['cravat'],['belt','#6b4a34',31]],'v_levi','Binh trưởng. Thấy một sợi lông rơi là lau cả nhà.','tuna'),
  V('v_pika','Mèo Pikachu',4,'anime',{c:'#f9dc5c',c2:'#f9dc5c'},[['eartips','#3a3448'],['cheeks','#f0483c'],['tailbase','#a86a3a']],'v_pika','Má đỏ phát điện mỗi khi được gãi cằm.','churu'),
  V('v_totoro','Mèo Totoro',4,'anime',{c:'#8f95a3',c2:'#8f95a3'},[['leaf'],['belly','#f6eedc']],'v_totoro','Đội lá đứng chờ xe buýt dưới mưa.','kibble'),
- V('v_dora','Mèo Doraemon',4,'anime',{c:'#4aa8e8',c2:'#4aa8e8',w:2},[['flag','noEars'],['collar','#e0483c',1],['pocket']],'v_dora','Mèo máy không tai, túi thần kỳ chứa toàn bánh rán.','premium'),
+ V('v_dora','Mèo Doraemon',4,'anime',{c:'#4aa8e8',c2:'#4aa8e8',w:2,short:1,base:'munchkin'},[['flag','noEars'],['collar','#e0483c',1],['pocket']],'v_dora','Mèo máy không tai, túi thần kỳ chứa toàn bánh rán.','premium'),
  V('v_sailor','Mèo Sailor Moon',4,'anime',{c:CRM,c2:CRM,eye:eB},[['twintails','#f5cf3a'],['buns','#f5cf3a'],['haircap','#f5cf3a',12,1],['tiara'],['suit','#ffffff'],['sailor','#3d5fc0'],['bow','#e0483c']],'v_sailor','Nhân danh mặt trăng, đòi thêm pate.','churu'),
  V('v_conan','Mèo Conan',4,'anime',{c:CRM,c2:CRM,eye:eB},[['haircap','#5e3d28',12,1],['glasses','#3a3448'],['suit','#3d5fc0'],['bow','#e0483c']],'v_conan','Sự thật chỉ có một: ai đã ăn vụng cá.','tuna'),
  // --- Phim ---
@@ -143,7 +143,7 @@ const VARIANTS=[
  V('v_tank','Mèo Ba Lỗ',4,'meme',{c:ORG,c2:DORG,pat:'tabby',eye:eG},'tank','v_tank','Tập tạ mỗi sáng, mặc ba lỗ quanh năm.','chicken'),
  V('v_ninja','Mèo Ninja',4,'meme',{c:'#d8d2c8',c2:'#d8d2c8',eye:eY},'ninja','v_ninja','Không ai thấy nó đi. Chỉ thấy đĩa cá trống trơn.','salmon'),
  V('v_chef','Mèo Đầu Bếp',4,'meme',{c:WHT,c2:GRY,pat:'cow',eye:eG},'chef','v_chef','Nếm trước mọi món, gọi là kiểm tra chất lượng.','premium'),
- V('v_bread','Mèo Bánh Mì',4,'meme',{c:CRM,c2:ORG,w:1,eye:eG},'bread','v_bread','Chui đầu qua lát bánh mì rồi quyết định ở luôn trong đó.','pate'),
+ V('v_bread','Mèo Bánh Mì',4,'meme',{c:CRM,c2:ORG,w:1,eye:eG,short:1,base:'munchkin'},'bread','v_bread','Chui đầu qua lát bánh mì rồi quyết định ở luôn trong đó.','pate'),
  V('v_dj','Mèo DJ',4,'meme',{c:'#6a6480',c2:'#6a6480',w:1,eye:eA},'dj','v_dj','Chơi nhạc lúc 3 giờ sáng, hàng xóm rất “thích”.','churu'),
  V('v_astro','Mèo Phi Hành Gia',5,'meme',{c:WHT,c2:WHT,eye:eB},'astro','v_astro','Tin rằng chấm laser đỏ đến từ sao Hỏa và quyết đi tìm.','premium'),
  V('v_royal','Mèo Hoàng Gia',5,'meme',{c:WHT,c2:WHT,fur:1,eye:eC},'royal','v_royal','Bạn không nuôi ngài. Ngài cho phép bạn hầu hạ.','premium'),
@@ -291,3 +291,106 @@ const TAGN={crowd:'đông người',water:'gần nước',nature:'thiên nhiên'
 
 const NAMES=['Miu','Mít','Bơ','Sữa','Đậu','Mochi','Kem','Xoài','Na','Gấu','Cam','Su','Bánh Bao','Tôm','Tép','Khoai','Lu','Nấm','Mực','Bí','Ổi','Ki','Lạc','Vừng','Cốm','Chanh','Tiêu','Pate','Bún','Phở','Nem','Xôi','Mập','Bông','Mun','Mướp','Vàng','Đen','Tí','Tèo','Ú','Mỡ','Cục Bông','Hạt Dẻ','Bắp','Mận','Dừa','Kẹo','Nho','Sóc','Gạo','Trứng','Bột','Tofu','Sushi','Latte','Cacao','Mì','Chè','Bún Đậu'];
 const LOOT=['một chiếc tất','lá cây khô','con cá khô','nắp chai','cái kẹp tóc','một con dế','chiếc lông chim','viên bi ve','tờ hóa đơn nhàu','cọng dây thun','con thạch sùng đồ chơi','chiếc dép lẻ'];
+
+/* ============ GIỐNG CHÂN NGẮN ============ */
+BREEDS.push(
+ B('lambkin','Lambkin',4,WHT,WHT,'solid',{eye:eB,fur:1},'Munchkin lai Selkirk Rex: chân ngắn, lông xoăn như cừu con.','gentle lapcat clumsy','churu'),
+ B('bambino','Bambino',4,PNK,PNK,'solid',{eye:eG,ear:'big'},'Sphynx chân ngắn, mãi trông như mèo con.','coldfear lapcat playful','chicken'),
+ B('kinkalow','Kinkalow',4,BRN,DBRN,'tabby',{eye:eY,ear:'curl'},'Chân ngắn của Munchkin, tai cong của American Curl.','playful charmer','churu'),
+ B('skookum','Skookum',4,ORG,DORG,'tabby',{eye:eG,fur:1,w:1},'Chân ngắn, lông xoăn lọn của LaPerm.','playful lapcat','pate'),
+ B('dwelf','Dwelf',4,PNK,PNK,'solid',{eye:eG,ear:'curl'},'Không lông, chân ngắn, tai cong: trông như yêu tinh nhỏ.','coldfear sunbath loyal','chicken'),
+ B('genetta','Genetta',4,'#e0a860',DBRN,'spot',{eye:eG},'Chân ngắn, thân dài, đốm như cầy hương.','hunter playful','chicken')
+);
+const SHORT_LEGS=['munchkin','minuet','lambkin','bambino','kinkalow','skookum','dwelf','genetta'];
+const HAIRLESS=['sphynx','peterbald','donskoy','bambino','dwelf'];
+
+/* ============ MÀU LÔNG ============ */
+// u: màu ít gặp hơn trong giống (tỉ lệ ra thấp). f: tỉ lệ ra mèo cái của riêng màu đó.
+const COATS={
+ white:{n:'Trắng',c:WHT},whiteY:{n:'Trắng mắt vàng',c:WHT,eye:eY},oddWhite:{n:'Trắng mắt hai màu',c:WHT,eye:eB,eye2:eY,u:1},
+ black:{n:'Đen',c:BLK},blackRust:{n:'Đen ánh nâu',c:'#4a3a3c'},bombay:{n:'Đen tuyền',c:'#2a2636',eye:eC},bombaySable:{n:'Nâu sable',c:'#4a342c',eye:eC,u:1},
+ blue:{n:'Xanh xám',c:BLU},blueLight:{n:'Xanh xám nhạt',c:'#9aa6bd'},blueDark:{n:'Xanh xám đậm',c:'#66728c'},koratBlue:{n:'Xanh ánh bạc',c:'#8f9bb0'},
+ cream:{n:'Kem',c:CRM,f:.4},red:{n:'Đỏ cam',c:ORG,f:.2},redBurm:{n:'Đỏ',c:'#b5653a',f:.25},choc:{n:'Sô-cô-la',c:CHOC},lilac:{n:'Tím hoa cà',c:'#c9b8c8'},
+ sable:{n:'Nâu sable',c:SAB},champagne:{n:'Champagne',c:'#d9bf9a'},platinum:{n:'Bạch kim',c:'#cfcfd8'},copper:{n:'Đồng đỏ',c:'#b5652f'},copperDark:{n:'Đồng sẫm',c:'#8f4a22',u:1},
+ brownTabby:{n:'Mướp nâu',c:BRN,c2:DBRN,pat:'tabby'},brownTabbyW:{n:'Mướp nâu ngực trắng',c:BRN,c2:DBRN,pat:'tabby',w:2},
+ grayTabby:{n:'Mướp xám',c:GRY,c2:DGRY,pat:'tabby'},silverTabby:{n:'Mướp bạc',c:SIL,c2:BLK,pat:'tabby'},blueTabby:{n:'Mướp xanh xám',c:'#b0b6c4',c2:'#8a91a3',pat:'tabby'},
+ redTabby:{n:'Mướp vàng cam',c:ORG,c2:DORG,pat:'tabby',f:.2},redTabbyW:{n:'Vàng cam ngực trắng',c:ORG,c2:DORG,pat:'tabby',w:1,f:.2},creamTabby:{n:'Mướp kem',c:CRM,c2:'#e0b070',pat:'tabby',f:.35},
+ calico:{n:'Tam thể',c:WHT,c2:ORG,c3:BLK,pat:'calico',f:.9995},diluteCalico:{n:'Tam thể nhạt',c:WHT,c2:'#f0c890',c3:BLU,pat:'calico',f:.9995},calicoDark:{n:'Tam thể đậm',c:'#f6ecd8',c2:DORG,c3:'#2a2636',pat:'calico',f:.9995},
+ tortie:{n:'Đồi mồi',c:BLK,c2:ORG,pat:'tortie',f:.9995},diluteTortie:{n:'Đồi mồi nhạt',c:BLU,c2:'#f0c890',pat:'tortie',f:.9995},chocTortie:{n:'Đồi mồi sô-cô-la',c:CHOC,c2:ORG,pat:'tortie',f:.9995},
+ cow:{n:'Trắng đen (bò sữa)',c:WHT,c2:BLK,pat:'cow'},grayCow:{n:'Trắng xám',c:WHT,c2:GRY,pat:'cow'},brownCow:{n:'Trắng nâu',c:WHT,c2:BRN,pat:'cow'},redW:{n:'Trắng cam',c:WHT,c2:ORG,pat:'cow',f:.25},
+ tux:{n:'Tuxedo đen trắng',c:BLK,w:2},blueW:{n:'Xanh xám trắng',c:BLU,w:2},
+ van:{n:'Van đỏ',c:WHT,c2:ORG,pat:'van'},vanBlack:{n:'Van đen',c:WHT,c2:BLK,pat:'van'},
+ sealPt:{n:'Seal point',c:CRM,c2:SEAL,pat:'point',eye:eB},bluePt:{n:'Blue point',c:'#eef0f2',c2:'#7a8296',pat:'point',eye:eB},chocPt:{n:'Chocolate point',c:'#f6ead8',c2:'#9a6a4a',pat:'point',eye:eB},
+ lilacPt:{n:'Lilac point',c:'#f6f0f2',c2:'#b9a6b6',pat:'point',eye:eB},flamePt:{n:'Flame point',c:WHT,c2:ORG,pat:'point',eye:eB,f:.25},creamPt:{n:'Cream point',c:WHT,c2:'#f0c890',pat:'point',eye:eB,f:.4},lynxPt:{n:'Lynx point',c:CRM,c2:GRY,pat:'point',eye:eB},
+ sealMit:{n:'Seal mitted',c:CRM,c2:SEAL,pat:'point',mit:1,eye:eB},blueMit:{n:'Blue mitted',c:'#eef0f2',c2:'#7a8296',pat:'point',mit:1,eye:eB},lilacMit:{n:'Lilac mitted',c:'#f6f0f2',c2:'#b9a6b6',pat:'point',mit:1,eye:eB},
+ sealBi:{n:'Seal bicolor',c:CRM,c2:SEAL,pat:'point',w:2,eye:eB},blueBi:{n:'Blue bicolor',c:'#eef0f2',c2:'#7a8296',pat:'point',w:2,eye:eB},lilacBi:{n:'Lilac bicolor',c:'#f6f0f2',c2:'#b9a6b6',pat:'point',w:2,eye:eB},
+ minkNat:{n:'Mink tự nhiên',c:'#b89878',c2:'#6b4a3a',pat:'point',eye:eA},minkBlue:{n:'Mink xanh',c:'#c3c8d4',c2:'#7a8296',pat:'point',eye:eA},minkChamp:{n:'Mink champagne',c:'#ead8c0',c2:'#b08a6a',pat:'point',eye:eA},
+ smoke:{n:'Đen khói',c:'#d9dbe2',c2:'#4a4458',pat:'smoke',u:1},chinchilla:{n:'Chinchilla bạc',c:'#f4f5f8',c2:'#c3c8d0',pat:'smoke',eye:eG,u:1},goldShade:{n:'Vàng kim ánh',c:'#f6dfb0',c2:'#d9a860',pat:'smoke',eye:eG,u:1},silverShade:{n:'Bạc ánh',c:SIL,c2:GRY,pat:'smoke',eye:eG},
+ spotBrown:{n:'Đốm nâu',c:'#e0a860',c2:DBRN,pat:'spot'},spotSilver:{n:'Đốm bạc',c:SIL,c2:BLK,pat:'spot'},spotSnow:{n:'Snow (tuyết)',c:'#f6ecd8',c2:'#b08a5a',pat:'spot',eye:eB,u:1},
+ spotGold:{n:'Đốm vàng',c:GOLD,c2:BLK,pat:'spot'},spotChoc:{n:'Đốm sô-cô-la',c:FAWN,c2:CHOC,pat:'spot'},spotBlue:{n:'Đốm xanh xám',c:'#d0d4dc',c2:'#7a8296',pat:'spot'},
+ ruddy:{n:'Ruddy (hung đỏ)',c:RUD,c2:'#8a4a20',pat:'ticked'},sorrel:{n:'Sorrel (đỏ quế)',c:'#d98a50',c2:'#a85a2a',pat:'ticked'},blueTick:{n:'Blue',c:'#a8b0c0',c2:'#7a8296',pat:'ticked'},fawnTick:{n:'Fawn',c:'#e0c4a8',c2:'#c09a78',pat:'ticked'},
+ sepia:{n:'Sepia agouti',c:'#d8bf9a',c2:'#8a6a48',pat:'ticked'},sepiaDark:{n:'Sepia sẫm',c:'#c0a078',c2:'#6e4e30',pat:'ticked'},grizzle:{n:'Grizzled',c:'#6a6470',c2:'#b9b2c2',pat:'ticked',u:1},
+ tigerOr:{n:'Vằn hổ cam',c:ORG,c2:BLK,pat:'tiger',w:1},tigerBrown:{n:'Vằn gỗ nâu',c:'#b8905a',c2:DBRN,pat:'tiger'},tigerDark:{n:'Vằn gỗ sẫm',c:'#9a7448',c2:'#3a2a1c',pat:'tiger'},
+ hlPink:{n:'Da hồng',c:PNK},hlCream:{n:'Da kem',c:'#f0d8c0'},hlGray:{n:'Da xám',c:'#b8b0b8'},hlBlack:{n:'Da đen',c:'#5a5260'},hlPied:{n:'Da loang',c:PNK,c2:'#8a8090',pat:'cow'},
+ lyBlack:{n:'Đen loang (roan)',c:'#55505f',c2:'#b9b2c2',c3:'#8a7f8f',pat:'lykoi'},lyBlue:{n:'Xám loang',c:'#7a8296',c2:'#d0d4dc',c3:'#a8a0a8',pat:'lykoi'},
+};
+// màu đầu tiên là màu mặc định của giống
+const BREED_COATS={
+ muop:'brownTabbyW grayTabby silverTabby brownTabby',vang:'redTabbyW redTabby creamTabby redW',mun:'black blackRust smoke',trang:'white whiteY oddWhite',
+ venxam:'grayTabby blueTabby silverTabby',bosua:'cow grayCow redW',tuxedo:'tux blueW vanBlack',tamthe:'calico diluteCalico calicoDark',doimoi:'tortie diluteTortie chocTortie',
+ amshort:'silverTabby brownTabby redTabby blueTabby',european:'brownTabbyW grayTabby black white',british:'blue cream white silverTabby lilac',exotic:'redTabby cream blue calico',
+ mainecoon:'brownTabbyW redTabbyW smoke silverTabby',persian:'white cream smoke chinchilla',ragdoll:'sealMit blueBi lilacPt flamePt',russian:'blue blueLight blueDark',
+ scottish:'blue white calico blueTabby',scotstraight:'creamTabby blue cow brownTabby',siamese:'sealPt bluePt chocPt lilacPt',thai:'sealPt bluePt chocPt',
+ abyssinian:'ruddy sorrel blueTick fawnTick',ambobtail:'brownTabby redTabby spotBrown',amcurl:'redTabbyW brownTabbyW white sealPt',amwire:'van cow brownTabbyW',
+ balinese:'sealPt bluePt chocPt lilacPt',bengal:'spotBrown spotSilver spotSnow',birman:'sealMit blueMit lilacMit',bombay:'bombay bombaySable',
+ britishlh:'cream blue lilac goldShade',burmese:'sable champagne blue platinum',burmilla:'silverShade goldShade chinchilla',chartreux:'blue blueLight blueDark',
+ colorpoint:'flamePt creamPt lynxPt',cornish:'white black blue redTabby',devon:'champagne black white brownTabby',euburmese:'redBurm sable cream tortie',
+ himalayan:'sealPt bluePt chocPt flamePt',jbobtail:'calico redW cow white',kurilian:'brownTabby redTabby grayTabby',laperm:'redTabby brownTabby choc tortie',
+ manx:'redTabbyW brownTabby cow black',munchkin:'redTabbyW cow calico brownTabbyW',norwegian:'brownTabbyW redTabbyW cow smoke',ocicat:'spotChoc spotSilver spotBrown',
+ oriental:'black white choc blue',ragamuffin:'brownTabbyW calico blueW redTabbyW',selkirk:'cream white blue redTabby',siberian:'brownTabby redTabby grayTabby smoke',
+ snowshoe:'sealBi blueBi lilacBi',somali:'ruddy sorrel blueTick fawnTick',sphynx:'hlPink hlCream hlGray hlPied',tonkinese:'minkNat minkBlue minkChamp',
+ angora:'white black cream oddWhite',minuet:'grayCow white cream calico',ausmist:'spotChoc spotBlue spotGold',mau:'spotSilver spotBrown smoke',havana:'choc lilac',
+ korat:'koratBlue blueLight',cymric:'brownTabby redTabbyW cow black',nebelung:'blue blueLight blueDark',orientallh:'choc black lilac white',peterbald:'hlCream hlPink hlGray hlBlack',
+ pixiebob:'spotBrown spotChoc',singapura:'sepia sepiaDark',toyger:'tigerOr tigerBrown',van:'van vanBlack',chausie:'ruddy black grizzle',donskoy:'hlGray hlPink hlCream hlBlack',
+ highlander:'spotChoc spotBrown spotSilver',serengeti:'spotGold black smoke',germanrex:'platinum white black redTabby',neva:'sealPt bluePt lynxPt flamePt',aphrodite:'brownCow cow redW',
+ toybob:'sealPt bluePt lynxPt',khaomanee:'oddWhite white whiteY',lykoi:'lyBlack lyBlue',savannah:'spotGold spotSilver black smoke',sokoke:'tigerBrown tigerDark',suphalak:'copper copperDark',
+ lambkin:'white cream cow redTabby',bambino:'hlPink hlCream hlPied',kinkalow:'brownTabby black calico cream',skookum:'redTabbyW cow blue',dwelf:'hlPink hlGray hlBlack',genetta:'spotBrown spotSilver',
+};
+BREEDS.forEach(b=>{b.coats=BREED_COATS[b.id].split(' ');if(SHORT_LEGS.includes(b.id))b.short=1;if(HAIRLESS.includes(b.id)){b.hl=1;b.noRare=1}if(b.id==='lykoi')b.noRare=1});
+
+/* ============ MÀU HIẾM (luôn 4★, áp lên bất kỳ giống nào) ============ */
+const RARE_P=.04;
+const RARES=[
+ {id:'r_odd',n:'Trắng mắt hai màu',c:WHT,eye:eB,eye2:eY,tr:'c_odd'},
+ {id:'r_smoke',n:'Khói bạc',c:'#eceef2',c2:'#55505f',pat:'smoke',eye:eG,tr:'c_smoke'},
+ {id:'r_gold',n:'Vàng kim',c:'#f2c050',c2:'#c98a2a',pat:'tabby',eye:eG,tr:'c_gold'},
+ {id:'r_cinnamon',n:'Cinnamon (quế)',c:'#b06a3a',eye:eY,tr:'c_cinnamon'},
+ {id:'r_fawn',n:'Fawn (nâu vàng nhạt)',c:'#e6cbb0',eye:eY,tr:'c_fawn'},
+ {id:'r_stortie',n:'Đồi mồi khói',c:'#6a6478',c2:'#e8a878',pat:'tortie',f:.9995,eye:eY,tr:'c_stortie'},
+ {id:'r_mcalico',n:'Tam thể đực',c:WHT,c2:ORG,c3:BLK,pat:'calico',sex:'m',eye:eY,tr:'c_mcalico'},
+ {id:'r_nacre',n:'Ánh xà cừ',c:'#f6eef8',pat:'nacre',eye:'#b98bff',tr:'c_nacre'},
+ {id:'r_sheen',n:'Đen ánh xanh',c:'#2f3350',c2:'#4f74c0',pat:'sheen',eye:eA,tr:'c_sheen'},
+];
+const RARE=Object.fromEntries(RARES.map(r=>[r.id,r]));
+const ALLCOAT=Object.assign({},COATS,RARE);
+Object.assign(TRAITS,{
+ c_odd:{n:'Mắt hai màu',k:'x',d:'Màu hiếm. Mèo khác cùng phòng +10 độ vui.',e:{aura:10}},
+ c_smoke:{n:'Khói bạc',k:'x',d:'Màu hiếm. +15% xu nếu xuất phát ban đêm.',e:{night:.15}},
+ c_gold:{n:'Lông vàng kim',k:'x',d:'Màu hiếm. +15% xu mọi chuyến viễn chinh.',e:{coin:.15}},
+ c_cinnamon:{n:'Thơm mùi quế',k:'x',d:'Màu hiếm. +10 độ vui cho chính bé.',e:{self:10}},
+ c_fawn:{n:'Nhẹ nhàng',k:'x',d:'Màu hiếm. Đói chậm hơn 25%.',e:{hunger:.75}},
+ c_stortie:{n:'Đồi mồi khói',k:'x',d:'Màu hiếm. +25% cơ hội có chiến lợi phẩm.',e:{loot:.25}},
+ c_mcalico:{n:'Vạn con có một',k:'x',d:'Tam thể đực cực hiếm ngoài đời. +12% cơ hội nhặt vé gacha.',e:{ticket:.12}},
+ c_nacre:{n:'Ánh xà cừ',k:'x',d:'Màu hiếm. +6 độ vui cho bé và cho mèo khác cùng phòng.',e:{self:6,aura:6}},
+ c_sheen:{n:'Ánh xanh dưới đèn',k:'x',d:'Màu hiếm. Viễn chinh nhanh hơn 10%.',e:{speed:.10}},
+});
+GROUPS.push(['rare','Màu hiếm']);
+// "ngoại hình" của một bé: giống + màu lông. Khóa dạng 'giống~màu'.
+const LOOKS={};
+function look(key){
+  if(LOOKS[key])return LOOKS[key];
+  const [id,ct]=key.split('~'),sp=BREEDS.concat(VARIANTS).find(s=>s.id===id);
+  if(!sp.coats)return LOOKS[key]=sp;
+  const coat=ALLCOAT[ct]||COATS[sp.coats[0]];
+  return LOOKS[key]=Object.assign({},sp,{c2:undefined,c3:undefined,w:0,mit:0,pat:'solid',eye2:undefined},coat,{eye:coat.eye||sp.eye,c2:coat.c2||coat.c,rare:RARE[ct]?1:0});
+}

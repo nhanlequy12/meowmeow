@@ -8,7 +8,7 @@ const WORLD_W=480, WALL_Y=96, FLOOR_MIN=106, FLOOR_MAX=166;
 
 function fresh(){
   S={v:2,coins:300,tickets:1,xp:0,level:1,cats:[],trips:[null],items:[],rooms:{living:{bowlAt:0}},pity:0,seen:{},nid:1,last:now(),scratchAt:now()+600000};
-  const c=newCat(SP.muop,1); c.name='Mướp'; c.room='living'; S.cats.push(c); S.seen.muop=1;
+  const c=newCat(SP.muop,1); c.name='Mướp'; c.room='living'; S.cats.push(c); markSeen(c);
   S.items.push({iid:S.nid++,fid:'box',room:'living',x:330,y:150,flip:false,broken:false});
 }
 function load(){
@@ -20,6 +20,7 @@ function load(){
   }
   S.cats=S.cats.filter(c=>SP[c.sp]); S.cats.forEach(c=>{c.traits=c.traits.filter(t=>TRAITS[t]); if(!S.rooms[c.room])c.room='living'});
   S.items=S.items.filter(i=>FURN[i.fid]);
+  S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
   fixSlots();
   const el=clamp((now()-(S.last||now()))/1000,0,8*3600); if(el>1)tick(el);
 }
@@ -43,8 +44,8 @@ const has=(c,t)=>c.traits.includes(t);
 const tE=(c,k)=>c.traits.reduce((a,t)=>a+(TRAITS[t].e[k]||0),0);
 const tM=(c,k)=>c.traits.reduce((a,t)=>a*(TRAITS[t].e[k]||1),1);
 const conflict=(a,b)=>CONFLICT.some(p=>(p[0]===a&&p[1]===b)||(p[0]===b&&p[1]===a));
-function rollTraits(sp,star){
-  const out=[]; if(sp.xt)out.push(sp.xt);
+function rollTraits(sp,star,first){
+  const out=[]; if(sp.xt)out.push(sp.xt); if(first)out.push(first);
   const aff=(sp.t||'').split(' ').filter(Boolean);
   let guard=0;
   while(out.length<star&&guard++<50){
@@ -57,8 +58,26 @@ function rollTraits(sp,star){
   }
   return out;
 }
-function newCat(sp,star){
-  return {uid:S.nid++,sp:sp.id,star,sex:Math.random()<(sp.f==null?.5:sp.f)?'f':'m',name:pick(NAMES),traits:rollTraits(sp,star),full:80,en:100,hp:60,room:null,buff:null,petAt:0};
+// chọn màu lông cho một giống: màu ít gặp (u) có trọng số thấp
+function pickCoat(sp){
+  const w=sp.coats.map(id=>COATS[id].u?.35:1);let r=Math.random()*w.reduce((a,b)=>a+b,0),i=0;
+  while(r>w[i]){r-=w[i];i++}
+  return sp.coats[i];
+}
+function newCat(sp,star,coatId){
+  const coat=sp.coats?ALLCOAT[coatId||pickCoat(sp)]:null,cid=coat?(coatId||Object.keys(COATS).find(k=>COATS[k]===coat)):undefined;
+  const f=coat&&coat.f!=null?coat.f:(sp.f==null?.5:sp.f),sex=coat&&coat.sex?coat.sex:(Math.random()<f?'f':'m');
+  const c={uid:S.nid++,sp:sp.id,star,sex,name:pick(NAMES),traits:rollTraits(sp,star,coat&&coat.tr),full:80,en:100,hp:60,room:null,buff:null,petAt:0};
+  if(cid)c.coat=cid;
+  return c;
+}
+const coatOf=c=>{const sp=SP[c.sp];return sp.coats?(ALLCOAT[c.coat]||COATS[sp.coats[0]]):null};
+const isRare=c=>!!RARE[c.coat];
+const lk=c=>SP[c.sp].coats?c.sp+'~'+(c.coat||SP[c.sp].coats[0]):c.sp;
+function markSeen(c){
+  S.seen[c.sp]=1;S.seenCoat=S.seenCoat||{};S.seenRare=S.seenRare||{};
+  if(!SP[c.sp].coats)return;
+  if(isRare(c)){if(!S.seenRare[c.coat])S.seenRare[c.coat]=c.sp}else S.seenCoat[lk(c)]=1;
 }
 function favs(c){const f=[];if(SP[c.sp].fav)f.push(SP[c.sp].fav);c.traits.forEach(t=>{const x=TRAITS[t].e.fav;if(x&&!f.includes(x))f.push(x)});return f}
 const buffOf=c=>(c.buff&&c.buff.until>now())?c.buff:{};
@@ -225,10 +244,18 @@ function gachaRoll(useTicket,opt){
   if(S.pity>=PITY&&star<4)star=4;
   if(opt.star)star=opt.star;
   if(star>=4)S.pity=0;
-  const vs=VARIANTS.filter(v=>v.r===star),bs=BREEDS.filter(b=>b.r===star);
-  const sp=(vs.length&&Math.random()<.45)?pick(vs):pick(bs);
-  const c=newCat(sp,star); c.room=freeRoom()||'living'; c.isNew=!S.seen[sp.id];
-  S.cats.push(c); S.seen[sp.id]=1; addXp(3); save();
+  let c;
+  if(opt.rare||(!opt.star&&Math.random()<RARE_P)){
+    // màu hiếm: luôn 4★ dù giống gốc ở cấp nào, trait đầu tiên là trait của màu
+    const sp=pick(BREEDS.filter(b=>!b.noRare)),rc=typeof opt.rare==='string'?opt.rare:pick(RARES).id;
+    star=4;S.pity=0;c=newCat(sp,4,rc);c.isNew=!(S.seenRare||{})[rc];
+  }else{
+    const vs=VARIANTS.filter(v=>v.r===star),bs=BREEDS.filter(b=>b.r===star);
+    const sp=(vs.length&&Math.random()<.45)?pick(vs):pick(bs);
+    c=newCat(sp,star);c.isNew=!S.seen[sp.id]||(sp.coats&&!(S.seenCoat||{})[lk(c)]);
+  }
+  c.room=freeRoom()||'living';
+  S.cats.push(c); markSeen(c); addXp(3); save();
   return {cat:c};
 }
 function rehome(uid){
