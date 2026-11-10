@@ -1,6 +1,6 @@
 # Mèo Xu: ghi chú bàn giao cho phiên làm việc mới
 
-File này tóm tắt toàn bộ ngữ cảnh của dự án để một phiên làm việc mới tiếp tục được ngay. Số liệu bên dưới lấy từ mã nguồn sau ba đợt làm việc ngày 2026-11-10 (mục 8, 9 và 10); nếu mã đã đổi thì mã nguồn là đúng.
+File này tóm tắt toàn bộ ngữ cảnh của dự án để một phiên làm việc mới tiếp tục được ngay. Số liệu bên dưới lấy từ mã nguồn sau bốn đợt làm việc ngày 2026-11-10 (mục 8, 9, 10 và 11); nếu mã đã đổi thì mã nguồn là đúng.
 
 ## 1. Dự án là gì
 
@@ -39,7 +39,8 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 | `7dc0e58` | Làm hết việc còn dở: hoa văn lưới mịn, tuổi mèo, 13 intro 5★ riêng, cân bằng cho ăn, cỡ hạt cườm, Ctrl + lăn để zoom (mục 8) |
 | `cdd3d11` | Chỉnh gacha đợt hai: tooltip nổi, màn chi tiết mới, màu sao theo độ hiếm, mắt Khao Manee và Gojo, thiết kế lại Vader, Nyan, Hoàng Gia nhìn ngang, 7 intro mới hoặc bổ sung (mục 9) |
 | `d2c964a` | Bảo hiểm gacha 10 lượt (`PITY=10`) |
-| chưa commit (đợt ba ngày 2026-11-10) | Naruto và Goku lên 5★: tạo hình mới, dạng hiếm, intro riêng, Cân Đẩu Vân, biến hình và phân thân trong phòng (mục 10) |
+| `ec7543c` | Naruto và Goku lên 5★: tạo hình mới, dạng hiếm, intro riêng, Cân Đẩu Vân, biến hình và phân thân trong phòng (mục 10) |
+| chưa commit (đợt bốn ngày 2026-11-10) | 13 bé 5★ còn lại có trạng thái đặc trưng 60 giây trong phòng; giọng meo tổng hợp trong intro của cả 15 bé (mục 11) |
 
 ## 3. Luật chơi và số liệu hiện tại
 
@@ -54,6 +55,7 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 - Goku và Naruto có "dạng" (dùng chung cơ chế màu lông, bảng `FORMS`): Goku có Dạng thường (`gkBase`, khoảng 89%) và Siêu Saiyan God đỏ (`gkGod`, khoảng 11%); Naruto có Ninja làng Lá (`nrBase`, khoảng 81%), Tiên nhân Cửu Vĩ (`nrKurama`) và Hokage Đệ Thất (`nrHokage`), mỗi dạng hiếm khoảng 10%. Dạng hiếm có cờ `form`, trọng số `rw:.12`, sao cầu vồng và một trait riêng (`f_god`, `f_kurama`, `f_hokage`) đứng thứ hai trong danh sách trait. Hai bé này không nhận màu lông hiếm `r_*` (`noRare`). Bản lưu cũ có Goku hoặc Naruto 4★ được nâng lên 5★ và thêm một trait khi tải (cờ `S.mig5`).
 - Goku không có tóc (người dùng chê tóc chĩa xấu và bảo bỏ): hai tai mang màu của dạng (đen, vàng khi hóa Siêu Saiyan, đỏ ở dạng God), trên đầu có vòng hào quang, mặc võ phục cam, đuôi nâu. Trong phòng, khi đi hoặc chạy bé đứng trên Cân Đẩu Vân; thỉnh thoảng hóa Siêu Saiyan 60 giây (dạng God thì bùng hào quang đỏ 60 giây), sau đó nghỉ 90–180 giây mới diễn lại.
 - Naruto tóc vàng chĩa, băng trán làng Lá, ba vạch ria, áo cam vai đen. Trong phòng thỉnh thoảng phân thân thành ba trong 60 giây; phân thân tan thành khói khi hết giờ, khi bị chạm vào, hoặc khi cho phòng ăn.
+- 13 bé 5★ còn lại cũng có trạng thái đặc trưng 60 giây trong phòng (bảng `MD`), bắt đầu ngay sau hành động riêng trong `S5`, hết thì nghỉ 90–180 giây: Zenitsu Thần tốc (chạy nhanh gần gấp đôi, dư ảnh, tia sét); Gojo tháo băng mắt, lơ lửng trong quả cầu Vô Hạn có hai quả cầu đỏ xanh xoay quanh; Harry Potter cưỡi chổi bay khi di chuyển; Darth Vader dùng Thần lực nâng ba tảng đá xoay quanh, bóng tối dưới chân; Nyan Cat bay liên tục không chạm đất; Thần Tài mưa xu vàng (chỉ là hình, không cộng xu); Phi Hành Gia trôi không trọng lực, nghiêng ngả, phụt lửa; Hoàng Gia có thảm đỏ theo chân, hoa giấy, bé đứng gần thả tim; Khao Manee có hai viên ngọc đúng hai màu mắt xoay quanh; Lykoi có vầng trăng theo trên đầu và sương; Savannah phóng khắp phòng; Sokoke ngụy trang mờ đi; Suphalak rực sáng màu đồng.
 - 91 trait: 23 tốt, 13 xấu, 55 độc quyền (của mèo trang phục, của màu hiếm và của dạng hiếm).
 - Giống chân ngắn (`SHORT_LEGS`): munchkin, minuet, lambkin, bambino, kinkalow, skookum, dwelf, genetta. Chúng đi và chạy chậm hơn, nhảy thấp hơn, ít trèo.
 - Mỗi giống có 3–4 màu lông thật, một số màu ràng buộc giới tính (tam thể hầu như luôn là cái). 9 màu hiếm (`RARES`) rơi với xác suất 4%, luôn là 4★, có trait riêng và ô riêng trong bộ sưu tập.
@@ -227,7 +229,8 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 **Hạt và vệt di chuyển**
 - `rp(x, y, màu, tùy chọn)` tạo hạt; `stepParts(dt)`, `drawParts(g)`; trần `PMAX=280` hạt cho cả phòng. Hạt có vòng đời, vận tốc, trọng lực, mờ dần. Hình dạng: sao, đồng xu, cầu vồng, vệt, vòng tròn, tia sét, ký hiệu (nốt nhạc, tim, dơi…).
 - `K` là các kiểu vệt; `TRAIL[sp]` gán vệt cho từng mèo trang phục và 5★; mèo thường dùng `TR_NORMAL` (bụi chân), màu hiếm dùng `TR_RARE`. Chạy thì hạt dày hơn 2,2 lần.
-- `S5[sp]`: hành động riêng của từng 5★ trong phòng (`dur`, `pose`, `hover`, `glide`, `draw`, `fx`, `start`, `end`, `look` là chuỗi hoặc hàm `(k, e)`).
+- `S5[sp]`: hành động riêng của từng 5★ trong phòng (`dur`, `pose`, `hover`, `glide`, `draw`, `fx`, `start`, `end`, `look` là chuỗi hoặc hàm `(k, e)`, `md` là trạng thái 60 giây theo sau).
+- `MD[sp]`: trạng thái đặc trưng 60 giây của 13 bé 5★ (không gồm Goku, Naruto), gắn vào `S5[sp].md`. Khi diễn xong, `stepEnt` đặt `e.fm={key, t:60, aura, md}`. Trường của `md`: `key` (ngoại hình tạm), `aura`, `sp` (hệ số tốc độ), `run` (xác suất `choose` chọn chạy), `hover(e)` (độ lơ lửng, không áp dụng khi nhảy, khi ở trên đồ hay khi ăn), `ride` (vật cưỡi vẽ đè lên chân khi di chuyển, ví dụ `broomCv`), `alpha(e)`, `tilt(e)`, `under`/`over(g, e, p, c)` (vẽ trước và sau sprite), `fx(e, p, c)` (hạt mỗi khung hình). Hàm phụ: `glowAt`, `sprAt`, `NOW`.
 - Goku và Naruto trong phòng: `e.fm={key, t, aura}` là biến hình tạm thời (ngoại hình `key` trong `t` giây), `e.cd` là số giây chờ trước lần diễn kế tiếp. `entPos` trả `cloud:1` khi Goku đang đi hoặc chạy, `drawEnt` vẽ đám mây `nimbusCv()` đè lên bàn chân. Phân thân của Naruto là ent có `clone:1`, cùng `uid` với bản thể và luôn đứng sau bản thể trong mảng `ents` (nên mọi chỗ tìm theo `uid` vẫn ra bản thể); `spawnClones(e)`, `dispel(uid)`, `poof(x, y)`. Phân thân không có khung tên, không được chọn hành động riêng, và bị gỡ khi bé đi viễn chinh hay được phóng sinh.
 
 **Gacha**
@@ -236,6 +239,7 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 - Hạt gacha có kiểu `t` cho tiền rơi (`money('coin' | 'bar' | 'bill')`, vẽ bằng `drawMoney`): đồng xu xoay, thỏi vàng, tờ tiền bay lượn. `mixc(c, p, w)` trả `color-mix()` để pha màu trong CSS.
 - 15 cảnh intro riêng (2,7 đến 5,2 giây): Goku cưỡi Cân Đẩu Vân bay tới, gồng mình hóa Siêu Saiyan (tai vàng, hào quang), tụ chưởng "KA ME HA ME" rồi "HAAA!", luồng chưởng thổi bay nửa trên ngọn núi (`beam`, `shard`), cuối cùng trở lại đúng dạng của bé; Naruto trong rừng kết ấn phân thân thành ba, cả ba nhảy qua cành cây và bụi cỏ (`hopTo` cùng `leapY`), hai phân thân tan thành khói, bản thể tụ Rasengan (`kame`, `spin`) rồi ném trúng ninja phản bội; Nyan Cat bay kéo cầu vồng giữa sao pixel và chữ "NYA" chạy; Thần Tài có hai câu đối TÀI, LỘC, đồng vàng xoay rơi vào lòng, mưa tiền dày gồm xu, thỏi vàng, tiền giấy, đống vàng dâng lên; Harry Potter cưỡi chổi bay lộn nhào khắp màn hình (`broomFly`), sét đánh, rơi xoáy xuống (`tumble`), ngồi dậy choáng váng; Zenitsu ngủ gật "Z", mèo quỷ hiện ra, bé lao đi để lại dư ảnh và chém đôi mèo quỷ (`cutHalf`), chữ "THẦN TỐC"; Gojo kéo băng mắt, hai quả cầu đỏ xanh nhập lại, chữ "VÔ HẠN"; Darth Vader thở khò khè, bóng đen trồi lên, kiếm đỏ bật sáng đúng chỗ thanh kiếm, câu thoại gõ từng chữ; Phi Hành Gia bật động cơ bay ngang qua hành tinh có vành đai, hành tinh đỏ, hành tinh xanh (`passBy`) rồi hạ cánh; Hoàng Gia có thảm đỏ, kèn, vương miện hạ xuống; Khao Manee có hai con mắt lớn mở ra đúng cặp màu mắt của bé rồi tách ra, hai mắt bé lóe sáng; Lykoi có sương, trăng lên, bóng mèo hú "AWOOOO" rồi "à nhầm, meo"; Savannah chạy trên đồng cỏ rồi bật nhảy qua vạch 2 m; Sokoke rón rén trên hàng bụi cây (`sneak`), lẩn vào bụi lớn, bụi rung và lộ hai con mắt sáng, rồi bật nhảy ra; Suphalak có quả cầu đồng nứt dần thành nhiều nhánh (SVG, `crackGrow`), ánh sáng lọt qua khe, vỏ vỡ thành 12 mảnh (`shard`) và bé xuất hiện.
 - Âm thanh là nhạc chiptune tự viết bằng WebAudio (`tone`, `seq`, `glide`), không dùng file.
+- Giọng meo `meow(o)`: sóng răng cưa đi qua hai bộ lọc formant trượt theo chuỗi âm `w` (bảng `VOW`: m, e, i, a, o, u, r), cao độ uốn theo `c`; tùy chọn `vib`/`vr` (rung), `sub` (gầm), `lp` (nghẹt), `radio` (bộ đàm), `echo`, `dual` (bè hai), `type`. Bảng `MEOW[sp]=[[mốc ms, tham số], …]` là giọng của từng bé 5★ trong intro, `playGacha` hẹn giờ qua `T` nên Bỏ qua là dừng. Ví dụ: Goku gầm rồi thét dài lúc "HAAA", Vader giọng trầm nghẹt, Phi Hành Gia qua bộ đàm, Lykoi hú rồi "meo" nhỏ, Nyan "nya nya" kiểu chiptune.
 
 **Thông báo và hộp thoại**
 - `toast(msg, {type, title, coins, icon})`: trượt xuống từ trên, xếp chồng, đếm xu tăng dần.
@@ -294,6 +298,8 @@ Cách sửa file an toàn đã dùng: script Python thay chuỗi chính xác, c�
 ## 7. Việc còn dở và hạn chế đã biết
 
 - Tám việc của danh sách cũ đã làm xong ngày 2026-11-10 (mục 8). Những thứ dưới đây là phần còn lại.
+- Giọng meo trong intro (mục 11) chưa ai nghe thử: Claude chỉ kết xuất bằng `OfflineAudioContext` để chắc không lỗi, không im lặng và âm lượng đỉnh nằm trong khoảng 0,1–0,3. Nghe có giống tiếng mèo hay không, to nhỏ có hợp không thì người dùng phải tự nghe.
+- Trạng thái 60 giây của 13 bé (mục 11): Claude đã xem ảnh tĩnh từng bé trong phòng ở cỡ PC. Chưa thử điện thoại và cảm giác khi chạy liền mạch. Bé đang lơ lửng (Gojo, Phi Hành Gia, Nyan) mà nhảy lên đồ thì bị giật xuống sàn một khung trước khi nhảy.
 - Các thay đổi của mục 10 (Goku, Naruto) chưa có người chơi thật thử. Claude đã xem từng khung intro ở cỡ PC và điện thoại dọc (dừng hoạt ảnh tại các mốc thời gian), và xem trong phòng: Cân Đẩu Vân, hóa Siêu Saiyan, phân thân, cho ăn làm phân thân biến mất. Chưa thử: âm thanh, cảm giác mượt khi chạy liền mạch, điện thoại ngang, chạm vào phân thân bằng chuột thật.
 - Trên cửa sổ hẹp mà cao (sprite to so với bề ngang), các bé trong intro Naruto đứng chồng lên kẻ địch một phần.
 - Goku dạng God trong phòng không đổi ngoại hình khi "biến hình", chỉ bùng hào quang đỏ. Tai Goku dạng thường màu đen là quyết định của Claude, người dùng chỉ nói tai vàng và đỏ.
@@ -335,10 +341,19 @@ Quyết định tự đưa ra, cần người dùng xác nhận nếu muốn kh�
 
 ## 10. Đợt làm việc 2026-11-10 (đợt ba): Naruto và Goku lên 5★
 
-Chưa commit. Người dùng yêu cầu đưa hai bé lên 5★ kèm mô tả từng bé; đã làm:
+Đã commit `ec7543c` và push. Người dùng yêu cầu đưa hai bé lên 5★ kèm mô tả từng bé; đã làm:
 
 1. Goku: võ phục cam truyền thống (cổ chữ V lộ áo lót xanh, đai xanh, phù hiệu trên ngực, băng cổ tay, giày xanh, đuôi nâu); intro xuất hiện, hóa Siêu Saiyan, chưởng Kamehameha thổi bay nửa ngọn núi; di chuyển trên Cân Đẩu Vân; thỉnh thoảng hóa Siêu Saiyan 1 phút có hào quang; dạng hiếm Siêu Saiyan God đỏ có võ phục lấp lánh hơn và sao cầu vồng.
 2. Naruto: tóc vàng, đồ ninja cam đen; intro trong rừng, phân thân, nhảy qua cành cây và bụi cỏ, ném Rasengan vào địch; thỉnh thoảng phân thân thành ba khoảng 1 phút, cho ăn thì biến lại thành một; hai dạng hiếm Tiên nhân Cửu Vĩ (luồng khí vàng bọc quanh thân) và Hokage.
 3. Giữa chừng người dùng chê tóc Goku xấu: đã bỏ tóc, đổi sang hai tai mang màu (đen, vàng, đỏ) và thêm vòng hào quang trên đầu.
 
 Quyết định tự đưa ra, cần người dùng xác nhận nếu muốn khác: tỉ lệ dạng hiếm khoảng 10% mỗi dạng; mỗi dạng hiếm có một trait riêng; Goku dạng thường tai đen; Goku có đuôi nâu; chạm vào phân thân thì phân thân tan; bé Goku, Naruto 4★ đang có được nâng lên 5★; trong Sưu tập hai bé có thêm dòng "Dạng: n/N" và bấm vào xem được các dạng; bảng Admin thêm lựa chọn dạng hiếm để thử.
+
+## 11. Đợt làm việc 2026-11-10 (đợt bốn): hoạt ảnh phòng và giọng meo cho mọi 5★
+
+Chưa commit. Người dùng yêu cầu "các 5 sao khác đều nên có hoạt ảnh ở phòng như vậy và lúc intro nên có giọng meo liên quan đến đó"; đã làm:
+
+1. 13 bé 5★ còn lại có trạng thái đặc trưng 60 giây trong phòng (bảng `MD`, danh sách ở mục 3). Hành động riêng cũ trong `S5` giữ nguyên, nay là màn dạo đầu của trạng thái.
+2. Giọng meo tổng hợp (`meow`, `MEOW`) cho intro của cả 15 bé 5★, mỗi bé một kiểu giọng khớp với cảnh. Âm thanh cũ của intro giữ nguyên.
+
+Quyết định tự đưa ra, cần người dùng xác nhận nếu muốn khác: nội dung trạng thái của từng bé; Thần Tài mưa xu chỉ là hình, không cộng xu; trong phòng vẫn không có âm thanh, giọng meo chỉ có ở intro; Goku và Naruto cũng được thêm giọng meo.

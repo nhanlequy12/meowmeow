@@ -250,6 +250,73 @@ const S5={
   sokoke:{n:'gọi lá rừng xoáy quanh',dur:3,pose:'sit',fx:(e,p)=>orbit(p,18,2,['#6fd26f','#3f9a55','#b5e08a'],-2.4)},
   suphalak:{n:'tỏa vòng sáng đồng đỏ',dur:2.6,pose:'sit',fx:(e,p)=>{if(on(3))rp(p.x,p.y-16,'#ffb060',{sh:'ring',r:3,vr:26,life:.7});if(on(14))rp(p.x+rnd(-14,14),p.y-rnd(4,30),'#ffd89a',{sh:'star',life:.4})}},
 };
+/* --- trạng thái đặc trưng 60 giây của các bé 5★ còn lại (giống Goku hóa Siêu Saiyan, Naruto phân thân) ---
+   Diễn xong hành động riêng trong S5 thì bé vào trạng thái này: e.fm = {t, key, aura, md}. Hết giờ thì nghỉ 90–180 giây (e.cd).
+   Trường của md: key (ngoại hình tạm), aura (màu luồng khí), sp (hệ số tốc độ), run (xác suất chọn chạy), hover(e) (độ lơ lửng),
+   ride (vật cưỡi vẽ đè lên chân khi di chuyển), alpha(e), tilt(e), under/over(g,e,p,c) (vẽ trước/sau sprite), fx(e,p,c) (hạt mỗi khung hình). */
+const NOW=()=>performance.now()/1000,BRM={};
+const glowAt=(g,x,y,rx,ry,col,a)=>{g.globalAlpha=a;g.fillStyle=col;g.beginPath();g.ellipse(x,y,rx,ry,0,0,6.283);g.fill();g.globalAlpha=1};
+const sprAt=(cv,x,y,flip)=>{const w=cv.lw,ax=w===36?18:20,px=Math.round((x-(flip?w-ax:ax))*ZC)/ZC,py=Math.round((y-39)*ZC)/ZC;if(flip){RX.save();RX.translate(px+w,py);RX.scale(-1,1);RX.drawImage(cv,0,0,w,40);RX.restore()}else RX.drawImage(cv,px,py,w,40)};
+function broomCv(f){
+  f=f||fk(BS);if(BRM[f])return BRM[f];
+  const b=new Art.Buf(38,9),W=[156,104,62],Y=[236,196,98],Y2=[200,150,62];
+  b.cap(2,4.5,25,4.5,.8,W,'c');b.tri(23,4.5,36.5,1,36.5,8,Y,'c');b.ell(24.5,4.5,1.6,2,[120,76,48],'c');
+  [2.6,4.5,6.4].forEach(y=>b.cap(27,4.5+(y-4.5)*.3,36,y,.25,Y2,'x'));
+  b.pastel(.06);b.shade(.16);b.outline([110,70,48]);
+  return BRM[f]=bufCanvas(b,f);
+}
+const MD={
+  // Zenitsu: Thần tốc, lao đi rất nhanh để lại dư ảnh và tia sét
+  v_thunder:{sp:1.9,run:.75,
+    under(g,e,p,c){const a=e.gh||(e.gh=[]),l=a[a.length-1],t=NOW();if(!l||Math.hypot(l.x-p.x,l.y-p.y)>7){a.push({x:p.x,y:p.y,pose:p.pose,f:e.flip,t});if(a.length>5)a.shift()}
+      a.forEach(q=>{const k=1-(t-q.t)/.42;if(k>0&&q!==a[a.length-1]){g.globalAlpha=.36*k;sprAt(catCv(lk(c),q.pose),q.x,q.y,q.f)}});g.globalAlpha=1},
+    fx(e,p){if(on(7))rp(p.x+rnd(-12,12),p.y-rnd(6,30),'#ffd83a',{sh:'bolt',pts:zig(ch(.5)?1:-1,9,3,5),life:.1});if(on(10))rp(p.x+rnd(-9,9),e.y-1,pick(['#ffd83a','#ffffff']),{vx:rnd(-30,30),vy:-rnd(14,40),g:170,life:.22})}},
+  // Gojo: tháo băng mắt, lơ lửng trong màn Vô Hạn, hai quả cầu Xích và Thương xoay quanh
+  v_gojo:{key:'v_gojo!open',hover:e=>3+Math.sin(e.wt*2.2)*1.2,
+    under(g,e,p){glowAt(g,p.x,p.y-18,22,21,'#5a3ac8',.15+.05*Math.sin(e.wt*3));g.strokeStyle='rgba(196,170,255,.6)';g.lineWidth=.6;g.beginPath();g.ellipse(p.x,p.y-18,22,21,0,0,6.283);g.stroke()},
+    over(g,e,p){const t=e.wt*2.4;[['#ff4a5a',0],['#4a8cff',Math.PI]].forEach(q=>{const x=p.x+Math.cos(t+q[1])*19,y=p.y-19+Math.sin(t+q[1])*7;glowAt(g,x,y,3.6,3.6,q[0],.35);glowAt(g,x,y,1.9,1.9,q[0],1);glowAt(g,x-.5,y-.6,.6,.6,'#ffffff',1)})},
+    fx(e,p){if(on(5))rp(p.x+rnd(-18,18),p.y-rnd(0,36),pick(['#b46aff','#5a8cff','#ffffff']),{vy:-rnd(4,12),life:.6})}},
+  // Harry Potter: cưỡi chổi bay mỗi khi di chuyển
+  v_harry:{run:.45,ride:{cv:broomCv,w:38,h:9,off:16,dy:-10,lift:13},
+    fx(e,p){if(on(8))rp(p.x+rnd(-14,14),p.y-rnd(0,30),pick(['#ffe9a0','#ffffff','#f2c230']),{sh:ch(.4)?'star':undefined,vy:-rnd(4,10),life:.5})}},
+  // Darth Vader: dùng Thần lực nâng ba tảng đá xoay quanh, bóng tối loang dưới chân
+  v_vader:{aura:'#ff3a3a',
+    under(g,e,p){glowAt(g,p.x,(p.gy||p.y)-1,21,5.5,'#2a0810',.42)},
+    over(g,e,p){for(let i=0;i<3;i++){const a=e.wt*.9+i*2.094,x=Math.round(p.x+Math.cos(a)*21),y=Math.round(p.y-22+Math.sin(a*1.7+i)*4+Math.sin(a)*5);
+      g.fillStyle='#2e2a38';g.fillRect(x-2,y-1,5,3);g.fillRect(x-1,y-2,3,5);g.fillStyle='#6a6478';g.fillRect(x-1,y-1,2,1);g.fillStyle='rgba(255,70,70,.55)';g.fillRect(x-2,y+4,5,1)}}},
+  // Nyan Cat: bay khắp phòng không chạm đất, kéo cầu vồng
+  v_nyan:{run:1,sp:1.25,hover:e=>10+Math.sin(e.wt*7)*1.6,
+    fx(e,p){if(on(6))rp(p.x+rnd(-20,20),p.y-rnd(-4,34),'#ffffff',{sh:'star',life:.45})}},
+  // Thần Tài: mưa lộc, xu vàng rơi quanh và vầng sáng vàng dưới chân
+  v_maneki:{under(g,e,p){glowAt(g,p.x,(p.gy||p.y)-1,19,5,'#ffd24a',.3+.1*Math.sin(e.wt*4))},
+    fx(e,p){if(on(5))rp(p.x+rnd(-22,22),p.y-rnd(44,56),'#f2c230',{sh:'coin',vy:rnd(16,30),g:60,gy:e.y-1,life:1.3});if(on(4))rp(p.x+rnd(-14,14),p.y-rnd(6,34),'#ffe9a0',{sh:'star',life:.5})}},
+  // Phi Hành Gia: không trọng lực, trôi lơ lửng nghiêng ngả, động cơ phụt lửa
+  v_astro:{sp:.8,hover:e=>11+Math.sin(e.wt*1.6)*4,tilt:e=>Math.sin(e.wt*.9)*.22,
+    fx(e,p){if(on(14))rp(p.x+rnd(-3,3),p.y+rnd(0,2),pick(['#ffb347','#fff3b0','#bff4ff']),{vy:rnd(14,30),vx:rnd(-4,4),life:rnd(.2,.4)});if(on(4))rp(p.x+rnd(-18,18),p.y-rnd(0,38),'#ffffff',{sh:'star',life:.6})}},
+  // Hoàng Gia: ngự giá, thảm đỏ trải theo chân, hoa giấy rơi, các bé đứng gần thả tim
+  v_royal:{under(g,e,p){const y=Math.round((p.gy||p.y)-3),x=Math.round(p.x-19);g.fillStyle='#b8323e';g.fillRect(x,y,38,6);g.fillStyle='#e6b93a';g.fillRect(x,y,38,1);g.fillRect(x,y+5,38,1);g.fillStyle='#8a2430';g.fillRect(x,y+3,38,1)},
+    fx(e,p){if(on(9))rp(p.x+rnd(-18,18),p.y-rnd(40,50),pick(['#ffd24a','#ff9db5','#ffffff','#b98bff']),{vy:rnd(16,28),vx:rnd(-5,5),life:1.1,sz:2});
+      if(on(.5)){const o=ents.find(o=>o!==e&&!o.clone&&!o.ghost&&Math.hypot(o.x-e.x,o.y-e.y)<46&&!(o.emoT>0));if(o)o.emoT=1.4}}},
+  // Khao Manee: hai viên ngọc mang đúng hai màu mắt xoay quanh
+  khaomanee:{over(g,e,p,c){const L=look(lk(c)),t=e.wt*2;[[L.eye,0],[L.eye2||L.eye,Math.PI]].forEach(q=>{const x=p.x+Math.cos(t+q[1])*18,y=p.y-20+Math.sin(t+q[1])*6;glowAt(g,x,y,4.2,4.2,q[0],.3);
+        g.fillStyle=q[0];g.beginPath();g.moveTo(x,y-3);g.lineTo(x+2.2,y);g.lineTo(x,y+3);g.lineTo(x-2.2,y);g.fill();g.fillStyle='#ffffff';g.fillRect(x-.8,y-1.3,1,1)})},
+    fx(e,p,c){const L=look(lk(c));if(on(8))rp(p.x+rnd(-14,14),p.y-rnd(4,34),ch(.5)?L.eye:(L.eye2||L.eye),{sh:'star',life:.5,vy:-5})}},
+  // Lykoi: đêm trăng, vầng trăng đi theo trên đầu, sương dưới chân, hóa "sói" chạy nhanh hơn
+  lykoi:{sp:1.3,run:.45,
+    under(g,e,p){const x=p.x+(e.flip?-9:9),y=p.y-54;glowAt(g,x,y,11,11,'#f4f1dc',.16);glowAt(g,x,y,6.5,6.5,'#f4f1dc',.95);glowAt(g,x+2,y-1.5,1.6,1.6,'#d6d2b4',.9);glowAt(g,x-2,y+2,1.1,1.1,'#d6d2b4',.9)},
+    fx(e,p){if(on(7))rp(p.x+rnd(-16,16),e.y-rnd(0,5),pick(['#5a546e','#8a84a0']),{vx:rnd(-6,6),vy:-rnd(1,5),life:rnd(.6,1),sz:3,a:.45});if(on(.3)&&e.state==='idle')e.emo='note'}},
+  // Savannah: máu săn mồi, phóng khắp phòng
+  savannah:{sp:1.55,run:.85,aura:'#f2b24a',
+    fx(e,p){if(e.state==='run'&&on(16))rp(p.x+rnd(-8,8),e.y-1,'#c9a878',{vx:rnd(-16,16),vy:-rnd(6,16),g:30,life:.4,sz:2});if(e.state==='run'&&on(8))rp(p.x+rnd(-14,14),p.y-rnd(4,30),'#fff3d0',{sh:'line',len:rnd(6,12),bd:e.flip?-1:1,life:.2})}},
+  // Sokoke: ngụy trang, mờ dần lẫn vào nền, lá rơi quanh
+  sokoke:{alpha:e=>.42+.12*Math.sin(e.wt*2.5),
+    fx(e,p){if(on(5))rp(p.x+rnd(-16,16),p.y-rnd(24,40),pick(['#6fd26f','#3f9a55','#b5e08a']),{vx:rnd(-8,8),vy:rnd(8,18),life:rnd(.6,1),sz:2})}},
+  // Suphalak: bộ lông đồng đỏ rực sáng
+  suphalak:{aura:'#ffb060',
+    under(g,e,p){glowAt(g,p.x,p.y-16,17+2*Math.sin(e.wt*3),20,'#ff9a3a',.2)},
+    fx(e,p){if(on(.8))rp(p.x,p.y-16,'#ffb060',{sh:'ring',r:4,vr:28,life:.7});if(on(7))rp(p.x+rnd(-14,14),p.y-rnd(4,32),'#ffd89a',{sh:'star',life:.45})}},
+};
+Object.keys(MD).forEach(k=>{S5[k].md=MD[k]});
 
 /* ============ PHÒNG ============ */
 let VW=240,VHV=170,ZC=4,ZMIN=0,camY=0;const VH=170;
@@ -359,6 +426,8 @@ function choose(e){
     if(b){e.tx=clamp(b.x+rnd(-14,14),14,WORLD_W-14);e.ty=clamp(b.y+rnd(0,5),FLOOR_MIN,FLOOR_MAX);e.state='walk';e.pre=.2;e.goal={wait:1};return}
   }
   if(c.star===5&&S5[c.sp]&&!e.clone&&!e.fm&&!(e.cd>0)&&ch(.2)){const sg=S5[c.sp];e.state='sig';e.t=sg.dur;if(sg.start)sg.start(e);return} // mèo 5★ thỉnh thoảng diễn hành động riêng
+  const md=e.fm&&e.fm.md;
+  if(md&&md.run&&c.en>=25&&ch(md.run)){e.state='run';e.pre=.2;e.left=1+Math.floor(rnd(1,3));runTarget(e);return} // đang trong trạng thái đặc trưng: chạy/bay nhiều hơn
   let a=(k<0?.32:k>0?.06:.14)+(ag===2?.12:ag===0?-.03:0); // mèo già ngủ nhiều hơn
   if(r<a||c.en<25){e.state='nap';e.t=rnd(6,12);e.emo='z';return}
   a+=.14; if(r<a){e.state='groom';e.t=rnd(3,6);return}
@@ -411,7 +480,7 @@ function stepEnt(e,dt){
     if(b&&now()-c.eat.t<4000&&!e.ghost&&e.state!=='jump'&&!(e.state==='use'&&e.goal&&e.goal.at>=0)){e.goal={bowl:b.iid};e.tx=clamp(b.x+rnd(-13,13),14,WORLD_W-14);e.ty=clamp(b.y+rnd(1,5),FLOOR_MIN,FLOOR_MAX);e.state='run';e.pre=0;e.left=0;e.emo=null}
   }
   if(e.state==='walk'||e.state==='run'){
-    const k=vigor(c),lo=SP[c.sp].short,sp=(e.state==='run'?(lo?48:58):(lo?10:13))*(k>0?1.15:k<0?.8:1)*[1.1,1,.85][ageStage(c)]*(e.boost||1),dx=e.tx-e.x,dy=e.ty-e.y,d=Math.hypot(dx,dy);
+    const k=vigor(c),lo=SP[c.sp].short,sp=(e.state==='run'?(lo?48:58):(lo?10:13))*(k>0?1.15:k<0?.8:1)*[1.1,1,.85][ageStage(c)]*(e.boost||1)*((e.fm&&e.fm.md&&e.fm.md.sp)||1),dx=e.tx-e.x,dy=e.ty-e.y,d=Math.hypot(dx,dy);
     if(e.pre>0){e.pre-=dt;e.acc=0;if(Math.abs(dx)>.5)e.flip=dx>0;return}   // đứng dậy quay về hướng đi rồi mới bước
     e.acc=Math.min(1,(e.acc||0)+dt*3.2);
     const v=sp*(.3+.7*e.acc*(2-e.acc))*clamp(d/12,.4,1);                    // tăng tốc êm lúc xuất phát, giảm tốc khi gần tới
@@ -439,7 +508,7 @@ function stepEnt(e,dt){
     if(e.t<=0){
       if(e.state==='bye'){e.state='run';e.pre=.15;e.left=0;e.acc=0;e.tx=e.x<camX+VW/2?camX-45:camX+VW+45;e.ty=e.y;e.goal={bye:1};e.emo=null;return}
       e.emo=null;
-      if(sg){e.state='idle';if(sg.end){sg.end(e);return}}
+      if(sg){e.state='idle';if(sg.md)e.fm={key:sg.md.key||null,t:60,aura:sg.md.aura,md:sg.md};if(sg.end){sg.end(e);return}}
       const it=e.state==='use'&&e.goal&&e.goal.iid&&S.items.find(i=>i.iid===e.goal.iid&&i.room===cur);
       if(it&&FURN[it.fid].lv){if(e.goal.at>=0){e.goal.down=1;climbJump(e,it,-1)}else choose(e)}
       else if(it&&!FURN[it.fid].use.floor&&FURN[it.fid].use.dy<=-4){const q=usePos(it);e.j={fx:q.x,fy:q.y,tx:e.x,ty:e.y,sy:it.y+.5,next:'idle'};e.flip=e.x>q.x;e.jt=0;e.jd=clamp(Math.abs(q.y-e.y)/90+.35,.35,.9);e.state='jump'}
@@ -471,6 +540,11 @@ function entPos(e){
   const pose=(moving&&e.pre>0)||(e.post>0&&(e.state==='idle'||e.state==='use'))?'stand':e.state==='nap'?'sleep'+(Math.floor(e.wt*.8)%2):e.state==='groom'?'groom'+Math.floor(e.wt*5)%4
     :e.state==='walk'?'walk'+Math.floor((e.wd||0)/(lo?6:10)*12)%12:e.state==='run'?'run'+Math.floor((e.wd||0)/(lo?13:19)*8)%8:idlePose(e);
   if(cc&&cc.sp==='v_goku'&&moving&&!(e.pre>0))return {x:e.x,y:e.y-9+Math.sin(e.wt*5)*.8,gy:e.y,sy:e.y,pose:'stand',cloud:1}; // Goku đứng trên Cân Đẩu Vân lướt đi
+  const md=e.fm&&e.fm.md;
+  if(md){
+    if(md.ride&&moving&&!(e.pre>0))return {x:e.x,y:e.y-md.ride.lift+Math.sin(e.wt*5)*.8,gy:e.y,sy:e.y,pose:'stand',ride:md.ride};
+    if(md.hover&&e.state!=='use')return {x:e.x,y:e.y-md.hover(e),gy:e.y,sy:e.y,pose};
+  }
   return {x:e.x,y:e.y,sy:e.y,pose};
 }
 const EMO={z:["###","..#",".#.","#..","###"],heart:[".#.#.","#####","#####",".###.","..#.."],note:["..##","..#.","..#.","###.","###."],excl:["#","#","#",".","#"]};
@@ -544,11 +618,17 @@ function drawEnt(e,p){
   // sprite ngồi rộng 36 ô (tâm 18); sprite nhìn ngang rộng 50 ô, đầu quay trái (tâm 22). Đổi hướng bằng cách lật, không xoay.
   const key=p.look||(e.fm&&e.fm.key)||lk(c),cv=catCv(key,p.pose),w=cv.lw,ax=w===36?18:20;
   if(p.sg&&p.sg.draw)p.sg.draw(RX,e,p,p.k);
+  const md=e.fm&&e.fm.md;if(md&&md.under)md.under(RX,e,p,c);
   RX.fillStyle='rgba(70,42,28,.24)';RX.beginPath();RX.ellipse(p.x,(p.gy||p.y)-1,p.gy?9:(w===36?11:15),p.gy?2.2:3,0,0,6.283);RX.fill(); // bóng đổ dưới chân
   const px=Math.round((p.x-(e.flip?w-ax:ax))*ZC)/ZC,py=Math.round((p.y-39)*ZC)/ZC,F=fol&&fol.uid===e.uid&&!e.ghost&&!e.clone;
   if(F){const t=performance.now()/1000;RX.strokeStyle='rgba(255,236,150,'+(.55+.3*Math.sin(t*4))+')';RX.lineWidth=1;RX.beginPath();RX.ellipse(p.x,(p.gy||p.y)-1,16,4.5,0,0,6.283);RX.stroke();RX.shadowColor='rgba(255,244,170,.95)';RX.shadowBlur=ZC*2.5} // viền sáng quanh bé đang theo dõi
-  if(e.flip){RX.save();RX.translate(px+w,py);RX.scale(-1,1);RX.drawImage(cv,0,0,w,40);RX.restore()}else RX.drawImage(cv,px,py,w,40);
+  const al=md&&md.alpha?md.alpha(e):1,tl=md&&md.tilt?md.tilt(e):0;
+  if(al<1||tl){RX.save();RX.globalAlpha=al;RX.translate(px+w/2,py+20);RX.rotate(tl);if(e.flip)RX.scale(-1,1);RX.drawImage(cv,-w/2,-20,w,40);RX.restore()} // mờ (ngụy trang) hoặc nghiêng (không trọng lực)
+  else if(e.flip){RX.save();RX.translate(px+w,py);RX.scale(-1,1);RX.drawImage(cv,0,0,w,40);RX.restore()}else RX.drawImage(cv,px,py,w,40);
   RX.shadowBlur=0;
+  if(p.ride){const r=p.ride,rc=r.cv(),nx=Math.round((p.x-(e.flip?r.w-r.off:r.off))*ZC)/ZC,ny=Math.round((p.y+r.dy)*ZC)/ZC;                              // vật cưỡi (chổi bay) vẽ đè lên chân
+    if(e.flip){RX.save();RX.translate(nx+r.w,ny);RX.scale(-1,1);RX.drawImage(rc,0,0,r.w,r.h);RX.restore()}else RX.drawImage(rc,nx,ny,r.w,r.h)}
+  if(md){if(md.over)md.over(RX,e,p,c);if(md.fx)md.fx(e,p,c)}
   if(p.cloud){const nc=nimbusCv(),nx=Math.round((p.x+(e.flip?-20:-10))*ZC)/ZC,ny=Math.round((p.y-5)*ZC)/ZC;   // đám mây vẽ đè lên bàn chân
     if(e.flip){RX.save();RX.translate(nx+30,ny);RX.scale(-1,1);RX.drawImage(nc,0,0,30,11);RX.restore()}else RX.drawImage(nc,nx,ny,30,11)}
   const au=(e.fm&&e.fm.aura)||look(key).aura;                                                          // luồng khí bốc lên quanh thân
@@ -706,6 +786,51 @@ function tone(f,t0,d,type,v){const o=AC.createOscillator(),g=AC.createGain();o.t
 function snd(f){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();f(AC.currentTime+.05)}catch(e){}}
 const seq=(notes,step,d,type,v)=>snd(t=>notes.forEach((f,i)=>{if(f)tone(f,t+i*step,d,type,v)}));
 const glide=(f0,f1,d,type,v)=>snd(t=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+d);g.gain.setValueAtTime(v||.06,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)});
+/* Giọng meo tổng hợp: dao động răng cưa đi qua hai bộ lọc formant trượt theo chuỗi nguyên âm (m, e, a, o…), cao độ uốn theo đường cong c.
+   o: f (Hz), d (giây), v (âm lượng), w (chuỗi âm), c (hệ số cao độ theo thời gian), vib/vr (rung), sub (tiếng gầm quãng tám dưới),
+      lp (lọc trầm: giọng nghẹt), radio (qua bộ đàm), echo (vang), dual (bè thứ hai theo tỉ lệ tần số), type (dạng sóng). */
+const VOW={m:[300,1000,.3],e:[560,2300,1],i:[340,2700,.9],a:[950,1500,1],o:[480,900,.9],u:[340,750,.7],r:[420,1300,.6]};
+function meow(o){snd(t=>{
+  o=o||{};const d=o.d||.6,f=o.f||620,w=(o.w||'meao').split(''),cv=a=>new Float32Array(a.length>1?a:[a[0],a[0]]),
+    osc=AC.createOscillator(),amp=AC.createGain(),env=AC.createGain(),out=AC.createGain();
+  osc.type=o.type||'sawtooth';osc.frequency.setValueCurveAtTime(cv((o.c||[.84,1.12,1,.74]).map(k=>k*f)),t,d);
+  if(o.vib){const l=AC.createOscillator(),lg=AC.createGain();l.frequency.value=o.vr||6;lg.gain.value=f*o.vib;l.connect(lg);lg.connect(osc.frequency);l.start(t);l.stop(t+d+.05)}
+  [0,1].forEach(i=>{const bp=AC.createBiquadFilter(),g=AC.createGain();bp.type='bandpass';bp.Q.value=i?8:5;bp.frequency.setValueCurveAtTime(cv(w.map(x=>(VOW[x]||VOW.a)[i])),t,d);g.gain.value=i?.8:1;osc.connect(bp);bp.connect(g);g.connect(amp)});
+  if(o.sub){const s=AC.createOscillator(),sg=AC.createGain();s.type='square';s.frequency.setValueCurveAtTime(cv((o.c||[.84,1.12,1,.74]).map(k=>k*f/2)),t,d);sg.gain.value=o.sub*.12;s.connect(sg);sg.connect(amp);s.start(t);s.stop(t+d+.05)}
+  amp.gain.setValueCurveAtTime(cv(w.map(x=>(VOW[x]||VOW.a)[2])),t,d);
+  env.gain.setValueAtTime(.0001,t);env.gain.linearRampToValueAtTime(1,t+Math.min(.05,d*.2));env.gain.setValueAtTime(1,t+d*.7);env.gain.exponentialRampToValueAtTime(.001,t+d+.04);
+  amp.connect(env);let n=env;
+  if(o.lp){const q=AC.createBiquadFilter();q.type='lowpass';q.frequency.value=o.lp;n.connect(q);n=q}
+  if(o.radio){const q=AC.createBiquadFilter();q.type='bandpass';q.frequency.value=1900;q.Q.value=2.2;n.connect(q);n=q}
+  out.gain.value=(o.v||.4)*(o.radio?2.2:1)*(o.lp?1.6:1);n.connect(out);out.connect(AC.destination);
+  if(o.echo){const dl=AC.createDelay(.5),fb=AC.createGain();dl.delayTime.value=.17;fb.gain.value=.34;out.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(AC.destination)}
+  osc.start(t);osc.stop(t+d+.05);
+});if(o&&o.dual)meow(Object.assign({},o,{dual:0,f:(o.f||620)*o.dual,v:(o.v||.4)*.6}))}
+// giọng meo của từng bé trong intro: [mốc thời gian tính từ đầu cảnh (ms), tham số]
+const MEOW={
+  v_goku:[[1150,{w:'mrra',f:300,d:.8,c:[.8,1,1.25,1.5],sub:.5,v:.35}],[2000,{w:'maao',f:520,d:.6,c:[1,1.3,1.25,1.1],vib:.03}],
+    [2800,{w:'ma',f:380,d:.2}],[3030,{w:'me',f:420,d:.2}],[3260,{w:'ma',f:460,d:.2}],[3490,{w:'me',f:500,d:.2}],
+    [3750,{w:'maaa',f:560,d:.9,c:[1,1.35,1.3,1.25,1.1],vib:.04,sub:.3,v:.38}]],
+  v_naruto:[[350,{w:'mia',f:700,d:.22,c:[.9,1.25,1.1],v:.8}],[520,{w:'mia',f:770,d:.2,c:[.9,1.25,1.1],v:.6}],[640,{w:'mia',f:650,d:.2,c:[.9,1.25,1.1],v:.5}],
+    [1050,{w:'ia',f:760,d:.14,v:.3}],[1550,{w:'ia',f:820,d:.14,v:.3}],[2050,{w:'ia',f:700,d:.14,v:.3}],
+    [2600,{w:'mrra',f:420,d:.5,c:[.8,1.1,1.4],sub:.3,v:.32}],[3400,{w:'meaa',f:640,d:.5,c:[1,1.3,1.2],sub:.3,v:.32}],
+    [4400,{w:'mia',f:700,d:.13}],[4560,{w:'ia',f:620,d:.13}],[4720,{w:'ia',f:840,d:.22,c:[.9,1.15]}]],
+  v_nyan:[0,1,2,3,4,5,6,7].map(i=>[150+i*300,{w:'ia',f:[880,988,1047,988][i%4],d:.17,type:'square',c:[.92,1.1,1],v:.42}]),
+  v_maneki:[[500,{w:'meaou',f:470,d:.8,c:[.9,1.15,1,.85],vib:.03}],[1700,{w:'ao',f:420,d:.16,c:[1.1,.85]}],[1880,{w:'ao',f:380,d:.16,c:[1.1,.85]}],[2060,{w:'ao',f:340,d:.2,c:[1.1,.85]}],
+    [3300,{w:'mrrao',f:430,d:.9,vib:.05,vr:9}]],
+  v_harry:[[300,{w:'mia',f:720,d:.3,c:[.9,1.3],v:.8}],[1300,{w:'ii',f:800,d:.5,c:[.9,1.3,1.1],v:.8}],[2300,{w:'meaaou',f:900,d:.8,c:[1.3,1.1,.8,.5],vib:.05,vr:11,v:.32}],
+    [3200,{w:'meou',f:500,d:.7,c:[1,.9,1.05,.85],vib:.08,vr:5,v:.3}]],
+  v_thunder:[[150,{w:'mrru',f:260,d:.7,c:[1,.9,.8],sub:.4,v:.6}],[1250,{w:'mia',f:820,d:.2,c:[.8,1.4],v:.9}],[2350,{w:'meou',f:520,d:.6,c:[1,.95,.8,.7],v:.3}]],
+  v_gojo:[[750,{w:'meaou',f:400,d:.8,c:[.95,1.05,1,.9],vib:.02,echo:1,v:.35}],[2400,{w:'mao',f:360,d:.9,c:[1,1.1,.85],echo:1,dual:1.5,v:.35}]],
+  v_vader:[[1900,{w:'mrrao',f:150,d:1.2,c:[1,1.08,1,.8],type:'square',sub:.6,lp:900,v:.3}],[2850,{w:'mao',f:170,d:.5,type:'square',sub:.5,lp:1000,v:.28}]],
+  v_astro:[[400,{w:'meao',f:600,d:.45,radio:1}],[3300,{w:'mia',f:680,d:.3,c:[.9,1.25],radio:1}]],
+  v_royal:[[900,{w:'meeaou',f:660,d:1.1,c:[.9,1.2,1.15,1,.9],vib:.045,vr:6.5}],[2400,{w:'mi',f:560,d:.15,v:.9}],[2600,{w:'mi',f:660,d:.2,v:.9}]],
+  khaomanee:[[600,{w:'miau',f:780,d:.7,c:[.95,1.1,1,.95],dual:1.5,v:.26}],[2100,{w:'ia',f:1000,d:.25,c:[.9,1.2],dual:1.25,v:.45}]],
+  lykoi:[[1500,{w:'auuu',f:330,d:1.1,c:[.8,1.5,1.55,1.45,1.1],vib:.02,echo:1,v:.25}],[2700,{w:'meo',f:700,d:.3,c:[1.1,1,.85],v:.3}]],
+  savannah:[[300,{w:'mrra',f:340,d:.5,c:[.9,1.2,1],sub:.5}],[1150,{w:'mia',f:600,d:.35,c:[.8,1.5]}],[2300,{w:'mraao',f:380,d:.8,c:[1,1.2,1.05,.8],sub:.5,vib:.03}]],
+  sokoke:[[400,{w:'rr',f:500,d:.25,vib:.12,vr:28,v:.5}],[2050,{w:'mrr',f:240,d:.6,vib:.1,vr:24,sub:.4,v:.6}],[2850,{w:'miaa',f:700,d:.4,c:[.8,1.4,1.2],v:.32}]],
+  suphalak:[[1000,{w:'mm',f:500,d:.3,lp:500,v:1.5}],[1500,{w:'mmu',f:540,d:.35,lp:600,v:1.5}],[2050,{w:'meaao',f:640,d:.8,c:[.9,1.25,1.15,.95],vib:.03,dual:2,v:.3}]],
+};
 const fxClear=()=>{const f=$('gfx');f.innerHTML='';f.style.background='';f.style.animation='';$('gfly').className=''};
 function fxEl(css,html){const d=document.createElement('div');d.style.cssText='position:absolute;'+css;if(html)d.innerHTML=html;$('gfx').appendChild(d);return d}
 const fxTint=bg=>{$('gfx').style.background=bg};
@@ -1098,7 +1223,7 @@ function playGacha(c){
     T(900,()=>{box.className='h glow';el.classList.add('pil')});
     for(let t=900;t<2300;t+=50)T(t,()=>sparkle('#ffd24a',5));
     const it=INTRO[c.sp];
-    if(it){T(2400,()=>{flash();box.style.display='none';el.classList.remove('pil');it.run(T)});T(2400+it.dur,()=>{flash();gReveal()})}
+    if(it){T(2400,()=>{flash();box.style.display='none';el.classList.remove('pil');it.run(T)});(MEOW[c.sp]||[]).forEach(m=>T(2400+m[0],()=>meow(m[1])));T(2400+it.dur,()=>{flash();gReveal()})}
     else T(2400,()=>{flash();gReveal()});
   }
 }
