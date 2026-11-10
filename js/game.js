@@ -28,6 +28,8 @@ function load(){
   S.cats.forEach(c=>{if(c.sp==='khaomanee'&&!RARE[c.coat]&&!/^km/.test(c.coat||''))c.coat='kmIce'});
   // Naruto và Goku lên 5★ (2026-11-10): bé 4★ trong bản lưu cũ được nâng lên 5★ và nhận thêm một trait cho đủ 5
   if(!S.mig5){S.cats.forEach(c=>{if((c.sp==='v_goku'||c.sp==='v_naruto')&&c.star===4){c.star=5;const t=rollTraits(SP[c.sp],5).find(t=>!c.traits.includes(t)&&!c.traits.some(o=>conflict(o,t)));if(t)c.traits.push(t)}});S.mig5=1}
+  // năm giống thật 5★ có thuộc tính riêng: bé đang có được thêm vào đầu danh sách, đổi chỗ cho một thuộc tính xấu (nếu không có thì thuộc tính cuối) để số thuộc tính vẫn bằng số sao
+  if(!S.mig6){S.cats.forEach(c=>{const bt=SP[c.sp]&&SP[c.sp].bt;if(bt&&!c.traits.includes(bt)){let i=-1;c.traits.forEach((t,j)=>{if(TRAITS[t]&&TRAITS[t].k==='b')i=j});if(i<0)for(let j=c.traits.length-1;j>=0;j--)if(TRAITS[c.traits[j]].k!=='x'){i=j;break}if(i>=0)c.traits.splice(i,1);c.traits.unshift(bt)}});S.mig6=1}
   S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
   if(!S.bowlMig){for(const rid in S.rooms)giveBowl(rid,S.rooms[rid].bowlAt);S.bowlMig=1} // bản cũ: mỗi phòng có 1 bát cố định, nay thành món đồ
   fixSlots();
@@ -67,7 +69,7 @@ const tE=(c,k)=>c.traits.reduce((a,t)=>a+(TRAITS[t].e[k]||0),0);
 const tM=(c,k)=>c.traits.reduce((a,t)=>a*(TRAITS[t].e[k]||1),1);
 const conflict=(a,b)=>CONFLICT.some(p=>(p[0]===a&&p[1]===b)||(p[0]===b&&p[1]===a));
 function rollTraits(sp,star,first){
-  const out=[]; if(sp.xt)out.push(sp.xt); if(first)out.push(first);
+  const out=[]; if(sp.xt)out.push(sp.xt); if(sp.bt)out.push(sp.bt); if(first)out.push(first);
   const aff=(sp.t||'').split(' ').filter(Boolean);
   let guard=0;
   while(out.length<star&&guard++<50){

@@ -40,7 +40,8 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 | `cdd3d11` | Chỉnh gacha đợt hai: tooltip nổi, màn chi tiết mới, màu sao theo độ hiếm, mắt Khao Manee và Gojo, thiết kế lại Vader, Nyan, Hoàng Gia nhìn ngang, 7 intro mới hoặc bổ sung (mục 9) |
 | `d2c964a` | Bảo hiểm gacha 10 lượt (`PITY=10`) |
 | `ec7543c` | Naruto và Goku lên 5★: tạo hình mới, dạng hiếm, intro riêng, Cân Đẩu Vân, biến hình và phân thân trong phòng (mục 10) |
-| chưa commit (đợt bốn ngày 2026-11-10) | 13 bé 5★ còn lại có trạng thái đặc trưng 60 giây trong phòng; giọng meo tổng hợp trong intro của cả 15 bé (mục 11) |
+| `eba7f4e` | 13 bé 5★ còn lại có trạng thái đặc trưng 60 giây trong phòng; giọng meo tổng hợp trong intro của cả 15 bé (mục 11) |
+| chưa commit | Thuộc tính riêng cho năm giống thật 5★; Admin chọn màu hiếm; giọng meo một chất giọng; máy chủ nhỏ `server.py` và quản lý nhiều người chơi (mục 12, 13) |
 
 ## 3. Luật chơi và số liệu hiện tại
 
@@ -56,7 +57,8 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 - Goku không có tóc (người dùng chê tóc chĩa xấu và bảo bỏ): hai tai mang màu của dạng (đen, vàng khi hóa Siêu Saiyan, đỏ ở dạng God), trên đầu có vòng hào quang, mặc võ phục cam, đuôi nâu. Trong phòng, khi đi hoặc chạy bé đứng trên Cân Đẩu Vân; thỉnh thoảng hóa Siêu Saiyan 60 giây (dạng God thì bùng hào quang đỏ 60 giây), sau đó nghỉ 90–180 giây mới diễn lại.
 - Naruto tóc vàng chĩa, băng trán làng Lá, ba vạch ria, áo cam vai đen. Trong phòng thỉnh thoảng phân thân thành ba trong 60 giây; phân thân tan thành khói khi hết giờ, khi bị chạm vào, hoặc khi cho phòng ăn.
 - 13 bé 5★ còn lại cũng có trạng thái đặc trưng 60 giây trong phòng (bảng `MD`), bắt đầu ngay sau hành động riêng trong `S5`, hết thì nghỉ 90–180 giây: Zenitsu Thần tốc (chạy nhanh gần gấp đôi, dư ảnh, tia sét); Gojo tháo băng mắt, lơ lửng trong quả cầu Vô Hạn có hai quả cầu đỏ xanh xoay quanh; Harry Potter cưỡi chổi bay khi di chuyển; Darth Vader dùng Thần lực nâng ba tảng đá xoay quanh, bóng tối dưới chân; Nyan Cat bay liên tục không chạm đất; Thần Tài mưa xu vàng (chỉ là hình, không cộng xu); Phi Hành Gia trôi không trọng lực, nghiêng ngả, phụt lửa; Hoàng Gia có thảm đỏ theo chân, hoa giấy, bé đứng gần thả tim; Khao Manee có hai viên ngọc đúng hai màu mắt xoay quanh; Lykoi có vầng trăng theo trên đầu và sương; Savannah phóng khắp phòng; Sokoke ngụy trang mờ đi; Suphalak rực sáng màu đồng.
-- 91 trait: 23 tốt, 13 xấu, 55 độc quyền (của mèo trang phục, của màu hiếm và của dạng hiếm).
+- 96 trait: 23 tốt, 13 xấu, 60 độc quyền (của mèo trang phục, của màu hiếm, của dạng hiếm và của năm giống thật 5★).
+- Năm giống thật 5★ có thuộc tính riêng (trường `bt` của giống, luôn đứng đầu danh sách trait, tính vào số trait): Khao Manee "Mắt kim cương" (+15% xu, +8% vé), Lykoi "Sói đêm" (+45% xu ban đêm, nhanh hơn 10%), Savannah "Cú nhảy 2 mét" (nhanh hơn 30%, +10% xu), Sokoke "Bóng rừng Kenya" (+45% xu điểm thiên nhiên, +30% chiến lợi phẩm), Suphalak "Đồng đỏ cát tường" (+12% xu, mèo cùng phòng +10 vui). Bé đang có trong bản lưu cũ được thêm thuộc tính này và bỏ đi một thuộc tính xấu (không có thì bỏ thuộc tính cuối) để số trait vẫn bằng số sao (cờ `S.mig6`). Dùng `bt` chứ không dùng `xt` vì giao diện coi `xt` là dấu hiệu của mèo trang phục.
 - Giống chân ngắn (`SHORT_LEGS`): munchkin, minuet, lambkin, bambino, kinkalow, skookum, dwelf, genetta. Chúng đi và chạy chậm hơn, nhảy thấp hơn, ít trèo.
 - Mỗi giống có 3–4 màu lông thật, một số màu ràng buộc giới tính (tam thể hầu như luôn là cái). 9 màu hiếm (`RARES`) rơi với xác suất 4%, luôn là 4★, có trait riêng và ô riêng trong bộ sưu tập.
 
@@ -139,11 +141,11 @@ Mỗi phòng có kiểu tường và sàn riêng (`THEMES` trong ui.js). Thế g
 - Nội thất nhiều tầng: Tháp mèo 3 tầng, Tháp mèo 5 tầng, Giá leo gỗ, Tủ sách cao, Võng treo, Nhà gỗ trên cao, Cây mèo khổng lồ, Kệ bậc thang (treo tường), Cầu treo (treo tường). Tháp mèo cũ (`tree`, `treegreen`) có 2 tầng.
 
 ### Admin
-Mở bằng Ctrl+Shift+A hoặc bấm 7 lần liên tiếp vào tiêu đề. Có: cộng xu, xu vô hạn, lấy mèo bất kỳ, gacha miễn phí ép sao, mở hết phòng, nhận hết nội thất, bát sẵn sàng, lên cấp, cho viễn chinh về ngay, đặt lại chỉ số, cho cả đàn già thêm 10 ngày hoặc thành mèo con, xóa dữ liệu.
+Mở bằng Ctrl+Shift+A hoặc bấm 7 lần liên tiếp vào tiêu đề. Có: cộng xu, xu vô hạn, lấy mèo bất kỳ (ô màu `admCoats()` liệt kê đúng màu của giống đang chọn: màu thường, 💎 mắt quý hiếm, ⚡ dạng hiếm, ✨ màu hiếm), gacha miễn phí ép sao hoặc ép ra màu hiếm, mở hết phòng, nhận hết nội thất, bát sẵn sàng, lên cấp, cho viễn chinh về ngay, đặt lại chỉ số, cho cả đàn già thêm 10 ngày hoặc thành mèo con, xóa dữ liệu.
 
 ## 4. Kiến trúc mã nguồn
 
-HTML/CSS/JS thuần, không build, không thư viện. Bốn script cổ điển dùng chung phạm vi toàn cục, nạp theo thứ tự `js/data.js`, `js/art.js`, `js/game.js`, `js/ui.js`. Vì dùng chung phạm vi, hằng `const` khai báo ở file sau không dùng được lúc file trước đang chạy lần đầu, nhưng gọi trong hàm thì được.
+HTML/CSS/JS thuần, không build, không thư viện. Năm script cổ điển dùng chung phạm vi toàn cục, nạp theo thứ tự `js/data.js`, `js/art.js`, `js/game.js`, `js/ui.js`, `js/net.js` (phần nhiều người chơi, mục 13). Kèm `server.py` là máy chủ tùy chọn. Vì dùng chung phạm vi, hằng `const` khai báo ở file sau không dùng được lúc file trước đang chạy lần đầu, nhưng gọi trong hàm thì được.
 
 Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển đổi một phần khi tải). Tự lưu 10 giây một lần và sau mỗi hành động.
 
@@ -239,7 +241,7 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 - Hạt gacha có kiểu `t` cho tiền rơi (`money('coin' | 'bar' | 'bill')`, vẽ bằng `drawMoney`): đồng xu xoay, thỏi vàng, tờ tiền bay lượn. `mixc(c, p, w)` trả `color-mix()` để pha màu trong CSS.
 - 15 cảnh intro riêng (2,7 đến 5,2 giây): Goku cưỡi Cân Đẩu Vân bay tới, gồng mình hóa Siêu Saiyan (tai vàng, hào quang), tụ chưởng "KA ME HA ME" rồi "HAAA!", luồng chưởng thổi bay nửa trên ngọn núi (`beam`, `shard`), cuối cùng trở lại đúng dạng của bé; Naruto trong rừng kết ấn phân thân thành ba, cả ba nhảy qua cành cây và bụi cỏ (`hopTo` cùng `leapY`), hai phân thân tan thành khói, bản thể tụ Rasengan (`kame`, `spin`) rồi ném trúng ninja phản bội; Nyan Cat bay kéo cầu vồng giữa sao pixel và chữ "NYA" chạy; Thần Tài có hai câu đối TÀI, LỘC, đồng vàng xoay rơi vào lòng, mưa tiền dày gồm xu, thỏi vàng, tiền giấy, đống vàng dâng lên; Harry Potter cưỡi chổi bay lộn nhào khắp màn hình (`broomFly`), sét đánh, rơi xoáy xuống (`tumble`), ngồi dậy choáng váng; Zenitsu ngủ gật "Z", mèo quỷ hiện ra, bé lao đi để lại dư ảnh và chém đôi mèo quỷ (`cutHalf`), chữ "THẦN TỐC"; Gojo kéo băng mắt, hai quả cầu đỏ xanh nhập lại, chữ "VÔ HẠN"; Darth Vader thở khò khè, bóng đen trồi lên, kiếm đỏ bật sáng đúng chỗ thanh kiếm, câu thoại gõ từng chữ; Phi Hành Gia bật động cơ bay ngang qua hành tinh có vành đai, hành tinh đỏ, hành tinh xanh (`passBy`) rồi hạ cánh; Hoàng Gia có thảm đỏ, kèn, vương miện hạ xuống; Khao Manee có hai con mắt lớn mở ra đúng cặp màu mắt của bé rồi tách ra, hai mắt bé lóe sáng; Lykoi có sương, trăng lên, bóng mèo hú "AWOOOO" rồi "à nhầm, meo"; Savannah chạy trên đồng cỏ rồi bật nhảy qua vạch 2 m; Sokoke rón rén trên hàng bụi cây (`sneak`), lẩn vào bụi lớn, bụi rung và lộ hai con mắt sáng, rồi bật nhảy ra; Suphalak có quả cầu đồng nứt dần thành nhiều nhánh (SVG, `crackGrow`), ánh sáng lọt qua khe, vỏ vỡ thành 12 mảnh (`shard`) và bé xuất hiện.
 - Âm thanh là nhạc chiptune tự viết bằng WebAudio (`tone`, `seq`, `glide`), không dùng file.
-- Giọng meo `meow(o)`: sóng răng cưa đi qua hai bộ lọc formant trượt theo chuỗi âm `w` (bảng `VOW`: m, e, i, a, o, u, r), cao độ uốn theo `c`; tùy chọn `vib`/`vr` (rung), `sub` (gầm), `lp` (nghẹt), `radio` (bộ đàm), `echo`, `dual` (bè hai), `type`. Bảng `MEOW[sp]=[[mốc ms, tham số], …]` là giọng của từng bé 5★ trong intro, `playGacha` hẹn giờ qua `T` nên Bỏ qua là dừng. Ví dụ: Goku gầm rồi thét dài lúc "HAAA", Vader giọng trầm nghẹt, Phi Hành Gia qua bộ đàm, Lykoi hú rồi "meo" nhỏ, Nyan "nya nya" kiểu chiptune.
+- Giọng meo `meow(o)`: một chất giọng duy nhất cho mọi bé (người dùng chê bản đầu nhiều kiểu giọng nghe không giống mèo, yêu cầu phải rõ tiếng "mew", chỉ đổi nhịp, trường độ, cao độ). Sóng răng cưa đi qua bộ lọc trầm cộng hưởng mở rồi khép (`MEW_LP`), cộng một formant trượt m, i, a, o, u (`MEW_F2`), cao độ vút lên rồi rơi (`MEW_P`), độ to `MEW_A`, thêm hơi thở và rung nhẹ. Tham số chỉ có `f`, `d`, `c` (đường uốn cao độ), `v`. Bảng `MEOW[sp]=[[mốc ms, tham số], …]` là nhịp meo của từng bé 5★ trong intro; `playGacha` hẹn giờ qua `T` nên Bỏ qua là dừng.
 
 **Thông báo và hộp thoại**
 - `toast(msg, {type, title, coins, icon})`: trượt xuống từ trên, xếp chồng, đếm xu tăng dần.
@@ -351,9 +353,30 @@ Quyết định tự đưa ra, cần người dùng xác nhận nếu muốn kh�
 
 ## 11. Đợt làm việc 2026-11-10 (đợt bốn): hoạt ảnh phòng và giọng meo cho mọi 5★
 
-Chưa commit. Người dùng yêu cầu "các 5 sao khác đều nên có hoạt ảnh ở phòng như vậy và lúc intro nên có giọng meo liên quan đến đó"; đã làm:
+Đã commit `eba7f4e` và push. Người dùng yêu cầu "các 5 sao khác đều nên có hoạt ảnh ở phòng như vậy và lúc intro nên có giọng meo liên quan đến đó"; đã làm:
 
 1. 13 bé 5★ còn lại có trạng thái đặc trưng 60 giây trong phòng (bảng `MD`, danh sách ở mục 3). Hành động riêng cũ trong `S5` giữ nguyên, nay là màn dạo đầu của trạng thái.
 2. Giọng meo tổng hợp (`meow`, `MEOW`) cho intro của cả 15 bé 5★, mỗi bé một kiểu giọng khớp với cảnh. Âm thanh cũ của intro giữ nguyên.
 
 Quyết định tự đưa ra, cần người dùng xác nhận nếu muốn khác: nội dung trạng thái của từng bé; Thần Tài mưa xu chỉ là hình, không cộng xu; trong phòng vẫn không có âm thanh, giọng meo chỉ có ở intro; Goku và Naruto cũng được thêm giọng meo.
+
+## 12. Đợt làm việc 2026-11-10 (đợt năm): thuộc tính riêng cho giống thật 5★
+
+Chưa commit. Người dùng nhận xét các giống thật 5★ chưa có thuộc tính chuyên biệt như Gojo; đã thêm năm trait `b_*` (mục 3), sửa `rollTraits`, thêm chuyển đổi `S.mig6`. Chỉ dùng các loại hiệu ứng sẵn có, không thêm luật mới. Mới kiểm tra bằng Node (mèo mới, bản lưu cũ, tính xu), chưa xem trong trình duyệt.
+
+Quyết định tự đưa ra, cần người dùng xác nhận nếu muốn khác: tên và chỉ số của năm thuộc tính; bé cũ bị đổi một thuộc tính thay vì có 6 thuộc tính; bé mang màu hiếm (4★) của các giống này cũng có thuộc tính riêng.
+
+Cùng đợt, theo phản hồi tiếp của người dùng: Admin chọn được mọi màu của giống (kể cả màu hiếm, mắt quý hiếm) và gacha ép ra màu hiếm; giọng meo làm lại thành một chất giọng duy nhất. Yêu cầu "cho admin thêm quyền để quản lý và theo dõi nếu có nhiều người chơi": người dùng chọn hướng "máy chủ nhỏ", xem mục 13.
+
+## 13. Nhiều người chơi: `server.py` và `js/net.js` (2026-11-10, chưa commit)
+
+Người dùng muốn Admin quản lý và theo dõi được khi có nhiều người chơi, và chọn hướng "máy chủ nhỏ". Game vẫn chơi được như cũ khi mở bằng `file://` hoặc máy chủ tĩnh (`NET.on=false`).
+
+- Chạy: `python server.py` (cổng 8765, mọi máy trong LAN), hoặc `python server.py <cổng> <địa chỉ bind>`. Chỉ dùng thư viện chuẩn. Máy chủ phục vụ file game (không lộ `data/`, file bắt đầu bằng dấu chấm, `.py`, `.md`) và API `/api/…`. File game gửi kèm `Cache-Control: no-cache` nên cập nhật không cần Ctrl+F5.
+- Dữ liệu ở `data/` (đã đưa vào `.gitignore`): `admin_key.txt` là mã quản trị tự sinh lần đầu, in ra cửa sổ lệnh khi khởi động; `players/<id>.json` là hồ sơ từng người: tên, khóa `tok`, bản lưu mới nhất, tóm tắt `sum`, hàng lệnh chờ `cmds`, nhật ký `log` (tối đa 300 dòng), thời gian chơi cộng dồn.
+- Người chơi: lần đầu vào được hỏi tên (`netAskName`, `POST /api/join`), danh tính lưu ở localStorage khóa `meoxu_player` (tách khỏi bản lưu). Cứ 30 giây và khi ẩn tab, `netSync` gửi cả bản lưu lên `POST /api/sync` kèm `cn` (số thứ tự lệnh đã áp dụng, lưu trong `S.cn`); máy chủ trả các lệnh còn chờ, `netApply` thực hiện rồi đồng bộ lại ngay để máy chủ bỏ lệnh khỏi hàng chờ. Hồ sơ bị xóa trên máy chủ (404) thì game hỏi tên lại, bản lưu vẫn giữ.
+- Lệnh quản trị (`CMD_TYPES`): `coins`, `tickets` (trường `amt`, âm là trừ), `cat` (`sp`, `star`, `coat`), `msg` (`text`), `reset`.
+- Nhật ký do máy chủ tự ghi bằng cách so hai lần đồng bộ (`diff_log`): lên cấp, mèo 5★ hoặc màu hiếm mới, phóng sinh, và cảnh báo ⚠ khi xu tăng hơn 20.000 trong một lần đồng bộ mà không phải quà, khi bật "xu vô hạn", khi bản lưu bị lùi.
+- Admin: khi `NET.on`, `openAdmin` đòi mã quản trị (`netAdminLogin`, header `X-Admin-Key`, lưu ở localStorage khóa `meoxu_admkey`), nên người chơi thường không mở được bảng Admin. Bảng Admin có thêm ô "Người chơi trên máy chủ": `netPlayers` (danh sách, sắp xếp, ai đang chơi, tổng xu, cảnh báo), `netPlayer(id)` (tổng quan, đàn mèo, nhật ký, tặng xu, vé, mèo, gửi thông báo, đổi tên, hủy lệnh chờ, đặt lại, xóa), `netGiftAll` (gửi cho tất cả).
+- Đã thử trên localhost bằng trình duyệt của Claude với một người chơi: vào tên, đồng bộ, sai và đúng mã quản trị, tặng xu, vé, mèo, thông báo, lệnh không bị áp dụng hai lần, cảnh báo xu bất thường, đặt lại, xóa hồ sơ. Chưa thử: nhiều máy thật cùng lúc qua LAN, điện thoại, tường lửa Windows.
+- Hạn chế: bản lưu trên máy chủ chỉ để xem, chưa có nút khôi phục về máy người chơi; người chơi vẫn sửa được localStorage của mình (máy chủ chỉ phát hiện qua cảnh báo); không có HTTPS, chỉ nên dùng trong mạng nhà; mỗi trình duyệt là một người chơi riêng, chưa có đăng nhập để chơi tiếp trên máy khác.

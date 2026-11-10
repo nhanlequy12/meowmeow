@@ -786,50 +786,50 @@ function tone(f,t0,d,type,v){const o=AC.createOscillator(),g=AC.createGain();o.t
 function snd(f){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();f(AC.currentTime+.05)}catch(e){}}
 const seq=(notes,step,d,type,v)=>snd(t=>notes.forEach((f,i)=>{if(f)tone(f,t+i*step,d,type,v)}));
 const glide=(f0,f1,d,type,v)=>snd(t=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+d);g.gain.setValueAtTime(v||.06,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)});
-/* Giọng meo tổng hợp: dao động răng cưa đi qua hai bộ lọc formant trượt theo chuỗi nguyên âm (m, e, a, o…), cao độ uốn theo đường cong c.
-   o: f (Hz), d (giây), v (âm lượng), w (chuỗi âm), c (hệ số cao độ theo thời gian), vib/vr (rung), sub (tiếng gầm quãng tám dưới),
-      lp (lọc trầm: giọng nghẹt), radio (qua bộ đàm), echo (vang), dual (bè thứ hai theo tỉ lệ tần số), type (dạng sóng). */
-const VOW={m:[300,1000,.3],e:[560,2300,1],i:[340,2700,.9],a:[950,1500,1],o:[480,900,.9],u:[340,750,.7],r:[420,1300,.6]};
+/* Giọng meo tổng hợp, một chất giọng duy nhất cho mọi bé: sóng răng cưa (dây thanh) đi qua bộ lọc cộng hưởng mở dần rồi khép dần như miệng mèo
+   ("m" ngậm miệng, "i-a" mở to và sáng, "o-u" khép lại), cao độ vút lên rồi rơi xuống, thêm chút hơi thở và rung tự nhiên.
+   Mỗi bé chỉ khác nhau ở nhịp (mốc thời gian), trường độ d, cao độ f và đường uốn cao độ c. o: {f (Hz), d (giây), c (hệ số cao độ theo thời gian), v (âm lượng)}. */
+const MEW_N=48,mewCurve=fn=>{const a=new Float32Array(MEW_N);for(let i=0;i<MEW_N;i++)a[i]=fn(i/(MEW_N-1));return a};
+const mewLerp=(pts,x)=>{const p=x*(pts.length-1),i=Math.min(pts.length-2,Math.floor(p));return pts[i]+(pts[i+1]-pts[i])*(p-i)};
+const mewKey=(ks,x)=>{let i=0;while(i<ks.length-2&&x>ks[i+1][0])i++;const a=ks[i],b=ks[i+1],k=clamp((x-a[0])/(b[0]-a[0]),0,1);return a[1]*Math.pow(b[1]/a[1],k)}; // nội suy theo tỉ lệ (hợp với tần số)
+const MEW_P=[[0,.86],[.12,.95],[.3,1.14],[.55,1.04],[1,.74]],          // cao độ: vút lên ở "i-a" rồi rơi dần
+  MEW_LP=[[0,520],[.08,650],[.2,2300],[.36,4200],[.6,2600],[.85,1100],[1,700]], // độ mở miệng: tối, sáng bừng, rồi tối lại
+  MEW_F2=[[0,950],[.1,1300],[.22,2700],[.42,1750],[.7,1100],[1,820]],   // formant thứ hai: m, i, a, o, u
+  MEW_A=[[0,.3],[.08,.42],[.24,1],[.6,.92],[.86,.5],[1,.2]];             // độ to
 function meow(o){snd(t=>{
-  o=o||{};const d=o.d||.6,f=o.f||620,w=(o.w||'meao').split(''),cv=a=>new Float32Array(a.length>1?a:[a[0],a[0]]),
-    osc=AC.createOscillator(),amp=AC.createGain(),env=AC.createGain(),out=AC.createGain();
-  osc.type=o.type||'sawtooth';osc.frequency.setValueCurveAtTime(cv((o.c||[.84,1.12,1,.74]).map(k=>k*f)),t,d);
-  if(o.vib){const l=AC.createOscillator(),lg=AC.createGain();l.frequency.value=o.vr||6;lg.gain.value=f*o.vib;l.connect(lg);lg.connect(osc.frequency);l.start(t);l.stop(t+d+.05)}
-  [0,1].forEach(i=>{const bp=AC.createBiquadFilter(),g=AC.createGain();bp.type='bandpass';bp.Q.value=i?8:5;bp.frequency.setValueCurveAtTime(cv(w.map(x=>(VOW[x]||VOW.a)[i])),t,d);g.gain.value=i?.8:1;osc.connect(bp);bp.connect(g);g.connect(amp)});
-  if(o.sub){const s=AC.createOscillator(),sg=AC.createGain();s.type='square';s.frequency.setValueCurveAtTime(cv((o.c||[.84,1.12,1,.74]).map(k=>k*f/2)),t,d);sg.gain.value=o.sub*.12;s.connect(sg);sg.connect(amp);s.start(t);s.stop(t+d+.05)}
-  amp.gain.setValueCurveAtTime(cv(w.map(x=>(VOW[x]||VOW.a)[2])),t,d);
-  env.gain.setValueAtTime(.0001,t);env.gain.linearRampToValueAtTime(1,t+Math.min(.05,d*.2));env.gain.setValueAtTime(1,t+d*.7);env.gain.exponentialRampToValueAtTime(.001,t+d+.04);
-  amp.connect(env);let n=env;
-  if(o.lp){const q=AC.createBiquadFilter();q.type='lowpass';q.frequency.value=o.lp;n.connect(q);n=q}
-  if(o.radio){const q=AC.createBiquadFilter();q.type='bandpass';q.frequency.value=1900;q.Q.value=2.2;n.connect(q);n=q}
-  out.gain.value=(o.v||.4)*(o.radio?2.2:1)*(o.lp?1.6:1);n.connect(out);out.connect(AC.destination);
-  if(o.echo){const dl=AC.createDelay(.5),fb=AC.createGain();dl.delayTime.value=.17;fb.gain.value=.34;out.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(AC.destination)}
-  osc.start(t);osc.stop(t+d+.05);
-});if(o&&o.dual)meow(Object.assign({},o,{dual:0,f:(o.f||620)*o.dual,v:(o.v||.4)*.6}))}
-// giọng meo của từng bé trong intro: [mốc thời gian tính từ đầu cảnh (ms), tham số]
+  o=o||{};const d=o.d||.6,f=o.f||620,osc=AC.createOscillator(),lp=AC.createBiquadFilter(),bp=AC.createBiquadFilter(),bg=AC.createGain(),hp=AC.createBiquadFilter(),amp=AC.createGain(),env=AC.createGain(),out=AC.createGain();
+  osc.type='sawtooth';osc.frequency.setValueCurveAtTime(mewCurve(x=>f*(o.c?mewLerp(o.c.length>1?o.c:[o.c[0],o.c[0]],x):mewKey(MEW_P,x))),t,d);
+  [[5.5,.012],[27,.006]].forEach(q=>{const l=AC.createOscillator(),g=AC.createGain();l.frequency.value=q[0];g.gain.value=f*q[1];l.connect(g);g.connect(osc.frequency);l.start(t);l.stop(t+d+.06)}); // rung và run nhẹ của giọng thật
+  lp.type='lowpass';lp.Q.value=4.5;lp.frequency.setValueCurveAtTime(mewCurve(x=>mewKey(MEW_LP,x)),t,d);
+  bp.type='bandpass';bp.Q.value=5;bp.frequency.setValueCurveAtTime(mewCurve(x=>mewKey(MEW_F2,x)),t,d);bg.gain.value=.55;
+  hp.type='highpass';hp.frequency.value=260;
+  osc.connect(lp);lp.connect(hp);osc.connect(bp);bp.connect(bg);bg.connect(hp);
+  const nb=AC.createBuffer(1,Math.ceil(AC.sampleRate*(d+.06)),AC.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+  const ns=AC.createBufferSource(),ng=AC.createGain();ns.buffer=nb;ng.gain.value=.05;ns.connect(ng);ng.connect(bp);ns.start(t);                                   // hơi thở
+  amp.gain.setValueCurveAtTime(mewCurve(x=>mewKey(MEW_A,x)),t,d);
+  env.gain.setValueAtTime(.0001,t);env.gain.linearRampToValueAtTime(1,t+Math.min(.04,d*.15));env.gain.setValueAtTime(1,t+d*.8);env.gain.exponentialRampToValueAtTime(.001,t+d+.05);
+  hp.connect(amp);amp.connect(env);env.connect(out);out.gain.value=(o.v||.2)*.6;out.connect(AC.destination);
+  osc.start(t);osc.stop(t+d+.06);
+})}
+// giọng meo của từng bé trong intro: [mốc thời gian tính từ đầu cảnh (ms), {f, d, c, v}]
 const MEOW={
-  v_goku:[[1150,{w:'mrra',f:300,d:.8,c:[.8,1,1.25,1.5],sub:.5,v:.35}],[2000,{w:'maao',f:520,d:.6,c:[1,1.3,1.25,1.1],vib:.03}],
-    [2800,{w:'ma',f:380,d:.2}],[3030,{w:'me',f:420,d:.2}],[3260,{w:'ma',f:460,d:.2}],[3490,{w:'me',f:500,d:.2}],
-    [3750,{w:'maaa',f:560,d:.9,c:[1,1.35,1.3,1.25,1.1],vib:.04,sub:.3,v:.38}]],
-  v_naruto:[[350,{w:'mia',f:700,d:.22,c:[.9,1.25,1.1],v:.8}],[520,{w:'mia',f:770,d:.2,c:[.9,1.25,1.1],v:.6}],[640,{w:'mia',f:650,d:.2,c:[.9,1.25,1.1],v:.5}],
-    [1050,{w:'ia',f:760,d:.14,v:.3}],[1550,{w:'ia',f:820,d:.14,v:.3}],[2050,{w:'ia',f:700,d:.14,v:.3}],
-    [2600,{w:'mrra',f:420,d:.5,c:[.8,1.1,1.4],sub:.3,v:.32}],[3400,{w:'meaa',f:640,d:.5,c:[1,1.3,1.2],sub:.3,v:.32}],
-    [4400,{w:'mia',f:700,d:.13}],[4560,{w:'ia',f:620,d:.13}],[4720,{w:'ia',f:840,d:.22,c:[.9,1.15]}]],
-  v_nyan:[0,1,2,3,4,5,6,7].map(i=>[150+i*300,{w:'ia',f:[880,988,1047,988][i%4],d:.17,type:'square',c:[.92,1.1,1],v:.42}]),
-  v_maneki:[[500,{w:'meaou',f:470,d:.8,c:[.9,1.15,1,.85],vib:.03}],[1700,{w:'ao',f:420,d:.16,c:[1.1,.85]}],[1880,{w:'ao',f:380,d:.16,c:[1.1,.85]}],[2060,{w:'ao',f:340,d:.2,c:[1.1,.85]}],
-    [3300,{w:'mrrao',f:430,d:.9,vib:.05,vr:9}]],
-  v_harry:[[300,{w:'mia',f:720,d:.3,c:[.9,1.3],v:.8}],[1300,{w:'ii',f:800,d:.5,c:[.9,1.3,1.1],v:.8}],[2300,{w:'meaaou',f:900,d:.8,c:[1.3,1.1,.8,.5],vib:.05,vr:11,v:.32}],
-    [3200,{w:'meou',f:500,d:.7,c:[1,.9,1.05,.85],vib:.08,vr:5,v:.3}]],
-  v_thunder:[[150,{w:'mrru',f:260,d:.7,c:[1,.9,.8],sub:.4,v:.6}],[1250,{w:'mia',f:820,d:.2,c:[.8,1.4],v:.9}],[2350,{w:'meou',f:520,d:.6,c:[1,.95,.8,.7],v:.3}]],
-  v_gojo:[[750,{w:'meaou',f:400,d:.8,c:[.95,1.05,1,.9],vib:.02,echo:1,v:.35}],[2400,{w:'mao',f:360,d:.9,c:[1,1.1,.85],echo:1,dual:1.5,v:.35}]],
-  v_vader:[[1900,{w:'mrrao',f:150,d:1.2,c:[1,1.08,1,.8],type:'square',sub:.6,lp:900,v:.3}],[2850,{w:'mao',f:170,d:.5,type:'square',sub:.5,lp:1000,v:.28}]],
-  v_astro:[[400,{w:'meao',f:600,d:.45,radio:1}],[3300,{w:'mia',f:680,d:.3,c:[.9,1.25],radio:1}]],
-  v_royal:[[900,{w:'meeaou',f:660,d:1.1,c:[.9,1.2,1.15,1,.9],vib:.045,vr:6.5}],[2400,{w:'mi',f:560,d:.15,v:.9}],[2600,{w:'mi',f:660,d:.2,v:.9}]],
-  khaomanee:[[600,{w:'miau',f:780,d:.7,c:[.95,1.1,1,.95],dual:1.5,v:.26}],[2100,{w:'ia',f:1000,d:.25,c:[.9,1.2],dual:1.25,v:.45}]],
-  lykoi:[[1500,{w:'auuu',f:330,d:1.1,c:[.8,1.5,1.55,1.45,1.1],vib:.02,echo:1,v:.25}],[2700,{w:'meo',f:700,d:.3,c:[1.1,1,.85],v:.3}]],
-  savannah:[[300,{w:'mrra',f:340,d:.5,c:[.9,1.2,1],sub:.5}],[1150,{w:'mia',f:600,d:.35,c:[.8,1.5]}],[2300,{w:'mraao',f:380,d:.8,c:[1,1.2,1.05,.8],sub:.5,vib:.03}]],
-  sokoke:[[400,{w:'rr',f:500,d:.25,vib:.12,vr:28,v:.5}],[2050,{w:'mrr',f:240,d:.6,vib:.1,vr:24,sub:.4,v:.6}],[2850,{w:'miaa',f:700,d:.4,c:[.8,1.4,1.2],v:.32}]],
-  suphalak:[[1000,{w:'mm',f:500,d:.3,lp:500,v:1.5}],[1500,{w:'mmu',f:540,d:.35,lp:600,v:1.5}],[2050,{w:'meaao',f:640,d:.8,c:[.9,1.25,1.15,.95],vib:.03,dual:2,v:.3}]],
+  v_goku:[[1150,{f:420,d:.8,c:[.8,1,1.2,1.4]}],[2000,{f:560,d:.6,c:[.9,1.3,1.2]}],[2800,{f:480,d:.2}],[3030,{f:520,d:.2}],[3260,{f:560,d:.2}],[3490,{f:600,d:.2}],
+    [3750,{f:620,d:.95,c:[.95,1.3,1.3,1.25,1.05]}]],
+  v_naruto:[[350,{f:700,d:.25}],[520,{f:780,d:.22,v:.14}],[640,{f:660,d:.22,v:.14}],[1050,{f:760,d:.16}],[1550,{f:820,d:.16}],[2050,{f:720,d:.16}],
+    [2600,{f:520,d:.5,c:[.8,1,1.3]}],[3400,{f:680,d:.55,c:[.9,1.3,1.1]}],[4400,{f:700,d:.16}],[4560,{f:640,d:.16}],[4720,{f:820,d:.3}]],
+  v_nyan:[0,1,2,3,4,5,6,7].map(i=>[150+i*300,{f:[880,988,1047,988][i%4],d:.2}]),
+  v_maneki:[[500,{f:520,d:.8}],[1700,{f:560,d:.18}],[1880,{f:500,d:.18}],[2060,{f:440,d:.22}],[3300,{f:500,d:.9}]],
+  v_harry:[[300,{f:720,d:.3}],[1300,{f:800,d:.5,c:[.9,1.25,1.15]}],[2300,{f:900,d:.85,c:[1.25,1.1,.8,.55]}],[3200,{f:560,d:.7,c:[1,.9,1.05,.85]}]],
+  v_thunder:[[150,{f:420,d:.7,c:[1,.92,.8],v:.14}],[1250,{f:840,d:.22}],[2350,{f:540,d:.6,c:[1,.95,.8,.7],v:.14}]],
+  v_gojo:[[750,{f:480,d:.8}],[2400,{f:440,d:.9}]],
+  v_vader:[[1900,{f:330,d:1.1,c:[.95,1.05,1,.8]}],[2850,{f:350,d:.5}]],
+  v_astro:[[400,{f:640,d:.45}],[3300,{f:700,d:.3}]],
+  v_royal:[[900,{f:680,d:1.1,c:[.9,1.2,1.15,1,.85]}],[2400,{f:600,d:.18}],[2600,{f:700,d:.22}]],
+  khaomanee:[[600,{f:800,d:.7}],[2100,{f:980,d:.28}]],
+  lykoi:[[1500,{f:420,d:1.2,c:[.8,1.4,1.5,1.4,1.05]}],[2700,{f:720,d:.3,v:.14}]],
+  savannah:[[300,{f:460,d:.5}],[1150,{f:640,d:.35,c:[.85,1.2,1.4]}],[2300,{f:480,d:.8}]],
+  sokoke:[[400,{f:620,d:.25,v:.1}],[2050,{f:420,d:.6,c:[1,.95,.9],v:.12}],[2850,{f:740,d:.4}]],
+  suphalak:[[1000,{f:560,d:.3,v:.08}],[1500,{f:600,d:.35,v:.1}],[2050,{f:680,d:.8}]],
 };
 const fxClear=()=>{const f=$('gfx');f.innerHTML='';f.style.background='';f.style.animation='';$('gfly').className=''};
 function fxEl(css,html){const d=document.createElement('div');d.style.cssText='position:absolute;'+css;if(html)d.innerHTML=html;$('gfx').appendChild(d);return d}
@@ -1256,7 +1256,7 @@ function gReveal(skipped){
 }
 function endReplay(){gz.timers.forEach(clearTimeout);gz.timers=[];$('gz').className=''}
 // xem lại intro của một bé 5★ đã gặp, từ tab Sưu tập
-function replayIntro(id){const sp=SP[id];playGacha({uid:0,sp:id,star:5,sex:'m',name:sp.n,traits:sp.xt?[sp.xt]:[],replay:1})}
+function replayIntro(id){const sp=SP[id];playGacha({uid:0,sp:id,star:5,sex:'m',name:sp.n,traits:[sp.xt||sp.bt].filter(Boolean),replay:1})}
 function gachaDone(){
   gz.timers.forEach(clearTimeout);gz.timers=[];
   const c=gz.cat,v=$('gname').value.trim().slice(0,16); if(v)c.name=v; delete c.isNew;
@@ -1456,18 +1456,27 @@ function openBreed(id){
 /* ============ ADMIN (chỉ để test): Ctrl+Shift+A, hoặc chạm 7 lần liên tiếp vào tên game ============ */
 const MAXC=999999999;
 function openAdmin(){
+  if(typeof NET!=='undefined'&&NET.on&&!NET.admOk){netAdminLogin();return} // chạy qua máy chủ chung: chỉ quản trị viên (có mã) mới mở được bảng Admin
   S.adm=S.adm||{};
   const og=g=>'<optgroup label="'+g[1]+'">'+(g[0]==='breed'?BREEDS:VARIANTS.filter(v=>v.g===g[0])).slice().sort((a,b)=>b.r-a.r).map(x=>'<option value="'+x.id+'">'+x.r+'★ '+esc(x.n)+'</option>').join('')+'</optgroup>';
   const stars='<option value="0">theo mặc định</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">'+n+'★</option>').join('');
   const sel='font:inherit;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:6px;min-width:0;flex:1';
   const box=(t,h)=>'<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>'+t+'</b>'+h+'</div>';
-  modal('<h3>🛠 Bảng Admin <span class="dim">· chỉ để test</span></h3>'+
+  modal('<h3>🛠 Bảng Admin <span class="dim">· chỉ để test</span></h3>'+(typeof netAdminBox==='function'?netAdminBox():'')+
     box('Xu (đang có '+S.coins.toLocaleString('vi-VN')+')','<div class="row"><input id="axu" type="number" min="0" value="'+S.coins+'"><button class="sm on" onclick="admCoins(\'set\')">Đặt</button></div><div class="row wrap"><button class="sm" onclick="admCoins(1000)">+1.000</button><button class="sm" onclick="admCoins(100000)">+100.000</button><button class="sm" onclick="admCoins(\'max\')">Max xu</button><button class="sm '+(S.adm.inf?'go':'')+'" onclick="admInf()">Xu vô hạn: '+(S.adm.inf?'BẬT':'tắt')+'</button></div>')+
-    box('Nhận mèo bất kỳ','<div class="row"><select id="asp" style="'+sel+'">'+GROUPS.map(og).join('')+'</select></div><div class="row"><select id="ast" style="'+sel+'">'+stars+'</select><select id="act" style="'+sel+'"><option value="">màu ngẫu nhiên</option>'+RARES.map(r=>'<option value="'+r.id+'">✨ '+r.n+'</option>').join('')+Object.keys(COATS).filter(k=>COATS[k].form).map(k=>'<option value="'+k+'">⚡ Dạng hiếm: '+COATS[k].n+'</option>').join('')+'</select></div><div class="row"><label class="dim" style="white-space:nowrap"><input id="aintro" type="checkbox" checked style="flex:none"> xem hoạt ảnh</label><button class="sm on" onclick="admCat()">Nhận</button></div><div class="dim">Muốn test intro 5★ thì chọn một bé 5★ và để số sao mặc định. Màu hiếm chỉ áp cho giống thật có lông; dạng hiếm ⚡ chỉ áp cho Goku (Siêu Saiyan God) và Naruto (Cửu Vĩ, Hokage).</div>')+
-    box('Gacha miễn phí','<div class="row"><select id="ags" style="'+sel+'"><option value="0">sao ngẫu nhiên</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">ép ra '+n+'★</option>').join('')+'</select><button class="sm on" onclick="admGacha()">Quay</button></div>')+
+    box('Nhận mèo bất kỳ','<div class="row"><select id="asp" onchange="admCoats()" style="'+sel+'">'+GROUPS.map(og).join('')+'</select></div><div class="row"><select id="ast" style="'+sel+'">'+stars+'</select><select id="act" style="'+sel+'"></select></div><div class="row"><label class="dim" style="white-space:nowrap"><input id="aintro" type="checkbox" checked style="flex:none"> xem hoạt ảnh</label><button class="sm on" onclick="admCat()">Nhận</button></div><div class="dim">Muốn test intro 5★ thì chọn một bé 5★ và để số sao mặc định. Ô màu đổi theo giống đang chọn: màu thường của giống, 💎 mắt quý hiếm, ⚡ dạng hiếm, ✨ màu hiếm (luôn 4★; không có ở giống trụi lông, Lykoi và mèo trang phục).</div>')+
+    box('Gacha miễn phí','<div class="row"><select id="ags" style="'+sel+'"><option value="0">sao ngẫu nhiên</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">ép ra '+n+'★</option>').join('')+'<option value="r">ép ra ✨ màu hiếm bất kỳ</option>'+RARES.map(r=>'<option value="'+r.id+'">ép ra ✨ '+r.n+'</option>').join('')+'</select><button class="sm on" onclick="admGacha()">Quay</button></div>')+
     box('Mở khóa','<div class="row wrap"><button class="sm" onclick="admRooms()">Mở mọi phòng</button><button class="sm" onclick="admFurn()">Nhận đủ nội thất</button><button class="sm" onclick="admBowl()">Bát ăn sẵn sàng ngay</button><button class="sm" onclick="admLevel()">Lên cấp 9</button></div><div class="dim">Thức ăn vốn không bị khóa; bật xu vô hạn là mua được mọi món.</div>')+
     box('Mèo và viễn chinh','<div class="row wrap"><button class="sm" onclick="admTrips()">Hoàn tất viễn chinh ngay</button><button class="sm" onclick="admStats()">Hồi đầy no, vui, năng lượng</button></div><div class="row wrap"><button class="sm" onclick="admAge(10)">Cả đàn già thêm 10 ngày</button><button class="sm" onclick="admAge(0)">Cả đàn thành mèo con</button></div>')+
     '<div class="row" style="justify-content:center"><button class="sm bad" onclick="closeModal();resetAll()">Reset toàn bộ dữ liệu</button><button class="sm" onclick="closeModal()">Đóng</button></div>');
+  admCoats();
+}
+// ô chọn màu trong Admin: liệt kê đúng các màu của giống đang chọn, rồi tới các màu hiếm nếu giống đó nhận được
+function admCoats(a,b){
+  const s0=$(a||'asp'),el=$(b||'act');if(!s0||!el)return;const sp=SP[s0.value];
+  const own=(sp.coats||[]).map(k=>{const c=COATS[k];return '<option value="'+k+'">'+(c.jewel?'💎 ':c.form?'⚡ ':'')+esc(c.n)+(c.jewel?' (mắt quý hiếm)':c.form?' (dạng hiếm)':'')+'</option>'}).join('');
+  el.innerHTML='<option value="">'+(sp.coats?'ngẫu nhiên theo tỉ lệ':'không có màu để chọn')+'</option>'+(own?'<optgroup label="'+(sp.xt?'Dạng':'Màu')+' của '+esc(sp.n)+'">'+own+'</optgroup>':'')+
+    (sp.coats&&!sp.noRare?'<optgroup label="✨ Màu hiếm (luôn 4★)">'+RARES.map(r=>'<option value="'+r.id+'">✨ '+esc(r.n)+'</option>').join('')+'</optgroup>':'');
 }
 const admDone=(msg,keep)=>{save();render();if(keep)openAdmin();toast(msg,{icon:'🛠',title:'Admin'})};
 function admCoins(v){
@@ -1480,7 +1489,7 @@ function admCat(){
   const c=newCat(sp,star,rc||undefined);c.room=freeRoom();c.isNew=!S.seen[sp.id]||!!(sp.coats&&!RARE[rc]&&!(S.seenCoat||{})[lk(c)]);S.cats.push(c);markSeen(c);save();closeModal();
   if(show){render();playGacha(c)}else{delete c.isNew;syncEnts();admDone('Đã nhận '+sp.n+' '+star+'★')}
 }
-function admGacha(){const r=gachaRoll(false,{free:1,star:+$('ags').value});closeModal();render();playGacha(r.cat)}
+function admGacha(){const v=$('ags').value,r=gachaRoll(false,RARE[v]||v==='r'?{free:1,rare:RARE[v]?v:true}:{free:1,star:+v});closeModal();render();playGacha(r.cat)}
 function admRooms(){ROOMS.forEach(r=>{if(!S.rooms[r.id]){S.rooms[r.id]={bowlAt:0};giveBowl(r.id)}});admDone('Đã mở cả '+ROOMS.length+' phòng',1)}
 function admFurn(){let n=0;FURNS.forEach(f=>{if(!S.items.some(i=>i.fid===f.id)){S.items.push({iid:S.nid++,fid:f.id,room:null,x:120,y:140,flip:false,broken:false});n++}});admDone(n?'Đã thêm '+n+' món vào kho (Nhà → Sắp xếp để đặt)':'Bạn đã có đủ mọi loại nội thất',1)}
 function admBowl(){S.items.forEach(i=>{if(FURN[i.fid].bowl)i.at=0});admDone('Mọi bát ăn đã sẵn sàng',1)}

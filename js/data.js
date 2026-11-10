@@ -90,11 +90,11 @@ const BREEDS=[
  B('neva','Neva Masquerade',4,CRM,SEAL,'point',{eye:eB,fur:1,tail:'fluff'},'Siberian đeo mặt nạ dạ hội.','sturdy naturekid','salmon'),
  B('aphrodite','Aphrodite',4,WHT,BRN,'cow',{eye:eG,fur:1},'Mèo núi đảo Síp, to con và điềm đạm.','climber gentle','kibble'),
  B('toybob','Toybob',4,CRM,SEAL,'point',{eye:eB,tail:'bob',ear:'small'},'Bé xíu, đuôi cộc, mãi như mèo con.','lapcat smalleater','churu'),
- B('khaomanee','Khao Manee',5,WHT,WHT,'solid',{eye:'#8fdcff',eye2:'#ffab2e',odd:['#8fdcff','#ffab2e'],gem:1},'“Mắt kim cương” của hoàng gia Thái, hai mắt hai màu.','lucky picky smart','premium'),
- B('lykoi','Lykoi',5,'#55505f','#b9b2c2','lykoi',{eye:eY,c3:'#8a7f8f'},'Mèo sói: lông loang thưa quanh mắt và mõm.','nightowl hunter loyal','chicken'),
- B('savannah','Savannah',5,GOLD,BLK,'spot',{eye:eG,ear:'big'},'Lai mèo đồng cỏ serval, cao lớn và nhảy tới 2 mét.','hunter fast smart wander','chicken'),
- B('sokoke','Sokoke',5,'#b8905a',DBRN,'tiger',{eye:eG},'Giống hiếm bậc nhất, đến từ rừng Kenya.','naturekid fast climber','chicken'),
- B('suphalak','Suphalak',5,'#b5652f','#b5652f','solid',{eye:eY},'Mèo màu đồng đỏ của Thái Lan cổ, cực hiếm.','lucky loyal','salmon'),
+ B('khaomanee','Khao Manee',5,WHT,WHT,'solid',{eye:'#8fdcff',eye2:'#ffab2e',odd:['#8fdcff','#ffab2e'],gem:1,bt:'b_khaomanee'},'“Mắt kim cương” của hoàng gia Thái, hai mắt hai màu.','lucky picky smart','premium'),
+ B('lykoi','Lykoi',5,'#55505f','#b9b2c2','lykoi',{eye:eY,c3:'#8a7f8f',bt:'b_lykoi'},'Mèo sói: lông loang thưa quanh mắt và mõm.','nightowl hunter loyal','chicken'),
+ B('savannah','Savannah',5,GOLD,BLK,'spot',{eye:eG,ear:'big',bt:'b_savannah'},'Lai mèo đồng cỏ serval, cao lớn và nhảy tới 2 mét.','hunter fast smart wander','chicken'),
+ B('sokoke','Sokoke',5,'#b8905a',DBRN,'tiger',{eye:eG,bt:'b_sokoke'},'Giống hiếm bậc nhất, đến từ rừng Kenya.','naturekid fast climber','chicken'),
+ B('suphalak','Suphalak',5,'#b5652f','#b5652f','solid',{eye:eY,bt:'b_suphalak'},'Mèo màu đồng đỏ của Thái Lan cổ, cực hiếm.','lucky loyal','salmon'),
 ];
 
 /* ============ MÈO TRANG PHỤC & ĐẶC BIỆT (4★–5★) ============ */
@@ -410,6 +410,12 @@ Object.assign(TRAITS,{
  c_mcalico:{n:'Vạn con có một',k:'x',d:'Tam thể đực cực hiếm ngoài đời. +12% cơ hội nhặt vé gacha.',e:{ticket:.12}},
  c_nacre:{n:'Ánh xà cừ',k:'x',d:'Màu hiếm. +6 độ vui cho bé và cho mèo khác cùng phòng.',e:{self:6,aura:6}},
  c_sheen:{n:'Ánh xanh dưới đèn',k:'x',d:'Màu hiếm. Viễn chinh nhanh hơn 10%.',e:{speed:.10}},
+ // thuộc tính riêng của năm giống thật 5★ (trường bt của giống), luôn đứng đầu danh sách trait
+ b_khaomanee:{n:'Mắt kim cương',k:'x',d:'Đôi mắt hai màu soi ra của quý: +15% xu, +8% cơ hội nhặt vé gacha.',e:{coin:.15,ticket:.08}},
+ b_lykoi:{n:'Sói đêm',k:'x',d:'+45% xu nếu xuất phát ban đêm, viễn chinh nhanh hơn 10%.',e:{night:.45,speed:.1}},
+ b_savannah:{n:'Cú nhảy 2 mét',k:'x',d:'Viễn chinh nhanh hơn 30%, +10% xu.',e:{speed:.3,coin:.1}},
+ b_sokoke:{n:'Bóng rừng Kenya',k:'x',d:'+45% xu ở điểm thiên nhiên, +30% cơ hội có chiến lợi phẩm.',e:{nature:.45,loot:.3}},
+ b_suphalak:{n:'Đồng đỏ cát tường',k:'x',d:'+12% xu, mèo khác cùng phòng +10 độ vui.',e:{coin:.12,aura:10}},
  f_god:{n:'Thần khí Saiyan',k:'x',d:'Dạng hiếm Siêu Saiyan God. +20% xu mọi chuyến viễn chinh.',e:{coin:.20}},
  f_kurama:{n:'Chakra Cửu Vĩ',k:'x',d:'Dạng hiếm Tiên nhân Cửu Vĩ. Viễn chinh nhanh hơn 15%, mèo khác cùng phòng +8 độ vui.',e:{speed:.15,aura:8}},
  f_hokage:{n:'Hokage Đệ Thất',k:'x',d:'Dạng hiếm Hokage. +10% xu, và mọi mèo khác cùng phòng +5% xu viễn chinh.',e:{coin:.10,auraCoin:.05}},
