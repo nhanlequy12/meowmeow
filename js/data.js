@@ -90,7 +90,7 @@ const BREEDS=[
  B('neva','Neva Masquerade',4,CRM,SEAL,'point',{eye:eB,fur:1,tail:'fluff'},'Siberian đeo mặt nạ dạ hội.','sturdy naturekid','salmon'),
  B('aphrodite','Aphrodite',4,WHT,BRN,'cow',{eye:eG,fur:1},'Mèo núi đảo Síp, to con và điềm đạm.','climber gentle','kibble'),
  B('toybob','Toybob',4,CRM,SEAL,'point',{eye:eB,tail:'bob',ear:'small'},'Bé xíu, đuôi cộc, mãi như mèo con.','lapcat smalleater','churu'),
- B('khaomanee','Khao Manee',5,WHT,WHT,'solid',{eye:eB,eye2:eY},'“Mắt kim cương” của hoàng gia Thái, hai mắt hai màu.','lucky picky smart','premium'),
+ B('khaomanee','Khao Manee',5,WHT,WHT,'solid',{eye:'#8fdcff',eye2:'#ffab2e',odd:['#8fdcff','#ffab2e'],gem:1},'“Mắt kim cương” của hoàng gia Thái, hai mắt hai màu.','lucky picky smart','premium'),
  B('lykoi','Lykoi',5,'#55505f','#b9b2c2','lykoi',{eye:eY,c3:'#8a7f8f'},'Mèo sói: lông loang thưa quanh mắt và mõm.','nightowl hunter loyal','chicken'),
  B('savannah','Savannah',5,GOLD,BLK,'spot',{eye:eG,ear:'big'},'Lai mèo đồng cỏ serval, cao lớn và nhảy tới 2 mét.','hunter fast smart wander','chicken'),
  B('sokoke','Sokoke',5,'#b8905a',DBRN,'tiger',{eye:eG},'Giống hiếm bậc nhất, đến từ rừng Kenya.','naturekid fast climber','chicken'),
@@ -132,10 +132,10 @@ const VARIANTS=[
  V('v_spider','Mèo Spider-Man',4,'film',{c:'#d0342c',c2:'#d0342c'},[['flag','noFace'],['flag','noMuz'],['fullmask','#d0342c'],['lenses','#ffffff'],['web'],['suit','#d0342c',24],['sides','#3d5fc0'],['emblem','#3a3448']],'v_spider','Hàng xóm thân thiện, leo rèm cửa trong ba giây.','tuna'),
  V('v_batman','Mèo Batman',4,'film',{c:CRM,c2:CRM},[['cape','#3a3448'],['flag','noFace'],['fullmask','#3f3c4c'],['lenses','#ffffff',3,2],['suit','#5a5868',24,1],['emblem','#f2c230','#3a3448'],['belt','#f2c230',32]],'v_batman','Ta là bóng đêm. Ta là kẻ làm đổ cốc nước lúc 3 giờ sáng.','tuna'),
  V('v_jedi','Mèo Jedi',4,'film',{c:CRM,c2:CRM,eye:eB},[['saber','#6ab8ff'],['hood','#8a6a4a'],['suit','#d9c7a6',24,1],['sides','#8a6a4a'],['belt','#5e3d28',31]],'v_jedi','Thần lực ở bên bé, nhất là lúc mở tủ lạnh.','salmon'),
- V('v_vader','Mèo Darth Vader',5,'film',{c:'#3a3745',c2:'#3a3745'},[['cape','#3a3745'],['saber','#ff5a5a'],['flag','noFace'],['flag','noMuz'],['flag','noEars'],['fullmask','#3a3745'],['flare','#3a3745'],['lenses','#77728a',4,3],['fr',16,21,4,2,'#9a9aa6'],['suit','#3a3745',24,1],['emblem','#d0342c','#4aa8e8'],['belt','#9a9aa6',33]],'v_vader','“Ta là… chủ của ngươi.” (thở khò khè)','premium'),
+ V('v_vader','Mèo Darth Vader',5,'film',{c:'#2e2a38',c2:'#2e2a38'},[['vcape'],['flag','noFace'],['flag','noMuz'],['vhelm'],['vface'],['vsuit']],'v_vader','“Ta là… chủ của ngươi.” (thở khò khè)','premium'),
  V('v_gandalf','Mèo Gandalf',4,'film',{c:'#e9e4ef',c2:'#e9e4ef',eye:eB},[['staff','#a8754a'],['pointhat','#9a9aa6'],['beard','#fafbff'],['suit','#9a9aa6',25,1]],'v_gandalf','Không ai được qua! Trừ người mang đồ ăn.','salmon'),
  // --- Meme & đặc biệt ---
- V('v_nyan','Nyan Cat',5,'meme',{c:'#9a9aa6',c2:'#9a9aa6',intro:'nyan'},[['rainbow'],['poptart'],['cheeks','#f59ab5']],'v_nyan','Thân bánh pop-tart, bay xuyên vũ trụ, để lại cầu vồng.','churu'),
+ V('v_nyan','Nyan Cat',5,'meme',{c:'#9a9aa6',c2:'#9a9aa6',intro:'nyan'},[['nrainbow'],['npoptart'],['cheeks','#f59ab5'],['nstars']],'v_nyan','Thân bánh pop-tart, bay xuyên vũ trụ, để lại cầu vồng.','churu'),
  V('v_maneki','Mèo Thần Tài',5,'meme',{c:WHT,c2:ORG,c3:BLK,pat:'calico',closed:1,intro:'coins',f:.5},[['collar','#e0483c',1],['paw'],['coin']],'v_maneki','Maneki-neko vẫy tay gọi tài lộc, ôm khư khư đồng vàng.','salmon'),
  V('v_grumpy','Mèo Grumpy',4,'meme',{c:'#efe6da',c2:'#8a6a55',pat:'point',eye:eB},[['frown']],'v_grumpy','Mặt quạu bẩm sinh. Thật ra đang rất vui. Có lẽ.','pate'),
  V('v_huh','Mèo “Huh?”',4,'meme',{c:WHT,c2:'#8a8f9c',pat:'cow',eye:eG},[['qmark']],'v_huh','Huh?','kibble'),
@@ -321,6 +321,8 @@ const HAIRLESS=['sphynx','peterbald','donskoy','bambino','dwelf'];
 /* ============ MÀU LÔNG ============ */
 // u: màu ít gặp hơn trong giống (tỉ lệ ra thấp). f: tỉ lệ ra mèo cái của riêng màu đó.
 const COATS={
+ kmIce:{n:'Trắng, mắt xanh băng & hổ phách',c:WHT,eye:'#8fdcff',eye2:'#ffab2e'},kmSapphire:{n:'Trắng, mắt sapphire & vàng kim',c:WHT,eye:'#2f66ee',eye2:'#ffd23a',u:1,rw:.12,jewel:1},
+ kmEmerald:{n:'Trắng, mắt ngọc lục bảo & hổ phách',c:WHT,eye:'#1fc47c',eye2:'#ff962e',u:1,rw:.12,jewel:1},kmAmethyst:{n:'Trắng, mắt thạch anh tím & xanh băng',c:WHT,eye:'#a65cf2',eye2:'#8fdcff',u:1,rw:.12,jewel:1},kmRuby:{n:'Trắng, mắt hồng ngọc & bạc',c:WHT,eye:'#ee3050',eye2:'#c2cee0',u:1,rw:.12,jewel:1},
  white:{n:'Trắng',c:WHT},whiteY:{n:'Trắng mắt vàng',c:WHT,eye:eY},oddWhite:{n:'Trắng mắt hai màu',c:WHT,eye:eB,eye2:eY,u:1},
  black:{n:'Đen',c:BLK},blackRust:{n:'Đen ánh nâu',c:'#4a3a3c'},bombay:{n:'Đen tuyền',c:'#2a2636',eye:eC},bombaySable:{n:'Nâu sable',c:'#4a342c',eye:eC,u:1},
  blue:{n:'Xanh xám',c:BLU},blueLight:{n:'Xanh xám nhạt',c:'#9aa6bd'},blueDark:{n:'Xanh xám đậm',c:'#66728c'},koratBlue:{n:'Xanh ánh bạc',c:'#8f9bb0'},
@@ -367,7 +369,7 @@ const BREED_COATS={
  korat:'koratBlue blueLight',cymric:'brownTabby redTabbyW cow black',nebelung:'blue blueLight blueDark',orientallh:'choc black lilac white',peterbald:'hlCream hlPink hlGray hlBlack',
  pixiebob:'spotBrown spotChoc',singapura:'sepia sepiaDark',toyger:'tigerOr tigerBrown',van:'van vanBlack',chausie:'ruddy black grizzle',donskoy:'hlGray hlPink hlCream hlBlack',
  highlander:'spotChoc spotBrown spotSilver',serengeti:'spotGold black smoke',germanrex:'platinum white black redTabby',neva:'sealPt bluePt lynxPt flamePt',aphrodite:'brownCow cow redW',
- toybob:'sealPt bluePt lynxPt',khaomanee:'oddWhite white whiteY',lykoi:'lyBlack lyBlue',savannah:'spotGold spotSilver black smoke',sokoke:'tigerBrown tigerDark',suphalak:'copper copperDark',
+ toybob:'sealPt bluePt lynxPt',khaomanee:'kmIce kmSapphire kmEmerald kmAmethyst kmRuby',lykoi:'lyBlack lyBlue',savannah:'spotGold spotSilver black smoke',sokoke:'tigerBrown tigerDark',suphalak:'copper copperDark',
  lambkin:'white cream cow redTabby',bambino:'hlPink hlCream hlPied',kinkalow:'brownTabby black calico cream',skookum:'redTabbyW cow blue',dwelf:'hlPink hlGray hlBlack',genetta:'spotBrown spotSilver',
 };
 BREEDS.forEach(b=>{b.coats=BREED_COATS[b.id].split(' ');if(SHORT_LEGS.includes(b.id))b.short=1;if(HAIRLESS.includes(b.id)){b.hl=1;b.noRare=1}if(b.id==='lykoi')b.noRare=1});
@@ -400,14 +402,16 @@ Object.assign(TRAITS,{
 });
 GROUPS.push(['rare','Màu hiếm']);
 // "ngoại hình" của một bé: giống + màu lông. Khóa dạng 'giống~màu'.
-const LOOKS={};
+const LOOKS={x_demon:{id:'x_demon',n:'Mèo quỷ',c:'#4a3a66',c2:'#4a3a66',pat:'solid',eye:'#ff3030',cos:[['dhorns'],['fangs']]}}; // mèo quỷ chỉ dùng trong intro của Zenitsu
 function look(key){
   if(LOOKS[key])return LOOKS[key];
-  if(key.indexOf('!')>0){const b=look(key.split('!')[0]);return LOOKS[key]=Object.assign({},b,{cos:b.cos.filter(p=>p[0]!=='blindfold'),eye:'#5ad0ff'})} // dáng "kéo băng mắt"
+  if(key.indexOf('!')>0){const b=look(key.split('!')[0]);return LOOKS[key]=Object.assign({},b,{cos:b.cos.filter(p=>p[0]!=='blindfold'),eye:'#38b6ff',gem:1,lash:1})} // dáng "kéo băng mắt"
   const [id,ct]=key.split('~'),sp=BREEDS.concat(VARIANTS).find(s=>s.id===id);
   if(!sp.coats)return LOOKS[key]=sp;
   const coat=ALLCOAT[ct]||COATS[sp.coats[0]];
-  return LOOKS[key]=Object.assign({},sp,{c2:undefined,c3:undefined,w:0,mit:0,pat:'solid',eye2:undefined},coat,{eye:coat.eye||sp.eye,c2:coat.c2||coat.c,rare:RARE[ct]?1:0});
+  const L=Object.assign({},sp,{c2:undefined,c3:undefined,w:0,mit:0,pat:'solid',eye2:undefined},coat,{eye:coat.eye||sp.eye,c2:coat.c2||coat.c,rare:RARE[ct]?1:0});
+  if(sp.odd&&!coat.eye2){L.eye=sp.odd[0];L.eye2=sp.odd[1]} // giống luôn có hai mắt hai màu (Khao Manee), kể cả khi mang màu lông hiếm
+  return LOOKS[key]=L;
 }
 
 /* ============ NỘI THẤT BỔ SUNG ============ */

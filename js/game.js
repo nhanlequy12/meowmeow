@@ -24,6 +24,8 @@ function load(){
   S.cats=S.cats.filter(c=>SP[c.sp]); S.cats.forEach(c=>{c.traits=c.traits.filter(t=>TRAITS[t]); if(!S.rooms[c.room])c.room='wait'});
   S.items=S.items.filter(i=>FURN[i.fid]);
   S.cats.forEach(c=>{if(!c.born)c.born=now()-(5+(c.uid*7)%20)*DAY}); // bản lưu cũ chưa có tuổi: coi như mèo trưởng thành 5–24 ngày
+  // Khao Manee nay luôn hai mắt hai màu: các màu cũ (trắng, trắng mắt vàng, trắng mắt hai màu) chuyển về cặp mắt mặc định
+  S.cats.forEach(c=>{if(c.sp==='khaomanee'&&!RARE[c.coat]&&!/^km/.test(c.coat||''))c.coat='kmIce'});
   S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
   if(!S.bowlMig){for(const rid in S.rooms)giveBowl(rid,S.rooms[rid].bowlAt);S.bowlMig=1} // bản cũ: mỗi phòng có 1 bát cố định, nay thành món đồ
   fixSlots();
@@ -78,7 +80,7 @@ function rollTraits(sp,star,first){
 }
 // chọn màu lông cho một giống: màu ít gặp (u) có trọng số thấp
 function pickCoat(sp){
-  const w=sp.coats.map(id=>COATS[id].u?.35:1);let r=Math.random()*w.reduce((a,b)=>a+b,0),i=0;
+  const w=sp.coats.map(id=>COATS[id].rw||(COATS[id].u?.35:1));let r=Math.random()*w.reduce((a,b)=>a+b,0),i=0;
   while(r>w[i]){r-=w[i];i++}
   return sp.coats[i];
 }

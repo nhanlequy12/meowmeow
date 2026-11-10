@@ -168,10 +168,24 @@ const each=(b,f)=>{for(let Y=0;Y<b.H;Y++)for(let X=0;X<b.W;X++){b.fX=X;b.fY=Y;b.
 // duyệt ô mịn trong một khung, f nhận toạ độ thực (u,v) và chỉ số ô mịn (X,Y)
 const fine=(b,x0,y0,x1,y1,f)=>{for(let Y=Math.floor(y0*Q);Y<(y1+1)*Q;Y++)for(let X=Math.floor(x0*Q);X<(x1+1)*Q;X++)f((X+.5)/Q-.5,(Y+.5)/Q-.5,X,Y)};
 /* ---------- chi tiết mặt vẽ ở lưới mịn ---------- */
+// mắt "đá quý" 6x6 ô mịn: mí trên sẫm, mống mắt chuyển sắc từ đậm (trên) xuống nhạt (dưới), con ngươi, hai điểm sáng và quầng sáng nhẹ nhuộm lên lông quanh mắt.
+// lash: thêm hàng lông mi trắng phía trên (mắt Gojo)
+const GEM=['.KKKK.','KWWaaK','rWPPir','riPPir','rliiwr','.lLLl.'];
+function gemEye(b,x0,y,ic,lash){
+  const X0=2*x0-1,Y0=2*y-2,D=[26,22,58],W1=[255,255,255],
+    pal={K:mix(ic,D,lash?.5:.6),a:mix(ic,D,.2),r:mix(ic,D,.32),P:mix(ic,[16,14,40],.78),i:ic,l:lt(ic,.4),L:lt(ic,.66),w:W1,W:W1};
+  for(let j=-1;j<=6;j++)for(let i=-1;i<=6;i++){
+    const ch=(GEM[j]||'')[i]; if((ch&&ch!=='.')||Math.hypot(i-2.5,j-2.5)>4.1)continue;
+    const o=b.getF(X0+i,Y0+j),rg=b.regF(X0+i,Y0+j); if(o&&rg!=='o'&&o.length===3)b.put(X0+i,Y0+j,mix(o,ic,.24),rg);
+  }
+  GEM.forEach((row,j)=>{for(let i=0;i<6;i++)if(row[i]!=='.')b.put(X0+i,Y0+j,pal[row[i]],'x')});
+  if(lash){for(let i=0;i<6;i++)b.put(X0+i,Y0-1,W1,'x');[-1,6].forEach(i=>{b.put(X0+i,Y0,W1,'x');b.put(X0+i,Y0+1,W1,'x')})}
+}
 // mắt tròn có đốm sáng: x0 = cột trái (mắt rộng 2 ô), y = hàng giữa
-function drawEye(b,x0,y,ic,closed){
+function drawEye(b,x0,y,ic,closed,gem){
   const u=b.get(x0,y)||[230,230,230],dark=lum(u)<110,cx=x0+.5;
   if(closed){const lc=dark?lt(u,.6):EY;for(let i=0;i<8;i++){const d=(i-3.5)/3.5,v=y+1.25-d*d*1.25;b.dot(x0-1.25+i*.5,v,lc,'x');b.dot(x0-1.25+i*.5,v-.5,lc,'x')}return}
+  if(gem){gemEye(b,x0,Math.round(y),ic,gem>1);return}
   const ir=lt(ic,dark?.25:.15),PU=lum(u)>170?EY:[86,52,44];
   if(dark){b.ell(cx,y,1.25,1.3,ir,'x');b.ell(cx,y+.1,.3,.9,PU,'x')}
   else b.ell(cx,y,1.25,1.3,(X,Y,r,uu,vv)=>vv>y+.5?ir:PU,'x');
@@ -227,6 +241,25 @@ const COS={
 
 /* ---------- bộ phận trang phục ghép được: tên -> [giai đoạn, hàm vẽ] ---------- */
 const DARK=[72,62,86];
+const VK=[46,42,56],VK2=[36,32,44],VHL=[104,98,124],VSI=[150,146,170],VGL=[96,26,34],VRD=[240,74,74],VLN=[150,40,56]; // bảng màu Darth Vader
+const TART=[244,206,146],TART2=[222,172,106],TART3=[252,226,176],FROST=[255,160,208],FROST2=[255,204,230],SPRK=[232,60,150],SPRK2=[196,44,128];                                                      // bánh pop-tart của Nyan Cat
+// hình chữ nhật bo góc: tâm (cx,cy), nửa rộng w, nửa cao h, bán kính góc c
+const rrect=(u,v,cx,cy,w,h,c)=>{const dx=Math.abs(u-cx),dy=Math.abs(v-cy);return dx<=w&&dy<=h&&!(dx>w-c&&dy>h-c&&Math.hypot(dx-w+c,dy-h+c)>c)};
+// bánh pop-tart: vỏ bánh bo góc (mép trên sáng, đáy sẫm), lớp kem hồng mép lượn tự nhiên có vệt bóng, cốm rắc hai tông hồng
+const tart=(b,cx,cy,w,h,skip)=>{
+  fine(b,cx-w-1,cy-h-1,cx+w+1,cy+h+1,(u,v,X,Y)=>{
+    if(!rrect(u,v,cx,cy,w,h,2.2)||(skip&&skip(u,v,X,Y)))return;
+    const n=(vnoise(u+cx,v+cy,2.6)-.5)*1.5;
+    if(rrect(u,v,cx,cy,w-1.6+n,h-1.5+n,1.9))b.put(X,Y,v<cy-h+3.1&&v>cy-h+2.2&&u>cx-w+2.6&&u<cx-w*.2?FROST2:FROST,'body');
+    else b.put(X,Y,v>cy+h-1.1?TART2:v<cy-h+.8?TART3:TART,'body');
+  });
+};
+// lưới thở của Vader: tấm bạc bo góc có bốn khe dọc cách đều, phía trên là sống mũi nhỏ, hai gân chéo toả ra má
+const vgrille=(b,cx,cy,w,h)=>{
+  [1,-1].forEach(k=>b.cap(cx+k*1.4,cy-h-.9,cx+k*(w+1.1),cy+.3,.3,VHL,'x'));
+  fine(b,cx-w-1,cy-h-1,cx+w+1,cy+h+1,(u,v,X,Y)=>{const d=Math.abs(u-cx);if(rrect(u,v,cx,cy,w,h,.9))b.put(X,Y,(d===.75||d===2.25)&&Math.abs(v-cy)<h-.4?VK2:VSI,'x')});
+  [-.25,.25].forEach(d=>{b.dot(cx+d,cy-h-.75,[196,192,210],'x');b.dot(cx+d,cy-h-.25,[196,192,210],'x')});
+};
 const P={
   // sau lưng
   cape:['back',(b,s,c)=>b.tri(17.5,21,2,38,33,38,H(c),'cape')],
@@ -296,6 +329,42 @@ const P={
   earrings:['front',b=>{b.rect(5,21,2,4,WH,'x');b.set(5,22,RED,'x');b.set(6,22,RED,'x');b.rect(29,21,2,4,WH,'x');b.set(29,22,RED,'x');b.set(30,22,RED,'x')}],
   web:['front',b=>{b.line(17,9,17,13,DARK,'x');b.line(12,11,15,14,DARK,'x');b.line(23,11,20,14,DARK,'x');b.line(9,21,13,22,DARK,'x');b.line(26,21,22,22,DARK,'x')}],
   fr:['front',(b,s,x,y,w,h,c)=>b.rect(x,y,w,h,H(c),'x')],
+  // Darth Vader: mũ bóng phủ cả tai mèo, vành mũ xoè, sống mũ, mặt nạ, mắt kính đỏ sẫm, lưới thở tam giác, bảng điều khiển ngực, kiếm có lõi sáng
+  vcape:['back',b=>{b.tri(17.5,21,2,38,33,38,VK2,'cape');b.tri(17.5,24.5,5.5,38,29.5,38,VLN,'cape')}],
+  vhelm:['mid',b=>{
+    each(b,(x,y,r)=>{if(r==='head'||r==='ear'||(r==='x'&&y<14))b.set(x,y,VK,r==='ear'?'ear':'head')});
+    b.ell(17.5,22.4,13,3.5,VK,'head');
+    b.cap(10.2,13.4,13.6,10.4,.4,VHL,'x');b.dot(15.25,9.75,VHL,'x');b.dot(15.75,9.75,VHL,'x');
+    b.cap(8.6,15.2,17.5,13.4,.32,[84,78,102],'x');b.cap(17.5,13.4,26.4,15.2,.32,[84,78,102],'x');
+  }],
+  vface:['front',b=>{
+    b.ell(17.5,19,6.4,4.4,[62,57,76],'head');
+    [13,22].forEach(cx=>{b.ell(cx,17,2.25,1.7,VSI,'x');b.ell(cx,17,1.7,1.2,VGL,'x');b.dot(cx-.75,16.25,[255,206,196],'x');b.dot(cx-.25,16.25,[255,120,110],'x');b.dot(cx+.75,17.25,[176,52,58],'x')});
+    vgrille(b,17.5,21.4,3,1.6);
+  }],
+  vsuit:['front',b=>{
+    recolor(b,(x,y,r)=>isBody(r)&&y>=24,VK,'body');recolor(b,(x,y,r)=>r==='paw',[62,57,76],'paw');
+    recolor(b,(x,y,r)=>r==='body'&&y===27,[84,78,102],'x');
+    b.rect(15,28,6,3.5,[84,78,102],'x');
+    b.rect(15.5,28.5,1.5,1,VRD,'x');b.rect(17.5,28.5,1,1,[96,176,255],'x');b.rect(19,28.5,1.5,1,VRD,'x');
+    b.rect(15.5,30,2,.5,[226,226,238],'x');b.rect(18.5,30,2,.5,[112,220,140],'x');
+    recolor(b,(x,y,r)=>r==='body'&&y===33,VSI,'x');
+    b.rect(17,32.5,2,2,[196,192,210],'x');b.rect(17.5,33,1,1,VRD,'x');
+    b.cap(27.5,30.5,33.5,5.3,1,[255,72,72],'x');b.cap(27.5,30.5,33.5,5.3,.4,[255,228,228],'x');
+    b.cap(26.2,35.4,27.3,31.4,.85,VSI,'x');b.cap(26.6,34,26.9,33,.85,[70,66,84],'x');
+  }],
+  // Nyan Cat: cầu vồng bậc thang, thân là chiếc bánh pop-tart chữ nhật bo góc phủ kem hồng rắc cốm
+  nrainbow:['back',b=>{for(let x=0;x<11;x++){const o=(x>>1)%2;RB.forEach((c,i)=>b.rect(x,24+o+i*2,1,2,c,'x'))}}],
+  npoptart:['front',(b,s)=>{
+    tart(b,17.5,31.1,8.2,5.4);
+    [[11.75,29.25,0],[15.25,28.25,1],[19.25,29.75,0],[22.75,28.75,1],[12.75,32.25,1],[16.25,31.25,0],[20.25,32.75,1],[23.25,31.75,0],[14.25,34.25,0],[18.75,34.25,1]].forEach(p=>{b.dot(p[0],p[1],p[2]?SPRK2:SPRK,'x');b.dot(p[0]+.5,p[1],p[2]?SPRK2:SPRK,'x')});
+    // hai chân trước ôm mép dưới chiếc bánh
+    const g=hex(s.c),tc=dk(g,.3);[14.4,20.6].forEach(px=>{b.ell(px,36.5,2.1,1.5,g,'paw');[-.6,.6].forEach(d=>{b.dot(px+d,36.75,tc,'paw');b.dot(px+d,37.25,tc,'paw')})});
+  }],
+  nstars:['post',b=>{spark(b,3,8,[255,255,255]);spark(b,33,5,[255,236,150]);spark(b,33.5,16,[255,255,255])}],
+  // mèo quỷ (chỉ xuất hiện trong intro của Zenitsu)
+  dhorns:['mid',b=>{[1,-1].forEach(k=>b.tri(17.5+k*4.6,8.8,17.5+k*3.4,2.6,17.5+k*1.2,8.2,[230,218,198],'hat'))}],
+  fangs:['front',b=>{b.rect(16,22.5,1,1.5,WH,'x');b.rect(19,22.5,1,1.5,WH,'x')}],
   // sau khi viền
   qmark:['post',b=>{[".##.","#..#","...#","..#.","..#.","....","..#."].forEach((row,j)=>{for(let i=0;i<4;i++)if(row[i]==='#')b.set(30+i,1+j,[200,120,90],'x')})}],
   sparks:['post',(b,s,c)=>{[[2,9],[3,10],[2,11],[33,22],[34,23],[33,24],[1,27],[2,28]].forEach(p=>b.set(p[0],p[1],H(c),'x'))}],
@@ -338,7 +407,7 @@ function cat(s,pose){
   const my=s.flat?20:21;
   if(!flag.noMuz)b.ell(17.5,my,4.2,2.8,col,'muz');
   if(!flag.noFace){
-    const eye=(x0,ic)=>drawEye(b,x0,17,ic,closed);
+    const eye=(x0,ic)=>drawEye(b,x0,17,ic,closed,s.gem?(s.lash?2:1):0);
     eye(12,hex(s.eye||'#f59ab0'));eye(22,hex(s.eye2||s.eye||'#f59ab0'));
     const ny=my-1;
     drawNose(b,17.5,ny,!flag.noMuz);
@@ -548,6 +617,14 @@ const clamp01=t=>Math.max(.35,Math.min(1.05,t));
 const RB=[[255,128,128],[255,196,120],[255,240,140],[156,226,150],[140,196,255],[196,160,240]];
 const faceZ=(G,x,y)=>((x-(G.hcx-3))/6.5)**2+((y-(G.hcy+1.5))/5)**2<1;
 const neck=(b,G,c)=>recolor(b,(x,y,r)=>isBody(r)&&x<=G.cx-G.rx+5,c,'x');
+const inHead=(G,u,v)=>((u-G.hcx)/10.3)**2+((v-G.hcy)/8.8)**2<1;
+// áo choàng phủ lưng ở góc nhìn ngang: từ x0 tới x1, mép trên bám theo lưng rồi dốc xuống thành đuôi áo, gấu áo thấp dần về phía sau.
+// colF(u, v, khoảng cách tới gấu áo, khoảng cách tới mép trước) trả màu từng ô mịn
+const drape=(b,G,x0,x1,drop,colF)=>{
+  const {cx,cy,rx,ry}=G,xb=cx+rx-1.5,hem=u=>cy+ry+drop+(u-x0)*.1,t0=cy-ry*.55,
+    top=u=>u<=xb?cy-ry*Math.sqrt(Math.max(0,1-((u-cx)/rx)**2))-.4:t0+(u-xb)/(x1-xb)*(hem(x1)-t0);
+  fine(b,x0,cy-ry-1,x1,hem(x1)+1,(u,v,X,Y)=>{if(u<x0||u>x1||v<top(u)||v>hem(u)||inHead(G,u,v))return;b.put(X,Y,colF(u,v,hem(u)-v,u-x0),'cape')});
+};
 const backStick=(b,G,c)=>{b.line(G.cx-4,G.cy-4,G.cx+8,G.cy-13,c,'x');b.line(G.cx-3,G.cy-4,G.cx+9,G.cy-13,c,'x')};
 // phiên bản rút gọn của trang phục cho góc nhìn ngang: giữ màu áo, tóc, mũ và vài đạo cụ chính
 const PS={
@@ -592,9 +669,39 @@ const PS={
   marks:['front',(b,s,G)=>{[0,1.8,3.6].forEach(k=>b.cap(G.hcx+3,G.hcy+.6+k,G.hcx+5.8,G.hcy+.2+k*1.25,.3,EY,'x'))}],
   scar:['front',(b,s,G,k)=>{if(k==='bolt'){const x=G.hcx,y=G.hcy;b.cap(x-1.7,y-6.5,x-2.9,y-5,.3,RED,'x');b.cap(x-2.9,y-5,x-1.7,y-4.7,.3,RED,'x');b.cap(x-1.7,y-4.7,x-2.8,y-3,.3,RED,'x')}if(k==='tanjiro')b.rect(G.hcx-6,G.hcy-6,3,2,[176,70,76],'x')}],
   helmet:['front',(b,s,G)=>{fine(b,G.hcx-13,G.hcy-14,G.hcx+13,G.hcy+13,(u,v,X,Y)=>{const d=Math.hypot(u-G.hcx,v-G.hcy+1);if(d<=12.85){if(d>11.7)b.put(X,Y,[196,230,248],'x');else b.put(X,Y,[170,225,255,60],b.regF(X,Y)||'x')}});}],
+  vhelm:['mid',(b,s,G)=>{const x=G.hcx,y=G.hcy;
+    each(b,(X,Y,r)=>{if(r==='head'||r==='ear'||(r==='x'&&Y<y-3))b.set(X,Y,VK,r==='ear'?'ear':'head')});
+    b.ell(x+2.5,y+6,9.6,3.3,VK,'head');
+    b.cap(x-5.5,y-5.2,x-1,y-7.2,.4,VHL,'x');b.cap(x-9.2,y-2.4,x+4,y-3.2,.32,[84,78,102],'x')}],
+  vface:['front',(b,s,G)=>{const x=G.hcx,y=G.hcy;
+    b.ell(x-3,y+2,5.8,4,[62,57,76],'head');
+    [x-5.5,x+1.5].forEach(cx=>{b.ell(cx,y,1.75,1.45,VSI,'x');b.ell(cx,y,1.2,.95,VGL,'x');b.dot(cx-.75,y-.25,[255,206,196],'x');b.dot(cx+.25,y+.25,[176,52,58],'x')});
+    vgrille(b,x-2.5,y+4,3,1.5)}],
+  vsuit:['front',(b,s,G)=>{const {cx,cy,rx}=G;
+    drape(b,G,cx-5,cx+rx+5,.2,(u,v,d)=>d<.75?VLN:VK2);
+    b.rect(cx-7,cy+2,1,1,VRD,'x');b.rect(cx-5.5,cy+2,1,1,[96,176,255],'x');
+    b.cap(cx-2,cy-5,cx+9,cy-14.5,.95,[255,72,72],'x');b.cap(cx-2,cy-5,cx+9,cy-14.5,.4,[255,228,228],'x');b.cap(cx-4,cy-3.4,cx-2.4,cy-4.7,.8,VSI,'x')}],
+  nrainbow:['back',(b,s,G)=>{const x0=G.cx+G.rx-2;for(let i=0;x0+i<50;i++){const o=((i>>1)+(G.ph>>1))%2;RB.forEach((c,k)=>b.rect(x0+i,G.cy-6+o+k*2,1,2,c,'x'))}}],
+  npoptart:['front',(b,s,G)=>{const X0=G.cx+1,Y0=G.cy-.6,hw=G.rx+1.6,hh=G.ry-.2;
+    tart(b,X0,Y0,hw,hh,(u,v,X,Y)=>inHead(G,u,v)||b.regF(X,Y)==='ear');
+    [[-3.25,-2.75,0],[.75,-3.25,1],[5.25,-2.25,0],[8.25,-.75,1],[-1.25,-.25,1],[3.25,.75,0],[7.25,2.25,0],[-.25,2.75,0],[4.75,3.25,1],[-5.25,1.25,1]].forEach(p=>{const u=X0+p[0],v=Y0+p[1];if(!inHead(G,u-1.2,v)){b.dot(u,v,p[2]?SPRK2:SPRK,'x');b.dot(u+.5,v,p[2]?SPRK2:SPRK,'x')}})}],
+  // Hoàng Gia nhìn ngang: vương miện ba chóp đính ngọc, áo choàng nhung đỏ viền lông chồn trắng đốm đen và chỉ vàng, cổ áo lông có khuy vàng
+  rcrown:['mid',(b,s,G)=>{const x=G.hcx,y=G.hcy-8;
+    b.ell(x,y-3,4.2,2.2,[188,42,66],'hat');
+    b.tri(x-5.5,y-2,x-4.3,y-5.2,x-2.3,y-2,GOLDC,'hat');b.tri(x-2,y-2,x,y-6.2,x+2,y-2,GOLDC,'hat');b.tri(x+2.3,y-2,x+4.3,y-5.2,x+5.5,y-2,GOLDC,'hat');
+    b.rect(x-5,y-2.5,11,2.5,GOLDC,'hat');b.rect(x-5,y-.5,11,.5,[214,160,60],'x');
+    b.ell(x-4.3,y-5.4,.5,.5,WH,'x');b.ell(x+4.3,y-5.4,.5,.5,WH,'x');b.ell(x,y-6.6,.7,.7,[240,70,96],'x');
+    b.rect(x,y-2,1,1,[230,60,80],'x');b.rect(x-3,y-2,1,1,[90,160,255],'x');b.rect(x+3,y-2,1,1,[80,200,130],'x');
+    [x-.25,x-3.25,x+2.75].forEach(u=>b.dot(u,y-1.75,WH,'x'))}],
+  rcape:['front',(b,s,G)=>{const {cx,cy,rx}=G,x0=cx-5,V=[188,42,66],V2=[156,30,54],GD=[240,196,80],SP=[72,58,70];
+    recolor(b,(x,y,r)=>isBody(r)&&x<x0&&y<=cy+2,(x,y,r,u,v)=>hsh(Math.floor(u*2)+7,Math.floor(v*2))<.11?SP:WH,'x');
+    drape(b,G,x0,cx+rx+6,1,(u,v,d,du)=>d<1.5?(Math.floor(u)%3===0&&u-Math.floor(u)<.5&&d>.35&&d<1.15?SP:WH):d<2.1||du<.55?GD:(Math.floor(u*2+v)%8===0?V2:V));
+    b.ell(x0-.3,cy-2.4,1,1,GD,'x');b.dot(x0-.5,cy-2.5,[230,60,80],'x');b.dot(x0,cy-2.5,[230,60,80],'x')}],
+  dhorns:['mid',(b,s,G)=>{const x=G.hcx,y=G.hcy;b.tri(x-3.4,y-7.6,x-2.4,y-13,x+.4,y-8,[230,218,198],'hat')}],
+  fangs:['front',(b,s,G)=>b.rect(G.hcx-4,G.hcy+5,1,1.5,WH,'x')],
   qmark:['post',(b,s,G)=>{[".##.","#..#","...#","..#.","..#.","....","..#."].forEach((row,j)=>{for(let i=0;i<4;i++)if(row[i]==='#')b.set(G.hcx+10+i,G.hcy-17+j,[200,120,90],'x')})}],
 };
-const OLD2={tank:[['suit','#fafaff']],ninja:[['hood','#3e446e'],['headband','#e2484e']],chef:[['chefhat'],['collar','#e2484e']],astro:[['suit','#f2f4fa',0,1],['helmet']],royal:[['cape','#c8465a'],['crown']],bread:[['flag','noEars'],['breadhead']],dj:[['phones'],['shades']]};
+const OLD2={tank:[['suit','#fafaff']],ninja:[['hood','#3e446e'],['headband','#e2484e']],chef:[['chefhat'],['collar','#e2484e']],astro:[['suit','#f2f4fa',0,1],['helmet']],royal:[['flag','proud'],['rcrown'],['rcape']],bread:[['flag','noEars'],['breadhead']],dj:[['phones'],['shades']]};
 function side(s,pose){
   const q=sidePose(pose),b=new Buf(50,40),col=sideCol(s),up=q.up||0,low=s.short?3:0;
   // giống chân ngắn: chân ngắn hơn 3 ô, bước ngắn hơn, thân dài và thấp sát đất
@@ -602,7 +709,8 @@ function side(s,pose){
   const parts=Array.isArray(s.cos)?s.cos:(OLD2[s.cos]||[]);
   const flag={};parts.forEach(p=>{if(p[0]==='flag')flag[p[1]]=1});
   const cx=25,cy=27+(q.cy||0)-up+low,rx=(q.rx||RX0)+(s.short?1:0),ry=q.ry||6,sl=q.sl||0,rear=q.rear||0;
-  const hcx=Math.round(13+(q.hx||0)),hcy=Math.round(19+(q.hy||0)-up+low),G={hcx,hcy,cx,cy,rx,ry};
+  // flag proud: ngẩng cao đầu (đầu cao hơn 2 ô và lùi về phía ngực 1 ô). ph: số thứ tự khung, để cầu vồng Nyan gợn sóng theo bước chạy
+  const hcx=Math.round(13+(q.hx||0))+(flag.proud?1:0),hcy=Math.round(19+(q.hy||0)-up+low)-(flag.proud?2:0),G={hcx,hcy,cx,cy,rx,ry,ph:+(/\d+$/.exec(pose)||[0])[0]};
   col.hx=hcx-13;col.hy=hcy-19;col.by=cy-27;
   const run=st=>parts.forEach(p=>{const d=PS[p[0]];if(d&&d[0]===st)d[1](b,s,G,...p.slice(1))});
   run('back');
@@ -634,7 +742,7 @@ function side(s,pose){
   if(s.fur===1)b.ell(hcx+6,hcy+4,3.5,3,col,'head');
   run('mid');
   if(!flag.noMuz)b.ell(hcx-2.5,hcy+3,3.6,2.4,col,'muz');
-  const eye=(x0,ic)=>drawEye(b,x0,hcy,ic,s.closed);
+  const eye=(x0,ic)=>drawEye(b,x0,hcy,ic,s.closed,s.gem?(s.lash?2:1):0);
   if(!flag.noFace){eye(hcx-6,hex(s.eye||'#f59ab0'));eye(hcx+1,hex(s.eye2||s.eye||'#f59ab0'));drawNose(b,hcx-2.5,hcy+2,!flag.noMuz);b.ell(hcx+4.5,hcy+2.5,.8,.65,PINK,'x')}
   else if(!parts.some(p=>p[0]==='lenses')){const ec=s.eye?hex(s.eye):WH;b.rect(hcx-6,hcy-1,2,2,ec,'x');b.rect(hcx+1,hcy-1,2,2,ec,'x')}
   run('front');

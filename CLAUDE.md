@@ -1,6 +1,6 @@
 # Mèo Xu: ghi chú bàn giao cho phiên làm việc mới
 
-File này tóm tắt toàn bộ ngữ cảnh của dự án để một phiên làm việc mới tiếp tục được ngay. Số liệu bên dưới lấy từ mã nguồn sau đợt "làm hết việc còn dở" ngày 2026-11-10 (xem mục 8); nếu mã đã đổi thì mã nguồn là đúng.
+File này tóm tắt toàn bộ ngữ cảnh của dự án để một phiên làm việc mới tiếp tục được ngay. Số liệu bên dưới lấy từ mã nguồn sau hai đợt làm việc ngày 2026-11-10 (mục 8 và mục 9); nếu mã đã đổi thì mã nguồn là đúng.
 
 ## 1. Dự án là gì
 
@@ -36,7 +36,8 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 | `83a8140` | Quản lý mèo theo phòng, thêm phòng và nội thất, vệt di chuyển riêng, sprite lưới mịn gấp đôi |
 | `91b4319` | Khung phòng rộng và responsive, camera theo dõi, phóng sinh, đồ leo trèo nhiều tầng, bát ăn có giới hạn suất |
 | `f2ff245`, `ec835a6` | Ghi chú bàn giao (file này) |
-| commit ngày 2026-11-10 | Làm hết việc còn dở: hoa văn lưới mịn, tuổi mèo, 13 intro 5★ riêng, cân bằng cho ăn, cỡ hạt cườm, Ctrl + lăn để zoom (mục 8) |
+| `7dc0e58` | Làm hết việc còn dở: hoa văn lưới mịn, tuổi mèo, 13 intro 5★ riêng, cân bằng cho ăn, cỡ hạt cườm, Ctrl + lăn để zoom (mục 8) |
+| commit thứ hai ngày 2026-11-10 | Chỉnh gacha đợt hai: tooltip nổi, màn chi tiết mới, màu sao theo độ hiếm, mắt Khao Manee và Gojo, thiết kế lại Vader, Nyan, Hoàng Gia nhìn ngang, 7 intro mới hoặc bổ sung (mục 9) |
 
 ## 3. Luật chơi và số liệu hiện tại
 
@@ -45,6 +46,8 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 - Tuổi tính theo ngày thật kể từ `born`: Mèo con (dưới 3 ngày), Trưởng thành (3–30 ngày), Mèo già (từ 30 ngày). Mèo mới về có tuổi ngẫu nhiên: 50% mèo con, 42% trưởng thành, 8% mèo già. Mèo trong bản lưu cũ được coi là trưởng thành 5–24 ngày. Tuổi chỉ đổi cách sinh hoạt trong phòng, không đổi xu hay chỉ số: mèo con chạy nhiều hơn, trèo nhiều hơn 30%, đi nhanh hơn 10%; mèo già ngủ nhiều hơn, đi chậm hơn 15%, trèo chỉ bằng 30% và không lên quá tầng giữa (đa số chỉ lên tầng thấp nhất).
 - Số trait bằng số sao. Trait tốt hay xấu được bốc theo tỉ lệ `good` của bậc sao.
 - 86 giống thật và 43 mèo trang phục. Số lượng theo sao (giống thật / trang phục): 1★ 9/0, 2★ 12/0, 3★ 35/0, 4★ 25/35, 5★ 5/8.
+- Khao Manee luôn có hai mắt hai màu, vẽ kiểu "đá quý" (mục 4, art.js). Năm cặp mắt, là năm "màu lông" của giống: xanh băng và hổ phách (`kmIce`, mặc định, khoảng 68%), và bốn cặp quý hiếm khoảng 8% mỗi cặp (cờ `jewel`, trọng số `rw:.12`): sapphire và vàng kim, ngọc lục bảo và hổ phách, thạch anh tím và xanh băng, hồng ngọc và bạc. Khao Manee mang màu lông hiếm (`r_*`) vẫn giữ cặp mắt mặc định. Bản lưu cũ có Khao Manee màu `white`, `whiteY`, `oddWhite` được chuyển về `kmIce` khi tải.
+- Màu sao (`starsOf`, lớp CSS `.stars`): 1★ trắng, 2★ xanh lục, 3★ xanh biển, 4★ tím, 5★ vàng lấp lánh. Mèo màu lông hiếm hoặc có cặp mắt quý hiếm (`isRb`) thì sao cầu vồng 7 màu lấp lánh, bất kể số sao. Màu chữ tên bậc ("Sử thi"…) vẫn theo `scol`.
 - 5★ giống thật: Khao Manee, Lykoi, Savannah, Sokoke, Suphalak. 5★ trang phục: Zenitsu, Gojo, Harry Potter, Darth Vader, Nyan Cat, Thần Tài, Phi Hành Gia, Hoàng Gia.
 - 88 trait: 23 tốt, 13 xấu, 52 độc quyền (của mèo trang phục và của màu hiếm).
 - Giống chân ngắn (`SHORT_LEGS`): munchkin, minuet, lambkin, bambino, kinkalow, skookum, dwelf, genetta. Chúng đi và chạy chậm hơn, nhảy thấp hơn, ít trèo.
@@ -62,7 +65,7 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 ### Gacha
 - 100 xu hoặc 1 vé một lượt. Sau 30 lượt không ra 4★ trở lên thì lượt tiếp theo chắc chắn từ 4★.
 - Khi đã chọn được sao, 45% là mèo trang phục của bậc đó (nếu có), còn lại là giống thật.
-- Mỗi bậc sao có hoạt ảnh mở hộp riêng, bỏ qua được. Mọi 5★ có intro riêng 2–4 giây (bảng `INTRO`), thẻ câu thoại (`QUOTE`) và xem lại được trong Bộ sưu tập.
+- Mỗi bậc sao có hoạt ảnh mở hộp riêng, bỏ qua được. Mọi 5★ có intro riêng 2,7–4,4 giây (bảng `INTRO`), thẻ câu thoại (`QUOTE`) và xem lại được trong Bộ sưu tập.
 - Mèo mới vào phòng còn chỗ đầu tiên; hết chỗ thì vào Phòng chờ (không giới hạn, bị trừ 10 độ vui).
 
 ### Viễn chinh
@@ -147,7 +150,7 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 - `STAR`, `GACHA_COST=100`, `PITY=30`.
 - `BREEDS` (hàm `B(id, tên, sao, màu, màu2, hoa văn, tùy chọn, mô tả, trait hay gặp, món khoái khẩu)`), `VARIANTS` (hàm `V(id, tên, sao, nhóm, …, trang phục, trait độc quyền, mô tả, khoái khẩu)`), `GROUPS` (breed, anime, film, meme, thêm rare).
 - `TRAITS[id]={n, k, d, e}`: `k` là `g` tốt, `b` xấu, `x` độc quyền; `e` là hiệu ứng (ví dụ `coin`, `speed`, `hunger`, `regen`, `like:[fid, điểm]`, `crowd`, `water`, `nature`, `night`, `scratch`, `pet`, `ticket`). `CONFLICT` là các cặp trait không đi cùng nhau.
-- Màu lông: `COATS`, `BREED_COATS`, `RARES`/`RARE`, `RARE_P=.04`, `ALLCOAT`, `look(key)` trả mô tả ngoại hình đã gộp giống và màu. Key là `giống`, `giống~màu`, hoặc `v_gojo!open` (bản mở mắt cho hành động riêng).
+- Màu lông: `COATS`, `BREED_COATS`, `RARES`/`RARE`, `RARE_P=.04`, `ALLCOAT`, `look(key)` trả mô tả ngoại hình đã gộp giống và màu. Key là `giống`, `giống~màu`, hoặc `v_gojo!open` (bản mở mắt cho hành động riêng, ảnh chân dung ở thẻ gacha và màn chi tiết). Trường của màu: `u` (ít gặp, trọng số 0,35), `rw` (trọng số riêng), `jewel` (cặp mắt quý hiếm), `eye`, `eye2`. Trường của giống: `odd:[màu1, màu2]` (luôn hai mắt hai màu), `gem` (vẽ mắt đá quý), `lash` (thêm lông mi trắng). `LOOKS.x_demon` là mèo quỷ chỉ dùng trong intro của Zenitsu, không nằm trong `BREEDS` hay `VARIANTS`.
 - `FOODS`/`FOOD`, `ROOMS`/`ROOM` (kèm `ROOM.wait`), `DESTS`/`DEST`, `NAMES`, `LOOT`, `SHORT_LEGS`, `HAIRLESS`, `QUOTE`.
 - Nội thất: `FURNS`/`FURN`, `FCATS`, `HAPPY_CAP=35`. Hàm `F(id, tên, giá, kind, w, h, mục, tên hàm vẽ, tham số màu, thêm)`. Các trường thêm:
   - `use:{dx, dy, front, sleep, emo, floor}`: chỗ mèo tương tác. `dy ≤ −4` nghĩa là mèo nhảy lên món đồ. `floor:1` nghĩa là mèo đứng dưới sàn nhìn (cửa sổ).
@@ -165,6 +168,8 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
   - `pastel`, `shade` (tô sẫm mép dưới), `outline` (viền dày 2 ô mịn, vùng `'o'`), `cutRows` (cắt hàng cho giống chân ngắn), `rgba()` (kích thước `W×H`).
 - Hoa văn lông vẽ ở lưới mịn: `colorer(s)` (nhìn thẳng) và `sideCol(s)` (nhìn ngang) nhận thêm toạ độ thực `(u, v)` và dùng các hàm chung `hsh` (băm), `vnoise` (nhiễu mượt), `marble` (loang hai lớp cho đồi mồi, xà cừ), `spotAt` (đốm tròn trên lưới lệch ngẫu nhiên), `bandC` (dải lặp), `blob` (mảng màu mép lượn cho tam thể, bò sữa), `fleck` (lấm tấm từng ô mịn cho lykoi, ticked). Vằn mướp cong và thon đầu, mặt nạ point có viền chuyển màu. Gọi trực tiếp `col(x, y, vùng)` không có `(u, v)` vẫn được.
 - `sideCol` trả về hàm có thuộc tính `hx`, `hy`, `by`: độ lệch của đầu và thân ở tư thế hiện tại, `side()` gán trước khi vẽ. Nhờ vậy hoa văn bám theo thân và đầu, không trôi khi mèo nhún lúc đi, chạy, nhảy.
+- Mắt đá quý `gemEye` (bảng điểm `GEM` 6×6 ô mịn): mí trên sẫm, mống mắt chuyển sắc đậm xuống nhạt, con ngươi, hai điểm sáng, quầng sáng tròn nhuộm màu mắt lên lông quanh mắt; `lash` thêm hàng lông mi trắng. `drawEye(…, gem)` gọi nó khi ngoại hình có `gem`.
+- Trang phục thiết kế lại ngày 2026-11-10 (bộ phận riêng, không dùng chung): Darth Vader `vcape`, `vhelm`, `vface`, `vsuit` (mũ bóng phủ cả tai mèo, vành mũ xoè, mắt kính đỏ sẫm, lưới thở `vgrille` là tấm bạc bo góc có bốn khe dọc và hai gân chéo ra má, bảng điều khiển ngực, áo choàng lót đỏ, kiếm có lõi sáng; lưỡi kiếm đi từ (27,5; 30,5) tới (33,5; 5,3) để khớp hiệu ứng bật kiếm trong intro); Nyan Cat `nrainbow` (cầu vồng bậc thang, ở dáng ngang gợn sóng theo khung `G.ph`), `npoptart` (hàm `tart`: vỏ bánh bo góc `rrect` mép trên sáng đáy sẫm, kem hồng mép lượn bằng `vnoise` có vệt bóng, cốm hai tông; ở dáng ngồi hai chân trước ôm mép dưới bánh), `nstars`; Hoàng Gia nhìn ngang `rcrown` (ba chóp, ngọc trai, ba viên đá), `rcape` (nhung đỏ, viền lông chồn đốm, chỉ vàng, khuy vàng) và cờ `proud` (đầu cao hơn 2 ô, lùi 1 ô). `drape(b, G, x0, x1, drop, colF)` vẽ áo choàng phủ lưng ở dáng ngang, dùng cho Vader và Hoàng Gia. Bảy bộ `COS` nhìn thẳng (kể cả Hoàng Gia nhìn thẳng) giữ nguyên.
 - Chi tiết trang phục ở lưới mịn: `ring` (vòng elip mảnh cho gọng kính tròn, viền túi), `DIG` (chữ số 6×10 ô mịn cho áo 456), sẹo tia chớp, vạch ria Naruto, ria mép, miệng và mày Grumpy vẽ bằng `cap` bán kính 0,3; `lenses` bo tròn.
 - `cat(s, pose)`: tư thế nhìn thẳng `sit`, `sitb` (chớp mắt), `sitt` (vẫy đuôi), `sleep0/1`, `groom0–3` (chân trước giơ lên liếm: vẽ cả cẳng chân nối từ vai bằng `cap`, có nét tách mảnh và hai vạch ngón, cùng màu với bàn chân dưới đất). Nếu `sidePose(pose)` nhận ra thì chuyển sang `side()`: `stand`, `walk0–11`, `run0–7`, `crouch0–3`, `leap0–3`, `land0/1`.
 - Nhìn ngang: `RX0=9` (nửa chiều dài thân), đầu ở (13,19) bán kính 10×8,5 chồng lên vai nên không có cổ. Chân vẽ bằng `cap`. `walkQ(i)` sinh 12 khung đi (mỗi chân chạm đất 60% chu kỳ), `RUNK` là 4 khung chính của dáng phi, `lerpQ` nội suy. Tọa độ đầu được làm tròn về số nguyên để các phụ kiện dựa trên hàng (băng trán) không bị mất ở khung nội suy.
@@ -190,6 +195,8 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 ### `js/ui.js`: vẽ, điều khiển, giao diện
 **Vẽ sprite ra canvas**
 - `bufCanvas(b, f)`: f là số điểm ảnh thật cho mỗi ô mịn. Ô viền vẽ đặc; ô khác có mép sáng để ra hình hạt cườm (f=2 chỉ còn một chấm sáng). Canvas kết quả có `lw`, `lh` là kích thước theo ô gốc.
+- `starsOf(n, rb)`, `starsC(c)`, `isRb(c)`: sao theo độ hiếm; `--d` là độ trễ âm theo đồng hồ thật để hiệu ứng lấp lánh không chạy lại từ đầu mỗi lần giao diện vẽ lại (mọi chu kỳ là ước của 6 giây). `big(c)`: key ảnh chân dung lớn (Gojo mở mắt).
+- Tooltip: mọi phần tử có `data-tip` dùng chung một khối nổi `#tip` gắn vào `body` (`showTip`, `hideTip`), hiện khi rê chuột, focus hoặc chạm. Nó tự giãn theo nội dung, tối đa 280px, mặc định nằm trên phần tử, thiếu chỗ thì lật xuống dưới, luôn cách mép màn hình 8px. Không còn dùng `::after` nên không bị khung cuộn của thẻ gacha hay hộp thoại cắt và không sinh thanh cuộn.
 - `catCv(key, pose, k)`, `furnCv(id, v, k)`: k là điểm ảnh mỗi ô gốc, đổi sang f bằng `fk(k)=max(1, round(k/2))`, có bộ nhớ đệm. `catTag`, `furnTag`, `catSrc` tạo thẻ `<img>` cho giao diện, luôn theo bội số nguyên của điểm ảnh màn hình.
 
 **Khung nhìn và camera**
@@ -219,7 +226,8 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 **Gacha**
 - `gz` giữ trạng thái màn gacha; `playGacha(c)`, `gReveal(skipped)`, `gachaDone`, `replayIntro(id)`, `endReplay`. Bảng `INTRO[sp]={dur, run(T)}` cho từng 5★. Hạt gacha tính theo delta time, tối đa 700 hạt.
 - Dựng cảnh intro: `fxEl(css, html)` (khối bất kỳ trong `#gfx`), `fxSpr(pose, k, x, y, css, {flip, key, img})` (sprite của bé ở tư thế bất kỳ, tâm đặt tại x, y; số là %, chuỗi là giá trị CSS), `fxTxt(chữ, x, y, css, animation)`, `K5()` (cỡ sprite theo màn hình, 3 đến 6), `cell(k)` (số điểm ảnh CSS của một ô gốc, để đặt hiệu ứng trúng mắt, đầu đũa, thanh kiếm trong sprite), `fxTint`, `bolt`, `part`, `rain`, `fount`, `stars`. Mọi hẹn giờ đi qua `T(ms, f)` để nút Bỏ qua dừng được ngay. Keyframe của intro nằm cuối khối `<style>` thứ hai trong index.html.
-- 13 cảnh intro riêng (2,7 đến 3,7 giây): Nyan Cat bay kéo cầu vồng giữa sao pixel và chữ "NYA" chạy; Thần Tài có hai câu đối TÀI, LỘC, đồng vàng xoay rơi vào lòng, mưa xu; Harry Potter có mưa thư, cú bay, tia chớp, đầu đũa phép sáng; Zenitsu ngủ gật "Z" rồi lao đi để lại dư ảnh, chữ "THẦN TỐC"; Gojo kéo băng mắt, hai quả cầu đỏ xanh nhập lại, chữ "VÔ HẠN"; Darth Vader thở khò khè, bóng đen trồi lên, kiếm đỏ bật sáng đúng chỗ thanh kiếm, câu thoại gõ từng chữ; Phi Hành Gia đếm ngược 3, 2, 1 rồi phóng lên có lửa đuôi; Hoàng Gia có thảm đỏ, kèn, vương miện hạ xuống; Khao Manee có hai nửa màn hình xanh và vàng tách ra, hai mắt lóe sáng; Lykoi có sương, trăng lên, bóng mèo hú "AWOOOO" rồi "à nhầm, meo"; Savannah chạy trên đồng cỏ rồi bật nhảy qua vạch 2 m; Sokoke có dấu chân hiện dần trên lối mòn trong rừng; Suphalak có tấm đồng đỏ lướt sáng rồi tan ra thành bé mèo.
+- Hạt gacha có kiểu `t` cho tiền rơi (`money('coin' | 'bar' | 'bill')`, vẽ bằng `drawMoney`): đồng xu xoay, thỏi vàng, tờ tiền bay lượn. `mixc(c, p, w)` trả `color-mix()` để pha màu trong CSS.
+- 13 cảnh intro riêng (2,7 đến 4,4 giây): Nyan Cat bay kéo cầu vồng giữa sao pixel và chữ "NYA" chạy; Thần Tài có hai câu đối TÀI, LỘC, đồng vàng xoay rơi vào lòng, mưa tiền dày gồm xu, thỏi vàng, tiền giấy, đống vàng dâng lên; Harry Potter cưỡi chổi bay lộn nhào khắp màn hình (`broomFly`), sét đánh, rơi xoáy xuống (`tumble`), ngồi dậy choáng váng; Zenitsu ngủ gật "Z", mèo quỷ hiện ra, bé lao đi để lại dư ảnh và chém đôi mèo quỷ (`cutHalf`), chữ "THẦN TỐC"; Gojo kéo băng mắt, hai quả cầu đỏ xanh nhập lại, chữ "VÔ HẠN"; Darth Vader thở khò khè, bóng đen trồi lên, kiếm đỏ bật sáng đúng chỗ thanh kiếm, câu thoại gõ từng chữ; Phi Hành Gia bật động cơ bay ngang qua hành tinh có vành đai, hành tinh đỏ, hành tinh xanh (`passBy`) rồi hạ cánh; Hoàng Gia có thảm đỏ, kèn, vương miện hạ xuống; Khao Manee có hai con mắt lớn mở ra đúng cặp màu mắt của bé rồi tách ra, hai mắt bé lóe sáng; Lykoi có sương, trăng lên, bóng mèo hú "AWOOOO" rồi "à nhầm, meo"; Savannah chạy trên đồng cỏ rồi bật nhảy qua vạch 2 m; Sokoke rón rén trên hàng bụi cây (`sneak`), lẩn vào bụi lớn, bụi rung và lộ hai con mắt sáng, rồi bật nhảy ra; Suphalak có quả cầu đồng nứt dần thành nhiều nhánh (SVG, `crackGrow`), ánh sáng lọt qua khe, vỏ vỡ thành 12 mảnh (`shard`) và bé xuất hiện.
 - Âm thanh là nhạc chiptune tự viết bằng WebAudio (`tone`, `seq`, `glide`), không dùng file.
 
 **Thông báo và hộp thoại**
@@ -232,6 +240,8 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 - `shop`: tab Phòng và các mục nội thất, có ô xem trước.
 - `cats` (Quản lý mèo): lọc theo phòng, sắp xếp, đổi phòng bằng ô chọn hoặc kéo thả, chế độ Chọn nhiều (`mg.multi`, `mg.sel`) để phóng sinh hàng loạt.
 - `album` (Sưu tập): nhóm Giống thật, Anime, Phim, Meme & Đặc biệt, Màu hiếm; chạm một giống để xem các màu lông đã gặp.
+- Thẻ kết quả gacha (`gReveal`): ảnh, hàng sao riêng một dòng, bậc hiếm, tên, câu thoại, rồi khung thông tin (màu lông, tuổi, mô tả) và khung Thuộc tính dùng chung lớp `.cd-sec` với màn chi tiết; CSS riêng là các lớp `.gv-*`. Trên điện thoại dọc ảnh nhỏ hơn một cỡ và khoảng cách thu gọn để cả thẻ vừa màn hình.
+- Màn chi tiết `openCat(uid)`: đầu trang (ảnh, tên, sao, bậc hiếm, viền theo bậc) rồi các khung Hồ sơ, Chỉ số, Thuộc tính, Đổi tên, Chuyển phòng; CSS là các lớp `.cd-*`.
 - Phóng sinh: `askRelease(uids, bước)` (bước 2 là xác nhận lần hai cho 4★–5★), `doRelease()`.
 - Cài đặt: chủ đề sáng hoặc tối (`setTheme`). Admin: `openAdmin` và các hàm `adm*`.
 
@@ -277,6 +287,9 @@ Cách sửa file an toàn đã dùng: script Python thay chuỗi chính xác, c�
 ## 7. Việc còn dở và hạn chế đã biết
 
 - Tám việc của danh sách cũ đã làm xong ngày 2026-11-10 (mục 8). Những thứ dưới đây là phần còn lại.
+- Các thay đổi của mục 9 chưa có người chơi thật thử. Claude đã xem trong trình duyệt riêng ở cỡ PC và điện thoại dọc: tooltip, màn chi tiết, sao, bảy intro mới. Chưa thử: âm thanh, điện thoại ngang, cảm giác mượt trên máy yếu.
+- Mắt Gojo chỉ thấy khi bé kéo băng mắt (intro, hành động riêng trong phòng, ảnh ở thẻ gacha và màn chi tiết); trong phòng bé vẫn đeo băng mắt.
+- Mèo Hoàng Gia nhìn thẳng vẫn là bộ `COS.royal` cũ; chỉ dáng ngang được làm lại. Khi nhảy cao, vương miện có thể chạm mép trên của khung sprite.
 - Chưa có người chơi thật nào thử các thay đổi của mục 8. Claude mới chơi thử trong trình duyệt riêng: kéo, lăn chuột, bấm mèo, cho ăn, đổi cỡ hạt, xem đủ 13 intro ở cỡ PC và điện thoại dọc. Chưa thử: âm thanh, chụm 2 ngón, Ctrl + lăn bằng chuột thật, điện thoại ngang, chủ đề tối.
 - Hoa văn `tortie`, `nacre`, `spot`, `lykoi` nay sinh từ nhiễu nên vị trí mảng màu khác bản cũ; mèo đang có sẽ trông hơi khác trước.
 - Chi tiết trang phục chưa chuyển sang lưới mịn: băng trán, bảy bộ kiểu cũ trong `COS` (ba lỗ, ninja, đầu bếp, phi hành gia, hoàng gia, bánh mì, DJ), vạch áo `checker`, `tripat`.
@@ -297,3 +310,15 @@ Người dùng yêu cầu "Làm hết các việc còn dở". Đã commit và pu
 6. 13 intro 5★ viết lại thành cảnh riêng.
 7. Cân bằng cho ăn: trả theo suất cần đổ, bù thời gian vắng mặt theo bước 10 phút để máy cho ăn chạy thật, bát inox 6 lên 8 suất, bát vàng 6 lên 8 suất và +2 lên +3 xu, xóa bản ghi `feeder` trùng.
 8. Chơi thử trong trình duyệt và sửa hai lỗi tìm ra: khung phòng lần đầu cao quá cửa sổ, câu thoại Darth Vader tràn màn hình điện thoại.
+
+## 9. Đợt làm việc 2026-11-10 (đợt hai): chỉnh gacha theo danh sách của người dùng
+
+Đã commit và push lên `main` cùng ngày, sau khi người dùng bảo "Commit và push". Người dùng gửi danh sách ba mục; đã làm đủ:
+
+1. Giao diện: tooltip nổi dùng chung thay cho `::after` (không còn thanh cuộn, tự lật hướng); màn chi tiết chia khung; sao theo độ hiếm và sao cầu vồng cho màu hiếm.
+2. Từng con mèo: Khao Manee hai mắt hai màu, năm cặp mắt, mắt đá quý; intro Sokoke, Suphalak, Harry, Phi Hành Gia làm lại; Zenitsu thêm mèo quỷ bị chém; Thần Tài mưa tiền dày và dài hơn (3,2 lên 4,4 giây); mắt Gojo; thiết kế lại Darth Vader và Nyan Cat (intro giữ nguyên); Hoàng Gia nhìn ngang.
+3. Hoạt ảnh chỉ dùng `transform`, `opacity`, `translate` và canvas hạt (trần 700 hạt) để không giật.
+
+Sau đó người dùng phản hồi hai lần và đã sửa: hàng sao ở thẻ gacha bị lệch sang cạnh ảnh (thiếu khối bọc) và chữ dính nhau, nên thẻ được sắp lại; miệng Vader và áo bánh của Nyan bị chê xấu, nên vẽ lại bằng `vgrille` và `tart`.
+
+Quyết định tự đưa ra, cần người dùng xác nhận nếu muốn khác: màu sao mới áp dụng cho mọi chỗ hiện sao (thẻ mèo, sưu tập, thẻ gacha), không riêng màn chi tiết; bốn cặp mắt quý hiếm của Khao Manee cũng được sao cầu vồng; ảnh chân dung Gojo ở thẻ gacha và màn chi tiết là bản mở mắt.
