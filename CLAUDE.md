@@ -1,6 +1,6 @@
 # Mèo Xu: ghi chú bàn giao cho phiên làm việc mới
 
-File này tóm tắt toàn bộ ngữ cảnh của dự án để một phiên làm việc mới tiếp tục được ngay. Số liệu bên dưới lấy từ mã nguồn ở commit `91b4319`; nếu mã đã đổi thì mã nguồn là đúng.
+File này tóm tắt toàn bộ ngữ cảnh của dự án để một phiên làm việc mới tiếp tục được ngay. Số liệu bên dưới lấy từ mã nguồn sau đợt "làm hết việc còn dở" ngày 2026-11-10 (xem mục 8); nếu mã đã đổi thì mã nguồn là đúng.
 
 ## 1. Dự án là gì
 
@@ -23,7 +23,8 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 
 ### Git
 - Remote: `git@github.com:nhanlequy12/meowmeow.git`, nhánh `main`. (Người dùng từng gõ nhầm tên tài khoản là `nhan.lequy12`; tên đúng không có dấu chấm.)
-- Repo đặt `core.sshCommand` riêng, trỏ tới khóa `~/.ssh/id_ed25519_meowmeow` đã được thêm vào GitHub.
+- Trên máy cũ, repo đặt `core.sshCommand` riêng, trỏ tới khóa `~/.ssh/id_ed25519_meowmeow`. Trên máy Windows hiện tại (clone ngày 2026-11-10 vào `D:\UIT\project\Personal_Projects\meowmeow`) khóa SSH mặc định đã clone được, không cần cấu hình thêm.
+- Máy Windows bật `core.autocrlf`: file trong thư mục làm việc là CRLF, trong repo là LF. Script sửa file ghi LF cũng không sao, git tự chuẩn hóa.
 - Chạy `git push` thành lệnh riêng. Lệnh gộp đổi remote với push, hoặc lệnh gộp đụng tới `~/.ssh`, từng bị chặn.
 
 ### Lịch sử commit
@@ -34,11 +35,14 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 | `0b45636` | Dáng đi nhiều khung, giống chân ngắn, màu lông theo giống, màu hiếm |
 | `83a8140` | Quản lý mèo theo phòng, thêm phòng và nội thất, vệt di chuyển riêng, sprite lưới mịn gấp đôi |
 | `91b4319` | Khung phòng rộng và responsive, camera theo dõi, phóng sinh, đồ leo trèo nhiều tầng, bát ăn có giới hạn suất |
+| `f2ff245`, `ec835a6` | Ghi chú bàn giao (file này) |
+| commit ngày 2026-11-10 | Làm hết việc còn dở: hoa văn lưới mịn, tuổi mèo, 13 intro 5★ riêng, cân bằng cho ăn, cỡ hạt cườm, Ctrl + lăn để zoom (mục 8) |
 
 ## 3. Luật chơi và số liệu hiện tại
 
 ### Mèo
-- Mỗi mèo có: tên, giới tính, giống hoặc trang phục (`sp`), màu lông (`coat`), số sao, danh sách trait, độ no `full`, năng lượng `en`, độ vui `hp` (đều 0–100), phòng đang ở.
+- Mỗi mèo có: tên, giới tính, giống hoặc trang phục (`sp`), màu lông (`coat`), số sao, danh sách trait, độ no `full`, năng lượng `en`, độ vui `hp` (đều 0–100), phòng đang ở, thời điểm sinh `born`.
+- Tuổi tính theo ngày thật kể từ `born`: Mèo con (dưới 3 ngày), Trưởng thành (3–30 ngày), Mèo già (từ 30 ngày). Mèo mới về có tuổi ngẫu nhiên: 50% mèo con, 42% trưởng thành, 8% mèo già. Mèo trong bản lưu cũ được coi là trưởng thành 5–24 ngày. Tuổi chỉ đổi cách sinh hoạt trong phòng, không đổi xu hay chỉ số: mèo con chạy nhiều hơn, trèo nhiều hơn 30%, đi nhanh hơn 10%; mèo già ngủ nhiều hơn, đi chậm hơn 15%, trèo chỉ bằng 30% và không lên quá tầng giữa (đa số chỉ lên tầng thấp nhất).
 - Số trait bằng số sao. Trait tốt hay xấu được bốc theo tỉ lệ `good` của bậc sao.
 - 86 giống thật và 43 mèo trang phục. Số lượng theo sao (giống thật / trang phục): 1★ 9/0, 2★ 12/0, 3★ 35/0, 4★ 25/35, 5★ 5/8.
 - 5★ giống thật: Khao Manee, Lykoi, Savannah, Sokoke, Suphalak. 5★ trang phục: Zenitsu, Gojo, Harry Potter, Darth Vader, Nyan Cat, Thần Tài, Phi Hành Gia, Hoàng Gia.
@@ -75,18 +79,22 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 | Bát | Giá | Suất | Hiệu ứng |
 |---|---|---|---|
 | Bát nhựa `bowl` | 60 | 4 | Không |
-| Bát inox `bowlsteel` | 280 | 6 | Không |
+| Bát inox `bowlsteel` | 280 | 8 | Không |
 | Bát gốm `bowlclay` | 350 | 4 | +5 độ vui mỗi bé ăn |
-| Máy cho ăn tự động `feeder` | 1.500 | 4 | Tự đổ hạt khô mỗi 10 phút (vẫn trừ xu), kể cả khi vắng |
-| Bát vàng `bowlgold` | 3.000 | 6 | Thức ăn hiệu quả hơn 25%, +2 xu cảm ơn mỗi bé |
+| Máy cho ăn tự động `feeder` | 1.500 | 4 | Mỗi 10 phút tự đổ thêm hạt khô cho đầy, kể cả khi vắng (tối đa 8 giờ); chỉ trừ xu cho số suất mèo đã ăn |
+| Bát vàng `bowlgold` | 3.000 | 8 | Thức ăn hiệu quả hơn 25%, +3 xu cảm ơn mỗi bé |
 
-- Nút "Cho ăn" đổ đầy mọi bát đang sẵn sàng trong phòng. Giá mỗi bát = giá món × số suất / 8 (tức giá niêm yết của món ăn là cho 8 suất). Bát đổ lại được sau 10 phút.
+- Nút "Cho ăn" đổ đầy mọi bát đang sẵn sàng trong phòng. Giá niêm yết của món ăn là cho 8 suất, và mỗi bát chỉ trả cho số suất còn thiếu: giá = giá món × số suất cần đổ / 8 (`bowlNeed`, `bowlCost`). Bát còn thừa đúng món đó thì chỉ đổ thêm cho đầy; đổi sang món khác thì phần thừa bị bỏ và trả đủ cả bát. Bát đổ lại được sau 10 phút.
+- Kết quả là mỗi suất được ăn thì trả tiền đúng một lần và được cảm ơn đúng một lần. Lãi mỗi suất: hạt khô +2,75 xu, pate +0,9; các món buff (cá ngừ, cá hồi, ức gà, cỏ mèo, hộp cao cấp) lỗ trực tiếp và bù lại bằng buff viễn chinh hoặc năng lượng.
 - Ngay sau khi đổ, bé nào cũng ra ăn, đói nhất ăn trước, mỗi bé một suất, chọn bát gần mình nhất. Mỗi bé ăn xong cảm ơn 4 xu (cộng thêm từ bể cá, Phòng ăn, Bát vàng). Đây là nguồn xu 10 phút một lần cùng với viễn chinh.
-- Suất thừa nằm lại trong bát; bé nào đói dưới 50 sẽ tự ra ăn.
+- Suất thừa nằm lại trong bát; bé nào đói dưới 50 sẽ tự ra ăn, kể cả lúc người chơi vắng mặt. Khi mở lại game có thông báo "Lúc bạn vắng" tổng kết số suất đã ăn và xu cảm ơn (biến `AWAY`).
 - Thiếu suất: bé đói dưới 20 ra đứng chờ cạnh bát với dấu chấm than đỏ, và có thông báo "Thiếu bát ăn" tối đa 5 phút một lần mỗi phòng.
 
 ### Vuốt ve
 Chạm vào mèo: mỗi bé 20 giây cho xu một lần, cộng 3 độ vui. Từ commit `91b4319`, chạm vào mèo còn bật camera theo dõi.
+
+### Cài đặt
+Chủ đề sáng hoặc tối, độ tối nền phòng, và cỡ hạt cườm (`S.set.bead`): "Tự động" hoặc "Hạt to, rõ" (ép mức zoom nhỏ nhất lên 6, tức mỗi hạt ít nhất 3 điểm ảnh thật).
 
 ### Phòng
 17 phòng mua được, cộng Phòng chờ. Sức chứa và bonus:
@@ -114,14 +122,14 @@ Chạm vào mèo: mỗi bé 20 giây cho xu một lần, cộng 3 độ vui. T�
 Mỗi phòng có kiểu tường và sàn riêng (`THEMES` trong ui.js). Thế giới của một phòng rộng 480 × 170 ô; tường kết thúc ở hàng 96, mèo đi trên sàn từ hàng 106 đến 166.
 
 ### Nội thất
-- 95 món, chia mục (`FCATS`): Giường & nệm 5, Tháp & trụ cào 5, Đồ chơi 7, Bàn ghế & sofa 5, Cây cảnh 6, Đèn 4, Thảm 4, Tranh 6, Kệ 4, Leo trèo nhiều tầng 9, Bát ăn 5, Cửa sổ 3, Trang trí 2, Theo mùa 11, Bộ chủ đề 19.
+- 94 món, chia mục (`FCATS`): Giường & nệm 5, Tháp & trụ cào 5, Đồ chơi 6, Bàn ghế & sofa 5, Cây cảnh 6, Đèn 4, Thảm 4, Tranh 6, Kệ 4, Leo trèo nhiều tầng 9, Bát ăn 5, Cửa sổ 3, Trang trí 2, Theo mùa 11, Bộ chủ đề 19.
 - Ba kiểu: đặt sàn (`floor`), treo tường (`wall`), thảm (`rug`). Kéo thả trong chế độ Sắp xếp, bám lưới 4 ô; xoay, cất kho, xóa (hoàn 25% giá).
 - Hiệu ứng: độ vui trong phòng (mỗi loại đồ chỉ tính một lần, tổng tối đa +35), hồi năng lượng, đói chậm, và bonus toàn nhà cho viễn chinh (xu, tốc độ, vé, đêm).
 - Sofa có thể bị mèo có trait cào hỏng (kiểm tra 10 phút một lần); trụ cào trong phòng giảm xác suất. Sửa tốn 30% giá.
 - Nội thất nhiều tầng: Tháp mèo 3 tầng, Tháp mèo 5 tầng, Giá leo gỗ, Tủ sách cao, Võng treo, Nhà gỗ trên cao, Cây mèo khổng lồ, Kệ bậc thang (treo tường), Cầu treo (treo tường). Tháp mèo cũ (`tree`, `treegreen`) có 2 tầng.
 
 ### Admin
-Mở bằng Ctrl+Shift+A hoặc bấm 7 lần liên tiếp vào tiêu đề. Có: cộng xu, xu vô hạn, lấy mèo bất kỳ, gacha miễn phí ép sao, mở hết phòng, nhận hết nội thất, bát sẵn sàng, lên cấp, cho viễn chinh về ngay, đặt lại chỉ số, xóa dữ liệu.
+Mở bằng Ctrl+Shift+A hoặc bấm 7 lần liên tiếp vào tiêu đề. Có: cộng xu, xu vô hạn, lấy mèo bất kỳ, gacha miễn phí ép sao, mở hết phòng, nhận hết nội thất, bát sẵn sàng, lên cấp, cho viễn chinh về ngay, đặt lại chỉ số, cho cả đàn già thêm 10 ngày hoặc thành mèo con, xóa dữ liệu.
 
 ## 4. Kiến trúc mã nguồn
 
@@ -155,22 +163,27 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
   - Màu có thể là hàm `(cột gốc, hàng gốc, vùng, u, v)`. Các hàm tô màu lông (`colorer`, `sideCol`) dùng cột và hàng gốc nên hoa văn vẫn ở độ phân giải gốc.
   - `get/reg` đọc theo ô gốc, `getF/regF` theo ô mịn. `each(b,f)` và `fine(b,x0,y0,x1,y1,f)` duyệt ô mịn. `recolor(b, điều kiện, màu, vùng)` đổi màu các ô thỏa điều kiện.
   - `pastel`, `shade` (tô sẫm mép dưới), `outline` (viền dày 2 ô mịn, vùng `'o'`), `cutRows` (cắt hàng cho giống chân ngắn), `rgba()` (kích thước `W×H`).
-- `cat(s, pose)`: tư thế nhìn thẳng `sit`, `sitb` (chớp mắt), `sitt` (vẫy đuôi), `sleep0/1`, `groom0–3`. Nếu `sidePose(pose)` nhận ra thì chuyển sang `side()`: `stand`, `walk0–11`, `run0–7`, `crouch0–3`, `leap0–3`, `land0/1`.
+- Hoa văn lông vẽ ở lưới mịn: `colorer(s)` (nhìn thẳng) và `sideCol(s)` (nhìn ngang) nhận thêm toạ độ thực `(u, v)` và dùng các hàm chung `hsh` (băm), `vnoise` (nhiễu mượt), `marble` (loang hai lớp cho đồi mồi, xà cừ), `spotAt` (đốm tròn trên lưới lệch ngẫu nhiên), `bandC` (dải lặp), `blob` (mảng màu mép lượn cho tam thể, bò sữa), `fleck` (lấm tấm từng ô mịn cho lykoi, ticked). Vằn mướp cong và thon đầu, mặt nạ point có viền chuyển màu. Gọi trực tiếp `col(x, y, vùng)` không có `(u, v)` vẫn được.
+- `sideCol` trả về hàm có thuộc tính `hx`, `hy`, `by`: độ lệch của đầu và thân ở tư thế hiện tại, `side()` gán trước khi vẽ. Nhờ vậy hoa văn bám theo thân và đầu, không trôi khi mèo nhún lúc đi, chạy, nhảy.
+- Chi tiết trang phục ở lưới mịn: `ring` (vòng elip mảnh cho gọng kính tròn, viền túi), `DIG` (chữ số 6×10 ô mịn cho áo 456), sẹo tia chớp, vạch ria Naruto, ria mép, miệng và mày Grumpy vẽ bằng `cap` bán kính 0,3; `lenses` bo tròn.
+- `cat(s, pose)`: tư thế nhìn thẳng `sit`, `sitb` (chớp mắt), `sitt` (vẫy đuôi), `sleep0/1`, `groom0–3` (chân trước giơ lên liếm: vẽ cả cẳng chân nối từ vai bằng `cap`, có nét tách mảnh và hai vạch ngón, cùng màu với bàn chân dưới đất). Nếu `sidePose(pose)` nhận ra thì chuyển sang `side()`: `stand`, `walk0–11`, `run0–7`, `crouch0–3`, `leap0–3`, `land0/1`.
 - Nhìn ngang: `RX0=9` (nửa chiều dài thân), đầu ở (13,19) bán kính 10×8,5 chồng lên vai nên không có cổ. Chân vẽ bằng `cap`. `walkQ(i)` sinh 12 khung đi (mỗi chân chạm đất 60% chu kỳ), `RUNK` là 4 khung chính của dáng phi, `lerpQ` nội suy. Tọa độ đầu được làm tròn về số nguyên để các phụ kiện dựa trên hàng (băng trán) không bị mất ở khung nội suy.
 - Mặt: `drawEye` (mắt tròn 3 ô có đốm sáng; lông tối thì con ngươi dọc; mắt nhắm là đường cong), `drawNose` (mũi và miệng chữ w), `wsk` (ria mảnh 1 ô mịn), `spark` (lấp lánh màu hiếm).
 - Trang phục: `COS` (7 bộ kiểu cũ vẽ tay), `P` (bộ phận ghép được cho nhìn thẳng, mỗi cái thuộc giai đoạn `back`, `mid`, `front` hoặc `post`), `PS` và `OLD2` (bản đơn giản cho nhìn ngang).
 - Nội thất: `FART[tên](b, biến thể, tham số màu)`, màu tham số lấy bằng `C(a, i, mặc định)`. `furn(id, v)`: biến thể `full` là bát có thức ăn, `broken` là đồ hỏng. `FSIZE` chứa kích thước của `gift` (hộp gacha).
 
 ### `js/game.js`: trạng thái và luật chơi, không đụng DOM
-- `S`: `coins, tickets, xp, level, cats[], trips[], items[], rooms{}, pity, seen{}, seenCoat{}, seenRare{}, nid, last, scratchAt, set{theme}, adm{inf}, bowlMig, released`.
-- Mèo: `{uid, sp, star, sex, name, traits[], full, en, hp, room, buff, petAt, coat, eat}`. `eat={iid, t}` là dấu "vừa được chia suất ở bát nào" để giao diện cho bé chạy ra bát.
+- `S`: `coins, tickets, xp, level, cats[], trips[], items[], rooms{}, pity, seen{}, seenCoat{}, seenRare{}, nid, last, scratchAt, set{theme, dim, bead}, adm{inf}, bowlMig, released`.
+- Đồng hồ: `now()` trả `Date.now() + TOFF`. `TOFF` chỉ khác 0 trong `load()` lúc bù thời gian vắng mặt: game lùi đồng hồ rồi gọi `tick(600, true)` từng bước 10 phút (tối đa 8 giờ), nên máy cho ăn tự đổ và mèo đói tự ra ăn đúng như lúc đang mở game. Trong lúc bù, thông báo bị tắt, số liệu gom vào `AWAY={n, coins, cost}`, và việc cào sofa không chạy theo từng bước mà chỉ bù tối đa 3 lần sau cùng (`scratchTick`).
+- Tuổi: `DAY`, `AGE_ADULT=3`, `AGE_OLD=30`, `AGE_N`, `AGE_IC`, `rollAge()`, `ageDays(c)`, `ageStage(c)` (0 mèo con, 1 trưởng thành, 2 mèo già).
+- Mèo: `{uid, sp, star, sex, name, traits[], full, en, hp, room, buff, petAt, coat, eat, born}`. `eat={iid, t}` là dấu "vừa được chia suất ở bát nào" để giao diện cho bé chạy ra bát.
 - Món đồ: `{iid, fid, room, x, y, flip, broken}`; `room=null` là trong kho; bát có thêm `left`, `food`, `at`.
 - `fresh`, `load`, `save`. `tick(dt)` chạy mỗi giây và một lần khi tải (bù tối đa 8 giờ vắng mặt): giảm no, hồi năng lượng, kéo độ vui về `happyTarget`, máy cho ăn tự đổ, mèo đói ăn suất thừa, cảnh báo thiếu bát, kiểm tra cào sofa.
 - `notify(msg)`: game.js gọi, ui.js gán thành toast.
 - Trait: `tE(c,k)` cộng hiệu ứng, `tM(c,k)` nhân hiệu ứng, `has(c,t)`.
 - Phòng: `ownedRooms`, `catsIn`, `homeCats` (không tính bé đang viễn chinh), `freeRoom`, `roomHunger`, `roomRegen`, `roomHappy`, `happyTarget`, `moveCat`, `buyRoom`.
 - Viễn chinh: `tripInfo`, `startTrip`, `claimTrip`, `coinCalc`, `gEff` (bonus toàn nhà), `gMult`.
-- Bát ăn: `bowlsIn`, `bowlCap`, `bowlReady`, `bowlNext`, `bowlCost`, `giveBowl`, `fillBowl`, `serve(b,c)`, `eatCheck(rid, all)`, `feedRoom(rid, fid)` trả `{coins, loved, n, cost, bowls, miss}`. `pickBowl` là biến `let`, ui.js gán lại thành hàm chọn bát gần bé nhất.
+- Bát ăn: `bowlsIn`, `bowlCap`, `bowlReady`, `bowlNext`, `bowlNeed`, `bowlCost`, `giveBowl`, `fillBowl`, `serve(b,c)`, `eatCheck(rid, all)`, `feedRoom(rid, fid)` trả `{coins, loved, n, cost, bowls, miss}`. `pickBowl` là biến `let`, ui.js gán lại thành hàm chọn bát gần bé nhất.
 - Phóng sinh: `releaseGift(c)`, `rehome(uid)` trả `{coins, ticket}`, hoặc `null` nếu bé đang viễn chinh hay là bé cuối cùng.
 - Khác: `petCat`, `gachaRoll(useTicket, {free, star, rare})`, `buyItem`, `sellItem`, `repairItem`, `clampItem`, `skipTime` (tua 10 phút, dùng cho Admin).
 
@@ -182,14 +195,15 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 **Khung nhìn và camera**
 - `BS`: mức zoom đích, số chẵn (để ô mịn là số nguyên điểm ảnh). `ZC`: mức đang hiển thị, chạy mượt về `BS`. `ZMIN`: mức nhỏ nhất, là mức vừa phủ kín khung nhưng không vượt mức cho thấy khoảng 200 ô theo chiều ngang (để điện thoại dọc không bị to quá). Zoom tối đa `ZMIN+8`.
 - `VW`, `VHV`: kích thước khung nhìn theo ô. `camX`, `camY`: góc trên trái của khung nhìn. `VH=170` là chiều cao thế giới.
-- `fitCanvas()`: tính lại kích thước canvas theo cửa sổ và `devicePixelRatio`. `clampCam`, `zoomStep(dir, fx, fy)` (zoom quanh một điểm), `stepCam(dt)` chạy mỗi khung.
+- `fitCanvas()`: tính lại kích thước canvas theo cửa sổ và `devicePixelRatio`; được gọi hai lần lúc khởi động (trước và sau `render()`), vì lần đầu thanh trên và menu chưa có nội dung nên đo sai chiều cao. `S.set.bead` ép `ZMIN` tối thiểu 6. `clampCam`, `zoomStep(dir, fx, fy)` (zoom quanh một điểm), `stepCam(dt)` chạy mỗi khung.
 - Theo dõi: `fol={uid, back:{x,y,z}}`, `ret` (điểm camera trượt về), `follow(uid)`, `unfollow(back)`, `showFol()` vẽ `#folcard`.
-- Chuột và chạm: kéo để cuộn hai chiều, chụm 2 ngón hoặc lăn chuột để zoom, chạm mèo để theo dõi và vuốt ve, chạm chỗ trống để thôi theo dõi. Trong chế độ Sắp xếp thì kéo là di chuyển đồ.
+- Chuột và chạm: kéo để cuộn hai chiều, chụm 2 ngón để zoom, chạm mèo để theo dõi và vuốt ve, chạm chỗ trống để thôi theo dõi. Trong chế độ Sắp xếp thì kéo là di chuyển đồ.
+- Lăn chuột trên khung phòng cuộn trang như bình thường. Giữ Ctrl (hoặc ⌘, hoặc chụm hai ngón trên bàn di chuột, vốn sinh sự kiện wheel kèm Ctrl) rồi lăn mới zoom quanh con trỏ. Lần lăn thường đầu tiên hiện một thông báo nhắc.
 
 **Mèo trong phòng (`ents`)**
 - Mỗi ent: `{uid, x, y, tx, ty, state, t, flip, goal, emo, wt, wd, …}`. Chỉ có ent cho mèo ở nhà trong phòng đang xem (`syncEnts`).
 - Trạng thái: `idle`, `walk`, `run`, `jump`, `groom`, `nap`, `use`, `sig` (hành động riêng của 5★), `bye` (chào tạm biệt khi phóng sinh).
-- `choose(e)` chọn việc tiếp theo theo tính cách: `vigor(c)` là +1 nếu có trait năng động (`ACTIVE`), −1 nếu lười (`LAZY`). `climbK(c)` là mức thích trèo: chân ngắn 0,15; lười 0,25; có `climber` hoặc `highup` là 3; năng động 1,6; còn lại 1.
+- `choose(e)` chọn việc tiếp theo theo tính cách và tuổi: `vigor(c)` là +1 nếu có trait năng động (`ACTIVE`), −1 nếu lười (`LAZY`). `climbK(c)` là mức thích trèo: chân ngắn 0,15; lười 0,25; có `climber` hoặc `highup` là 3; năng động 1,6; còn lại 1; rồi nhân theo tuổi (mèo con ×1,3; mèo già ×0,3). Mèo già không lên quá tầng giữa. Đo thử 6.000 lần chọn với mèo không trait: mèo già trèo 11% số lần và chỉ lên tầng thấp nhất, ngủ 25%; trưởng thành trèo 19%, ngủ 13%; mèo con chạy 18% so với 11%.
 - `goItem(e, it, tầng)`, `arrive(e)`, `stepEnt(e, dt)`, `entPos(e)` (vị trí vẽ, thứ tự trước sau `sy`, tư thế), `drawEnt(e, p)`.
 - Đi và chạy: khung hình tính theo quãng đường đã đi (`e.wd`), một chu kỳ đi là 10 ô (chân ngắn 6), nên bàn chân không trượt. Có tăng tốc lúc xuất phát và giảm tốc khi gần tới.
 - Nhảy ba pha: thu mình (`JP=.36` giây), bay theo parabol, tiếp đất (`JL=.26` giây).
@@ -204,6 +218,8 @@ Lưu bằng localStorage, khóa `meoxu_v2` (bản `meoxu_v1` được chuyển �
 
 **Gacha**
 - `gz` giữ trạng thái màn gacha; `playGacha(c)`, `gReveal(skipped)`, `gachaDone`, `replayIntro(id)`, `endReplay`. Bảng `INTRO[sp]={dur, run(T)}` cho từng 5★. Hạt gacha tính theo delta time, tối đa 700 hạt.
+- Dựng cảnh intro: `fxEl(css, html)` (khối bất kỳ trong `#gfx`), `fxSpr(pose, k, x, y, css, {flip, key, img})` (sprite của bé ở tư thế bất kỳ, tâm đặt tại x, y; số là %, chuỗi là giá trị CSS), `fxTxt(chữ, x, y, css, animation)`, `K5()` (cỡ sprite theo màn hình, 3 đến 6), `cell(k)` (số điểm ảnh CSS của một ô gốc, để đặt hiệu ứng trúng mắt, đầu đũa, thanh kiếm trong sprite), `fxTint`, `bolt`, `part`, `rain`, `fount`, `stars`. Mọi hẹn giờ đi qua `T(ms, f)` để nút Bỏ qua dừng được ngay. Keyframe của intro nằm cuối khối `<style>` thứ hai trong index.html.
+- 13 cảnh intro riêng (2,7 đến 3,7 giây): Nyan Cat bay kéo cầu vồng giữa sao pixel và chữ "NYA" chạy; Thần Tài có hai câu đối TÀI, LỘC, đồng vàng xoay rơi vào lòng, mưa xu; Harry Potter có mưa thư, cú bay, tia chớp, đầu đũa phép sáng; Zenitsu ngủ gật "Z" rồi lao đi để lại dư ảnh, chữ "THẦN TỐC"; Gojo kéo băng mắt, hai quả cầu đỏ xanh nhập lại, chữ "VÔ HẠN"; Darth Vader thở khò khè, bóng đen trồi lên, kiếm đỏ bật sáng đúng chỗ thanh kiếm, câu thoại gõ từng chữ; Phi Hành Gia đếm ngược 3, 2, 1 rồi phóng lên có lửa đuôi; Hoàng Gia có thảm đỏ, kèn, vương miện hạ xuống; Khao Manee có hai nửa màn hình xanh và vàng tách ra, hai mắt lóe sáng; Lykoi có sương, trăng lên, bóng mèo hú "AWOOOO" rồi "à nhầm, meo"; Savannah chạy trên đồng cỏ rồi bật nhảy qua vạch 2 m; Sokoke có dấu chân hiện dần trên lối mòn trong rừng; Suphalak có tấm đồng đỏ lướt sáng rồi tan ra thành bé mèo.
 - Âm thanh là nhạc chiptune tự viết bằng WebAudio (`tone`, `seq`, `glide`), không dùng file.
 
 **Thông báo và hộp thoại**
@@ -239,9 +255,12 @@ Dự án không có bộ test trong repo. Mỗi lần sửa tôi kiểm tra như
    ```
    Các cỡ nên chụp: 1500×900 (PC), 390×844 hệ số 2 (điện thoại dọc), 844×390 hệ số 2 (điện thoại ngang). Luôn xóa `_test.html` sau khi chạy, đừng commit nó.
 
-Không kiểm tra được bằng các cách trên: chuyển động thật theo thời gian, âm thanh, kéo chuột, lăn chuột, chụm 2 ngón. Khi báo cáo phải nói rõ những phần này người dùng cần tự xem.
+5. Chơi thử trong trình duyệt của Claude (đã dùng ngày 2026-11-10): tạo tạm `.claude/launch.json` chạy `python -m http.server 8765 --bind 127.0.0.1`, mở bằng `preview_start`, rồi kéo, bấm, cuộn thật và chụp màn hình; gọi thẳng hàm game bằng công cụ chạy JavaScript (ví dụ `replayIntro('v_gojo')`, `setBead(1)`). Mở `file://` trong khung trình duyệt chỉ ra ảnh tĩnh, script không chạy. Ảnh chụp có thể chậm một khung, nên chờ 1 giây trước khi chụp. Xong thì dừng server và xóa `.claude/launch.json`.
+6. Ba script Node dùng trong đợt 2026-11-10 (viết lại khi cần, không nằm trong repo): vẽ bảng sprite ra PNG bằng `zlib` có sẵn của Node; vẽ thử mọi ngoại hình, tư thế và nội thất để bắt lỗi chạy (7.743 hình, 0 lỗi); kiểm tra giá đổ bát, bù 8 giờ vắng mặt và tuổi.
 
-Cách sửa file an toàn đã dùng: script Python thay chuỗi chính xác, có `assert` chuỗi cũ xuất hiện đúng một lần, và chỉ ghi file khi mọi `assert` qua.
+Không kiểm tra được bằng các cách trên: âm thanh, chụm 2 ngón, Ctrl + lăn chuột bằng chuột thật (mới thử bằng sự kiện giả lập), và cảm giác mượt của chuyển động. Khi báo cáo phải nói rõ những phần này người dùng cần tự xem.
+
+Cách sửa file an toàn đã dùng: script Python thay chuỗi chính xác, có `assert` chuỗi cũ xuất hiện đúng một lần, và chỉ ghi file khi mọi `assert` qua. Trên Windows nên ghi script ra file rồi chạy; nhét script dài có nhiều dấu nháy vào heredoc của Git Bash từng báo lỗi cú pháp.
 
 ## 6. Lỗi từng gặp, nên tránh lặp lại
 
@@ -251,14 +270,30 @@ Cách sửa file an toàn đã dùng: script Python thay chuỗi chính xác, c�
 - Phụ kiện so khớp theo hàng (`y===…`) biến mất ở khung nội suy khi tọa độ đầu là số lẻ; đã sửa bằng cách làm tròn tọa độ đầu.
 - Màu sao và màu xu từng không đủ tương phản 4,5:1; `STAR.c` là màu chữ (tối), `STAR.g` là màu phát sáng.
 - Hồ sơ Chrome dùng lại giữa các lần chụp sẽ giữ bản lưu cũ, nên số mèo và đồ tăng dần qua các lần chạy; đó là do cách thử, không phải lỗi game.
+- Chuyển hoa văn sang lưới mịn làm mặt nạ point nhỏ đi nửa ô, khiến một mắt mèo Xiêm rơi ra ngoài vùng tối và bị vẽ sai kiểu. Khi đổi phép thử từ ô gốc sang toạ độ thực, phải nới vùng thêm khoảng 0,3 ô và xem lại các chi tiết đọc màu nền (mắt, ngón chân).
+- `FURNS` từng có hai bản ghi cùng id `feeder` (một món đồ chơi 900 xu, một bát ăn 1.500 xu); bản sau ghi đè bản trước trong `FURN` nên mục Đồ chơi hiện một món không chọn được. Đã xóa bản đồ chơi. Khi thêm nội thất, kiểm tra id không trùng.
+- Gọi `fitCanvas()` trước khi `render()` lần đầu làm khung phòng cao quá cửa sổ cho tới khi đổi cỡ cửa sổ. Đã gọi lại sau `render()`.
 
 ## 7. Việc còn dở và hạn chế đã biết
 
-- Hoa văn lông (vằn, đốm, tam thể) và chi tiết trang phục vẽ bằng ô vuông (kính, số áo, băng trán) vẫn ở độ phân giải lưới gốc; chỉ đường bao và mặt là mịn.
-- Bàn chân giơ lên khi mèo liếm lông là một vòng tròn rỗng, trông hơi giống bong bóng.
-- Chưa có tuổi mèo, nên ý "mèo già ít trèo" chưa làm.
-- Lăn chuột trên khung phòng sẽ zoom thay vì cuộn trang (trừ khi lăn xuống lúc đã ở mức nhỏ nhất).
-- Trên màn hình thường, mỗi hạt cườm chỉ còn 2 điểm ảnh nên khó thấy dạng hạt; màn hình độ phân giải cao thì thấy rõ.
-- 13 intro 5★ chưa được vẽ lại riêng cho từng bé ở lượt "cá nhân hóa intro"; mới thêm thẻ câu thoại và nút xem lại.
-- Giá cho ăn đã đổi khi thêm bát: phòng dưới 8 mèo rẻ hơn trước, phòng cần nhiều hơn 8 suất thì đắt hơn. Chưa cân bằng lại kinh tế sau thay đổi này.
-- Chưa có ai chơi thử thật các tính năng của commit `91b4319` (kéo, zoom, theo dõi, trèo, bát ăn) ngoài kịch bản tự động.
+- Tám việc của danh sách cũ đã làm xong ngày 2026-11-10 (mục 8). Những thứ dưới đây là phần còn lại.
+- Chưa có người chơi thật nào thử các thay đổi của mục 8. Claude mới chơi thử trong trình duyệt riêng: kéo, lăn chuột, bấm mèo, cho ăn, đổi cỡ hạt, xem đủ 13 intro ở cỡ PC và điện thoại dọc. Chưa thử: âm thanh, chụm 2 ngón, Ctrl + lăn bằng chuột thật, điện thoại ngang, chủ đề tối.
+- Hoa văn `tortie`, `nacre`, `spot`, `lykoi` nay sinh từ nhiễu nên vị trí mảng màu khác bản cũ; mèo đang có sẽ trông hơi khác trước.
+- Chi tiết trang phục chưa chuyển sang lưới mịn: băng trán, bảy bộ kiểu cũ trong `COS` (ba lỗ, ninja, đầu bếp, phi hành gia, hoàng gia, bánh mì, DJ), vạch áo `checker`, `tripat`.
+- Tuổi chỉ ảnh hưởng hành vi trong phòng. Chưa có sprite riêng cho mèo con hay mèo già, và mèo không bao giờ chết.
+- Ở chế độ "Tự động", màn hình thường vẫn chỉ có 2 điểm ảnh mỗi hạt; muốn thấy rõ hạt phải bật "Hạt to, rõ" trong Cài đặt, khi đó phải kéo để xem hết phòng. Ảnh mèo trong các thẻ giao diện không theo cài đặt này.
+- Kinh tế mới cân lại phần cho ăn (trả theo suất cần đổ, bát inox và bát vàng 8 suất, bát vàng +3 xu). Giá phòng, giá nội thất, xu viễn chinh chưa đụng tới. Cho ăn hạt khô mỗi 10 phút vẫn là nguồn lãi nhỏ đều đặn (khoảng 2,75 xu mỗi bé), nhỏ hơn nhiều so với viễn chinh ở giai đoạn sau.
+- Mèo đang nằm trên tầng cao không xuống ăn khi vừa đổ bát; các bé vẫn được tính là đã ăn.
+
+## 8. Đợt làm việc 2026-11-10: làm hết việc còn dở
+
+Người dùng yêu cầu "Làm hết các việc còn dở". Đã commit và push lên `main` trong cùng ngày, sau khi người dùng bảo "Commit và push".
+
+1. Hoa văn lông và chi tiết trang phục ở lưới mịn (art.js): xem mục 4. Hoa văn nhìn ngang bám theo thân.
+2. Bàn chân khi liếm lông: vẽ cả cẳng chân, không còn vòng tròn rỗng.
+3. Tuổi mèo: `born`, ba giai đoạn, mèo già ít trèo và hay ngủ. Hiện tuổi ở thẻ mèo, khung theo dõi, hộp chi tiết, thẻ gacha.
+4. Lăn chuột cuộn trang; Ctrl + lăn mới zoom.
+5. Cài đặt "Cỡ hạt cườm".
+6. 13 intro 5★ viết lại thành cảnh riêng.
+7. Cân bằng cho ăn: trả theo suất cần đổ, bù thời gian vắng mặt theo bước 10 phút để máy cho ăn chạy thật, bát inox 6 lên 8 suất, bát vàng 6 lên 8 suất và +2 lên +3 xu, xóa bản ghi `feeder` trùng.
+8. Chơi thử trong trình duyệt và sửa hai lỗi tìm ra: khung phòng lần đầu cao quá cửa sổ, câu thoại Darth Vader tràn màn hình điện thoại.

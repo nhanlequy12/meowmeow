@@ -2,13 +2,15 @@
 /* ============ TRẠNG THÁI & LOGIC (không đụng tới DOM) ============ */
 const KEY='meoxu_v2';
 let S, notify=()=>{};
-const now=()=>Date.now(), rnd=(a,b)=>a+Math.random()*(b-a), pick=a=>a[Math.floor(Math.random()*a.length)], clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+let TOFF=0;                 // độ lệch đồng hồ (ms), chỉ khác 0 khi đang bù thời gian vắng mặt lúc tải game
+const AWAY={n:0,coins:0,cost:0}; // tổng kết lúc vắng: số suất mèo tự ăn, xu cảm ơn, xu máy cho ăn đã tiêu
+const now=()=>Date.now()+TOFF, rnd=(a,b)=>a+Math.random()*(b-a), pick=a=>a[Math.floor(Math.random()*a.length)], clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const SP={}; BREEDS.concat(VARIANTS).forEach(s=>SP[s.id]=s);
 const WORLD_W=480, WALL_Y=96, FLOOR_MIN=106, FLOOR_MAX=166;
 
 function fresh(){
   S={v:2,coins:300,tickets:1,xp:0,level:1,cats:[],trips:[null],items:[],rooms:{living:{bowlAt:0}},pity:0,seen:{},nid:1,last:now(),scratchAt:now()+600000};
-  const c=newCat(SP.muop,1); c.name='Mướp'; c.room='living'; S.cats.push(c); markSeen(c);
+  const c=newCat(SP.muop,1); c.name='Mướp'; c.room='living'; c.born=now(); S.cats.push(c); markSeen(c);
   S.items.push({iid:S.nid++,fid:'box',room:'living',x:330,y:150,flip:false,broken:false});
   giveBowl('living');S.bowlMig=1;
 }
@@ -21,10 +23,18 @@ function load(){
   }
   S.cats=S.cats.filter(c=>SP[c.sp]); S.cats.forEach(c=>{c.traits=c.traits.filter(t=>TRAITS[t]); if(!S.rooms[c.room])c.room='wait'});
   S.items=S.items.filter(i=>FURN[i.fid]);
+  S.cats.forEach(c=>{if(!c.born)c.born=now()-(5+(c.uid*7)%20)*DAY}); // bản lưu cũ chưa có tuổi: coi như mèo trưởng thành 5–24 ngày
   S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
   if(!S.bowlMig){for(const rid in S.rooms)giveBowl(rid,S.rooms[rid].bowlAt);S.bowlMig=1} // bản cũ: mỗi phòng có 1 bát cố định, nay thành món đồ
   fixSlots();
-  const el=clamp((now()-(S.last||now()))/1000,0,8*3600); if(el>1)tick(el);
+  // Bù thời gian vắng mặt (tối đa 8 giờ) theo từng bước 10 phút, để máy cho ăn tự đổ và mèo đói tự ra ăn đúng như lúc đang mở game.
+  const el=clamp((now()-(S.last||now()))/1000,0,8*3600);
+  if(el>1){
+    const nt=notify;notify=()=>{};AWAY.n=AWAY.coins=AWAY.cost=0;
+    let left=el;TOFF=-el*1000;
+    while(left>0){const st=Math.min(600,left);TOFF+=st*1000;left-=st;tick(st,true)}
+    TOFF=0;notify=nt;scratchTick();
+  }
 }
 function save(){S.last=now(); try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 
@@ -40,6 +50,12 @@ function addXp(n){
 }
 
 /* ---------- mèo ---------- */
+// Tuổi tính theo ngày thật kể từ c.born. Mèo mới về có tuổi ngẫu nhiên: một nửa là mèo con, phần lớn còn lại trưởng thành, số ít đã già.
+// Tuổi chỉ đổi cách bé sinh hoạt trong phòng (mèo con hiếu động, mèo già ít trèo và hay ngủ), không đổi xu hay chỉ số.
+const DAY=86400000,AGE_ADULT=3,AGE_OLD=30,AGE_N=['Mèo con','Trưởng thành','Mèo già'],AGE_IC=['🍼','🐈','🧓'];
+const rollAge=()=>{const r=Math.random();return r<.5?rnd(0,2):r<.92?rnd(AGE_ADULT,24):rnd(AGE_OLD,45)};
+const ageDays=c=>Math.max(0,(now()-(c.born||now()))/DAY);
+const ageStage=c=>{const d=ageDays(c);return d<AGE_ADULT?0:d<AGE_OLD?1:2};
 const catBy=uid=>S.cats.find(c=>c.uid===uid);
 const onTrip=uid=>S.trips.some(p=>p&&p.uid===uid);
 const has=(c,t)=>c.traits.includes(t);
@@ -69,7 +85,7 @@ function pickCoat(sp){
 function newCat(sp,star,coatId){
   const coat=sp.coats?ALLCOAT[coatId||pickCoat(sp)]:null,cid=coat?(coatId||Object.keys(COATS).find(k=>COATS[k]===coat)):undefined;
   const f=coat&&coat.f!=null?coat.f:(sp.f==null?.5:sp.f),sex=coat&&coat.sex?coat.sex:(Math.random()<f?'f':'m');
-  const c={uid:S.nid++,sp:sp.id,star,sex,name:pick(NAMES),traits:rollTraits(sp,star,coat&&coat.tr),full:80,en:100,hp:60,room:null,buff:null,petAt:0};
+  const c={uid:S.nid++,sp:sp.id,star,sex,name:pick(NAMES),traits:rollTraits(sp,star,coat&&coat.tr),full:80,en:100,hp:60,room:null,buff:null,petAt:0,born:now()-rollAge()*DAY};
   if(cid)c.coat=cid;
   return c;
 }
@@ -118,7 +134,7 @@ const auraHunger=c=>homeCats(c.room).reduce((a,o)=>a*(TRAITS_M(o,'auraHunger')),
 function TRAITS_M(c,k){return tM(c,k)}
 
 /* ---------- thời gian trôi ---------- */
-function tick(dt){
+function tick(dt,sim){
   if(S.adm&&S.adm.inf)S.coins=999999999;
   S.cats.forEach(c=>{
     const away=onTrip(c.uid),bf=buffOf(c);
@@ -134,11 +150,16 @@ function tick(dt){
   // máy cho ăn tự đổ hạt khô; mèo đói tự ra ăn phần còn lại trong bát
   ownedRooms().forEach(r=>{
     const bs=bowlsIn(r.id); if(!bs.length)return;
-    bs.forEach(b=>{if(FURN[b.fid].bowl.auto&&now()>=(b.at||0)&&homeCats(r.id).length){const p=bowlCost(b,'kibble');if(S.coins>=p){S.coins-=p;fillBowl(b,'kibble')}}});
+    // máy tự đổ thêm hạt khô cho đầy; nếu trong máy còn món khác do bạn đổ thì chờ mèo ăn hết đã
+    bs.forEach(b=>{if(FURN[b.fid].bowl.auto&&now()>=(b.at||0)&&homeCats(r.id).length&&!(b.left>0&&b.food!=='kibble')){const p=bowlCost(b,'kibble');if(S.coins>=p){S.coins-=p;if(TOFF)AWAY.cost+=p;fillBowl(b,'kibble')}}});
     if(bs.some(b=>b.left>0))eatCheck(r.id,false);
     const st=S.rooms[r.id];
     if(homeCats(r.id).some(c=>c.full<20)&&!bs.some(b=>b.left>0)&&bowlCap(r.id)<homeCats(r.id).length&&now()>=(st.warnAt||0)){st.warnAt=now()+300000;notify('🍽️ Thiếu bát ăn ở '+r.n+': '+homeCats(r.id).length+' bé nhưng chỉ có '+bowlCap(r.id)+' suất. Mua thêm bát ở Cửa hàng.')}
   });
+  if(!sim)scratchTick();
+}
+// kiểm tra cào sofa 10 phút một lần; sau khi vắng lâu chỉ bù tối đa 3 lần
+function scratchTick(){
   let n=0;
   while(now()>=S.scratchAt&&n++<3){S.scratchAt+=600000;scratchCheck()}
   if(now()>=S.scratchAt)S.scratchAt=now()+600000;
@@ -225,7 +246,10 @@ const bowlsIn=rid=>S.items.filter(i=>i.room===rid&&FURN[i.fid].bowl);
 const bowlCap=rid=>bowlsIn(rid).reduce((a,b)=>a+FURN[b.fid].bowl.cap,0);
 const bowlReady=rid=>bowlsIn(rid).some(b=>now()>=(b.at||0));
 const bowlNext=rid=>bowlsIn(rid).reduce((m,b)=>Math.min(m,b.at||0),Infinity);
-const bowlCost=(b,fid)=>Math.max(1,Math.round(FOOD[fid].price*FURN[b.fid].bowl.cap/8)); // giá món ăn tính cho 8 suất
+// Giá niêm yết của món ăn là cho 8 suất. Đổ bát chỉ trả cho số suất còn thiếu: bát còn thừa đúng món đó thì chỉ đổ thêm cho đầy,
+// còn đổi sang món khác thì phần thừa bị bỏ và trả đủ cả bát.
+const bowlNeed=(b,fid)=>FURN[b.fid].bowl.cap-(b.food===fid?(b.left||0):0);
+const bowlCost=(b,fid)=>{const n=bowlNeed(b,fid);return n>0?Math.max(1,Math.round(FOOD[fid].price*n/8)):0};
 function giveBowl(rid,at){S.items.push({iid:S.nid++,fid:'bowl',room:rid,x:70,y:158,flip:false,broken:false,left:0,at:at||0})}
 function fillBowl(b,fid){b.food=fid;b.left=FURN[b.fid].bowl.cap;b.at=now()+600000}
 let pickBowl=(c,bs)=>bs[0]; // giao diện thay bằng hàm chọn bát gần bé nhất
@@ -239,6 +263,7 @@ function serve(b,c){
   if(f.buff)c.buff=Object.assign({food:b.food,until:now()+f.min*60000*(fav?1.5:1)},f.buff);
   b.left--;c.eat={iid:b.iid,t:now()};
   const coins=Math.round((4+(roomHas(rid,'tank')?2:0)+(ROOM[rid].thank||0)+(B.coin||0))*gMult());S.coins+=coins;
+  if(TOFF){AWAY.n++;AWAY.coins+=coins}
   return {coins,fav};
 }
 // all = vừa đổ thức ăn: bé nào cũng ra ăn; còn lại chỉ bé đói (dưới 50) mới ăn phần thừa

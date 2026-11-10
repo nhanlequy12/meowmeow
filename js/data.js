@@ -235,7 +235,7 @@ const TRAITS={
 };
 const CONFLICT=[['swimmer','waterfear'],['charmer','shy'],['fast','lazy'],['fast','wander'],['glutton','smalleater'],['nightowl','coldfear'],['gentle','scratcher'],['gentle','grumpy'],['sturdy','zoomies'],['sleeper','zoomies'],['sleeper','fast']];
 
-/* ============ THỨC ĂN (giá cho cả phòng một bữa) ============ */
+/* ============ THỨC ĂN (giá niêm yết là cho 8 suất; mỗi bát chỉ trả cho số suất cần đổ thêm) ============ */
 const FOODS=[
  {id:'kibble',n:'Hạt khô',ic:'🥣',price:10,full:35,d:'Rẻ, no lâu: đói chậm hơn 30% trong 60 phút.',buff:{hunger:.7},min:60},
  {id:'pate',n:'Pate',ic:'🥫',price:25,full:50,hp:5,d:'No nhiều, +5 độ vui.'},
@@ -430,7 +430,6 @@ FURNS.push(
  F('ballred','Bóng đỏ',60,'floor',10,10,'toy','ball',['#e2484e'],{happy:1,d:'+1 độ vui.',use:PLAY}),
  F('ballblue','Bóng xanh',60,'floor',10,10,'toy','ball',['#5a9ae0'],{happy:1,d:'+1 độ vui.',use:PLAY}),
  F('fishtoy','Cá nhồi bông',110,'floor',16,8,'toy','fishtoy',['#f0a050'],{happy:3,d:'+3 độ vui.',use:PLAY}),
- F('feeder','Máy cho ăn tự động',900,'floor',16,24,'toy','feeder',[],{hunger:.9,d:'Mèo trong phòng đói chậm hơn 10%.'}),
  // bàn ghế & sofa
  F('chair','Ghế gỗ',160,'floor',22,30,'seat','chair',['#c89a6a','#e2c79c'],{happy:1,d:'+1 độ vui. Mèo thích ngồi lên.',use:{dx:0,dy:-14,front:1,emo:'note'}}),
  F('table','Bàn trà',240,'floor',40,24,'seat','table',['#b98a5e','#f2e2c0'],{happy:2,d:'+2 độ vui.'}),
@@ -521,8 +520,8 @@ FURN.tree.lv=FURN.treegreen.lv=[[-6,-36],[2,-71]];
  F('bridge','Cầu treo',550,'wall',80,16,'climb','bridge',[],{happy:4,lv:[[-24,-7],[22,-7]],d:'+4 độ vui. Cầu dây nối hai đầu, mèo đi qua đi lại trên cao.'}),
  /* bát ăn: cap = số suất mỗi lần đổ, eff = hiệu quả thức ăn, hp = độ vui thêm khi ăn, coin = xu cảm ơn thêm, auto = tự đổ hạt khô */
  F('bowl','Bát nhựa',60,'floor',18,10,'bowl','bowl',[],{bowl:{cap:4},d:'4 suất mỗi lần đổ. Mỗi phòng được tặng sẵn một cái.'}),
- F('bowlsteel','Bát inox',280,'floor',22,11,'bowl','bowl',['#b8c0cc','#96a0b0'],{bowl:{cap:6},d:'Bền và to: 6 suất mỗi lần đổ.'}),
+ F('bowlsteel','Bát inox',280,'floor',22,11,'bowl','bowl',['#b8c0cc','#96a0b0'],{bowl:{cap:8},d:'Bền và to: 8 suất mỗi lần đổ, một cái đủ cho phòng 8 bé.'}),
  F('bowlclay','Bát gốm',350,'floor',18,10,'bowl','bowl',['#e8a888','#c98468'],{bowl:{cap:4,hp:5},d:'4 suất. Mỗi bé ăn ở bát này được thêm 5 độ vui.'}),
- F('feeder','Máy cho ăn tự động',1500,'floor',20,28,'bowl','feeder',[],{bowl:{cap:4,auto:1},d:'4 suất. Cứ 10 phút tự đổ hạt khô (vẫn trừ xu), kể cả khi bạn vắng.'}),
- F('bowlgold','Bát vàng',3000,'floor',22,11,'bowl','bowl',['#f2c84a','#d6a020'],{bowl:{cap:6,eff:1.25,coin:2},d:'6 suất. Thức ăn hiệu quả hơn 25%, mỗi bé cảm ơn thêm 2 xu.'}),
+ F('feeder','Máy cho ăn tự động',1500,'floor',20,28,'bowl','feeder',[],{bowl:{cap:4,auto:1},d:'4 suất. Cứ 10 phút tự đổ thêm hạt khô cho đầy, kể cả khi bạn vắng (tối đa 8 giờ). Chỉ trừ xu cho số suất mèo đã ăn.'}),
+ F('bowlgold','Bát vàng',3000,'floor',22,11,'bowl','bowl',['#f2c84a','#d6a020'],{bowl:{cap:8,eff:1.25,coin:3},d:'8 suất. Thức ăn hiệu quả hơn 25%, mỗi bé cảm ơn thêm 3 xu.'}),
 ].forEach(f=>{FURNS.push(f);FURN[f.id]=f});

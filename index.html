@@ -202,6 +202,30 @@ canvas#room{touch-action:none}
   h1{font-size:15px;margin:0}#top{padding:3px 0}.chip{padding:3px 8px;font-size:13px}
 }
 @media(max-width:420px){.prev{flex-direction:column;align-items:stretch}.prev .pv{width:100%}.tabs button{font-size:11px}}
+/* ===== intro riêng của từng mèo 5★ ===== */
+@keyframes zzz{0%{transform:translate(0,0) scale(.5);opacity:0}25%{opacity:1}100%{transform:translate(34px,-90px) scale(1.5);opacity:0}}
+@keyframes ghost{from{opacity:.85}to{opacity:0}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes skewIn{0%{transform:translateX(60vw) skewX(-24deg);opacity:0}30%{transform:translateX(0) skewX(-12deg);opacity:1}80%{transform:translateX(-3vw) skewX(-12deg);opacity:1}100%{transform:translateX(-50vw) skewX(-24deg);opacity:0}}
+@keyframes typing{from{clip-path:inset(-20% 100% -20% 0)}to{clip-path:inset(-20% -5% -20% 0)}}
+@keyframes fallSpin{from{transform:translateY(-20vh) rotate(-30deg)}to{transform:translateY(120vh) rotate(260deg)}}
+@keyframes count{0%{transform:scale(2.6);opacity:0}25%{transform:scale(1);opacity:1}75%{transform:scale(1);opacity:1}100%{transform:scale(.6);opacity:0}}
+@keyframes unroll{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes slideL{from{transform:translateX(-60vw)}to{transform:translateX(0)}}
+@keyframes slideR{from{transform:translateX(60vw)}to{transform:translateX(0)}}
+@keyframes partL{from{transform:translateX(0);opacity:1}to{transform:translateX(-105%);opacity:0}}
+@keyframes partR{from{transform:translateX(0);opacity:1}to{transform:translateX(105%);opacity:0}}
+@keyframes fog{from{transform:translateX(-18vw)}to{transform:translateX(18vw)}}
+@keyframes howl{0%{transform:translate(0,0) scale(.6);opacity:0}20%{opacity:1}100%{transform:translate(40px,-30vh) scale(1.5);opacity:0}}
+@keyframes runIn{from{transform:translateX(-60vw)}to{transform:translateX(0)}}
+@keyframes leapX{from{transform:translateX(0)}to{transform:translateX(var(--dx))}}
+@keyframes leapY{0%{translate:0 0;animation-timing-function:cubic-bezier(.15,.6,.4,1)}50%{translate:0 var(--dy);animation-timing-function:cubic-bezier(.6,0,.85,.4)}100%{translate:0 0}}
+@keyframes pawIn{0%{transform:scale(.2) rotate(var(--r));opacity:0}30%{transform:scale(1.15) rotate(var(--r));opacity:.9}100%{transform:scale(1) rotate(var(--r));opacity:.5}}
+@keyframes shine{from{transform:translateX(-130%) skewX(-20deg)}to{transform:translateX(330%) skewX(-20deg)}}
+@keyframes coinSpin{from{transform:rotateY(0)}to{transform:rotateY(720deg)}}
+@keyframes marq{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+@keyframes floaty{from{transform:translateY(-8px) rotate(-4deg)}to{transform:translateY(8px) rotate(4deg)}}
+@keyframes burst{from{transform:scale(1);opacity:1}to{transform:scale(2.4);opacity:0}}
 </style>
 </head>
 <body>

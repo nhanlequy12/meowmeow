@@ -84,55 +84,82 @@ class Buf{
   }
 }
 
+/* ---------- hoa văn lông ở lưới mịn: tính theo toạ độ thực (u,v) nên vằn cong, đốm tròn, mảng loang mềm ---------- */
+const hsh=(i,j)=>{let n=(Math.imul(i,374761393)+Math.imul(j,668265263))|0;n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967296};
+// nhiễu mượt: nội suy giữa các nút lưới ngẫu nhiên, sz = cỡ mảng tính theo ô gốc
+const vnoise=(u,v,sz)=>{const x=u/sz,y=v/sz,i=Math.floor(x),j=Math.floor(y),fx=x-i,fy=y-j,a=fx*fx*(3-2*fx),b=fy*fy*(3-2*fy);
+  return (hsh(i,j)*(1-a)+hsh(i+1,j)*a)*(1-b)+(hsh(i,j+1)*(1-a)+hsh(i+1,j+1)*a)*b};
+// đốm tròn: mỗi ô lưới 3,4 x 3,4 có thể có một đốm, tâm và cỡ lệch ngẫu nhiên
+const spotAt=(u,v)=>{const sz=3.4,i0=Math.floor(u/sz),j0=Math.floor(v/sz);
+  for(let j=j0-1;j<=j0+1;j++)for(let i=i0-1;i<=i0+1;i++){if(hsh(i+7,j+3)>.64)continue;
+    const cx=(i+.5+(hsh(i,j+11)-.5)*.6)*sz,cy=(j+.5+(hsh(i+5,j)-.5)*.6)*sz,r=.78+hsh(i+2,j+9)*.42;if(((u-cx)/(r*1.15))**2+((v-cy)/r)**2<=1)return true}
+  return false};
+const bandC=(t,p,w)=>Math.abs((((t%p)+p)%p)-p/2)<w/2;               // dải lặp chu kỳ p, dày w
+const blob=(u,v,cx,cy,rx,ry)=>((u-cx)/rx)**2+((v-cy)/ry)**2<1+(vnoise(u+cx,v+cy,1.6)-.5)*.55; // mảng màu mép lượn tự nhiên
+const fleck=(u,v,k)=>hsh(Math.floor(u*2+1),Math.floor(v*2+1))<k;     // lấm tấm từng ô mịn
+const marble=(u,v)=>vnoise(u,v,3)*.62+vnoise(u+40,v+17,1.4)*.38;      // loang hai lớp cho đồi mồi, xà cừ
+const nacreC=(u,v,c)=>{const n=marble(u*1.15,v*1.15);return n<.4?[255,206,228]:n>.6?[206,244,224]:Math.abs(n-.5)<.04?[198,224,255]:c};
 /* ---------- màu lông theo vùng ---------- */
 function colorer(s){
   const c=hex(s.c),c2=hex(s.c2||s.c),c3=hex(s.c3||s.c2||s.c),W=hex('#fdfaf4'),w=s.w||0,p=s.pat;
-  const h2=(x,y,n)=>((((x>>1)*73856093)^((y>>1)*19349663))>>>0)%n;
-  const h1=(x,y,n)=>(((x*73856093)^(y*19349663))>>>0)%n;
   const soft=lum(c)>100?.38:.12;
-  return (x,y,reg)=>{
+  // hai vạch má xoè ra hai bên
+  const cheek=(d,v)=>d>=7.9&&(Math.abs(v-19+(d-8)*.3)<.5||Math.abs(v-22-(d-8)*.3)<.5);
+  return (x,y,reg,u,v)=>{
+    if(u===undefined){u=x;v=y}
+    const d=Math.abs(u-17.5);
     if(w>=1&&(reg==='muz'||reg==='chest'))return W;
     if((w>=2||s.mit)&&reg==='paw')return W;
-    if(w>=2&&reg==='head'&&y>=16&&Math.abs(x-17.5)<=(y-14)*.9)return W;
-    if(p==='van')return (reg==='tail'||((reg==='head'||reg==='ear')&&y<14))?c2:W;
+    if(w>=2&&reg==='head'&&v>=15.5&&d<=(v-14)*.9+.25)return W;
+    if(p==='van')return (reg==='tail'||((reg==='head'||reg==='ear')&&v<13.6+Math.sin(u*.9)*.6))?c2:W;
     if(p==='calico'){
-      if(reg==='tail')return c3; if(reg==='ear')return x<18?c2:c3;
-      if(reg==='head'){if(x<15&&y<17)return c2;if(x>21&&y<15)return c3}
-      if(reg==='body'){if(x>20&&y<33)return c2;if(x<13&&y>30)return c3}
+      if(reg==='tail')return c3; if(reg==='ear')return u<17.5?c2:c3;
+      if(reg==='head'){if(blob(u,v,9.5,11.5,7,6.2))return c2;if(blob(u,v,26.5,10,6.5,5.6))return c3}
+      if(reg==='body'){if(blob(u,v,24.5,28,4.6,5.2))return c2;if(blob(u,v,10.5,34.5,4.2,4))return c3}
       return c;
     }
     if(p==='cow'){
-      if(reg==='tail')return c2; if(reg==='ear')return x>18?c2:c;
-      if(reg==='head'&&((x>20&&y<16)||(x<12&&y<13)))return c2;
-      if(reg==='body'&&x<14&&y<33)return c2;
+      if(reg==='tail')return c2; if(reg==='ear')return u>17.5?c2:c;
+      if(reg==='head'&&(blob(u,v,26,10.5,7,6.4)||blob(u,v,8.5,9.5,4.6,4.2)))return c2;
+      if(reg==='body'&&blob(u,v,11,28.5,4.4,5))return c2;
       return c;
     }
-    if(p==='tortie')return h2(x,y,5)<2?c2:c;
-    if(p==='nacre'){const k=h2(x,y,6);return k===0?[255,206,228]:k===1?[198,224,255]:k===2?[206,244,224]:c}
-    if(p==='sheen')return (reg==='ear'||(x+2*y)%9===0)?c2:c;
+    if(p==='tortie')return marble(u,v)<.47?c2:c;
+    if(p==='nacre')return nacreC(u,v,c);
+    if(p==='sheen')return (reg==='ear'||bandC(u+2*v+4.5,9,1.1))?c2:c;
     if(p==='lykoi'){
-      if(reg==='muz'||(reg==='head'&&y>=15&&y<=20&&Math.abs(x-17.5)<8))return c3;
-      return h1(x,y,3)===0?c2:c;
+      if(reg==='muz'||(reg==='head'&&v>=14.6&&v<=20.4&&d<8))return c3;
+      return fleck(u,v,.12+vnoise(u,v,2)*.28)?c2:c;
     }
     if(p==='point'){
       if(reg==='ear'||reg==='tail'||reg==='paw')return c2;
-      if((reg==='head'||reg==='muz')&&((x-17.5)/6.5)**2+((y-19.5)/5.5)**2<1)return c2;
+      if(reg==='head'||reg==='muz'){const m=((u-17.5)/6.8)**2+((v-19.5)/5.8)**2;if(m<1)return c2;if(m<1.2)return mix(c,c2,.42)} // mặt nạ có viền chuyển màu
       return reg==='chest'?lt(c,.3):c;
     }
     let b=(reg==='muz'||reg==='chest')?lt(c,soft):c;
-    if(p==='smoke'&&(reg==='ear'||reg==='tail'||(reg==='head'&&y<15)||(reg==='body'&&y<28)))b=c2;
+    if(p==='smoke'){const n=(vnoise(u,v,1.5)-.5)*1.6;if(reg==='ear'||reg==='tail'||(reg==='head'&&v<14.6+n)||(reg==='body'&&v<27.6+n))b=c2}
     if(p==='ticked'){
-      if((reg==='head'&&y<13)||reg==='ear')b=dk(c,.18);
-      if(reg==='tail'&&y<29)b=c2;
-      if(reg==='head'&&(y===19||y===22)&&(x<=9||x>=26))b=c2;
+      if((reg==='head'&&v<12.6)||reg==='ear')b=dk(c,.18);
+      if(reg==='tail'&&v<28.6)b=c2;
+      if(reg==='head'&&cheek(d,v))b=c2;
+      if((reg==='body'||(reg==='head'&&v<12.6))&&fleck(u,v,.15))b=mix(b,c2,.5); // lông agouti lấm tấm
     }
     if(p==='tabby'||p==='tiger'){
       const T=p==='tiger';
-      if(reg==='head'&&((y>=9&&y<=12&&(x===14||x===21))||(y>=9&&y<=13&&(x===17||x===18))||((y===19||y===22)&&(x<=9||x>=26))||(T&&(y===15||y===17)&&(x<=9||x>=26))))b=c2;
-      if(reg==='body'&&(T?(y%2===0&&(x<=13||x>=22)):((y===28||y===31||y===34)&&(x<=12||x>=23))))b=c2;
-      if(reg==='tail'&&y%3===0)b=c2;
+      if(reg==='head'){
+        if(v>=8.6&&v<=13.6&&d<.95)b=c2;                                          // vạch giữa trán
+        if(v>=8.6&&v<=12.7&&Math.abs(d-(3.5+(12.7-v)*.28))<.5)b=c2;              // hai vạch bên xoè lên thành chữ M
+        if(cheek(d,v))b=c2;
+        if(T&&d>=7.9&&(Math.abs(v-15+(d-8)*.3)<.5||Math.abs(v-17+(d-8)*.15)<.5))b=c2;
+      }
+      // vằn sườn cong xuống về phía ngoài, đầu vằn thon lại
+      if(reg==='body'){
+        if(T){if(d>=4.2&&bandC(v+1-(d-4.2)*.5,2,Math.min(.95,.4+(d-4.2)*.3)))b=c2}
+        else if(d>=5.2&&[28,31,34].some(y0=>Math.abs(v-y0-(d-5.2)*.5)<Math.min(.52,.26+(d-5.2)*.22)))b=c2;
+      }
+      if(reg==='tail'&&bandC(v+1.5-(u-28)*.25,3,1))b=c2;
     }
-    if(p==='spot'&&(reg==='body'||reg==='tail'||(reg==='head'&&y<14))&&h2(x,y,4)===0)b=c2;
+    if(p==='spot'&&(reg==='body'||reg==='tail'||(reg==='head'&&v<14))&&spotAt(u,v))b=c2;
     return b;
   };
 }
@@ -158,6 +185,9 @@ function drawNose(b,cx,y,mouth){
 // ria mảnh 1 ô mịn, chỉ vẽ lên chỗ trống
 const wsk=(b,u,v,dir,tilt)=>{for(let i=0;i<6;i++){const X=Math.round((u+dir*i*.5)*Q+.5),Y=Math.round((v+(i>2?tilt*.5:0))*Q+.5);if(X>=0&&X<b.W&&!b.getF(X,Y))b.put(X,Y,OC,'o')}};
 const spark=(b,x,y,c)=>{const X=Math.round(x*Q),Y=Math.round(y*Q);[[0,0],[1,0],[-1,0],[0,1],[0,-1]].forEach(d=>b.put(X+d[0],Y+d[1],c,'x'))};
+const ring=(b,cx,cy,rx,ry,t,col,reg,clip)=>fine(b,cx-rx-1,cy-ry-1,cx+rx+1,cy+ry+1,(u,v,X,Y)=>{if(((u-cx)/rx)**2+((v-cy)/ry)**2<=1&&((u-cx)/(rx-t))**2+((v-cy)/(ry-t))**2>1&&(!clip||clip(u,v)))b.put(X,Y,col,reg)});
+// chữ số 6x10 ô mịn (bằng 3x5 ô gốc), nét bo góc
+const DIG={'4':['...###','..####','.##.##','##..##','##..##','######','######','....##','....##','....##'],'5':['######','######','##....','#####.','######','....##','....##','##..##','######','.####.'],'6':['.####.','######','##....','#####.','######','##..##','##..##','##..##','######','.####.']};
 const recolor=(b,test,col,reg)=>each(b,(x,y,r)=>{if(r&&r!=='o'&&test(x,y,r))b.set(x,y,col,reg||r)});
 const isBody=r=>r==='body'||r==='chest';
 
@@ -237,32 +267,32 @@ const P={
   tie:['front',(b,s,c,c2)=>{[[15,25],[16,25],[19,25],[20,25]].forEach(p=>b.set(p[0],p[1],WH,'x'));for(let y=25;y<31;y++)b.rect(17,y,2,1,y%2?H(c):H(c2),'x')}],
   bow:['front',(b,s,c)=>{b.rect(14,25,3,3,H(c),'x');b.rect(19,25,3,3,H(c),'x');b.rect(17,26,2,1,dk(H(c),.3),'x')}],
   cravat:['front',b=>{b.rect(15,24,6,2,WH,'x');b.rect(16,26,4,2,WH,'x')}],
-  glasses:['front',(b,s,c)=>{const C=H(c||'#4a3f55');[10,20].forEach(x0=>{for(let i=1;i<5;i++){b.set(x0+i,14,C,'x');b.set(x0+i,20,C,'x')}for(let j=15;j<20;j++){b.set(x0,j,C,'x');b.set(x0+5,j,C,'x')}});b.rect(16,16,4,1,C,'x')}],
+  glasses:['front',(b,s,c)=>{const C=H(c||'#4a3f55');[12.5,22.5].forEach(cx=>ring(b,cx,17,3.1,3.5,.62,C,'x'));b.rect(15.5,16.25,4,.5,C,'x')}], // gọng tròn mảnh
   blindfold:['front',(b,s,c)=>each(b,(x,y,r)=>{if(r&&r!=='o'&&y>=15&&y<=19&&x>=7&&x<=28&&r!=='prop')b.set(x,y,H(c),'x')})],
   scar:['front',(b,s,k)=>{
-    if(k==='bolt')[[19,10],[18,11],[19,12],[18,13]].forEach(p=>b.set(p[0],p[1],RED,'x'));
+    if(k==='bolt'){b.cap(19.4,9.4,18.1,11.1,.3,RED,'x');b.cap(18.1,11.1,19.4,11.5,.3,RED,'x');b.cap(19.4,11.5,18.2,13.4,.3,RED,'x')} // tia chớp nét mảnh
     if(k==='under')b.rect(11,20,3,1,EY,'x');
     if(k==='tanjiro')b.rect(11,10,4,3,[176,70,76],'x');
   }],
-  marks:['front',b=>{[19,21,23].forEach(y=>{b.rect(8,y,3,1,EY,'x');b.rect(25,y,3,1,EY,'x')})}],
-  lenses:['front',(b,s,c,w,h)=>{b.rect(11,15,w||4,h||4,H(c),'x');b.rect(25-(w||4),15,w||4,h||4,H(c),'x')}],
+  marks:['front',b=>{[-1,0,1].forEach(k=>{b.cap(7.6,21+k*2.3,10.4,21+k*1.7,.3,EY,'x');b.cap(27.4,21+k*2.3,24.6,21+k*1.7,.3,EY,'x')})}], // ba vạch ria mảnh, hơi xoè
+  lenses:['front',(b,s,c,w,h)=>{w=w||4;h=h||4;[11+(w-1)/2,25-w+(w-1)/2].forEach(cx=>b.ell(cx,15+(h-1)/2,w/2-.2,h/2-.2,H(c),'x'))}], // mắt kính bo tròn
   pupils:['front',(b,s,c)=>{b.rect(13,17,1,2,H(c),'x');b.rect(22,17,1,2,H(c),'x')}],
   lids:['front',(b,s,c)=>{const C=c?H(c):hex(s.c);b.rect(11,14,4,3,C,'x');b.rect(21,14,4,3,C,'x');b.rect(11,17,4,1,EY,'x');b.rect(21,17,4,1,EY,'x')}],
-  mustache:['front',b=>{[[12,20],[13,21],[14,22],[15,22],[16,21],[19,21],[20,22],[21,22],[22,21],[23,20]].forEach(p=>b.set(p[0],p[1],DARK,'x'))}],
+  mustache:['front',b=>{[1,-1].forEach(k=>{const X=x=>17.5+k*x;b.cap(X(1.2),21.2,X(3),22.3,.32,DARK,'x');b.cap(X(3),22.3,X(4.6),21.6,.32,DARK,'x');b.cap(X(4.6),21.6,X(5.6),20,.3,DARK,'x')})}], // ria cong vểnh
   beard:['front',(b,s,c)=>b.ell(17.5,25,5.6,6.5,H(c),'x',(x,y)=>y>=22)],
   bamboo:['front',b=>{b.rect(13,21,10,2,[166,210,146],'x');b.rect(13,21,1,2,[120,170,110],'x');b.rect(22,21,1,2,[120,170,110],'x');b.rect(17,21,1,2,[120,170,110],'x')}],
   number:['front',(b,s,str,c)=>{const G={'4':["#.#","#.#","###","..#","..#"],'5':["###","#..","###","..#","###"],'6':["###","#..","###","#.#","###"]};
-    [...str].forEach((ch,k)=>G[ch].forEach((row,j)=>{for(let i=0;i<3;i++)if(row[i]==='#')b.set(12+k*4+i,28+j,H(c),'x')}))}],
+    [...str].forEach((ch,k)=>(DIG[ch]||[]).forEach((row,j)=>{for(let i=0;i<6;i++)if(row[i]==='#')b.put((12+k*4)*Q+i,28*Q+j,H(c),'x')}))}],
   shape:['front',(b,s,k)=>{if(k==='tri'){b.line(17,15,14,20,WH,'x');b.line(18,15,21,20,WH,'x');b.line(14,21,21,21,WH,'x')}else{for(let i=0;i<6;i++){b.set(15+i,15,WH,'x');b.set(15+i,21,WH,'x');b.set(14,16+i-1,WH,'x');b.set(21,16+i-1,WH,'x')}}}],
   cheeks:['front',(b,s,c)=>{b.rect(8,20,3,2,H(c),'x');b.rect(25,20,3,2,H(c),'x')}],
   eartips:['front',(b,s,c)=>recolor(b,(x,y,r)=>r==='ear'&&y<=7,H(c),'ear')],
   tailbase:['front',(b,s,c)=>recolor(b,(x,y,r)=>r==='tail'&&y>=33,H(c),'tail')],
   belly:['front',(b,s,c)=>{b.ell(17.5,31,5.6,5.6,H(c),'chest',(x,y)=>y<=36&&isBody(b.reg(x,y)));[[14,28],[15,27],[16,28],[19,28],[20,27],[21,28]].forEach(p=>b.set(p[0],p[1],[150,150,165],'x'))}],
-  pocket:['front',b=>{[[14,31],[15,32],[16,33],[17,33],[18,33],[19,33],[20,32],[21,31]].forEach(p=>b.set(p[0],p[1],EY,'x'));b.rect(14,30,8,1,EY,'x')}],
+  pocket:['front',b=>{ring(b,17.5,30.4,4.2,3.4,.6,EY,'x',(u,v)=>v>=30.4);b.rect(13.5,30,8,.5,EY,'x')}], // túi nửa vòng tròn
   poptart:['front',b=>{recolor(b,(x,y,r)=>(isBody(r)||r==='paw')&&y>=25&&y<=35,[244,206,160],'body');recolor(b,(x,y,r)=>r==='body'&&y>=27&&y<=34&&x>=12&&x<=23,(x,y)=>(x*7+y*13)%11===0?[236,80,160]:[255,170,206],'x')}],
   paw:['front',b=>{b.ell(28,14.5,2.6,3.6,WH,'paw');b.rect(27,13,2,1,PINK,'x');b.set(27,15,PINK,'x');b.set(29,15,PINK,'x')}],
   coin:['front',b=>{b.ell(17.5,31.5,3.6,4.2,GOLDC,'x');b.rect(17,29,2,5,[214,160,60],'x')}],
-  frown:['front',b=>{[[15,23],[16,22],[17,22],[18,22],[19,22],[20,23],[10,14],[11,15],[12,15],[25,14],[24,15],[23,15]].forEach(p=>b.set(p[0],p[1],EY,'x'))}],
+  frown:['front',b=>{[1,-1].forEach(k=>{const X=x=>17.5+k*x;b.cap(X(.4),22.1,X(1.6),22.2,.3,EY,'x');b.cap(X(1.6),22.2,X(2.7),23.2,.3,EY,'x');b.cap(X(7.6),13.8,X(5.2),15.2,.34,EY,'x')})}], // miệng trễ, mày cau
   earrings:['front',b=>{b.rect(5,21,2,4,WH,'x');b.set(5,22,RED,'x');b.set(6,22,RED,'x');b.rect(29,21,2,4,WH,'x');b.set(29,22,RED,'x');b.set(30,22,RED,'x')}],
   web:['front',b=>{b.line(17,9,17,13,DARK,'x');b.line(12,11,15,14,DARK,'x');b.line(23,11,20,14,DARK,'x');b.line(9,21,13,22,DARK,'x');b.line(26,21,22,22,DARK,'x')}],
   fr:['front',(b,s,x,y,w,h,c)=>b.rect(x,y,w,h,H(c),'x')],
@@ -316,7 +346,13 @@ function cat(s,pose){
     const tc=dk(col(20,36,'paw'),.28);[groom?null:14.6,20.4].forEach(px=>{if(px)[-.6,.6].forEach(d=>{b.dot(px+d,36.75,tc,'paw');b.dot(px+d,37.25,tc,'paw')})});
     b.rect(10,36+pz[1],2,1,PINK,'x');b.rect(24,36+pz[0],2,1,PINK,'x');
   }
-  if(groom){const gy=[24.6,23.8,23,23.8][gi];b.ell(13.5,gy,3.2,3.1,dk(col(13,30,'body'),.4),'x');b.ell(13.5,gy,2.4,2.3,col,'paw');b.rect(13,Math.round(gy)-1,2,1,PINK,'x');if(gi===2&&!flag.noFace)b.rect(15,22,2,1,[245,130,140],'x')}
+  if(groom){
+    const gy=[24.6,23.8,23,23.8][gi],sepc=dk(col(13,30,'body'),.42),pc=col(14,36,'paw'),tc2=dk(pc,.3);
+    b.cap(11.6,32,13.3,gy+1.2,2.2,sepc,'x');b.ell(13.5,gy,2.7,2.5,sepc,'x');   // nét tách mảnh quanh cẳng chân
+    b.cap(11.6,32.3,13.3,gy+1.2,1.7,pc,'paw');b.ell(13.5,gy,2.2,2,pc,'paw');      // cẳng chân và bàn chân cùng màu lông
+    [-.75,.75].forEach(d=>{b.dot(13.5+d,gy-1.75,tc2,'paw');b.dot(13.5+d,gy-1.25,tc2,'paw')}); // vạch ngón
+    if(gi===2&&!flag.noFace)b.rect(15,22,2,1,[245,130,140],'x');                  // lưỡi
+  }
   if(s.pat==='hairless'||s.hl){const wr=dk(hex(s.c),.25);b.rect(15,11,6,1,wr,'x');b.rect(16,13,4,1,wr,'x')}
   run('front');
   const sh=s.short?2:0;
@@ -366,7 +402,6 @@ const FART={
   tunnel(b,v,a){const c=C(a,0,[134,178,220]);b.rect(6,3,28,13,c);b.ell(6,9.5,5,6.5,c);b.ell(34,9.5,5,6.5,c);b.ell(6,9.5,3.4,4.8,dk(c,.5),'x');for(let x=12;x<32;x+=6)b.rect(x,3,2,13,lt(c,.35),'x')},
   ball(b,v,a){const c=C(a,0,RED);b.ell(4.5,4.5,4,4,c);b.rect(2,4,6,1,WH,'x');b.set(3,2,lt(c,.6),'x')},
   fishtoy(b,v,a){const c=C(a,0,[240,160,80]);b.ell(6,4,5,3,c);b.tri(10,4,14,1,14,7,c);b.set(3,3,EY,'x');b.rect(6,2,1,4,lt(c,.4),'x')},
-  feeder(b){b.rect(3,1,10,12,[214,236,250]);b.rect(4,3,8,8,[214,160,100],'x');b.rect(2,0,12,2,[150,160,190]);b.rect(1,13,14,5,[150,160,190]);b.ell(8,20,7,2.6,[160,204,250]);b.ell(8,19.5,4,1.4,[214,160,100],'x')},
   shelf(b,v,a){const c=C(a,0,[206,160,116]);b.rect(1,1,38,4,c);b.rect(5,5,2,2,dk(c,.25));b.rect(33,5,2,2,dk(c,.25))},
   bookshelf(b){b.rect(1,9,38,4,[206,160,116]);[[3,RED,7],[6,[110,170,230],8],[9,GOLDC,6],[12,GRN,8],[16,PUR,7],[19,[240,150,110],8]].forEach(p=>b.rect(p[0],9-p[2],3,p[2],p[1]));b.rect(5,13,2,1,DWOOD);b.rect(33,13,2,1,DWOOD)},
   bookcase(b){b.rect(1,1,32,48,[190,144,104]);[4,19,34].forEach(y=>{b.rect(3,y,28,12,[120,86,62],'x');[[4,RED],[7,[110,170,230]],[10,GOLDC],[13,GRN],[17,PUR],[20,[240,150,110]],[24,[150,200,220]],[27,RED]].forEach((p,i)=>b.rect(p[0],y+2+(i%3),3,10-(i%3),p[1],'x'))})},
@@ -468,43 +503,48 @@ function shEll(b,cx,cy,rx,ry,sl,col,reg){
 }
 function sideCol(s){
   const c=hex(s.c),c2=hex(s.c2||s.c),c3=hex(s.c3||s.c2||s.c),W=hex('#fdfaf4'),w=s.w||0,p=s.pat;
-  const h2=(x,y,n)=>((((x>>1)*73856093)^((y>>1)*19349663))>>>0)%n,h1=(x,y,n)=>(((x*73856093)^(y*19349663))>>>0)%n;
   const soft=lum(c)>100?.38:.12,limb=r=>r==='leg'||r==='paw';
-  return (x,y,reg)=>{
+  // hoa văn bám theo thân và đầu: toạ độ được trừ đi độ lệch của tư thế (f.hx, f.hy cho đầu; f.by cho thân) nên không "trôi" khi mèo nhún
+  const f=(x,y,reg,u0,v0)=>{
+    if(u0===undefined){u0=x;v0=y}
+    const hd=reg==='head'||reg==='ear'||reg==='muz',u=u0-(hd?f.hx:0),v=v0-(hd?f.hy:f.by);
     if(w>=1&&(reg==='muz'||reg==='chest'))return W;
     if((w>=2||s.mit)&&reg==='paw')return W;
-    if(w>=2&&reg==='head'&&y>=21&&x<=13)return W;
-    if(p==='van')return (reg==='tail'||((reg==='head'||reg==='ear')&&y<17))?c2:W;
+    if(w>=2&&reg==='head'&&v>=20.5&&u<=13.4)return W;
+    if(p==='van')return (reg==='tail'||(hd&&v<16.6+Math.sin(u*.9)*.6))?c2:W;
     if(p==='calico'){
-      if(reg==='tail')return c3;if(reg==='ear')return x<12?c2:c3;
-      if(reg==='head'&&y<19)return x<12?c2:c3;
-      if((reg==='body'||reg==='chest')&&x>30)return c2;if(reg==='body'&&x<24)return c3;
+      if(reg==='tail')return c3;if(reg==='ear')return u<11.6?c2:c3;
+      if(reg==='head'&&v<18.6+(vnoise(u,v,1.6)-.5)*1.2)return u<11.6+(vnoise(u+3,v,1.6)-.5)*1.2?c2:c3;
+      if((reg==='body'||reg==='chest')&&u>30.4+(vnoise(u,v+5,1.6)-.5)*1.6)return c2;if(reg==='body'&&u<23.6+(vnoise(u,v+9,1.6)-.5)*1.6)return c3;
       return c;
     }
-    if(p==='cow'){if(reg==='tail')return c2;if(reg==='ear')return x>12?c2:c;if(reg==='head'&&x>13&&y<19)return c2;if(reg==='body'&&x>29)return c2;return c}
-    if(p==='tortie')return h2(x,y,5)<2?c2:c;
-    if(p==='nacre'){const k=h2(x,y,6);return k===0?[255,206,228]:k===1?[198,224,255]:k===2?[206,244,224]:c}
-    if(p==='sheen')return (reg==='ear'||(x+2*y)%9===0)?c2:c;
-    if(p==='lykoi'){if(reg==='muz'||(reg==='head'&&y>=17&&x<16))return c3;return h1(x,y,3)===0?c2:c}
+    if(p==='cow'){if(reg==='tail')return c2;if(reg==='ear')return u>11.6?c2:c;if(reg==='head'&&u>13.4+(vnoise(u,v,1.6)-.5)*1.2&&v<18.6+(vnoise(u+3,v,1.6)-.5)*1.2)return c2;if(reg==='body'&&u>29.4+(vnoise(u,v+5,1.6)-.5)*1.6)return c2;return c}
+    if(p==='tortie')return marble(u,v)<.47?c2:c;
+    if(p==='nacre')return nacreC(u,v,c);
+    if(p==='sheen')return (reg==='ear'||bandC(u+2*v+4.5,9,1.1))?c2:c;
+    if(p==='lykoi'){if(reg==='muz'||(reg==='head'&&v>=16.6&&u<16))return c3;return fleck(u,v,.12+vnoise(u,v,2)*.28)?c2:c}
     if(p==='point'){
       if(reg==='ear'||reg==='tail'||limb(reg))return c2;
-      if((reg==='head'||reg==='muz')&&((x-10)/7)**2+((y-21)/6)**2<1)return c2;
+      if(reg==='head'||reg==='muz'){const m=((u-10)/7.2)**2+((v-21)/6.2)**2;if(m<1)return c2;if(m<1.2)return mix(c,c2,.42)}
       return reg==='chest'?lt(c,.3):c;
     }
     let b=(reg==='muz'||reg==='chest')?lt(c,soft):c;
-    if(p==='smoke'&&(reg==='ear'||reg==='tail'||(reg==='head'&&y<17)||reg==='body'))b=c2;
-    if(p==='ticked'){if((reg==='head'&&y<15)||reg==='ear')b=dk(c,.18);if(reg==='tail'&&(x>42||y<17))b=c2}
+    if(p==='smoke'&&(reg==='ear'||reg==='tail'||(reg==='head'&&v<16.6+(vnoise(u,v,1.5)-.5)*1.6)||reg==='body'))b=c2;
+    if(p==='ticked'){if((reg==='head'&&v<14.6)||reg==='ear')b=dk(c,.18);if(reg==='tail'&&(u>42.4||v<16.6))b=c2;if((reg==='body'||(reg==='head'&&v<14.6))&&fleck(u,v,.15))b=mix(b,c2,.5)}
     if(p==='tabby'||p==='tiger'){
-      const T=p==='tiger';
-      if(reg==='head'&&y<=15&&(x===8||x===11||x===14))b=c2;
-      if(reg==='body'&&x%(T?3:4)===0)b=c2;
-      if(reg==='tail'&&(x+y)%3===0)b=c2;
-      if(T&&reg==='leg'&&y%3===0)b=c2;
+      const T=p==='tiger',P=T?3:4;
+      if(reg==='head'&&v<=15.4&&[8,11,14].some(x0=>Math.abs(u-x0-(15.4-v)*.1*(x0-11))<.5))b=c2;   // ba vạch trán hơi xoè
+      if(reg==='body'&&bandC(u+(v-27)*.3+P/2,P,clamp01(1.2-(v-23)*.1)))b=c2;                        // vằn thân nghiêng, thon dần về phía bụng
+      if(reg==='tail'&&bandC(u+v+1.5,3,1))b=c2;
+      if(T&&reg==='leg'&&bandC(v+1.5,3,1))b=c2;
     }
-    if(p==='spot'&&(reg==='body'||reg==='tail'||(reg==='head'&&y<16))&&h2(x,y,4)===0)b=c2;
+    if(p==='spot'&&(reg==='body'||reg==='tail'||(reg==='head'&&v<15.6))&&spotAt(u,v))b=c2;
     return b;
   };
+  f.hx=f.hy=f.by=0;
+  return f;
 }
+const clamp01=t=>Math.max(.35,Math.min(1.05,t));
 const RB=[[255,128,128],[255,196,120],[255,240,140],[156,226,150],[140,196,255],[196,160,240]];
 const faceZ=(G,x,y)=>((x-(G.hcx-3))/6.5)**2+((y-(G.hcy+1.5))/5)**2<1;
 const neck=(b,G,c)=>recolor(b,(x,y,r)=>isBody(r)&&x<=G.cx-G.rx+5,c,'x');
@@ -540,17 +580,17 @@ const PS={
   collar:['front',(b,s,G,c)=>neck(b,G,H(c))],scarf:['front',(b,s,G,c)=>neck(b,G,H(c))],sailor:['front',(b,s,G,c)=>neck(b,G,H(c))],
   bow:['front',(b,s,G,c)=>neck(b,G,H(c))],tie:['front',(b,s,G,c)=>neck(b,G,H(c))],cravat:['front',(b,s,G)=>neck(b,G,WH)],
   sword:['front',(b,s,G)=>backStick(b,G,[205,210,222])],saber:['front',(b,s,G,c)=>backStick(b,G,H(c))],staff:['front',(b,s,G,c)=>backStick(b,G,H(c))],
-  glasses:['front',(b,s,G,c)=>{const C=H(c||'#4a3f55');[G.hcx-7,G.hcx].forEach(x0=>{for(let i=0;i<4;i++){b.set(x0+i,G.hcy-2,C,'x');b.set(x0+i,G.hcy+2,C,'x')}for(let j=-1;j<2;j++){b.set(x0,G.hcy+j,C,'x');b.set(x0+3,G.hcy+j,C,'x')}});b.set(G.hcx-3,G.hcy-1,C,'x')}],
+  glasses:['front',(b,s,G,c)=>{const C=H(c||'#4a3f55');[G.hcx-5.5,G.hcx+1.5].forEach(cx=>ring(b,cx,G.hcy,2.25,2.75,.6,C,'x'));b.rect(G.hcx-3.5,G.hcy-.75,1,.5,C,'x')}],
   shades:['front',(b,s,G)=>{b.rect(G.hcx-8,G.hcy-2,11,3,[70,60,90],'x');b.set(G.hcx-7,G.hcy-1,WH,'x')}],
   blindfold:['front',(b,s,G,c)=>recolor(b,(x,y,r)=>(r==='head'||r==='hair'||r==='x')&&y>=G.hcy-2&&y<=G.hcy+1&&x<=G.hcx+9,H(c),'x')],
-  lenses:['front',(b,s,G,c)=>{b.rect(G.hcx-7,G.hcy-1,3,3,H(c),'x');b.rect(G.hcx,G.hcy-1,3,3,H(c),'x')}],
+  lenses:['front',(b,s,G,c)=>{b.ell(G.hcx-6,G.hcy,1.3,1.3,H(c),'x');b.ell(G.hcx+1,G.hcy,1.3,1.3,H(c),'x')}],
   cheeks:['front',(b,s,G,c)=>b.rect(G.hcx+3,G.hcy+2,3,2,H(c),'x')],
   eartips:['front',(b,s,G,c)=>recolor(b,(x,y,r)=>r==='ear'&&y<=G.hcy-9,H(c))],
   tailbase:['front',(b,s,G,c)=>recolor(b,(x,y,r)=>r==='tail'&&x<=G.cx+G.rx+3&&y>=G.cy-5,H(c))],
   beard:['front',(b,s,G,c)=>b.ell(G.hcx-2,G.hcy+7,4.5,4,H(c),'x',(x,y)=>y>=G.hcy+4)],
   bamboo:['front',(b,s,G)=>{b.rect(G.hcx-7,G.hcy+3,7,2,[166,210,146],'x');b.rect(G.hcx-7,G.hcy+3,1,2,[120,170,110],'x')}],
-  marks:['front',(b,s,G)=>{b.rect(G.hcx+3,G.hcy+1,3,1,EY,'x');b.rect(G.hcx+3,G.hcy+3,3,1,EY,'x')}],
-  scar:['front',(b,s,G,k)=>{if(k==='bolt')[[-2,-6],[-3,-5],[-2,-4]].forEach(p=>b.set(G.hcx+p[0],G.hcy+p[1],RED,'x'));if(k==='tanjiro')b.rect(G.hcx-6,G.hcy-6,3,2,[176,70,76],'x')}],
+  marks:['front',(b,s,G)=>{[0,1.8,3.6].forEach(k=>b.cap(G.hcx+3,G.hcy+.6+k,G.hcx+5.8,G.hcy+.2+k*1.25,.3,EY,'x'))}],
+  scar:['front',(b,s,G,k)=>{if(k==='bolt'){const x=G.hcx,y=G.hcy;b.cap(x-1.7,y-6.5,x-2.9,y-5,.3,RED,'x');b.cap(x-2.9,y-5,x-1.7,y-4.7,.3,RED,'x');b.cap(x-1.7,y-4.7,x-2.8,y-3,.3,RED,'x')}if(k==='tanjiro')b.rect(G.hcx-6,G.hcy-6,3,2,[176,70,76],'x')}],
   helmet:['front',(b,s,G)=>{fine(b,G.hcx-13,G.hcy-14,G.hcx+13,G.hcy+13,(u,v,X,Y)=>{const d=Math.hypot(u-G.hcx,v-G.hcy+1);if(d<=12.85){if(d>11.7)b.put(X,Y,[196,230,248],'x');else b.put(X,Y,[170,225,255,60],b.regF(X,Y)||'x')}});}],
   qmark:['post',(b,s,G)=>{[".##.","#..#","...#","..#.","..#.","....","..#."].forEach((row,j)=>{for(let i=0;i<4;i++)if(row[i]==='#')b.set(G.hcx+10+i,G.hcy-17+j,[200,120,90],'x')})}],
 };
@@ -563,6 +603,7 @@ function side(s,pose){
   const flag={};parts.forEach(p=>{if(p[0]==='flag')flag[p[1]]=1});
   const cx=25,cy=27+(q.cy||0)-up+low,rx=(q.rx||RX0)+(s.short?1:0),ry=q.ry||6,sl=q.sl||0,rear=q.rear||0;
   const hcx=Math.round(13+(q.hx||0)),hcy=Math.round(19+(q.hy||0)-up+low),G={hcx,hcy,cx,cy,rx,ry};
+  col.hx=hcx-13;col.hy=hcy-19;col.by=cy-27;
   const run=st=>parts.forEach(p=>{const d=PS[p[0]];if(d&&d[0]===st)d[1](b,s,G,...p.slice(1))});
   run('back');
   const tl=s.tail||'n',tm=q.tail||'up',f=tl==='fluff'?1.2:0,tx=cx+rx-1+rear,ty=Math.round(cy+sl*rx-2);
