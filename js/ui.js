@@ -35,16 +35,16 @@ const sexIc=c=>c.sex==='f'?'<span class="f">♀</span>':'<span class="m">♂</sp
 // sao theo độ hiếm: 1★ trắng, 2★ xanh lục, 3★ xanh biển, 4★ tím, 5★ vàng lấp lánh; rb = cầu vồng 7 màu lấp lánh (màu hiếm, ưu tiên hơn số sao).
 // --d là độ trễ âm theo đồng hồ thật, để hiệu ứng không chạy lại từ đầu mỗi lần giao diện vẽ lại (mọi chu kỳ đều là ước của 6 giây)
 const starsOf=(n,rb)=>'<span class="stars '+(rb?'rb':'s'+n)+'"'+(rb||n===5?' style="--d:-'+(Date.now()%6000)+'ms"':'')+'>'+'★'.repeat(n)+'</span>';
-const isRb=c=>{const ct=coatOf(c)||{};return isRare(c)||!!ct.jewel||!!ct.form};   // màu lông hiếm, cặp mắt quý hiếm của Khao Manee, hoặc dạng hiếm của Goku và Naruto
-const formOf=c=>c&&(coatOf(c)||{}).form;                 // bé đang mang dạng hiếm (Siêu Saiyan God, Tiên nhân Cửu Vĩ, Hokage)
-const coatLbl=c=>SP[c.sp].xt?'Dạng':'Màu lông';          // mèo trang phục có "dạng", giống thật có "màu lông"
+const isRb=c=>{const ct=coatOf(c)||{};return isRare(c)||!!ct.jewel||!!ct.form};   // màu lông hiếm, cặp mắt quý hiếm của Khao Manee, hoặc trang phục hiếm của Goku và Naruto
+const formOf=c=>c&&(coatOf(c)||{}).form;                 // bé đang mang trang phục hiếm (Siêu Saiyan God, Tiên nhân Cửu Vĩ, Hokage)
+const coatLbl=c=>SP[c.sp].xt||formOf(c)?'Trang phục':'Màu lông';          // mèo trang phục có "dạng", giống thật có "màu lông"
 const starsC=c=>starsOf(c.star,isRb(c));
-const big=c=>c.sp==='v_gojo'?'v_gojo!open':lk(c);  // ảnh chân dung lớn: Gojo kéo băng mắt để lộ đôi mắt
+const big=c=>c.sp==='v_gojo'?lk(c)+'!open':lk(c);  // ảnh chân dung lớn: Gojo kéo băng mắt để lộ đôi mắt
 const tagOf=(t,extra)=>'<span class="tag '+TRAITS[t].k+'" tabindex="0" data-tip="'+esc(TRAITS[t].d)+'">'+TRAITS[t].n+(extra?' · '+extra:'')+'</span>';
 const kind=c=>{const ct=coatOf(c),st=c.born?ageStage(c):1;return SP[c.sp].n+(ct?' · '+(isRare(c)||ct.form?'✨ ':ct.jewel?'💎 ':ct.u?'✦ ':'')+ct.n:'')+(st===0?' · 🍼 mèo con':st===2?' · 🧓 mèo già':'')};
 const ageTxt=c=>{const st=ageStage(c),n=Math.floor(ageDays(c));return AGE_IC[st]+' '+AGE_N[st]+' · '+(n<1?'chưa đầy 1 ngày tuổi':n+' ngày tuổi')};
 const AGE_TIP=['Mèo con (dưới '+AGE_ADULT+' ngày): hiếu động, chạy nhảy và trèo nhiều hơn.','Trưởng thành: sinh hoạt bình thường. Từ '+AGE_OLD+' ngày tuổi sẽ thành mèo già.','Mèo già (từ '+AGE_OLD+' ngày): đi chậm, hay ngủ, ít trèo và không lên tầng cao.'];
-const coatTags=c=>{const ct=coatOf(c);return isRare(c)?'<span class="tag x" tabindex="0" data-tip="Màu lông hiếm: luôn 4★ và có một trait riêng của màu.">✨ Màu hiếm</span>':ct&&ct.form?'<span class="tag x" tabindex="0" data-tip="Dạng hiếm: chỉ khoảng 10% số bé '+SP[c.sp].n+' mang dạng này. Sao chuyển bảy màu và có một trait riêng của dạng.">✨ Dạng hiếm</span>':ct&&ct.jewel?'<span class="tag x" tabindex="0" data-tip="Cặp màu mắt quý hiếm của Khao Manee: mỗi cặp chỉ xuất hiện ở khoảng 8% số bé Khao Manee.">💎 Mắt quý hiếm</span>':ct&&ct.u?'<span class="tag g" tabindex="0" data-tip="Màu ít gặp trong giống này, tỉ lệ ra thấp hơn các màu khác.">✦ Màu ít gặp</span>':''};
+const coatTags=c=>{const ct=coatOf(c);return isRare(c)?'<span class="tag x" tabindex="0" data-tip="Màu lông hiếm: luôn 4★ và có một trait riêng của màu.">✨ Màu hiếm</span>':ct&&ct.form?'<span class="tag x" tabindex="0" data-tip="Trang phục hiếm: chỉ khoảng 10% số bé '+SP[c.sp].n+' mang dạng này. Sao chuyển bảy màu và có một trait riêng của dạng.">✨ Trang phục hiếm</span>':ct&&ct.jewel?'<span class="tag x" tabindex="0" data-tip="Cặp màu mắt quý hiếm của Khao Manee: mỗi cặp chỉ xuất hiện ở khoảng 8% số bé Khao Manee.">💎 Mắt quý hiếm</span>':ct&&ct.u?'<span class="tag g" tabindex="0" data-tip="Màu ít gặp trong giống này, tỉ lệ ra thấp hơn các màu khác.">✦ Màu ít gặp</span>':''};
 const stat=(ic,v,col)=>'<span class="stat">'+ic+'<span class="bar"><i style="width:'+Math.round(v)+'%;background:'+col+'"></i></span></span>';
 const stats=c=>stat('🍗',c.full,c.full<20?'#ff6b6b':'#ffb347')+stat('⚡',c.en,'#7fb7ff')+stat('😊',c.hp,'#5fd08a');
 /* --- tooltip (data-tip): một khối nổi gắn thẳng vào body nên không bị khung cuộn của thẻ gacha hay hộp thoại cắt mất, không sinh thanh cuộn.
@@ -240,7 +240,7 @@ const S5={
   v_maneki:{n:'vẫy tay rơi xu',dur:3,pose:'sit',start(){S.coins+=2},hover:k=>Math.abs(Math.sin(k*18))*2,fx:(e,p)=>{if(on(7))rp(p.x+10,p.y-28,'#f2c230',{sh:'coin',vx:rnd(-16,16),vy:-36,g:120,gy:e.y-1,life:1.1});if(on(5))rp(p.x+rnd(-12,12),p.y-rnd(8,34),'#ffe9a0',{sh:'star',life:.5})}},
   v_harry:{n:'vung đũa phép',dur:2.6,pose:'sit',fx:(e,p)=>{if(on(40))rp(p.x+14,p.y-24,pick(['#ffe9a0','#ffffff','#f2c230']),{vx:rnd(8,46),vy:-rnd(8,46),life:.5});if(on(10))rp(p.x+14+rnd(4,26),p.y-24-rnd(4,26),'#ffe9a0',{sh:'star',life:.5})}},
   v_thunder:{n:'ngủ gật rồi lóe sét lao đi',dur:2.6,pose:k=>'sleep'+(Math.floor(k*5)%2),fx:(e,p,k)=>{if(k>.7){if(on(26))rp(p.x+rnd(-6,6),p.y-46,'#ffd83a',{sh:'bolt',pts:zig(1,0,5,5).map((q,i)=>[q[1],(i+1)*9]),life:.1});if(on(30))rp(p.x+rnd(-9,9),e.y-1,pick(['#ffd83a','#ffffff']),{vx:rnd(-34,34),vy:-rnd(18,48),g:170,life:.25})}else if(on(1.5))rp(p.x+8,p.y-34,'#a58e7a',{vy:-6,life:.8})},end(e){e.state='run';e.left=1;e.pre=0;e.boost=2.4;runTarget(e)}},
-  v_gojo:{n:'kéo băng mắt, mở lãnh địa',dur:3.2,pose:'sit',look:'v_gojo!open',draw(g,e,p,k){g.fillStyle='rgba(60,30,120,'+(.38*Math.sin(Math.PI*k)).toFixed(3)+')';g.beginPath();g.ellipse(p.x,p.y-18,24,20,0,0,6.283);g.fill()},fx:(e,p)=>{orbit(p,20,3,['#b46aff','#5a8cff','#ffffff'],3);if(on(2.5))rp(p.x,p.y-18,'#b46aff',{sh:'ring',r:4,vr:30,life:.6})}},
+  v_gojo:{n:'kéo băng mắt, mở lãnh địa',dur:3.2,pose:'sit',look:(k,e)=>lk(entCat(e))+'!open',draw(g,e,p,k){g.fillStyle='rgba(60,30,120,'+(.38*Math.sin(Math.PI*k)).toFixed(3)+')';g.beginPath();g.ellipse(p.x,p.y-18,24,20,0,0,6.283);g.fill()},fx:(e,p)=>{orbit(p,20,3,['#b46aff','#5a8cff','#ffffff'],3);if(on(2.5))rp(p.x,p.y-18,'#b46aff',{sh:'ring',r:4,vr:30,life:.6})}},
   v_vader:{n:'vung kiếm ánh sáng',dur:2.6,pose:'sit',fx:(e,p,k)=>{const a=-2.6+k*2.4;for(let r=10;r<26;r+=3)rp(p.x+Math.cos(a)*r,p.y-16+Math.sin(a)*r,r>20?'#ffffff':'#ff3a3a',{life:.18,sz:2})}},
   v_astro:{n:'trôi lơ lửng không trọng lực',dur:3.6,pose:'sit',hover:k=>Math.sin(Math.PI*k)*14,fx:(e,p)=>{if(on(16))rp(p.x+rnd(-16,16),p.y-rnd(0,36),'#ffffff',{sh:ch(.4)?'star':undefined,life:.6})}},
   v_royal:{n:'ban phát hoa giấy vàng',dur:3,pose:'sit',fx:(e,p)=>{if(on(28))rp(p.x+rnd(-18,18),p.y-44,pick(['#ffd24a','#ff9db5','#ffffff','#b98bff']),{vy:26,vx:rnd(-6,6),life:1.2,sz:2})}},
@@ -272,7 +272,7 @@ const MD={
       a.forEach(q=>{const k=1-(t-q.t)/.42;if(k>0&&q!==a[a.length-1]){g.globalAlpha=.36*k;sprAt(catCv(lk(c),q.pose),q.x,q.y,q.f)}});g.globalAlpha=1},
     fx(e,p){if(on(7))rp(p.x+rnd(-12,12),p.y-rnd(6,30),'#ffd83a',{sh:'bolt',pts:zig(ch(.5)?1:-1,9,3,5),life:.1});if(on(10))rp(p.x+rnd(-9,9),e.y-1,pick(['#ffd83a','#ffffff']),{vx:rnd(-30,30),vy:-rnd(14,40),g:170,life:.22})}},
   // Gojo: tháo băng mắt, lơ lửng trong màn Vô Hạn, hai quả cầu Xích và Thương xoay quanh
-  v_gojo:{key:'v_gojo!open',hover:e=>3+Math.sin(e.wt*2.2)*1.2,
+  v_gojo:{key:c=>lk(c)+'!open',hover:e=>3+Math.sin(e.wt*2.2)*1.2,
     under(g,e,p){glowAt(g,p.x,p.y-18,22,21,'#5a3ac8',.15+.05*Math.sin(e.wt*3));g.strokeStyle='rgba(196,170,255,.6)';g.lineWidth=.6;g.beginPath();g.ellipse(p.x,p.y-18,22,21,0,0,6.283);g.stroke()},
     over(g,e,p){const t=e.wt*2.4;[['#ff4a5a',0],['#4a8cff',Math.PI]].forEach(q=>{const x=p.x+Math.cos(t+q[1])*19,y=p.y-19+Math.sin(t+q[1])*7;glowAt(g,x,y,3.6,3.6,q[0],.35);glowAt(g,x,y,1.9,1.9,q[0],1);glowAt(g,x-.5,y-.6,.6,.6,'#ffffff',1)})},
     fx(e,p){if(on(5))rp(p.x+rnd(-18,18),p.y-rnd(0,36),pick(['#b46aff','#5a8cff','#ffffff']),{vy:-rnd(4,12),life:.6})}},
@@ -508,7 +508,7 @@ function stepEnt(e,dt){
     if(e.t<=0){
       if(e.state==='bye'){e.state='run';e.pre=.15;e.left=0;e.acc=0;e.tx=e.x<camX+VW/2?camX-45:camX+VW+45;e.ty=e.y;e.goal={bye:1};e.emo=null;return}
       e.emo=null;
-      if(sg){e.state='idle';if(sg.md)e.fm={key:sg.md.key||null,t:60,aura:sg.md.aura,md:sg.md};if(sg.end){sg.end(e);return}}
+      if(sg){e.state='idle';if(sg.md)e.fm={key:typeof sg.md.key==='function'?sg.md.key(c):sg.md.key||null,t:60,aura:sg.md.aura,md:sg.md};if(sg.end){sg.end(e);return}}
       const it=e.state==='use'&&e.goal&&e.goal.iid&&S.items.find(i=>i.iid===e.goal.iid&&i.room===cur);
       if(it&&FURN[it.fid].lv){if(e.goal.at>=0){e.goal.down=1;climbJump(e,it,-1)}else choose(e)}
       else if(it&&!FURN[it.fid].use.floor&&FURN[it.fid].use.dy<=-4){const q=usePos(it);e.j={fx:q.x,fy:q.y,tx:e.x,ty:e.y,sy:it.y+.5,next:'idle'};e.flip=e.x>q.x;e.jt=0;e.jd=clamp(Math.abs(q.y-e.y)/90+.35,.35,.9);e.state='jump'}
@@ -640,7 +640,7 @@ function drawEnt(e,p){
     if(on(4))rp(p.x+rnd(-13,13),p.y-rnd(4,36),pick(['#ffd24a','#fff3b0']),{vy:-7,life:.7});   // hào quang vàng nhẹ
     if(p.sg&&p.sg.fx)p.sg.fx(e,p,p.k);
     if(!e.clone){RX.font='bold 5px system-ui,sans-serif';const tw=Math.ceil(RX.measureText(c.name).width)+4,nx=Math.round(p.x-tw/2),ny=Math.round(py)-5;
-    RX.fillStyle='#c9961c';RX.fillRect(nx-1,ny-1,tw+2,8);RX.fillStyle='#fff3c4';RX.fillRect(nx,ny,tw,6);RX.fillStyle='#5a3a04';RX.textBaseline='top';RX.fillText(c.name,nx+2,ny+.4)} // khung tên vàng kim (phân thân không có khung tên)
+    const rf=formOf(c);RX.fillStyle=rf?'hsl('+Math.floor(t*90+c.uid*40)%360+',85%,58%)':'#c9961c';RX.fillRect(nx-1,ny-1,tw+2,8);RX.fillStyle=rf?'#fff0ff':'#fff3c4';RX.fillRect(nx,ny,tw,6);RX.fillStyle='#5a3a04';RX.textBaseline='top';RX.fillText(c.name,nx+2,ny+.4)} // khung tên vàng kim (phân thân không có khung tên)
   }
   if(e.emoT>0)drawEmo('heart',ex+8,by);
   else if(c.full<20&&!e.clone)drawEmo('excl',ex+10,by,'#d95a5a');
@@ -789,23 +789,24 @@ const glide=(f0,f1,d,type,v)=>snd(t=>{const o=AC.createOscillator(),g=AC.createG
 /* Giọng meo tổng hợp, một chất giọng duy nhất cho mọi bé: sóng răng cưa (dây thanh) đi qua bộ lọc cộng hưởng mở dần rồi khép dần như miệng mèo
    ("m" ngậm miệng, "i-a" mở to và sáng, "o-u" khép lại), cao độ vút lên rồi rơi xuống, thêm chút hơi thở và rung tự nhiên.
    Mỗi bé chỉ khác nhau ở nhịp (mốc thời gian), trường độ d, cao độ f và đường uốn cao độ c. o: {f (Hz), d (giây), c (hệ số cao độ theo thời gian), v (âm lượng)}. */
+let MEWW=null,MEWAC=null;
+// dạng sóng mềm: bồi âm giảm nhanh nên tiếng trong, không rè như sóng răng cưa
+const mewWave=()=>{if(MEWAC!==AC){MEWAC=AC;const im=new Float32Array([0,1,.42,.2,.1,.05,.025,.012]);MEWW=AC.createPeriodicWave(new Float32Array(im.length),im)}return MEWW};
 const MEW_N=48,mewCurve=fn=>{const a=new Float32Array(MEW_N);for(let i=0;i<MEW_N;i++)a[i]=fn(i/(MEW_N-1));return a};
 const mewLerp=(pts,x)=>{const p=x*(pts.length-1),i=Math.min(pts.length-2,Math.floor(p));return pts[i]+(pts[i+1]-pts[i])*(p-i)};
 const mewKey=(ks,x)=>{let i=0;while(i<ks.length-2&&x>ks[i+1][0])i++;const a=ks[i],b=ks[i+1],k=clamp((x-a[0])/(b[0]-a[0]),0,1);return a[1]*Math.pow(b[1]/a[1],k)}; // nội suy theo tỉ lệ (hợp với tần số)
 const MEW_P=[[0,.86],[.12,.95],[.3,1.14],[.55,1.04],[1,.74]],          // cao độ: vút lên ở "i-a" rồi rơi dần
-  MEW_LP=[[0,520],[.08,650],[.2,2300],[.36,4200],[.6,2600],[.85,1100],[1,700]], // độ mở miệng: tối, sáng bừng, rồi tối lại
+  MEW_LP=[[0,700],[.08,900],[.2,2600],[.36,3600],[.6,2600],[.85,1400],[1,900]], // độ mở miệng: tối, sáng bừng, rồi tối lại
   MEW_F2=[[0,950],[.1,1300],[.22,2700],[.42,1750],[.7,1100],[1,820]],   // formant thứ hai: m, i, a, o, u
   MEW_A=[[0,.3],[.08,.42],[.24,1],[.6,.92],[.86,.5],[1,.2]];             // độ to
 function meow(o){snd(t=>{
   o=o||{};const d=o.d||.6,f=o.f||620,osc=AC.createOscillator(),lp=AC.createBiquadFilter(),bp=AC.createBiquadFilter(),bg=AC.createGain(),hp=AC.createBiquadFilter(),amp=AC.createGain(),env=AC.createGain(),out=AC.createGain();
-  osc.type='sawtooth';osc.frequency.setValueCurveAtTime(mewCurve(x=>f*(o.c?mewLerp(o.c.length>1?o.c:[o.c[0],o.c[0]],x):mewKey(MEW_P,x))),t,d);
-  [[5.5,.012],[27,.006]].forEach(q=>{const l=AC.createOscillator(),g=AC.createGain();l.frequency.value=q[0];g.gain.value=f*q[1];l.connect(g);g.connect(osc.frequency);l.start(t);l.stop(t+d+.06)}); // rung và run nhẹ của giọng thật
-  lp.type='lowpass';lp.Q.value=4.5;lp.frequency.setValueCurveAtTime(mewCurve(x=>mewKey(MEW_LP,x)),t,d);
-  bp.type='bandpass';bp.Q.value=5;bp.frequency.setValueCurveAtTime(mewCurve(x=>mewKey(MEW_F2,x)),t,d);bg.gain.value=.55;
+  osc.setPeriodicWave(mewWave());osc.frequency.setValueCurveAtTime(mewCurve(x=>f*(o.c?mewLerp(o.c.length>1?o.c:[o.c[0],o.c[0]],x):mewKey(MEW_P,x))),t,d);
+  [[5.2,.006]].forEach(q=>{const l=AC.createOscillator(),g=AC.createGain();l.frequency.value=q[0];g.gain.value=f*q[1];l.connect(g);g.connect(osc.frequency);l.start(t);l.stop(t+d+.06)}); // rung và run nhẹ của giọng thật
+  lp.type='lowpass';lp.Q.value=.8;lp.frequency.setValueCurveAtTime(mewCurve(x=>mewKey(MEW_LP,x)),t,d);
+  bp.type='bandpass';bp.Q.value=1.6;bp.frequency.setValueCurveAtTime(mewCurve(x=>mewKey(MEW_F2,x)),t,d);bg.gain.value=.35;
   hp.type='highpass';hp.frequency.value=260;
   osc.connect(lp);lp.connect(hp);osc.connect(bp);bp.connect(bg);bg.connect(hp);
-  const nb=AC.createBuffer(1,Math.ceil(AC.sampleRate*(d+.06)),AC.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
-  const ns=AC.createBufferSource(),ng=AC.createGain();ns.buffer=nb;ng.gain.value=.05;ns.connect(ng);ng.connect(bp);ns.start(t);                                   // hơi thở
   amp.gain.setValueCurveAtTime(mewCurve(x=>mewKey(MEW_A,x)),t,d);
   env.gain.setValueAtTime(.0001,t);env.gain.linearRampToValueAtTime(1,t+Math.min(.04,d*.15));env.gain.setValueAtTime(1,t+d*.8);env.gain.exponentialRampToValueAtTime(.001,t+d+.05);
   hp.connect(amp);amp.connect(env);env.connect(out);out.gain.value=(o.v||.2)*.6;out.connect(AC.destination);
@@ -901,7 +902,7 @@ const INTRO={
       fxEl('left:'+(mx-MW*.4)+'px;top:'+(Hh*.8-MH*.34-3)+'px;width:'+MW*.8+'px;height:6px;border-radius:3px;background:#ffd08a;box-shadow:0 0 14px 5px #ff8a2a;animation:fadeIn .15s both');
       for(let i=0;i<46;i++){const a=rnd(-2.6,.2),s=rnd(3,11);part({x:mx+rnd(-18,18)*d,y:Hh*.8-MH*.5+rnd(-8,8)*d,vx:Math.cos(a)*s+3,vy:Math.sin(a)*s,g:.22,life:rnd(30,60),col:pick(['#765a40','#a58462','#ffd08a','#fff']),sz:Math.random()<.5?8:12})}
       glide(160,40,.8,'sawtooth',.07)});
-    // 5. thu chưởng: trở lại đúng dạng của bé (dạng hiếm Siêu Saiyan God thì bùng hào quang đỏ)
+    // 5. thu chưởng: trở lại đúng dạng của bé (trang phục hiếm Siêu Saiyan God thì bùng hào quang đỏ)
     T(4650,()=>{if(orb)orb.remove();if(aur)aur.remove();cat.remove();const rf=formOf(gz.cat);
       fxSpr('sit',k,gx+'px',gy+'px','z-index:2;animation:pop .35s ease-out both');
       if(rf){flash();for(let i=0;i<40;i++){const a=rnd(0,6.283),s=rnd(2,8);part({x:gx,y:gy,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rnd(26,50),col:pick(['#ff6a7a','#ffd0d6','#fff']),sz:Math.random()<.5?4:8})}}
@@ -1038,7 +1039,7 @@ const INTRO={
   v_gojo:{dur:3700,run(T){
     fxTint('radial-gradient(circle,#1d1247 0,#04030d 78%)');every(T,0,3600,60,()=>stars(5));
     const k=K5(),d=cell(k);let cat=fxSpr('sit',k,50,58,'animation:pop .45s ease-out both'),r,b;
-    T(750,()=>{cat.remove();cat=fxSpr('sit',k,50,58,'',{key:'v_gojo!open'});
+    T(750,()=>{cat.remove();cat=fxSpr('sit',k,50,58,'',{key:lk(gz.cat)+'!open'});
       fxEl('left:50%;top:58%;width:'+22*d+'px;height:'+6*d+'px;margin:'+(-5.5*d)+'px 0 0 '+(-11*d)+'px;border-radius:50%;background:radial-gradient(#fff 0,#5ad0ff 45%,transparent 72%);animation:ring .7s ease-out forwards');
       seq([2093,3136],.09,.35,'sine',.06)});
     const orb=(c,a)=>fxEl('left:50%;top:28%;width:70px;height:70px;margin:-35px;border-radius:50%;background:radial-gradient(#fff 0,'+c+' 55%,transparent 72%);animation:'+a+' 1.3s ease-in forwards');
@@ -1243,7 +1244,7 @@ function gReveal(skipped){
   // bố cục thẻ: ảnh, hàng sao riêng một dòng, bậc hiếm, tên, câu thoại; rồi khung thông tin và khung thuộc tính; cuối cùng là đặt tên
   const ct=coatOf(c),row=(k,v)=>'<div class="k">'+k+'</div><div>'+v+'</div>',
     info=(ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+(c.replay?'':row('Tuổi',ageTxt(c)));
-  rev.innerHTML='<div class="pop gv">'+(st===5?'<div class="legend">HUYỀN THOẠI</div>'+(ct&&ct.form?'<div class="legend" style="font-size:17px;letter-spacing:3px;color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">✨ DẠNG HIẾM ✨</div>':''):isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
+  rev.innerHTML='<div class="pop gv">'+(st===5?'<div class="legend">HUYỀN THOẠI</div>'+(ct&&ct.form?'<div class="legend" style="font-size:17px;letter-spacing:3px;color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">✨ TRANG PHỤC HIẾM ✨</div>':''):isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
     '<div class="gv-pic">'+catTag(big(c),innerHeight<860&&innerWidth<520?3:4)+'</div><div class="gv-stars">'+stars+'</div>'+
     '<div class="gv-rank" style="color:'+col+'">'+STAR[st].n+(c.isNew?' · <span style="color:var(--good)">MỚI!</span>':'')+'</div>'+
     '<h2 class="gv-name">'+sp.n+' '+sexIc(c)+'</h2>'+(sp.q&&st===5?'<div class="quote">“'+sp.q+'”</div>':'')+
@@ -1442,7 +1443,7 @@ const PANEL={
              :'<div class="cell" style="opacity:.75"><div style="font-size:44px;line-height:80px;color:var(--dim)">?</div><b style="color:'+scol(4)+'">???</b></div>').join('')+'</div>';
   const all=of(albumG).slice().sort((a,b)=>a.r-b.r);
   return tabs+(albumG==='breed'?'<div class="dim" style="margin-bottom:8px">Chạm vào một giống đã gặp để xem các màu lông của giống đó.</div>':'')+'<div class="grid">'+all.map(s=>
-    S.seen[s.id]?'<div class="cell'+(s.coats?' tap" onclick="openBreed(\''+s.id+'\')':'')+'">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">'+s.n+'</b><br>'+starsOf(s.r)+(s.coats?'<br><b>'+(s.xt?'Dạng':'Màu')+': '+nCoat(s)+'/'+s.coats.length+'</b>':'')+'<br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span>'+(s.r===5?'<br><button class="sm" onclick="event.stopPropagation();replayIntro(\''+s.id+'\')">▶ Xem lại intro</button>':'')+'</div>'
+    S.seen[s.id]?'<div class="cell'+(s.coats?' tap" onclick="openBreed(\''+s.id+'\')':'')+'">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">'+s.n+'</b><br>'+starsOf(s.r)+(s.coats?'<br><b>'+(s.xt?'Trang phục':'Màu')+': '+nCoat(s)+'/'+s.coats.length+'</b>':'')+'<br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span>'+(s.r===5?'<br><button class="sm" onclick="event.stopPropagation();replayIntro(\''+s.id+'\')">▶ Xem lại intro</button>':'')+'</div>'
                :'<div class="cell unk">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">???</b><br>'+starsOf(s.r)+'</div>').join('')+'</div>';
  }
 };
@@ -1450,7 +1451,7 @@ function openBreed(id){
   const b=SP[id],sc=S.seenCoat||{};
   modal('<h3>'+b.n+' '+starsOf(b.r)+'</h3><div class="dim">'+b.d+(b.short?' Giống chân ngắn.':'')+'</div><div class="grid" style="grid-template-columns:repeat(2,1fr);margin:10px 0">'+b.coats.map(k=>{const ct=COATS[k];
     return sc[id+'~'+k]?'<div class="cell">'+catTag(id+'~'+k,2)+'<br><b>'+(ct.form?'✨ ':ct.u?'✦ ':'')+ct.n+'</b>'+(ct.f>=.99?'<br><span class="dim">gần như luôn là cái</span>':ct.f<=.25?'<br><span class="dim">đa số là đực</span>':'')+'</div>'
-                       :'<div class="cell unk">'+catTag(id+'~'+k,2)+'<br><b>???</b>'+(ct.form?'<br><span class="dim">dạng hiếm</span>':ct.u?'<br><span class="dim">màu ít gặp</span>':'')+'</div>'}).join('')+'</div><button onclick="closeModal()">Đóng</button>');
+                       :'<div class="cell unk">'+catTag(id+'~'+k,2)+'<br><b>???</b>'+(ct.form?'<br><span class="dim">trang phục hiếm</span>':ct.u?'<br><span class="dim">màu ít gặp</span>':'')+'</div>'}).join('')+'</div><button onclick="closeModal()">Đóng</button>');
 }
 
 /* ============ ADMIN (chỉ để test): Ctrl+Shift+A, hoặc chạm 7 lần liên tiếp vào tên game ============ */
@@ -1464,7 +1465,7 @@ function openAdmin(){
   const box=(t,h)=>'<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>'+t+'</b>'+h+'</div>';
   modal('<h3>🛠 Bảng Admin <span class="dim">· chỉ để test</span></h3>'+(typeof netAdminBox==='function'?netAdminBox():'')+
     box('Xu (đang có '+S.coins.toLocaleString('vi-VN')+')','<div class="row"><input id="axu" type="number" min="0" value="'+S.coins+'"><button class="sm on" onclick="admCoins(\'set\')">Đặt</button></div><div class="row wrap"><button class="sm" onclick="admCoins(1000)">+1.000</button><button class="sm" onclick="admCoins(100000)">+100.000</button><button class="sm" onclick="admCoins(\'max\')">Max xu</button><button class="sm '+(S.adm.inf?'go':'')+'" onclick="admInf()">Xu vô hạn: '+(S.adm.inf?'BẬT':'tắt')+'</button></div>')+
-    box('Nhận mèo bất kỳ','<div class="row"><select id="asp" onchange="admCoats()" style="'+sel+'">'+GROUPS.map(og).join('')+'</select></div><div class="row"><select id="ast" style="'+sel+'">'+stars+'</select><select id="act" style="'+sel+'"></select></div><div class="row"><label class="dim" style="white-space:nowrap"><input id="aintro" type="checkbox" checked style="flex:none"> xem hoạt ảnh</label><button class="sm on" onclick="admCat()">Nhận</button></div><div class="dim">Muốn test intro 5★ thì chọn một bé 5★ và để số sao mặc định. Ô màu đổi theo giống đang chọn: màu thường của giống, 💎 mắt quý hiếm, ⚡ dạng hiếm, ✨ màu hiếm (luôn 4★; không có ở giống trụi lông, Lykoi và mèo trang phục).</div>')+
+    box('Nhận mèo bất kỳ','<div class="row"><select id="asp" onchange="admCoats()" style="'+sel+'">'+GROUPS.map(og).join('')+'</select></div><div class="row"><select id="ast" style="'+sel+'">'+stars+'</select><select id="act" style="'+sel+'"></select></div><div class="row"><label class="dim" style="white-space:nowrap"><input id="aintro" type="checkbox" checked style="flex:none"> xem hoạt ảnh</label><button class="sm on" onclick="admCat()">Nhận</button></div><div class="dim">Muốn test intro 5★ thì chọn một bé 5★ và để số sao mặc định. Ô màu đổi theo giống đang chọn: màu thường của giống, 💎 mắt quý hiếm, ⚡ trang phục hiếm, ✨ màu hiếm (luôn 4★; không có ở giống trụi lông, Lykoi và mèo trang phục).</div>')+
     box('Gacha miễn phí','<div class="row"><select id="ags" style="'+sel+'"><option value="0">sao ngẫu nhiên</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">ép ra '+n+'★</option>').join('')+'<option value="r">ép ra ✨ màu hiếm bất kỳ</option>'+RARES.map(r=>'<option value="'+r.id+'">ép ra ✨ '+r.n+'</option>').join('')+'</select><button class="sm on" onclick="admGacha()">Quay</button></div>')+
     box('Mở khóa','<div class="row wrap"><button class="sm" onclick="admRooms()">Mở mọi phòng</button><button class="sm" onclick="admFurn()">Nhận đủ nội thất</button><button class="sm" onclick="admBowl()">Bát ăn sẵn sàng ngay</button><button class="sm" onclick="admLevel()">Lên cấp 9</button></div><div class="dim">Thức ăn vốn không bị khóa; bật xu vô hạn là mua được mọi món.</div>')+
     box('Mèo và viễn chinh','<div class="row wrap"><button class="sm" onclick="admTrips()">Hoàn tất viễn chinh ngay</button><button class="sm" onclick="admStats()">Hồi đầy no, vui, năng lượng</button></div><div class="row wrap"><button class="sm" onclick="admAge(10)">Cả đàn già thêm 10 ngày</button><button class="sm" onclick="admAge(0)">Cả đàn thành mèo con</button></div>')+
@@ -1474,8 +1475,8 @@ function openAdmin(){
 // ô chọn màu trong Admin: liệt kê đúng các màu của giống đang chọn, rồi tới các màu hiếm nếu giống đó nhận được
 function admCoats(a,b){
   const s0=$(a||'asp'),el=$(b||'act');if(!s0||!el)return;const sp=SP[s0.value];
-  const own=(sp.coats||[]).map(k=>{const c=COATS[k];return '<option value="'+k+'">'+(c.jewel?'💎 ':c.form?'⚡ ':'')+esc(c.n)+(c.jewel?' (mắt quý hiếm)':c.form?' (dạng hiếm)':'')+'</option>'}).join('');
-  el.innerHTML='<option value="">'+(sp.coats?'ngẫu nhiên theo tỉ lệ':'không có màu để chọn')+'</option>'+(own?'<optgroup label="'+(sp.xt?'Dạng':'Màu')+' của '+esc(sp.n)+'">'+own+'</optgroup>':'')+
+  const own=(sp.coats||[]).map(k=>{const c=COATS[k];return '<option value="'+k+'">'+(c.jewel?'💎 ':c.form?'⚡ ':'')+esc(c.n)+(c.jewel?' (mắt quý hiếm)':c.form?' (trang phục hiếm)':'')+'</option>'}).join('');
+  el.innerHTML='<option value="">'+(sp.coats?'ngẫu nhiên theo tỉ lệ':'không có màu để chọn')+'</option>'+(own?'<optgroup label="'+(sp.xt?'Trang phục':'Màu')+' của '+esc(sp.n)+'">'+own+'</optgroup>':'')+
     (sp.coats&&!sp.noRare?'<optgroup label="✨ Màu hiếm (luôn 4★)">'+RARES.map(r=>'<option value="'+r.id+'">✨ '+esc(r.n)+'</option>').join('')+'</optgroup>':'');
 }
 const admDone=(msg,keep)=>{save();render();if(keep)openAdmin();toast(msg,{icon:'🛠',title:'Admin'})};

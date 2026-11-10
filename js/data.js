@@ -324,11 +324,25 @@ const HAIRLESS=['sphynx','peterbald','donskoy','bambino','dwelf'];
 const COATS={
  // Dạng của mèo trang phục 5★ (Goku, Naruto): mỗi dạng là một "màu lông" có bộ trang phục riêng (cos).
  // form:1 = dạng hiếm (sao cầu vồng, có trait riêng tr); aura = màu luồng khí bốc quanh thân khi ở trong phòng. gkSSJ là dạng biến hình tạm thời, không rơi từ gacha.
- gkBase:{n:'Dạng thường',c:CRM,eye:'#3a3448',cos:[['gears','#35303f'],['ggi'],['halo']]},
+ // Trang phục hiếm của 13 bé 5★ còn lại (2026-11-10): mỗi bé một bộ, gắn với chính nhân vật hoặc gốc gác của giống. Luôn có luồng khí (aura) để nổi hơn 5★ thường.
+ ztGod:{n:'Hỏa Lôi Thần',c:CRM,aura:'#ffe14a',cos:[['sword'],['haircap','#ffe27a',12,1],['tripat','#fffbe8','#ffc21a'],['sparks','#fff3a0'],['bolts','#ffe14a'],['aura','#ffe14a']],u:1,rw:.12,form:1,tr:'f_zt'},
+ gjSix:{n:'Lục Nhãn giác ngộ',c:'#e9e4ef',eye:'#38b6ff',gem:1,lash:1,aura:'#b98bff',cos:[['spikes','#fafbff'],['suit','#1f1d2b',24,1],['collar','#7a5ae0'],['orb','#a45cff'],['aura','#b98bff']],u:1,rw:.12,form:1,tr:'f_six'},
+ hpSeeker:{n:'Tầm thủ Gryffindor',c:CRM,eye:eG,aura:'#ffd24a',cos:[['cape','#8a1f2a'],['wand'],['haircap','#3a3448',12,1],['scar','bolt'],['glasses','#3a3448'],['suit','#c0303a'],['scarf','#f2c230','#b8323a'],['snitch'],['aura','#ffd24a']],u:1,rw:.12,form:1,tr:'f_seeker'},
+ vdWhite:{n:'Vader Trắng',c:'#2e2a38',aura:'#bfe6ff',cos:[['vcape'],['flag','noFace'],['flag','noMuz'],['vhelm'],['vface'],['vsuit'],['inv'],['aura','#bfe6ff']],u:1,rw:.12,form:1,tr:'f_white'},
+ nyTac:{n:'Tac Nayn (bánh waffle)',c:'#3a3644',eye:'#ff3a3a',aura:'#a070f0',cos:[['nrainbow',1],['npoptart',1],['cheeks','#a8566a'],['nstars'],['aura','#a070f0']],u:1,rw:.12,form:1,tr:'f_tac'},
+ mkGold:{n:'Vàng ròng',c:'#f0b93a',aura:'#ffe07a',cos:[['belly','#fff1c0'],['collar','#d8342c',1],['paw'],['coin'],['sparks','#fff7c0'],['aura','#ffe07a']],u:1,rw:.12,form:1,tr:'f_gold'},
+ asOrange:{n:'Bộ đồ phóng tàu cam',c:WHT,eye:eB,aura:'#ffb347',cos:[['suit','#f08a3a',22,1],['astroF'],['helmet'],['aura','#ffb347']],u:1,rw:.12,form:1,tr:'f_launch'},
+ ryPurple:{n:'Hoàng bào tím',c:WHT,eye:eC,aura:'#c9a6ff',cos:[['old','royal'],['hue',330,20,276,.35],['aura','#c9a6ff']],u:1,rw:.12,form:1,tr:'f_purple'},
+ kmChada:{n:'Mão vàng hoàng cung',c:WHT,aura:'#ffe07a',cos:[['chada'],['collar','#f2c230',1],['aura','#ffe07a']],u:1,rw:.165,form:1,tr:'f_chada'},
+ lyHood:{n:'Khăn đỏ',c:'#55505f',c2:'#b9b2c2',c3:'#8a7f8f',pat:'lykoi',aura:'#ff8a8a',cos:[['cape','#c8323c'],['hood','#c8323c'],['aura','#ff8a8a']],u:1,rw:.22,form:1,tr:'f_hood'},
+ svEgypt:{n:'Mèo của Pharaoh',c:GOLD,c2:BLK,pat:'spot',aura:'#ffd24a',cos:[['usekh'],['eartips','#f2c230'],['aura','#ffd24a']],u:1,rw:.37,form:1,tr:'f_pharaoh'},
+ skForest:{n:'Thần rừng',c:'#b8905a',c2:DBRN,pat:'tiger',aura:'#8ee08a',cos:[['cape','#3f9a55'],['wreath'],['aura','#8ee08a']],u:1,rw:.22,form:1,tr:'f_forest'},
+ spMalai:{n:'Vòng hoa nhài',c:'#b5652f',aura:'#fff3c4',cos:[['malai'],['aura','#fff3c4']],u:1,rw:.15,form:1,tr:'f_malai'},
+ gkBase:{n:'Trang phục thường',c:CRM,eye:'#3a3448',cos:[['gears','#35303f'],['ggi'],['halo']]},
  gkGod:{n:'Siêu Saiyan God (đỏ)',c:CRM,eye:'#e8324a',gem:1,aura:'#ff6a7a',cos:[['gears','#e8405e'],['ggi',1],['aura','#ff6a7a'],['halo']],u:1,rw:.12,form:1,tr:'f_god'},
  gkSSJ:{n:'Siêu Saiyan',c:CRM,eye:'#2fc4a0',gem:1,aura:'#ffd83a',cos:[['gears','#ffd83a'],['ggi'],['aura','#ffd83a'],['halo']]},
  nrBase:{n:'Ninja làng Lá',c:CRM,eye:'#3d8fe8',cos:[['spk','#f7cf3a','naruto'],['nbandT'],['nband'],['hcap','#f7cf3a','naruto'],['marks'],['nsuit']]},
- nrKurama:{n:'Tiên nhân Cửu Vĩ',c:'#ffbe3a',eye:'#ff9a28',aura:'#ffd83a',cos:[['kcape'],['spk','#ffe27a','kurama'],['hcap','#ffec9c','kurama'],['kface'],['kcloak'],['aura','#ffd83a']],u:1,rw:.12,form:1,tr:'f_kurama'},
+ nrKurama:{n:'Tiên nhân Cửu Vĩ',c:'#ffab32',eye:'#ff9a28',aura:'#ffd83a',cos:[['kcape'],['spk','#fff2a6','kurama'],['hcap','#fff2a6','kurama'],['kface'],['kcloak'],['aura','#ffd83a'],['korbs']],u:1,rw:.12,form:1,tr:'f_kurama'},
  nrHokage:{n:'Hokage Đệ Thất',c:CRM,eye:'#3d8fe8',cos:[['hcape'],['hveil'],['hbangs','#f7cf3a'],['hhat'],['marks'],['hcloak']],u:1,rw:.12,form:1,tr:'f_hokage'},
  kmIce:{n:'Trắng, mắt xanh băng & hổ phách',c:WHT,eye:'#8fdcff',eye2:'#ffab2e'},kmSapphire:{n:'Trắng, mắt sapphire & vàng kim',c:WHT,eye:'#2f66ee',eye2:'#ffd23a',u:1,rw:.12,jewel:1},
  kmEmerald:{n:'Trắng, mắt ngọc lục bảo & hổ phách',c:WHT,eye:'#1fc47c',eye2:'#ff962e',u:1,rw:.12,jewel:1},kmAmethyst:{n:'Trắng, mắt thạch anh tím & xanh băng',c:WHT,eye:'#a65cf2',eye2:'#8fdcff',u:1,rw:.12,jewel:1},kmRuby:{n:'Trắng, mắt hồng ngọc & bạc',c:WHT,eye:'#ee3050',eye2:'#c2cee0',u:1,rw:.12,jewel:1},
@@ -378,12 +392,15 @@ const BREED_COATS={
  korat:'koratBlue blueLight',cymric:'brownTabby redTabbyW cow black',nebelung:'blue blueLight blueDark',orientallh:'choc black lilac white',peterbald:'hlCream hlPink hlGray hlBlack',
  pixiebob:'spotBrown spotChoc',singapura:'sepia sepiaDark',toyger:'tigerOr tigerBrown',van:'van vanBlack',chausie:'ruddy black grizzle',donskoy:'hlGray hlPink hlCream hlBlack',
  highlander:'spotChoc spotBrown spotSilver',serengeti:'spotGold black smoke',germanrex:'platinum white black redTabby',neva:'sealPt bluePt lynxPt flamePt',aphrodite:'brownCow cow redW',
- toybob:'sealPt bluePt lynxPt',khaomanee:'kmIce kmSapphire kmEmerald kmAmethyst kmRuby',lykoi:'lyBlack lyBlue',savannah:'spotGold spotSilver black smoke',sokoke:'tigerBrown tigerDark',suphalak:'copper copperDark',
+ toybob:'sealPt bluePt lynxPt',khaomanee:'kmIce kmSapphire kmEmerald kmAmethyst kmRuby kmChada',lykoi:'lyBlack lyBlue lyHood',savannah:'spotGold spotSilver black smoke svEgypt',sokoke:'tigerBrown tigerDark skForest',suphalak:'copper copperDark spMalai',
  lambkin:'white cream cow redTabby',bambino:'hlPink hlCream hlPied',kinkalow:'brownTabby black calico cream',skookum:'redTabbyW cow blue',dwelf:'hlPink hlGray hlBlack',genetta:'spotBrown spotSilver',
 };
 const FORMS={v_goku:'gkBase gkGod',v_naruto:'nrBase nrKurama nrHokage'};
+// tám mèo trang phục 5★ còn lại: trang phục thường (lấy đúng ngoại hình gốc) + một trang phục hiếm
+const FORM0={v_thunder:'ztGod',v_gojo:'gjSix',v_harry:'hpSeeker',v_vader:'vdWhite',v_nyan:'nyTac',v_maneki:'mkGold',v_astro:'asOrange',v_royal:'ryPurple'};
+Object.keys(FORM0).forEach(id=>{const v=VARIANTS.find(x=>x.id===id);COATS[id+'_0']={n:'Trang phục thường',c:v.c,c2:v.c2,c3:v.c3,pat:v.pat,eye:v.eye};FORMS[id]=id+'_0 '+FORM0[id];v.noRare=1});
 VARIANTS.forEach(v=>{if(FORMS[v.id])v.coats=FORMS[v.id].split(' ')});
-BREEDS.forEach(b=>{b.coats=BREED_COATS[b.id].split(' ');if(SHORT_LEGS.includes(b.id))b.short=1;if(HAIRLESS.includes(b.id)){b.hl=1;b.noRare=1}if(b.id==='lykoi')b.noRare=1});
+BREEDS.forEach(b=>{b.coats=BREED_COATS[b.id].split(' ');if(SHORT_LEGS.includes(b.id))b.short=1;if(HAIRLESS.includes(b.id)){b.hl=1;b.noRare=1}if(b.id==='lykoi'||b.r===5)b.noRare=1}); // màu hiếm chỉ dành cho giống từ 4★ trở xuống; 5★ có "trang phục hiếm" riêng
 
 /* ============ MÀU HIẾM (luôn 4★, áp lên bất kỳ giống nào) ============ */
 const RARE_P=.04;
@@ -416,9 +433,22 @@ Object.assign(TRAITS,{
  b_savannah:{n:'Cú nhảy 2 mét',k:'x',d:'Viễn chinh nhanh hơn 30%, +10% xu.',e:{speed:.3,coin:.1}},
  b_sokoke:{n:'Bóng rừng Kenya',k:'x',d:'+45% xu ở điểm thiên nhiên, +30% cơ hội có chiến lợi phẩm.',e:{nature:.45,loot:.3}},
  b_suphalak:{n:'Đồng đỏ cát tường',k:'x',d:'+12% xu, mèo khác cùng phòng +10 độ vui.',e:{coin:.12,aura:10}},
- f_god:{n:'Thần khí Saiyan',k:'x',d:'Dạng hiếm Siêu Saiyan God. +20% xu mọi chuyến viễn chinh.',e:{coin:.20}},
- f_kurama:{n:'Chakra Cửu Vĩ',k:'x',d:'Dạng hiếm Tiên nhân Cửu Vĩ. Viễn chinh nhanh hơn 15%, mèo khác cùng phòng +8 độ vui.',e:{speed:.15,aura:8}},
- f_hokage:{n:'Hokage Đệ Thất',k:'x',d:'Dạng hiếm Hokage. +10% xu, và mọi mèo khác cùng phòng +5% xu viễn chinh.',e:{coin:.10,auraCoin:.05}},
+ f_zt:{n:'Hỏa Lôi Thần',k:'x',d:'Trang phục hiếm của Zenitsu. Viễn chinh nhanh hơn 20%.',e:{speed:.2}},
+ f_six:{n:'Lục Nhãn',k:'x',d:'Trang phục hiếm của Gojo. +15% xu, +30% kinh nghiệm.',e:{coin:.15,xp:1.3}},
+ f_seeker:{n:'Bắt được trái Snitch',k:'x',d:'Trang phục hiếm của Harry. +10% cơ hội nhặt vé gacha, viễn chinh nhanh hơn 10%.',e:{ticket:.1,speed:.1}},
+ f_white:{n:'Trở về phía ánh sáng',k:'x',d:'Trang phục hiếm của Vader. +10% xu, mèo khác cùng phòng +10 độ vui.',e:{coin:.1,aura:10}},
+ f_tac:{n:'Bản sao bóng tối',k:'x',d:'Trang phục hiếm của Nyan Cat. +30% xu nếu xuất phát ban đêm.',e:{night:.3}},
+ f_gold:{n:'Vàng mười',k:'x',d:'Trang phục hiếm của Thần Tài. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_launch:{n:'Sẵn sàng phóng',k:'x',d:'Trang phục hiếm của Phi Hành Gia. Viễn chinh nhanh hơn 20%, +5% cơ hội nhặt vé gacha.',e:{speed:.2,ticket:.05}},
+ f_purple:{n:'Hoàng bào tím',k:'x',d:'Trang phục hiếm của Hoàng Gia. +10 độ vui cho bé, mọi mèo khác cùng phòng +5% xu viễn chinh.',e:{self:10,auraCoin:.05}},
+ f_chada:{n:'Báu vật hoàng cung',k:'x',d:'Trang phục hiếm của Khao Manee. +15% xu mọi chuyến viễn chinh.',e:{coin:.15}},
+ f_hood:{n:'Sói đội khăn đỏ',k:'x',d:'Trang phục hiếm của Lykoi. +30% cơ hội có chiến lợi phẩm, +15% xu ban đêm.',e:{loot:.3,night:.15}},
+ f_pharaoh:{n:'Mèo của Pharaoh',k:'x',d:'Trang phục hiếm của Savannah. +15% xu mọi chuyến viễn chinh.',e:{coin:.15}},
+ f_forest:{n:'Thần rừng',k:'x',d:'Trang phục hiếm của Sokoke. +30% xu ở điểm thiên nhiên, mèo khác cùng phòng +8 độ vui.',e:{nature:.3,aura:8}},
+ f_malai:{n:'Hương nhài',k:'x',d:'Trang phục hiếm của Suphalak. +8 độ vui cho bé, mèo khác cùng phòng +12 độ vui.',e:{self:8,aura:12}},
+ f_god:{n:'Thần khí Saiyan',k:'x',d:'Trang phục hiếm Siêu Saiyan God. +20% xu mọi chuyến viễn chinh.',e:{coin:.20}},
+ f_kurama:{n:'Chakra Cửu Vĩ',k:'x',d:'Trang phục hiếm Tiên nhân Cửu Vĩ. Viễn chinh nhanh hơn 15%, mèo khác cùng phòng +8 độ vui.',e:{speed:.15,aura:8}},
+ f_hokage:{n:'Hokage Đệ Thất',k:'x',d:'Trang phục hiếm Hokage. +10% xu, và mọi mèo khác cùng phòng +5% xu viễn chinh.',e:{coin:.10,auraCoin:.05}},
 });
 GROUPS.push(['rare','Màu hiếm']);
 // "ngoại hình" của một bé: giống + màu lông. Khóa dạng 'giống~màu'.
