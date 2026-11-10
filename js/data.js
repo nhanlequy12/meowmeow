@@ -272,11 +272,24 @@ const FURN=Object.fromEntries(FURNS.map(f=>[f.id,f]));
 const ROOMS=[
  {id:'living',n:'Phòng khách',price:0,cap:8,d:'Căn phòng đầu tiên, ấm cúng.'},
  {id:'bedroom',n:'Phòng ngủ',price:1500,cap:8,regen:1.25,d:'Yên tĩnh: hồi năng lượng nhanh hơn 25%.'},
+ {id:'kitchen',n:'Bếp',price:2500,cap:6,hunger:.8,d:'Gần đồ ăn: mèo ở đây đói chậm hơn 20%.'},
  {id:'balcony',n:'Ban công',price:3000,cap:6,happy:8,outdoor:1,d:'Ngoài trời: +8 độ vui, hợp với mèo thích tắm nắng.'},
+ {id:'bathroom',n:'Phòng tắm',price:4000,cap:5,happy:4,regen:1.1,d:'Sạch sẽ, mát mẻ: +4 độ vui, hồi năng lượng nhanh hơn 10%.'},
  {id:'playroom',n:'Phòng chơi',price:6000,cap:10,happy:6,d:'Rộng và nhiều màu: +6 độ vui.'},
- {id:'garden',n:'Sân vườn',price:12000,cap:12,happy:10,outdoor:1,d:'Ngoài trời, rộng nhất: +10 độ vui.'},
+ {id:'dining',n:'Phòng ăn',price:8000,cap:8,thank:2,d:'Mỗi bữa ăn được thêm 2 xu cảm ơn từ mỗi bé.'},
+ {id:'attic',n:'Gác mái',price:10000,cap:6,regen:1.2,happy:3,d:'Góc riêng yên ắng: hồi năng lượng nhanh hơn 20%, +3 độ vui.'},
+ {id:'garden',n:'Sân vườn',price:12000,cap:12,happy:10,outdoor:1,d:'Ngoài trời, rộng: +10 độ vui.'},
+ {id:'library',n:'Thư viện',price:16000,cap:8,coin:.06,d:'Mèo ở đây +6% xu viễn chinh.'},
+ {id:'gameroom',n:'Phòng game',price:20000,cap:10,happy:9,d:'Đèn neon và máy chơi game: +9 độ vui.'},
+ {id:'greenhouse',n:'Nhà kính',price:26000,cap:8,happy:7,hunger:.9,outdoor:1,d:'Đầy cây xanh: +7 độ vui, đói chậm hơn 10%, tính là ngoài trời.'},
+ {id:'tatami',n:'Phòng Nhật',price:32000,cap:8,regen:1.25,happy:5,d:'Chiếu tatami và cửa giấy: hồi năng lượng nhanh hơn 25%, +5 độ vui.'},
+ {id:'basement',n:'Tầng hầm',price:40000,cap:10,night:.10,d:'Mèo ở đây +10% xu khi xuất phát ban đêm.'},
+ {id:'pool',n:'Hồ bơi',price:50000,cap:10,happy:8,outdoor:1,water:1,d:'+8 độ vui. Mèo thích nước thêm +10, mèo sợ nước −10.'},
+ {id:'rooftop',n:'Sân thượng',price:65000,cap:12,happy:6,outdoor:1,ticket:.03,d:'Ngoài trời: +6 độ vui, +3% cơ hội nhặt vé gacha.'},
+ {id:'royal',n:'Phòng hoàng gia',price:90000,cap:12,happy:8,coin:.10,d:'Thảm đỏ, cột vàng: +8 độ vui, +10% xu viễn chinh.'},
 ];
 const ROOM=Object.fromEntries(ROOMS.map(r=>[r.id,r]));
+ROOM.wait={id:'wait',n:'Phòng chờ',cap:Infinity,wait:1,d:'Nơi ở tạm của mèo chưa có phòng. Không có bonus, không được cho ăn.'};
 
 /* ============ ĐIỂM VIỄN CHINH ============ */
 const DESTS=[
@@ -389,8 +402,105 @@ GROUPS.push(['rare','Màu hiếm']);
 const LOOKS={};
 function look(key){
   if(LOOKS[key])return LOOKS[key];
+  if(key.indexOf('!')>0){const b=look(key.split('!')[0]);return LOOKS[key]=Object.assign({},b,{cos:b.cos.filter(p=>p[0]!=='blindfold'),eye:'#5ad0ff'})} // dáng "kéo băng mắt"
   const [id,ct]=key.split('~'),sp=BREEDS.concat(VARIANTS).find(s=>s.id===id);
   if(!sp.coats)return LOOKS[key]=sp;
   const coat=ALLCOAT[ct]||COATS[sp.coats[0]];
   return LOOKS[key]=Object.assign({},sp,{c2:undefined,c3:undefined,w:0,mit:0,pat:'solid',eye2:undefined},coat,{eye:coat.eye||sp.eye,c2:coat.c2||coat.c,rare:RARE[ct]?1:0});
 }
+
+/* ============ NỘI THẤT BỔ SUNG ============ */
+// cat: nhóm trong cửa hàng. art: hàm vẽ dùng chung, a: tham số màu. set: tên bộ chủ đề.
+const FCATS=[['bed','Giường & nệm'],['tree','Tháp & trụ cào'],['toy','Đồ chơi'],['seat','Bàn ghế & sofa'],['plant','Cây cảnh'],['lamp','Đèn'],['rug','Thảm'],['art','Tranh'],['shelf','Kệ'],['window','Cửa sổ'],['deco','Trang trí'],['season','Theo mùa'],['set','Bộ chủ đề']];
+Object.entries({box:'toy',yarn:'toy',mouse:'toy',picture:'art',bed:'bed',plant:'plant',rug:'rug',lamp:'lamp',post:'tree',shelf:'shelf',window:'window',sofa:'seat',tank:'deco',catnip:'plant',tree:'tree'}).forEach(e=>FURN[e[0]].cat=e[1]);
+const F=(id,n,price,kind,w,h,cat,art,a,o)=>Object.assign({id,n,price,kind,w,h,cat,art,a},o);
+const NAP={dx:0,dy:-5,front:1,sleep:1,emo:'z'},PLAY={dx:13,dy:1,front:1,emo:'note'};
+FURNS.push(
+ // giường & nệm
+ F('cushion','Gối tròn',90,'floor',24,10,'bed','cushion',['#9cc4e8'],{regen:1.05,d:'Hồi năng lượng nhanh hơn 5%.',use:{dx:0,dy:-3,front:1,sleep:1,emo:'z'}}),
+ F('basket','Giỏ mây',220,'floor',34,16,'bed','basket',['#f2a3b3'],{happy:3,d:'+3 độ vui.',use:{dx:0,dy:-5,front:1,sleep:1,emo:'z'}}),
+ F('bedblue','Nệm xanh',180,'floor',44,18,'bed','bed',['#7ea6d8','#dcecff'],{happy:2,d:'+2 độ vui.',use:NAP}),
+ F('bedgreen','Nệm lá',180,'floor',44,18,'bed','bed',['#7fb88a','#e2f4d8'],{happy:2,d:'+2 độ vui.',use:NAP}),
+ // tháp & trụ cào
+ F('postpink','Trụ cào hồng',280,'floor',20,44,'tree','post',['#f2a3b3'],{happy:2,guard:1,d:'+2 độ vui, giảm khả năng mèo cào sofa.',use:{dx:17,dy:1,front:1,emo:'note'}}),
+ F('treegreen','Tháp mèo rừng',1500,'floor',46,76,'tree','tree',['#7fb88a'],{happy:7,d:'+7 độ vui.',use:{dx:2,dy:-70,front:1,sleep:1,emo:'z'}}),
+ F('tunnel','Ống chui',260,'floor',40,18,'tree','tunnel',['#86b2dc'],{happy:4,d:'+4 độ vui. Mèo thích chui vào nấp.',use:{dx:0,dy:-3,front:0,emo:'note'}}),
+ // đồ chơi
+ F('ballred','Bóng đỏ',60,'floor',10,10,'toy','ball',['#e2484e'],{happy:1,d:'+1 độ vui.',use:PLAY}),
+ F('ballblue','Bóng xanh',60,'floor',10,10,'toy','ball',['#5a9ae0'],{happy:1,d:'+1 độ vui.',use:PLAY}),
+ F('fishtoy','Cá nhồi bông',110,'floor',16,8,'toy','fishtoy',['#f0a050'],{happy:3,d:'+3 độ vui.',use:PLAY}),
+ F('feeder','Máy cho ăn tự động',900,'floor',16,24,'toy','feeder',[],{hunger:.9,d:'Mèo trong phòng đói chậm hơn 10%.'}),
+ // bàn ghế & sofa
+ F('chair','Ghế gỗ',160,'floor',22,30,'seat','chair',['#c89a6a','#e2c79c'],{happy:1,d:'+1 độ vui. Mèo thích ngồi lên.',use:{dx:0,dy:-14,front:1,emo:'note'}}),
+ F('table','Bàn trà',240,'floor',40,24,'seat','table',['#b98a5e','#f2e2c0'],{happy:2,d:'+2 độ vui.'}),
+ F('sofapink','Sofa hồng',520,'floor',64,34,'seat','sofa',['#e8a0b0','#d08494','#f6c2cc'],{happy:8,breakable:1,d:'+8 độ vui. Có thể bị cào hỏng.',use:{dx:-10,dy:-13,front:1,sleep:1,emo:'z'}}),
+ F('sofagray','Sofa xám',520,'floor',64,34,'seat','sofa',['#9aa3b5','#7f8a9f','#bcc4d2'],{happy:8,breakable:1,d:'+8 độ vui. Có thể bị cào hỏng.',use:{dx:-10,dy:-13,front:1,sleep:1,emo:'z'}}),
+ // cây cảnh
+ F('flower','Chậu hoa hồng',120,'floor',16,26,'plant','flower',['#f08aa8','#e89468'],{happy:2,d:'+2 độ vui.'}),
+ F('flowery','Chậu hoa vàng',120,'floor',16,26,'plant','flower',['#f2c84a','#8fb7d8'],{happy:2,d:'+2 độ vui.'}),
+ F('cactus','Xương rồng',100,'floor',14,24,'plant','cactus',[],{happy:1,d:'+1 độ vui.'}),
+ F('bigplant','Cây lá to',320,'floor',20,36,'plant','plant',['#3f8f5a','#6fb878','#c98a5e'],{happy:4,d:'+4 độ vui.'}),
+ // đèn
+ F('lamppink','Đèn chụp hồng',220,'floor',16,46,'lamp','lamp',['#f6b6c4'],{happy:2,d:'+2 độ vui.'}),
+ F('lampblue','Đèn ngủ xanh',220,'floor',16,46,'lamp','lamp',['#a8d0f2'],{regen:1.05,d:'Hồi năng lượng nhanh hơn 5%.'}),
+ F('candles','Giá nến',260,'wall',30,14,'lamp','candles',[],{happy:3,d:'+3 độ vui.'}),
+ // thảm
+ F('rugblue','Thảm tròn xanh',180,'rug',70,22,'rug','rug',['#7ea6d8','#a8c6ea','#d2e4f8'],{happy:3,d:'+3 độ vui.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}}),
+ F('ruggreen','Thảm cỏ',180,'rug',70,22,'rug','rug',['#7fb88a','#a4d0a8','#cbe6c8'],{happy:3,d:'+3 độ vui.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}}),
+ F('rugstripe','Thảm kẻ sọc',240,'rug',80,24,'rug','rugr',['#c98a5e','#f2e2c0',1],{happy:4,d:'+4 độ vui.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}}),
+ // tranh
+ F('picpaw','Tranh dấu chân',120,'wall',24,20,'art','pic',['#e2b890','#fff2e0','paw','#e88aa2'],{happy:2,d:'+2 độ vui.'}),
+ F('picmoon','Tranh trăng',160,'wall',24,20,'art','pic',['#6a6480','#2f3552','moon','#fff3b0'],{happy:2,g:{night:.03},d:'+2 độ vui, +3% xu ban đêm.'}),
+ F('picheart','Tranh trái tim',120,'wall',24,20,'art','pic',['#f2a3b3','#fff2f4','heart','#e2484e'],{happy:2,d:'+2 độ vui.'}),
+ F('clock','Đồng hồ treo tường',200,'wall',16,16,'art','clock',[],{g:{speed:.03},d:'Viễn chinh nhanh hơn 3%.'}),
+ F('mirror','Gương',260,'wall',16,24,'art','mirror',['#c89a6a'],{happy:3,d:'+3 độ vui.'}),
+ // kệ
+ F('shelfdark','Kệ gỗ sẫm',300,'wall',40,8,'shelf','shelf',['#8a5a3c'],{happy:4,d:'+4 độ vui. Mèo thích leo lên ngồi.',use:{dx:0,dy:-6,front:1,emo:'note'}}),
+ F('bookshelf','Kệ sách treo',380,'wall',40,14,'shelf','bookshelf',[],{happy:4,g:{coin:.02},d:'+4 độ vui, +2% xu.',use:{dx:10,dy:-12,front:1,emo:'note'}}),
+ F('bookcase','Tủ sách',700,'floor',34,50,'shelf','bookcase',[],{happy:5,g:{coin:.04},d:'+5 độ vui, +4% xu viễn chinh.',use:{dx:0,dy:-48,front:1,sleep:1,emo:'z'}}),
+ // cửa sổ
+ F('winnight','Cửa sổ đêm trăng',450,'wall',46,38,'window','window',['night'],{happy:5,g:{night:.05},d:'+5 độ vui, +5% xu ban đêm.',use:{floor:1,emo:'excl'}}),
+ F('winround','Cửa sổ tròn',500,'wall',34,34,'window','roundwin',[],{happy:6,d:'+6 độ vui.',use:{floor:1,emo:'excl'}}),
+ // trang trí
+ F('fountain','Đài nước mini',480,'floor',22,22,'deco','fountain',[],{happy:4,hunger:.95,d:'+4 độ vui, đói chậm hơn 5%.',use:{dx:15,dy:2,front:1,emo:'heart'}}),
+ // theo mùa
+ F('peach','Cây đào Tết',600,'floor',28,44,'season','peach',[],{happy:6,g:{ticket:.02},set:'Tết',d:'+6 độ vui, +2% cơ hội nhặt vé.'}),
+ F('lantern','Đèn lồng đỏ',260,'wall',14,22,'season','lantern',['#e2484e'],{happy:3,set:'Tết',d:'+3 độ vui.'}),
+ F('lixi','Dây lì xì',300,'wall',60,12,'season','garland',['#e2484e','#f2c84a'],{g:{coin:.03},set:'Tết',d:'+3% xu viễn chinh.'}),
+ F('banhchung','Bánh chưng',180,'floor',16,12,'season','banhchung',[],{hunger:.95,set:'Tết',d:'Mèo trong phòng đói chậm hơn 5%.',use:PLAY}),
+ F('pumpkin','Bí ngô Halloween',240,'floor',20,18,'season','pumpkin',[],{happy:4,set:'Halloween',d:'+4 độ vui.',use:PLAY}),
+ F('batgar','Dây dơi',260,'wall',60,12,'season','garland',['#5a4a7a','#f0a050'],{g:{night:.04},set:'Halloween',d:'+4% xu ban đêm.'}),
+ F('xmastree','Cây thông Noel',800,'floor',30,46,'season','xmastree',[],{happy:8,set:'Noel',d:'+8 độ vui.'}),
+ F('wreath','Vòng nguyệt quế',220,'wall',20,20,'season','wreath',[],{happy:3,set:'Noel',d:'+3 độ vui.'}),
+ F('snowman','Người tuyết',300,'floor',18,28,'season','snowman',[],{happy:4,set:'Noel',d:'+4 độ vui.'}),
+ F('giftpile','Chồng quà',350,'floor',26,18,'season','giftpile',[],{happy:3,g:{ticket:.02},set:'Noel',d:'+3 độ vui, +2% cơ hội nhặt vé.',use:{dx:0,dy:-16,front:1,emo:'note'}}),
+ F('winsnow','Cửa sổ tuyết rơi',450,'wall',46,38,'season','window',['snow'],{happy:6,set:'Noel',d:'+6 độ vui.',use:{floor:1,emo:'excl'}}),
+ // bộ chủ đề
+ F('tatamimat','Chiếu tatami',320,'rug',80,24,'set','rugr',['#b8c48a','#8a9a5e',0],{happy:4,regen:1.05,set:'Nhật',d:'+4 độ vui, hồi năng lượng nhanh hơn 5%.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}}),
+ F('kotatsu','Bàn sưởi kotatsu',900,'floor',44,22,'set','kotatsu',['#e2484e'],{happy:7,regen:1.1,set:'Nhật',d:'+7 độ vui, hồi năng lượng nhanh hơn 10%.',use:{dx:-14,dy:-2,front:1,sleep:1,emo:'z'}}),
+ F('bonsai','Bonsai',420,'floor',26,26,'set','bonsai',[],{happy:4,set:'Nhật',d:'+4 độ vui.'}),
+ F('paperlamp','Đèn lồng giấy',300,'wall',14,22,'set','lantern',['#f6eedc'],{happy:3,set:'Nhật',d:'+3 độ vui.'}),
+ F('throne','Ngai vàng',2500,'floor',30,46,'set','throne',[],{happy:8,g:{coin:.06},set:'Hoàng gia',d:'+8 độ vui, +6% xu viễn chinh.',use:{dx:0,dy:-19,front:1,sleep:1,emo:'z'}}),
+ F('redcarpet','Thảm đỏ',600,'rug',80,24,'set','rugr',['#c8465a','#f2c84a',0],{happy:5,set:'Hoàng gia',d:'+5 độ vui.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}}),
+ F('royalbed','Giường hoàng gia',1200,'floor',44,18,'set','bed',['#c8465a','#fbe7a8'],{happy:5,regen:1.15,set:'Hoàng gia',d:'+5 độ vui, hồi năng lượng nhanh hơn 15%.',use:NAP}),
+ F('goldmirror','Gương mạ vàng',700,'wall',16,24,'set','mirror',['#e8b83a'],{happy:5,set:'Hoàng gia',d:'+5 độ vui.'}),
+ F('cauldron','Vạc độc dược',650,'floor',24,22,'set','cauldron',[],{happy:4,g:{ticket:.03},set:'Harry Potter',d:'+4 độ vui, +3% cơ hội nhặt vé.',use:{dx:17,dy:2,front:1,emo:'excl'}}),
+ F('hbanner','Cờ nhà sư tử',380,'wall',14,30,'set','banner',['#b8323a','#f2c230'],{happy:3,g:{coin:.03},set:'Harry Potter',d:'+3 độ vui, +3% xu.'}),
+ F('hbanner2','Cờ nhà rắn',380,'wall',14,30,'set','banner',['#2f7a52','#cfd4dc'],{happy:3,g:{night:.04},set:'Harry Potter',d:'+3 độ vui, +4% xu ban đêm.'}),
+ F('gdesk','Bàn máy tính',1100,'floor',44,30,'set','gdesk',[],{happy:7,set:'Gaming',d:'+7 độ vui.',use:{dx:-10,dy:-17,front:1,sleep:1,emo:'z'}}),
+ F('gchair','Ghế gaming',700,'floor',22,34,'set','gchair',['#3a3448','#e2484e'],{happy:5,set:'Gaming',d:'+5 độ vui.',use:{dx:0,dy:-14,front:1,sleep:1,emo:'z'}}),
+ F('neon','Đèn neon',450,'wall',30,16,'set','neon',['#f06ad0'],{happy:4,g:{night:.03},set:'Gaming',d:'+4 độ vui, +3% xu ban đêm.'}),
+ F('tv','Tivi',900,'floor',36,30,'set','tv',[],{happy:6,set:'Gaming',d:'+6 độ vui.',use:{dx:-24,dy:2,front:1,emo:'excl'}}),
+ F('rocket','Tên lửa đồ chơi',800,'floor',16,30,'set','rocket',[],{happy:5,g:{speed:.04},set:'Vũ trụ',d:'+5 độ vui, viễn chinh nhanh hơn 4%.',use:PLAY}),
+ F('planet','Hành tinh treo',420,'wall',22,16,'set','planet',['#f0a050'],{happy:4,set:'Vũ trụ',d:'+4 độ vui.'}),
+ F('winspace','Cửa sổ phi thuyền',650,'wall',46,38,'set','window',['space'],{happy:6,g:{night:.04},set:'Vũ trụ',d:'+6 độ vui, +4% xu ban đêm.',use:{floor:1,emo:'excl'}}),
+ F('rugmoon','Thảm thiên hà',400,'rug',70,22,'set','rug',['#3d4f8f','#5a6fb0','#fff3b0'],{happy:5,set:'Vũ trụ',d:'+5 độ vui.',use:{dx:0,dy:-6,front:1,sleep:1,emo:'z'}})
+);
+FURNS.forEach(f=>FURN[f.id]=f);
+const HAPPY_CAP=35; // tổng độ vui từ nội thất trong một phòng không vượt quá mức này
+
+/* ============ CÂU THOẠI CỦA MÈO 5★ (hiện ở thẻ giới thiệu sau intro) ============ */
+const QUOTE={v_thunder:'Zzz… Thần tốc… nhất thức…',v_gojo:'Yên tâm đi. Vì ta là mạnh nhất mà.',v_harry:'Tôi long trọng thề rằng tôi sắp làm đổ cốc nước.',v_vader:'Hãy gia nhập mặt tối. Ở đây có pate.',
+ v_nyan:'Nya nya nya nya nya nya nya~',v_maneki:'Vẫy một cái, tiền vô như nước.',v_astro:'Một bước nhỏ của mèo, một cú nhảy dài của loài mèo.',v_royal:'Ngươi được phép gãi cằm ta.',
+ khaomanee:'Một mắt nhìn trời xanh, một mắt nhìn vàng ròng.',lykoi:'Awoooo… à nhầm, meo.',savannah:'Hai mét à? Nhảy khởi động thôi.',sokoke:'Rừng dạy ta đi không một tiếng động.',suphalak:'Hiếm như đồng đỏ, quý hơn vàng.'};
+BREEDS.concat(VARIANTS).forEach(s=>{if(QUOTE[s.id])s.q=QUOTE[s.id]});

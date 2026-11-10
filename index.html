@@ -123,19 +123,67 @@ input{font:inherit;color:var(--ink);background:#fbf5ea;border:2px solid var(--li
 @keyframes fly{from{transform:translateX(-80vw)}to{transform:translateX(110vw)}}
 @keyframes bob{from{transform:translateY(-6px)}to{transform:translateY(6px)}}
 </style>
+<style>
+/* ===== giao diện mới: tông trầm, menu cố định, nút to ===== */
+:root{--bg:#c4b39a;--panel:#e2d5bf;--panel2:#d3c1a6;--ink:#3c2414;--dim:#5a4232;--pink:#e990a3;--blue:#5f93c8;--gold:#6e4a02;--line:#7e5a3a;--soft:#b3a084;--good:#1c6340;--bad:#a02a1a}
+html[data-theme=dark]{--bg:#27201b;--panel:#372d27;--panel2:#4a3d33;--ink:#f3e8d9;--dim:#cdbca6;--pink:#d87a8e;--blue:#86b6e6;--gold:#f4cc66;--line:#9a7a5c;--soft:#5c4c40;--good:#86dba6;--bad:#ff9d8c}
+body{font-size:15px;background-image:radial-gradient(color-mix(in srgb,var(--line) 24%,transparent) 1.2px,transparent 1.3px)}
+#app{padding-bottom:104px}
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:8px}
+h1{color:#8a3048}html[data-theme=dark] h1{color:#f2a3b3}
+#top{position:sticky;top:0;z-index:8;background:var(--bg);padding:6px 0;margin-bottom:4px}
+.chip{font-size:14.5px;padding:6px 10px}
+.card small,.dim{font-size:13px}
+button{min-height:44px;transition:filter .12s,transform .08s}
+button:hover:not(:disabled){filter:brightness(1.07)}
+button.sm{min-height:40px;padding:6px 10px;font-size:13.5px}
+html[data-theme=dark] button.on{color:#3a1020}html[data-theme=dark] button.go{color:#0f3320}html[data-theme=dark] button.bad{color:#5a1420}
+input,select{background:var(--panel);color:var(--ink);min-height:44px;font:inherit;border:2px solid var(--line);border-radius:10px;padding:6px 9px;min-width:0}
+input[type=range]{padding:0;min-height:32px;accent-color:#e58aa0}input[type=checkbox]{min-height:0;width:20px;height:20px}
+#roomnav .nm{flex:1;cursor:pointer;font:inherit;color:var(--ink);min-height:44px}
+canvas#room{background:#b5a086}
+.tabs{position:fixed;left:0;right:0;bottom:0;margin:0;padding:6px max(8px,calc(50vw - 262px)) calc(6px + env(safe-area-inset-bottom));background:var(--panel);border-top:3px dotted var(--line);z-index:15;gap:5px;box-shadow:0 -4px 12px rgba(40,24,12,.18)}
+.tabs button{min-height:60px;font-size:12px;padding:4px 0;line-height:1.2}
+.tabs button span{font-size:24px}
+#app:not([data-tab=home]) #roomnav,#app:not([data-tab=home]) #room{display:none}
+.tst{color:#523828}.tst .bd span{color:#725b4a}
+.tag:hover::after,.tag:focus::after{background:#3c2414;color:#fff8ee}
+.n5{display:inline-block;background:linear-gradient(#fff3c4,#f2cf6a);color:#5a3a04;border:2px solid #c9961c;border-radius:8px;padding:0 7px}
+.quote{font-style:italic;margin:6px 0;color:var(--gold);font-size:15px}
+.rchips{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.rchip{background:var(--panel);border:3px dotted var(--line);border-radius:12px;padding:6px 8px;font-size:13px;cursor:pointer;min-height:48px}
+.rchip.on{background:var(--pink);color:#3a1020;border-style:solid}.rchip.full{border-color:var(--bad)}.rchip.over{outline:3px solid #e58aa0}
+.card[draggable=true]{cursor:grab}
+.cell.sel{border-style:solid;border-color:#e58aa0;background:var(--panel2)}
+.cell .ic{height:48px;display:flex;align-items:center;justify-content:center}
+.prev .pv{width:150px;min-height:110px;display:flex;align-items:center;justify-content:center;background:var(--panel2);border-radius:12px;flex:none}
+html[data-theme=dark] .unk img{filter:brightness(0) invert(.55);opacity:.5}
+a{color:var(--blue)}
+/* chuyển động mượt: đưa các lớp hay di chuyển lên GPU, thêm khung trung gian và easing */
+.tst,#pop,#gbox,#grev,#gfly .fl,#gz .rays,#gz .pillar{will-change:transform,opacity;backface-visibility:hidden}
+.tst{transition:transform .55s cubic-bezier(.22,1.4,.36,1),opacity .28s ease-out,margin-bottom .32s cubic-bezier(.4,0,.2,1)}
+#modal .box{animation:mIn .22s cubic-bezier(.2,.9,.3,1.15)}
+@keyframes mIn{from{transform:translateY(14px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+@keyframes shS{0%,100%{transform:rotate(0)}12%{transform:rotate(-4deg)}25%{transform:rotate(-7deg)}38%{transform:rotate(-4deg)}50%{transform:rotate(0)}62%{transform:rotate(4deg)}75%{transform:rotate(7deg)}88%{transform:rotate(4deg)}}
+@keyframes shH{0%,100%{transform:translate(-5px,2px) rotate(-9deg)}25%{transform:translate(0,-2px) rotate(-2deg)}50%{transform:translate(5px,-3px) rotate(9deg)}75%{transform:translate(0,1px) rotate(2deg)}}
+@keyframes pop{0%{transform:scale(.2);opacity:0}45%{transform:scale(1.1);opacity:1}70%{transform:scale(.97)}100%{transform:scale(1)}}
+@keyframes stpop{0%{opacity:0;transform:scale(3) rotate(-40deg)}60%{opacity:1;transform:scale(.85) rotate(6deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+#gbox.s{animation-timing-function:ease-in-out}#gbox.h{animation-duration:.2s}
+.pop{animation:pop .5s cubic-bezier(.2,.8,.3,1)}
+#panel>*{animation:pIn .18s ease-out}
+@keyframes pIn{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+#app[data-tab=home] #panel>*,#app[data-tab=trip] #panel>*{animation:none}
+@media(max-width:420px){.prev{flex-direction:column;align-items:stretch}.prev .pv{width:100%}.tabs button{font-size:11px}}
+</style>
 </head>
 <body>
-<div id="app">
-  <h1 style="user-select:none">🐾 MÈO XU</h1>
+<div id="app" data-tab="home">
+  <div class="hdr"><h1 style="user-select:none">🐾 MÈO XU</h1><button class="sm" onclick="openSettings()">⚙️ Cài đặt</button></div>
   <div class="top" id="top"></div>
   <div id="roomnav"></div>
   <canvas id="room" width="240" height="170"></canvas>
   <div class="tabs" id="tabs"></div>
   <div id="panel"></div>
-  <div class="foot">
-    <button onclick="doSkip()">⏩ Tua nhanh 10 phút (bản thử)</button>
-    <button onclick="resetAll()">🗑 Chơi lại từ đầu</button>
-  </div>
 </div>
 <div id="modal"><div class="box" id="mbox"></div></div>
 <div id="pop"></div>

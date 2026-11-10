@@ -18,7 +18,7 @@ function load(){
     fresh();
     try{const o=JSON.parse(localStorage.getItem('meoxu_v1')); if(o&&o.cats){S.coins=(o.coins||0)+100*Object.keys(o.cats).length;S.tickets=o.tickets||1;S.level=o.level||1;S.xp=o.xp||0}}catch(e){}
   }
-  S.cats=S.cats.filter(c=>SP[c.sp]); S.cats.forEach(c=>{c.traits=c.traits.filter(t=>TRAITS[t]); if(!S.rooms[c.room])c.room='living'});
+  S.cats=S.cats.filter(c=>SP[c.sp]); S.cats.forEach(c=>{c.traits=c.traits.filter(t=>TRAITS[t]); if(!S.rooms[c.room])c.room='wait'});
   S.items=S.items.filter(i=>FURN[i.fid]);
   S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
   fixSlots();
@@ -87,7 +87,9 @@ const ownedRooms=()=>ROOMS.filter(r=>S.rooms[r.id]);
 const catsIn=rid=>S.cats.filter(c=>c.room===rid);
 const homeCats=rid=>S.cats.filter(c=>c.room===rid&&!onTrip(c.uid));
 const totalCap=()=>ownedRooms().reduce((a,r)=>a+r.cap,0);
-const freeRoom=()=>{const r=ownedRooms().find(r=>catsIn(r.id).length<r.cap);return r?r.id:null};
+const freeRoom=()=>{const r=ownedRooms().find(r=>catsIn(r.id).length<r.cap);return r?r.id:'wait'}; // hết chỗ thì vào Phòng chờ
+const roomHunger=rid=>{let m=ROOM[rid].hunger||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].hunger;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.max(.5,m)};
+const roomRegen=rid=>{let m=ROOM[rid].regen||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].regen;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.min(2,m)};
 const itemsIn=rid=>S.items.filter(i=>i.room===rid);
 const roomHas=(rid,fid)=>S.items.some(i=>i.room===rid&&i.fid===fid&&!i.broken);
 function gEff(){
@@ -96,15 +98,16 @@ function gEff(){
   return e;
 }
 function roomHappy(rid){
-  let h=ROOM[rid].happy||0; const seen={};
+  let h=0; const seen={};
   itemsIn(rid).forEach(i=>{if(i.broken||seen[i.fid])return;seen[i.fid]=1;h+=FURN[i.fid].happy||0});
-  return h;
+  return Math.min(HAPPY_CAP,h)+(ROOM[rid].happy||0)-(ROOM[rid].wait?10:0);
 }
 function happyTarget(c){
   const fx=tE(c,'fixedHappy'); if(fx)return fx;
   let h=50+roomHappy(c.room)+tE(c,'self');
   c.traits.forEach(t=>{const e=TRAITS[t].e;if(e.like&&roomHas(c.room,e.like[0]))h+=e.like[1];if(e.outdoor&&ROOM[c.room].outdoor)h+=e.outdoor;if(e.bigRoom&&catsIn(c.room).length>=6)h+=e.bigRoom});
   homeCats(c.room).forEach(o=>{if(o!==c)h+=tE(o,'aura')});
+  if(ROOM[c.room].water){const w=tE(c,'water');h+=w>0?10:w<0?-10:0}
   if(c.full<20)h-=25;
   return clamp(h,0,100);
 }
@@ -118,9 +121,9 @@ function tick(dt){
   S.cats.forEach(c=>{
     const away=onTrip(c.uid),bf=buffOf(c);
     if(c.buff&&c.buff.until<=now())c.buff=null;
-    c.full=clamp(c.full-dt*(100/12000)*tM(c,'hunger')*(bf.hunger||1)*auraHunger(c),0,100);
+    c.full=clamp(c.full-dt*(100/12000)*tM(c,'hunger')*(bf.hunger||1)*auraHunger(c)*roomHunger(c.room),0,100);
     if(!away){
-      const rg=tM(c,'regen')*(ROOM[c.room].regen||1)*(roomHas(c.room,'bed')?1.15:1)*(c.full<=0?.3:1);
+      const rg=tM(c,'regen')*roomRegen(c.room)*(c.full<=0?.3:1);
       c.en=clamp(c.en+dt/60*rg,0,100);
       const t=happyTarget(c),step=tE(c,'fixedHappy')?100:dt/60;
       c.hp=Math.abs(t-c.hp)<=step?t:c.hp+Math.sign(t-c.hp)*step;
@@ -162,7 +165,8 @@ function coinCalc(c,d,ctx,rf){
     if(e.monday)A(ctx.monday?-.2:.15);
   });
   const g=gEff();
-  add+=g.coin+(ctx.night?g.night:0)+(ctx.bc||0)+(ctx.ac||0);
+  const rm=ROOM[c.room]||{};
+  add+=g.coin+(ctx.night?g.night+(rm.night||0):0)+(ctx.bc||0)+(ctx.ac||0)+(rm.coin||0);
   if(gMult()>1){mult*=gMult();acts.push({t:'v_maneki',txt:'+30% xu'})}
   const coins=d.coin*STAR[c.star].m*Math.max(.3,1+add)*(ctx.hf||1)*mult*(rf||1);
   return {coins,acts};
@@ -195,7 +199,7 @@ function claimTrip(slot){
     if(e.jackpot&&Math.random()<.0456){res.bonus+=456;res.acts.push({t,txt:'trúng 456 xu!'})}
     if(e.doubleAll&&Math.random()<e.doubleAll){dbl=true;res.acts.push({t,txt:'nhân đôi phần thưởng'})}
   });
-  if(Math.random()<.08+g.ticket+tE(c,'ticket')){res.ticket=1;c.traits.forEach(t=>{if(TRAITS[t].e.ticket)res.acts.push({t,txt:'nhặt được vé'})})}
+  if(Math.random()<.08+g.ticket+tE(c,'ticket')+(ROOM[c.room].ticket||0)){res.ticket=1;c.traits.forEach(t=>{if(TRAITS[t].e.ticket)res.acts.push({t,txt:'nhặt được vé'})})}
   if(Math.random()<tE(c,'loot')){res.bonus+=15;c.traits.forEach(t=>{if(TRAITS[t].e.loot)res.acts.push({t,txt:'+15 xu chiến lợi phẩm'})})}
   res.coins=Math.round(r.coins*m2);
   if(dbl){res.coins*=2;res.bonus*=2;res.ticket*=2}
@@ -212,7 +216,7 @@ function feedRoom(rid,fid){
   const f=FOOD[fid],cats=homeCats(rid);
   if(!bowlReady(rid)||S.coins<f.price||!cats.length)return null;
   S.coins-=f.price;
-  const chef=cats.some(c=>tE(c,'chef')),thank=4+(roomHas(rid,'tank')?2:0),loved=[];
+  const chef=cats.some(c=>tE(c,'chef')),thank=4+(roomHas(rid,'tank')?2:0)+(ROOM[rid].thank||0),loved=[];
   cats.forEach(c=>{
     const fav=favs(c).includes(fid); if(fav)loved.push(c.name);
     let gain=f.full*(fav?1.2:1)*(chef?1.25:1); if(fid==='kibble'&&tE(c,'picky'))gain*=.5;
@@ -236,7 +240,6 @@ function petCat(c){
 /* ---------- gacha ---------- */
 function gachaRoll(useTicket,opt){
   opt=opt||{}; // opt chỉ dùng cho Admin: {free, star}
-  if(!opt.free&&S.cats.length>=totalCap())return {err:'Nhà hết chỗ rồi. Hãy mở thêm phòng hoặc cho bớt mèo đi nhận nuôi.'};
   if(!opt.free){if(useTicket){if(S.tickets<1)return {err:'Hết vé.'};S.tickets--}else{if(S.coins<GACHA_COST)return {err:'Không đủ xu.'};S.coins-=GACHA_COST}}
   S.pity++;
   let r=Math.random()*100,star=1,acc=0;
@@ -254,7 +257,7 @@ function gachaRoll(useTicket,opt){
     const sp=(vs.length&&Math.random()<.45)?pick(vs):pick(bs);
     c=newCat(sp,star);c.isNew=!S.seen[sp.id]||(sp.coats&&!(S.seenCoat||{})[lk(c)]);
   }
-  c.room=freeRoom()||'living';
+  c.room=freeRoom();
   S.cats.push(c); markSeen(c); addXp(3); save();
   return {cat:c};
 }
@@ -263,7 +266,7 @@ function rehome(uid){
   S.cats=S.cats.filter(x=>x!==c); const v=STAR[c.star].sell; S.coins+=v; save(); return v;
 }
 function moveCat(uid,rid){
-  const c=catBy(uid); if(!c||!S.rooms[rid]||onTrip(uid)||catsIn(rid).length>=ROOM[rid].cap)return false;
+  const c=catBy(uid); if(!c||!(S.rooms[rid]||rid==='wait')||onTrip(uid)||catsIn(rid).length>=ROOM[rid].cap)return false;
   c.room=rid; save(); return true;
 }
 
@@ -274,6 +277,7 @@ function buyItem(fid,rid,x){
   const it={iid:S.nid++,fid,room:rid,x:clamp(x,f.w/2,WORLD_W-f.w/2),y:f.kind==='wall'?70:rnd(125,160),flip:false,broken:false};
   S.items.push(it); addXp(8); save(); return it;
 }
+function sellItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it)return 0;S.items=S.items.filter(i=>i!==it);const v=Math.round(FURN[it.fid].price*.25);S.coins+=v;save();return v}
 function repairCost(it){return Math.round(FURN[it.fid].price*.3)}
 function repairItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it||!it.broken||S.coins<repairCost(it))return false;S.coins-=repairCost(it);it.broken=false;save();return true}
 function buyRoom(rid){const r=ROOM[rid];if(S.rooms[rid]||S.coins<r.price)return false;S.coins-=r.price;S.rooms[rid]={bowlAt:0};addXp(20);save();return true}
