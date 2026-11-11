@@ -33,7 +33,10 @@ const TUT_TEXT={
     pet:['Chạm vào {cat} để vuốt ve. Được cưng là bé tặng bạn vài xu 🪙.'],
     fol:[
       'Bé kêu grừ grừ kìa! Chạm vào bé nào thì camera đi theo bé đó.',
-      'Thẻ này hiện độ no 🍗, năng lượng ⚡ và độ vui 😊. Mỗi bé 10 phút mới cho xu vuốt ve một lần.'
+      'Thẻ này hiện độ no 🍗, năng lượng ⚡ và độ vui 😊. Mỗi bé 10 phút mới cho xu vuốt ve một lần.',
+      'Độ no 🍗 tụt dần, hơn 3 tiếng là cạn. Dưới 20 là bé đói, không đi viễn chinh được.',
+      'Năng lượng ⚡ là sức để đi viễn chinh, mỗi chuyến tốn 25 tới 50. Ở nhà bé hồi khoảng 1 điểm mỗi phút.',
+      'Độ vui 😊 càng cao, chuyến đi càng nhiều xu: bé vui nhất kiếm gấp rưỡi bé buồn nhất. Phòng đẹp, đủ đồ chơi thì bé vui lâu.'
     ],
     poses:[
       'Bé tự sinh hoạt cả ngày: ngồi, vẫy đuôi, liếm lông, ngủ, đi dạo, chạy, nhảy.',
@@ -190,8 +193,15 @@ const TUT_TEXT={
       {id:'room',ic:'🏠',t:'Phòng và mèo',p:[
         'Kéo khung phòng để xem khắp nơi. Bấm ＋ －, giữ Ctrl rồi lăn chuột, hoặc chụm 2 ngón để phóng to thu nhỏ.',
         'Chạm vào mèo để theo dõi và vuốt ve: mỗi bé 10 phút một lần cho số xu bằng số sao, thêm 3 độ vui. Chạm chỗ trống để thôi theo dõi.',
-        'Mỗi bé có độ no 🍗, năng lượng ⚡, độ vui 😊. Đói dưới 20 thì bé buồn hẳn và không đi viễn chinh được.',
+        'Mỗi bé có độ no 🍗, năng lượng ⚡, độ vui 😊; xem chương Ba chỉ số của mèo.',
         'Bé tự sinh hoạt: ngồi, liếm lông, ngủ, đi dạo, chạy, nhảy, trèo đồ nhiều tầng. Mèo con (dưới 3 ngày) hiếu động, mèo già (từ 30 ngày) hay ngủ và ít trèo. Tuổi chỉ đổi cách sinh hoạt, không đổi xu.']},
+      {id:'stats',ic:'😊',t:'Ba chỉ số của mèo',p:[
+        'Cả ba chỉ số đều phục vụ viễn chinh: no để được đi, năng lượng để trả cho chuyến đi, vui để chuyến đi mang về nhiều xu.',
+        'Độ no 🍗: tụt dần, từ đầy tới cạn mất khoảng 3 giờ 20 phút. Dưới 20 là bé đói: không đi viễn chinh được và bị trừ 25 độ vui. Đói hẳn về 0 thì năng lượng chỉ hồi 30% tốc độ thường. Cho ăn để làm đầy lại.',
+        'Năng lượng ⚡: mỗi chuyến viễn chinh tốn 25 tới 50 tùy điểm đến, thiếu thì không đi được. Ở nhà bé hồi khoảng 1 điểm mỗi phút; đang đi thì không hồi. Nệm ngủ, Phòng ngủ và một vài thuộc tính giúp hồi nhanh hơn; ức gà, cá hồi, hộp cao cấp hồi ngay.',
+        'Độ vui 😊: nhân xu viễn chinh từ ×0,8 (vui 0) qua ×1 (vui 50) tới ×1,2 (vui 100). Vuốt ve (+3), món ngon và món khoái khẩu cộng vui ngay.',
+        'Về lâu dài, độ vui trôi dần (1 điểm mỗi phút) về một mức do phòng quyết định: nội thất, thuộc tính của bé, bạn cùng phòng. Bé đói hoặc ngồi Phòng chờ thì mức này thấp đi.',
+        'Thuộc tính, buff thức ăn và đồ đạc làm các con số trên nhanh hoặc chậm hơn; chạm vào nhãn thuộc tính để xem.']},
       {id:'feed',ic:'🍚',t:'Cho ăn',p:[
         'Bấm Cho ăn để đổ đầy mọi bát đang sẵn sàng trong phòng. Mỗi bé ra ăn một suất rồi cảm ơn bạn 4 xu.',
         'Giá niêm yết là cho 8 suất; bạn chỉ trả cho số suất cần đổ thêm. Bát đổ lại được sau 10 phút.',

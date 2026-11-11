@@ -71,7 +71,7 @@ Bản đầu đề xuất 2★ kèm thêm một thuộc tính tốt của giốn
 ### C. Làm quen với mèo
 3. `room` [xem] Khoanh khung phòng: "Đây là phòng khách, nhà của <tên>."
 4. `pet` [bấm] Khoanh đúng chỗ bé đang đứng (bám theo bé khi bé đi): chạm để vuốt ve. Vuốt ve cho xu bằng số sao, 10 phút một lần.
-5. `fol` [xem] Khoanh thẻ theo dõi: camera đi theo bé, thẻ hiện độ no, năng lượng, độ vui.
+5. `fol` [xem] Khoanh thẻ theo dõi: camera đi theo bé, thẻ hiện độ no, năng lượng, độ vui. Ba khung tiếp theo giải thích từng chỉ số: no dưới 20 không đi viễn chinh được, năng lượng là sức trả cho chuyến đi, độ vui nhân xu viễn chinh (thêm 2026-11-11).
 6. `poses` [xem] Bảng dáng của chính bé vừa chọn, đều đang chuyển động: Ngồi, Vẫy đuôi, Liếm lông, Ngủ, Đi, Chạy, Nhảy. Lời thoại: bé tự sinh hoạt, trèo đồ, mèo con hiếu động, mèo già hay ngủ.
 7. `view` [xem] Khoanh khung phòng và nút ＋ －: kéo để xem, phóng to thu nhỏ.
 8. `feed` [bấm] Khoanh nút "Cho ăn". 9. `food` [bấm] Trong hộp chọn món, khoanh nút Hạt khô. 10. `fed` [xem] Bát đổ lại sau 10 phút; đói dưới 20 thì không đi viễn chinh.
@@ -126,7 +126,7 @@ Bong bóng nhỏ của Xoài, không làm tối màn hình, không chặn bấm,
 
 ## 5. Sổ tay trong Cài đặt
 
-Thẻ "📖 Sổ tay hướng dẫn" trong Cài đặt mở danh sách chương: Bắt đầu, Phòng và mèo, Cho ăn, Gacha và độ hiếm, Thuộc tính, Màn chi tiết, Viễn chinh, Cấp và mở khóa, Cửa hàng và nội thất, Sắp xếp đồ, Quản lý mèo và phóng sinh, Sưu tập, Mèo 5★ và trang phục hiếm, Cài đặt, Chơi qua máy chủ chung (chỉ khi đang chạy máy chủ). Cuối danh sách: "▶ Chơi lại hướng dẫn tân thủ" và "Bật lại các mẹo".
+Thẻ "📖 Sổ tay hướng dẫn" trong Cài đặt mở danh sách chương: Bắt đầu, Phòng và mèo, Ba chỉ số của mèo, Cho ăn, Gacha và độ hiếm, Thuộc tính, Màn chi tiết, Viễn chinh, Cấp và mở khóa, Cửa hàng và nội thất, Sắp xếp đồ, Quản lý mèo và phóng sinh, Sưu tập, Mèo 5★ và trang phục hiếm, Cài đặt, Chơi qua máy chủ chung (chỉ khi đang chạy máy chủ). Cuối danh sách: "▶ Chơi lại hướng dẫn tân thủ" và "Bật lại các mẹo".
 
 Chơi lại hướng dẫn: chạy lại luồng chính ở chế độ xem. Bỏ bước chọn mèo, không phát quà, không tốn xu hay vé: các bước [bấm] tốn tài nguyên (cho ăn, quay gacha, gửi viễn chinh) đổi thành [xem]; bước màn chi tiết dùng bé đầu tiên trong nhà.
 
