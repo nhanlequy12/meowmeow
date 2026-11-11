@@ -9,6 +9,7 @@
      sit.gif sleep.gif groom.gif walk.gif run.gif jump.gif   đúng tốc độ trong game (mèo trưởng thành), phóng 4 lần
      stand.png              dáng đứng (game chỉ dùng 1 khung)
      old.png                con mèo này vẽ theo kiểu cũ (ngồi, ngủ, liếm lông, đứng, đi, chạy, nhảy; quay trái) để đối chiếu
+     peek.png               ảnh soát nhanh, nhỏ: hàng trên mèo mới, hàng dưới bản cũ, 7 dáng chính (xem ảnh này trước, chỉ mở sheet.png khi cần soát từng khung)
      check.json             kết quả soát: lưới, đường đáy, bàn chân chạm đất so với Xoài, module còn thiếu
    Không cần cài gì thêm (không dùng thư viện ngoài). Mã thoát 1 nếu có lỗi soát. */
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
@@ -106,6 +107,13 @@ for(const key of keys){
   {const OP=['sit','sleep0','groom2','stand','walk3','run2','leap1'],G=4,d=fill(OP.length*100*G,80*G);
    OP.forEach((po,n)=>{try{const b=Art.cat(s,po,true);blit(d,OP.length*100*G,{W:b.W,d:b.rgba()},n*100*G,0,G)}catch(e){}});
    fs.writeFileSync(path.join(dir,'old.png'),png(OP.length*100*G,80*G,d))}
+  // peek.png: MỘT ảnh nhỏ để soát bằng mắt (ít token nhất): hàng trên là mèo mới, hàng dưới là bản cũ, 7 dáng chính, quay trái như trong game, phóng 2 lần
+  {const NP=['sit0s','sleep0s','groom2s','stand','walk2s','run2s','jump3s'],OP=['sit','sleep0','groom2','stand','walk3','run2','leap1'],G=2,PW=NP.length*100*G,d=fill(PW,160*G);
+   NP.forEach((po,n)=>{const f=frame(s,po);if(!f)return;const m={W:f.W,d:new Uint8ClampedArray(f.d.length)};
+     for(let y=0;y<80;y++)for(let x=0;x<f.W;x++){const sx=f.W===100?f.W-1-x:x;for(let k=0;k<4;k++)m.d[(y*f.W+x)*4+k]=f.d[(y*f.W+sx)*4+k]}
+     blit(d,PW,m,n*100*G,0,G)});
+   OP.forEach((po,n)=>{try{const b=Art.cat(s,po,true);blit(d,PW,{W:b.W,d:b.rgba()},n*100*G,80*G,G)}catch(e){}});
+   fs.writeFileSync(path.join(dir,'peek.png'),png(PW,160*G,d))}
   rep.ok=!rep.errors.length&&!(flag('strict')&&rep.missing.length); // thiếu module của nhóm khác thì vẫn tính đạt ở nhánh riêng; --strict (sau khi gộp) mới bắt buộc đủ
   fs.writeFileSync(path.join(dir,'check.json'),JSON.stringify(rep,null,1));
   if(!rep.ok)fail++;
