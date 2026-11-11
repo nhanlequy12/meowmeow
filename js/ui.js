@@ -1211,6 +1211,20 @@ function doGacha(useTicket){
   const r=gachaRoll(useTicket); if(r.err){toast(r.err,{type:'warn'});return}
   render();playGacha(r.cat);
 }
+// mở 10 lượt liền: diễn hoạt ảnh của bé nhiều sao nhất, sau đó hiện bảng cả 10 bé
+function doGacha10(useTicket){
+  if(useTicket?S.tickets<10:S.coins<GACHA_COST*10){toast(useTicket?'Cần 10 vé.':'Không đủ xu.',{type:'warn'});return}
+  const L=[];for(let i=0;i<10;i++){const r=gachaRoll(useTicket);if(r.err)break;L.push(r.cat)}
+  if(!L.length)return;
+  render();gz.multi=L;playGacha(L.reduce((a,c)=>c.star>a.star?c:a,L[0]));
+}
+function showMulti(L){
+  const n5=L.filter(c=>c.star===5).length,n4=L.filter(c=>c.star===4).length;
+  modal('<h3>Kết quả '+L.length+' lượt</h3><div class="dim">'+(n5?n5+' bé 5★ · ':'')+(n4?n4+' bé 4★ · ':'')+'chạm vào một bé để xem thông tin và đổi tên.</div>'+
+    '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(104px,1fr));margin:8px 0">'+L.slice().sort((a,b)=>b.star-a.star).map(c=>'<div class="cell tap" style="border-color:'+scol(c.star)+(c.star>=4?';border-style:solid':'')+'" onclick="openCat('+c.uid+')">'+catTag(lk(c),1.5)+'<br>'+nm(c)+'<br>'+starsOf(c.star)+(c.isNew?'<br><span class="tag x">MỚI</span>':'')+'<br><span class="dim">'+ROOM[c.room].n+'</span></div>').join('')+'</div>'+
+    '<button onclick="closeModal()">Đóng</button>');
+  L.forEach(c=>{delete c.isNew});save();
+}
 function playGacha(c){
   const el=$('gz'),st=c.star,col=STAR[st].g,box=$('gbox'),T=(ms,f)=>gz.timers.push(setTimeout(f,ms));
   gz.cat=c;gz.done=false;gz.parts=[];fxClear();gz.timers.forEach(clearTimeout);gz.timers=[];
@@ -1264,6 +1278,7 @@ function gachaDone(){
   gz.timers.forEach(clearTimeout);gz.timers=[];
   const c=gz.cat,v=$('gname').value.trim().slice(0,16); if(v)c.name=v; delete c.isNew;
   save();$('gz').className='';syncEnts();render();
+  if(gz.multi){const L=gz.multi;gz.multi=null;showMulti(L);return}
   toast('đã về '+ROOM[c.room].n,{type:'cat',title:c.name});
 }
 
@@ -1410,6 +1425,7 @@ const PANEL={
   return '<div class="card" style="flex-direction:column;text-align:center">'+furnTag('gift','#ffd24a',84,84)+'<div>Hộp quà mèo</div>'+
    (full?'<div class="dim">Các phòng đã đầy: bé mới sẽ vào Phòng chờ cho đến khi bạn xếp phòng.</div>':'')+
    '<div class="row wrap" style="justify-content:center"><button class="on" '+(S.coins<GACHA_COST?'disabled':'')+' onclick="doGacha(false)">Mở · '+GACHA_COST+' xu</button><button '+(S.tickets<1?'disabled':'')+' onclick="doGacha(true)">Dùng vé 🎟 ('+S.tickets+')</button></div>'+
+   '<div class="row wrap" style="justify-content:center;margin-top:6px"><button class="on" '+(S.coins<GACHA_COST*10?'disabled':'')+' onclick="doGacha10(false)">Mở ×10 · '+(GACHA_COST*10).toLocaleString('vi-VN')+' xu</button><button '+(S.tickets<10?'disabled':'')+' onclick="doGacha10(true)">×10 bằng 10 vé 🎟</button></div>'+
    '<small>'+[1,2,3,4,5].map(s=>'<span style="color:'+scol(s)+'">'+s+'★ '+STAR[s].n+' '+STAR[s].p+'%</span>').join(' · ')+'</small>'+
    '<small>Bảo hiểm: chắc chắn 4★ trở lên sau '+PITY+' lượt (đã mở '+Math.min(S.pity,PITY)+'/'+PITY+'). Số trait bằng số sao. Mèo trang phục chỉ có ở 4★–5★; màu lông hiếm rơi khoảng '+Math.round(RARE_P*100)+'% mỗi lượt.</small></div>';
  },
