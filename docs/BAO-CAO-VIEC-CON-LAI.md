@@ -58,9 +58,9 @@ Chủ game giao: "thêm mèo Phineas và mèo Ferb, Yani Neko (mèo hút thuốc
 
 | Mèo | id đề xuất | Sao | Nhóm | Ghi chú tạo hình (tra mạng để lấy đúng trước khi vẽ) |
 |---|---|---|---|---|
-| Mèo Phineas | `v_phineas` | 4★ (chủ game chưa nói, chờ duyệt) | film | Đầu hình tam giác đặc trưng, tóc đỏ cam dựng, áo sọc cam-trắng, quần xanh |
-| Mèo Ferb | `v_ferb` | 4★ (chờ duyệt) | film | Tóc xanh lá, đầu dài, mắt một to một nhỏ, áo sơ mi vàng kem, quần tím cạp cao; ít nói |
-| Yani Neko (mèo hút thuốc) | `v_yani` | 4★ (chờ duyệt) | meme | Nhân vật mèo nghiện thuốc lá của bộ truyện "Yani Neko": điếu thuốc ngậm ở miệng có đốm lửa đỏ và làn khói bay lên (khói trễ 1-2 khung), mắt lờ đờ, áo ba lỗ |
+| Mèo Phineas | `v_phineas` | 4★ (chủ game đã duyệt) | film | Đầu hình tam giác đặc trưng, tóc đỏ cam dựng, áo sọc cam-trắng, quần xanh |
+| Mèo Ferb | `v_ferb` | 4★ (đã duyệt) | film | Tóc xanh lá, đầu dài, mắt một to một nhỏ, áo sơ mi vàng kem, quần tím cạp cao; ít nói |
+| Yani Neko (mèo hút thuốc) | `v_yani` | 4★ (đã duyệt) | meme | Nhân vật mèo nghiện thuốc lá của bộ truyện "Yani Neko": điếu thuốc ngậm ở miệng có đốm lửa đỏ và làn khói bay lên (khói trễ 1-2 khung), mắt lờ đờ, áo ba lỗ |
 | Mèo Itadori | `v_itadori` | 5★ | anime | Tóc hồng dựng, hai bên và gáy cạo sẫm màu; hai vạch nhỏ dưới mắt; đồng phục Cao chuyên Chú thuật xanh đen có mũ trùm đỏ |
 
 **Trang phục hiếm của Itadori: bị Sukuna chiếm xác** (`COATS.itSukuna`, `form:1`, có `aura` đỏ sẫm). Các chi tiết PHẢI vẽ rõ, nhìn ra ở cỡ thật:
@@ -77,14 +77,14 @@ Chủ game giao: "thêm mèo Phineas và mèo Ferb, Yani Neko (mèo hút thuốc
 4. Với dạng hiếm: các hình xăm hiện dần trên mặt, mở "Phục Ma Ngự Trù Tử" (lãnh địa của Sukuna): nền đỏ sẫm, các vệt chém trắng cắt ngang màn hình.
 
 Hành động đặc trưng trong phòng (`S5`): đấm Hắc Thiểm tại chỗ với tia sét đen đỏ; ở dạng Sukuna là các vệt chém quanh thân.
-Thuộc tính đề xuất (chờ duyệt): Itadori "Thể lực phi thường": viễn chinh nhanh hơn 20%, +10% xu; có Mèo Gojo cùng phòng thì +10 độ vui. Dạng Sukuna "Vua Nguyền Rủa": +25% xu ban đêm, nhưng mèo khác cùng phòng −5 độ vui.
+Thuộc tính (chủ game ĐÃ DUYỆT 11:55): Itadori "Thể lực phi thường": viễn chinh nhanh hơn 20%, +10% xu; có Mèo Gojo cùng phòng thì +10 độ vui. Dạng Sukuna "Vua Nguyền Rủa": +25% xu ban đêm, nhưng mèo khác cùng phòng −5 độ vui.
 
 Việc phải làm:
 1. Tra mạng tạo hình bốn nhân vật và hình xăm của Sukuna (WebSearch), lưu ghi chú vào `docs/tasks/`.
 2. `js/data.js`: thêm 4 dòng `V(...)` vào `VARIANTS`, `FORM0.v_itadori='itSukuna'`, `COATS.itSukuna`, trait cho từng mèo, mô tả, món ăn ưa thích; kiểm tra tỉ lệ gacha và bộ sưu tập.
 3. `js/ui.js`: `INTRO.v_itadori`, `S5.v_itadori`, hiệu ứng nền thẻ (`BGFX`) cho 4 mèo. Chỉ THÊM, không sửa intro của mèo khác.
 4. Module hình: `js/cats/v_phineas.js`, `v_ferb.js`, `v_yani.js`, `v_itadori.js`. Sau bước 2, thêm hai nhóm vào `tools/mktasks.js` rồi chạy lại để sinh `docs/tasks/agent-23.md` (Phineas, Ferb, Yani Neko) và `agent-24.md` (Itadori và dạng Sukuna), giao Codex bằng `tools/run_codex.sh 23` và `24`.
-5. **Vướng mắc phải quyết**: bốn mèo này KHÔNG có hình kiểu cũ trong `js/art.js`, mà gacha đang vẽ kiểu cũ. Cách đề xuất: mèo nào không có trang phục kiểu cũ thì gacha (intro và ảnh mở trứng) dùng hình CatKit; mèo cũ giữ nguyên. Cần thêm đúng một điều kiện vào `catCv` trong `js/ui.js`.
+5. **Đã quyết (chủ game duyệt 11:55)**: bốn mèo này KHÔNG có hình kiểu cũ trong `js/art.js`, mà gacha đang vẽ kiểu cũ. Cách làm: mèo nào không có trang phục kiểu cũ thì gacha (intro và ảnh mở trứng) dùng hình CatKit; mèo cũ giữ nguyên. Cần thêm đúng một điều kiện vào `catCv` trong `js/ui.js`.
 6. Soát: `node tools/catcheck.js` (lúc đó là 133 mèo), chạy thử intro Itadori trên Chrome.
 
 Còn lại sau A1, nên xem bằng mắt: Sphynx và Lykoi gần như không thấy nét miệng (da và lông sẫm, hoa văn tự tô vùng mặt).
@@ -133,8 +133,8 @@ Thứ tự ưu tiên nếu hạn mức lại hết: B (18-22) → A2, A3, A4, A5
 ## E. Quyết định đang chờ chủ game
 
 - **Gacha**: đang giữ kiểu vẽ cũ hoàn toàn (intro và ảnh lúc mở trứng), nên mèo lúc mở gacha trông kiểu cũ, vào phòng trông kiểu Xoài. Muốn ảnh mở trứng dùng hình mới thì bỏ cờ `old` ở một dòng trong `js/ui.js` (`gv-pic`).
-- **Số sao của Phineas, Ferb, Yani Neko**: chủ game chưa nói; đang đề xuất 4★. Thuộc tính và con số của Tanjiro, Itadori cũng chờ duyệt.
-- **Gacha của mèo mới**: mèo không có hình kiểu cũ thì gacha dùng hình CatKit (xem A7 bước 5). Đồng ý không?
+- **Thuộc tính và con số của Tanjiro** (A6 bước 3): chờ duyệt. (Số sao Phineas, Ferb, Yani Neko = 4★, thuộc tính Itadori và cách vẽ gacha cho mèo mới: đã duyệt.)
+- **Chọn thêm nhân vật**: danh sách đề xuất ở `docs/DE-XUAT-NHAN-VAT.md`, chờ chủ game chọn. Chưa con nào được đưa vào kế hoạch.
 - **Angora trắng**: màu mặc định mất màu mắt thứ hai do cách `look()` trong `js/data.js` ghép màu lông (có từ trước, không phải lỗi sprite). Có sửa không?
 
 ## F. Đã xong, để đối chiếu
