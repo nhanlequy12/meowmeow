@@ -6,7 +6,7 @@ Mèo không có file riêng: mọi mèo được **dựng lúc chạy** bởi Ca
 Một giống thường = hoa văn (theo màu lông) + đặc điểm hình dáng; mèo đặc biệt = thêm một module trang phục.
 Vì vậy việc được chia theo **module**, mỗi nhóm kèm danh sách mèo phải soát.
 
-## Phân nhóm (22 phiên Codex)
+## Phân nhóm (24 phiên Codex)
 
 | Phiên | Nội dung | File được sửa | Mèo phải soát |
 |---|---|---|---|
@@ -32,6 +32,8 @@ Vì vậy việc được chia theo **module**, mỗi nhóm kèm danh sách mèo
 | agent-20 | Eleven, Phi Vụ Áo Đỏ, Lính Áo Hồng, Số 456 | `js/cats/v_eleven.js`<br>`js/cats/v_heist.js`<br>`js/cats/v_guard.js`<br>`js/cats/v_456.js` | v_eleven, v_heist, v_guard, v_456 |
 | agent-21 | Jedi, Gandalf, Ba Lỗ, Ninja | `js/cats/v_jedi.js`<br>`js/cats/v_gandalf.js`<br>`js/cats/v_tank.js`<br>`js/cats/v_ninja.js` | v_jedi, v_gandalf, v_tank, v_ninja |
 | agent-22 | Đầu Bếp, Bánh Mì, DJ | `js/cats/v_chef.js`<br>`js/cats/v_bread.js`<br>`js/cats/v_dj.js` | v_chef, v_bread, v_dj |
+| agent-23 | Phineas, Ferb, Yani Neko | `js/cats/v_phineas.js`<br>`js/cats/v_ferb.js`<br>`js/cats/v_yani.js` | v_phineas, v_ferb, v_yani |
+| agent-24 | Itadori và trang phục hiếm Sukuna chiếm xác | `js/cats/v_itadori.js` | v_itadori |
 
 Lõi (người điều phối) giữ: `js/catkit.js`, `js/cats/core.js` (trait `closed`, `v_huh`, `v_grumpy`), hoa văn `solid`/`tabby`, vùng trắng, màu mắt, chân ngắn, `tools/catprev.js`, `index.html`, `js/art.js`, `js/ui.js`, `js/data.js`.
 File dùng chung KHÔNG phiên nào được sửa: mọi file ngoài cột "File được sửa" của phiên đó; đề xuất ghi vào `docs/tasks/agent-XX-shared-changes.md`.
@@ -129,17 +131,18 @@ File dùng chung KHÔNG phiên nào được sửa: mọi file ngoài cột "Fil
 
 Màu hiếm (áp lên mọi giống từ 4★ trở xuống): `r_odd` Trắng mắt hai màu (solid), `r_smoke` Khói bạc (smoke), `r_gold` Vàng kim (tabby), `r_cinnamon` Cinnamon (quế) (solid), `r_fawn` Fawn (nâu vàng nhạt) (solid), `r_stortie` Đồi mồi khói (tortie), `r_mcalico` Tam thể đực (calico), `r_nacre` Ánh xà cừ (nacre), `r_sheen` Đen ánh xanh (sheen).
 
-## Mèo trang phục và đặc biệt (43)
+## Mèo trang phục và đặc biệt (47)
 
 | id | Tên | Sao | Nhóm | Đặc điểm | Trang phục | Dạng | Độ khó | Phiên |
 |---|---|---|---|---|---|---|---|---|
 | v_naruto | Mèo Naruto | 5★ | anime | - |  | nrBase, nrKurama, nrHokage | nhân vật đặc biệt 5★ | agent-09 |
 | v_luffy | Mèo Luffy | 4★ | anime | - | haircap, strawhat, scar, suit, belt | - | có phụ kiện 4★ | agent-15 |
 | v_goku | Mèo Goku | 5★ | anime | - |  | gkBase, gkGod | nhân vật đặc biệt 5★ | agent-09 |
-| v_tanjiro | Mèo Tanjiro | 4★ | anime | - | haircap, scar, earrings, checker | - | có phụ kiện 4★ | agent-15 |
+| v_tanjiro | Mèo Tanjiro | 5★ | anime | - | sword, haircap, scar, earrings, checker | v_tanjiro_0, tjKagura | nhân vật đặc biệt 5★ | agent-15 |
 | v_nezuko | Mèo Nezuko | 4★ | anime | - | longhair, haircap, mr, bamboo, suit, belt | - | có phụ kiện 4★ | agent-15 |
 | v_thunder | Mèo Zenitsu | 5★ | anime | closed | sword, haircap, tripat, sparks | v_thunder_0, ztGod | nhân vật đặc biệt 5★ | agent-10 |
 | v_gojo | Mèo Gojo | 5★ | anime | - | spikes, blindfold, suit, collar | v_gojo_0, gjSix | nhân vật đặc biệt 5★ | agent-10 |
+| v_itadori | Mèo Itadori | 5★ | anime | - | haircap, suit, collar | v_itadori_0, itSukuna | nhân vật đặc biệt 5★ | agent-24 |
 | v_anya | Mèo Anya | 4★ | anime | - | longhair, haircap, horns, suit, collar | - | có phụ kiện 4★ | agent-15 |
 | v_frieren | Mèo Frieren | 4★ | anime | - | staff, twintails, haircap, suit, belt, collar | - | có phụ kiện 4★ | agent-16 |
 | v_levi | Mèo Levi | 4★ | anime | - | cape, haircap, suit, cravat, belt | - | có phụ kiện 4★ | agent-16 |
@@ -151,6 +154,8 @@ Màu hiếm (áp lên mọi giống từ 4★ trở xuống): `r_odd` Trắng m�
 | v_hero | Mèo Superman | 4★ | film | - | cape, haircap, suit, emblem, belt | - | có phụ kiện 4★ | agent-18 |
 | v_pirate | Mèo Jack Sparrow | 4★ | film | -, hoa văn tabby | longhair, haircap, tricorn, suit, sides, belt, fr, fr | - | có phụ kiện 4★ | agent-19 |
 | v_harry | Mèo Harry Potter | 5★ | film | - | wand, haircap, scar, glasses, suit, scarf | v_harry_0, hpSeeker | nhân vật đặc biệt 5★ | agent-11 |
+| v_phineas | Mèo Phineas | 4★ | film | - | haircap, suit | - | có phụ kiện 4★ | agent-23 |
+| v_ferb | Mèo Ferb | 4★ | film | - | haircap, suit | - | có phụ kiện 4★ | agent-23 |
 | v_hermione | Mèo Hermione | 4★ | film | - | wand, longhair, haircap, suit, tie | - | có phụ kiện 4★ | agent-19 |
 | v_voldemort | Mèo Voldemort | 4★ | film | - | wand, flag:noFace, flag:noEars, fr, fr, fr, fr, suit | - | có phụ kiện 4★ | agent-19 |
 | v_wednesday | Mèo Wednesday | 4★ | film | - | twintails, haircap, suit, collar, lids | - | có phụ kiện 4★ | agent-19 |
@@ -167,6 +172,7 @@ Màu hiếm (áp lên mọi giống từ 4★ trở xuống): `r_odd` Trắng m�
 | v_nyan | Nyan Cat | 5★ | meme | - | nrainbow, npoptart, cheeks, nstars | v_nyan_0, nyTac | nhân vật đặc biệt 5★ | agent-12 |
 | v_maneki | Mèo Thần Tài | 5★ | meme | closed, hoa văn calico | collar, paw, coin | v_maneki_0, mkGold | nhân vật đặc biệt 5★ | agent-12 |
 | v_grumpy | Mèo Grumpy | 4★ | meme | -, hoa văn point | frown | - | có phụ kiện 4★ | lõi (core.js) |
+| v_yani | Yani Neko | 4★ | meme | - | suit | - | có phụ kiện 4★ | agent-23 |
 | v_huh | Mèo “Huh?” | 4★ | meme | -, hoa văn cow | qmark | - | có phụ kiện 4★ | lõi (core.js) |
 | v_garfield | Mèo Garfield | 4★ | meme | -, hoa văn tiger | lenses, pupils, lids | - | có phụ kiện 4★ | agent-17 |
 | v_tank | Mèo Ba Lỗ | 4★ | meme | -, hoa văn tabby | tank | - | có phụ kiện 4★ | agent-21 |
