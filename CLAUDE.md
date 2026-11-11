@@ -19,6 +19,7 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 - "Animation chạy đã đẹp, KHÔNG sửa": dáng phi (4 khung chính trong `RUNK`) phải giữ nguyên. Các khung xen giữa chỉ được nội suy từ 4 khung này.
 - Style: hạt cườm (perler bead), pastel, viền nâu đậm. Khi sửa tỉ lệ thì chỉ sửa tỉ lệ, không đổi cách vẽ, bảng màu hay nét viền.
 - Admin chỉ để thử, không hiện với người chơi thường.
+- Việc nào tự làm được thì tự làm, không giao cho Codex. Chỉ dùng Codex khi việc thật sự cần chạy song song quy mô lớn mà một mình không kịp, hoặc khi người dùng bảo dùng Codex.
 - Chỉ commit và push khi người dùng bảo. Commit message tiếng Việt, kết thúc bằng dòng `Co-Authored-By: Claude <noreply@anthropic.com>`.
 
 ### Git
