@@ -16,8 +16,11 @@ K.costume('v_pirate',{
     const A=G.A,B=G.lag(1),h=A.head,c=A.crown,n=A.chin,L=G.layer();
     // Tóc dài theo đầu trễ một khung, không che bàn chân.
     const bh=B.head;
+    // Thu tóc theo mép lưới, giữ elip cong cả khi đầu lệch lúc ngủ.
+    const left=G.side?1:Math.min(1,(bh[0]-4)/29),right=G.side?1:Math.min(1,(67-bh[0])/29);
+    const hx=dx=>bh[0]+dx*(dx<0?left:right);
     if(G.side){L.ell(bh[0]-12,bh[1]+5,10,22,HAIR);L.ell(bh[0]-17,bh[1]+11,5,17,HAIR)}
-    else{L.ell(bh[0]-21,bh[1]+3,8,23,HAIR);L.ell(bh[0]+21,bh[1]+3,8,23,HAIR)}
+    else{L.ell(hx(-21),bh[1]+3,8*left,23,HAIR);L.ell(hx(21),bh[1]+3,8*right,23,HAIR)}
     L.stamp({behind:true,clip:(x,y)=>y<73});
     // Khăn đỏ dưới mũ ba góc, mép vàng lớn để đọc rõ khi thu nhỏ.
     const H=G.layer(),cx=c[0],cy=c[1];
@@ -30,7 +33,7 @@ K.costume('v_pirate',{
     T.stamp({outline:false,clip:(x,y)=>y<73});
     const S=G.layer();
     if(G.side)S.line(bh[0]-18,bh[1]-3,bh[0]-21,bh[1]+13,LIGHT,2);
-    else{S.line(bh[0]-24,bh[1],bh[0]-23,bh[1]+14,LIGHT,2);S.line(bh[0]+24,bh[1],bh[0]+23,bh[1]+14,LIGHT,2)}
+    else{S.line(hx(-24),bh[1],hx(-23),bh[1]+14,LIGHT,2);S.line(hx(24),bh[1],hx(23),bh[1]+14,LIGHT,2)}
     S.stamp({outline:false,clip:(x,y)=>y<71});
   }
 });
