@@ -1,22 +1,15 @@
-# agent-09 — Naruto và Goku
+# agent-09 — sửa tóc Naruto nhìn thẳng
 
-Đã hoàn thành hai module trang phục trên khung Xoài, gồm sáu ngoại hình:
+Lần sửa theo nhận xét điều phối, ngày 2026-11-11.
 
-- Naruto: `nrBase`, `nrKurama`, `nrHokage`.
-- Goku: `gkBase`, `gkGod`, `gkSSJ` (dạng biến hình tạm thời).
+Chỉ sửa `js/cats/v_naruto.js` và báo cáo này. Không sửa `v_goku.js`, file dùng chung, gacha; không commit hoặc push.
 
-## File
-
-- `js/cats/v_naruto.js`: tóc nhọn, băng trán làng Lá, hai đuôi băng trễ 1–2 khung, ba vạch mỗi má, đồ cam đen; áo chakra vàng, mắt chữ thập khi mở mắt, cầu đen trễ 2 khung; mũ Hokage, tóc mái, mạng che và áo choàng trắng viền lửa đỏ.
-- `js/cats/v_goku.js`: tóc nhọn đen/đỏ/vàng theo `s.ct`, võ phục cam, cổ và đai xanh, phù hiệu trắng, giày xanh viền vàng, đuôi nâu, vòng hào quang rỗng trễ 1 khung.
-- `docs/tasks/agent-09-report.md`.
-- `docs/tasks/agent-09-shared-changes.md`.
-
-Áo tô qua `paint`, dùng tọa độ nghỉ và nhãn thân/chân để giữ bóng đổ và nhịp chân. Phụ kiện dùng mỏ neo từng khung; vạt áo và mạng che dùng `G.lag(2)`. Luồng khí và lấp lánh dạng hiếm để lõi tự vẽ. Không sửa bộ khớp, dữ liệu, gacha hay file dùng chung.
+- Tách nhánh tóc nhìn thẳng khỏi tóc nhìn ngang; giữ nguyên cách vẽ nhìn ngang.
+- Naruto thường và Kurama dùng cùng khối tóc liền với 9 chỏm lớn tỏa ra, giữa cao nhất, chỏm ngoài hướng sang hai bên. Chân chỏm nối kín, dùng một viền bao quanh khối, thêm bậc bóng sát băng trán và bốn lọn mái ngắn.
+- Tóc lấy mỏ neo `G.A.crown`, `G.A.earL`, `G.A.earR`; giữ phần màu của hai chóp tai sẵn có, không khoét nền hoặc giữ viền tai chia tóc. Kurama dùng vàng sáng.
+- Giữ nguyên mã băng trán, đuôi băng, ria và áo; mái phủ mép băng, biểu tượng Lá nguyên vẹn. Các phụ kiện trễ nhịp vẫn dùng `G.lag(1)` / `G.lag(2)`. Hokage giữ nguyên cả tóc mái dưới mũ.
 
 ## Bảng mèo × dáng
-
-Mỗi ô ghi đạt theo công cụ kiểm tra và lần mở xem sheet cuối cùng. Hai dạng có dấu † còn chờ mắt đá quý từ nhóm khác.
 
 | Khóa | Ngồi 4 | Ngủ 4 | Liếm 6 | Đứng 1 | Đi 8 | Chạy 8 | Nhảy 8 |
 |---|---|---|---|---|---|---|---|
@@ -24,35 +17,18 @@ Mỗi ô ghi đạt theo công cụ kiểm tra và lần mở xem sheet cuối c
 | `v_naruto~nrKurama` | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt |
 | `v_naruto~nrHokage` | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt |
 | `v_goku` | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt |
-| `v_goku~gkGod` † | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt |
-| `v_goku~gkSSJ` † | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt |
-
-Hai mèo dùng thân thường; dữ liệu không có thuộc tính chân ngắn.
+| `v_goku~gkGod` | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt |
+| `v_goku~gkSSJ` | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt | Đạt |
 
 ## Kiểm tra
 
-Đã đọc đặc tả, CatKit, module mẫu, công cụ preview, bộ khớp Xoài, cấu trúc dữ liệu sprite, bộ vẽ cũ và dữ liệu ngoại hình. Đã xuất Xoài bằng `node tools/catprev.js venxam`, mở sheet chuẩn và mở cả sáu ảnh `old.png` trước khi dựng module.
+- `node --check js/cats/v_naruto.js` và `node --check js/cats/v_goku.js`: đạt.
+- `node tools/catprev.js v_naruto v_naruto~nrKurama v_naruto~nrHokage v_goku v_goku~gkGod v_goku~gkSSJ --strict --quiet`: mã thoát 0; cả sáu `check.json` báo `ĐẠT`, không lỗi, không thiếu module.
+- Đã mở `peek.png` của cả sáu khóa để đối chiếu mèo mới/cũ; mở lại ba dạng Naruto sau lần sửa cuối. Đã xem riêng đủ 14 khung nhìn thẳng mỗi dạng thường/Kurama qua ảnh cắt từ sheet: `preview/agent-09-front-review.png`.
+- So RGBA trước/sau cho 234 khung: đúng 28 khung tóc nhìn thẳng thay đổi; 206 khung còn lại giống từng ô, gồm 50 khung nhìn ngang Naruto thường/Kurama, 39 khung Hokage và 117 khung Goku. Biểu tượng Lá giữ nguyên ở cả 14 khung; không đổi ô từ dưới vùng tóc cũ xuống thân.
+- Không có ô đặc ở hàng 0; công cụ xác nhận bàn chân hàng 74–75 và giới hạn đáy đạt. Màu tóc đều đặc; cảnh báo bán trong suốt vẫn chỉ thuộc aura của lõi.
+- `git diff --check`: đạt. Ảnh preview không đưa vào git.
 
-Lệnh cuối:
+## Người điều phối nên xem lại
 
-```bash
-node --check js/cats/v_naruto.js
-node --check js/cats/v_goku.js
-node tools/catprev.js v_naruto v_naruto~nrKurama v_naruto~nrHokage v_goku v_goku~gkGod v_goku~gkSSJ
-git diff --check
-```
-
-Cả sáu khóa báo `ĐẠT`; `errors` đều rỗng. Cú pháp và kiểm tra khoảng trắng đạt. Đã mở lại toàn bộ sáu `sheet.png` sau lần chỉnh cuối, soát đủ các khung với hàng Xoài phía trên. Ảnh, GIF và `check.json` giữ tại `preview/<khóa>/`, không đưa vào git.
-
-Kiểm tra bổ sung bằng Node: dựng lặp hai lần mỗi khung cho cả sáu khóa (234 khung), so RGBA từng ô. Tất cả ổn định; không có ô đặc ở hàng 0. Không đổi số khung, thời lượng hoặc bàn chân ở hàng 74–75.
-
-## Phụ thuộc và chỗ cần người xem lại
-
-- `gkGod` và `gkSSJ` còn `trait:gem` chưa có trong nhánh này. Màu mắt đỏ/xanh ngọc đã do lõi giữ đúng; cần soát lại hiệu ứng mắt sau khi gộp module của nhóm khác. Không dùng `--strict` cho hai khóa này trước khi gộp `gem`.
-- Kurama, Goku God và Goku SSJ mỗi khóa có 39 cảnh báo ô bán trong suốt, chỉ từ `aura` do lõi tự vẽ. Các module chỉ dùng màu đặc.
-- Người điều phối cần nạp hai script trong `index.html` theo quy trình chung; nhánh này không sửa file đó.
-- Nên xem lại ở cỡ thật trong phòng: ký hiệu nhỏ trên băng trán, chữ trên mũ và phù hiệu áo; độ trễ vòng sáng khi Goku nhảy; vạt áo và cầu đen của Kurama trong các GIF chạy/nhảy. Đã soát vị trí qua toàn bộ sheet, chưa chạy thử luồng phòng trong trình duyệt.
-
-## Git
-
-Không tạo được commit do thư mục git dùng chung chỉ đọc. Cả `git add` và `git commit -m "agent-09: Naruto và Goku (5★, nhiều dạng)"` bị từ chối khi tạo `/home/jili/nhanle/meo-xu/.git/worktrees/agent-09/index.lock` (`Read-only file system`). Bốn file mới vẫn nằm nguyên trên đĩa trong nhánh `sprite/agent-09`, chưa được stage hoặc commit. Không push, đổi nhánh hay merge.
+Không còn lỗi đã biết trong phạm vi sửa. Nên duyệt thẩm mỹ 9 chỏm tóc, hai chóp tai và lọn mái ở cỡ thật trong phòng, nhất là dạng Kurama vàng sáng. Chưa chạy luồng phòng trong trình duyệt.

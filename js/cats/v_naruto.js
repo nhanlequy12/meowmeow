@@ -60,15 +60,32 @@ K.costume('v_naruto',{
       T.line(tx,ty+2,side?B.crown[0]-29:B.crown[0]+26,B.crown[1]+21,BLUE2,3).stamp({behind:true});
     }
     const H=G.layer(),hc=ku?LIGHT:HAIR;
-    if(!ho){
-      const pts=side?
-        [[x-17,y+12],[x-25,y+8],[x-17,y+3],[x-24,y-3],[x-12,y-1],[x-16,y-10],[x-5,y-4],[x,y-12],[x+6,y-3],[x+13,y-10],[x+15,y+5],[x+9,y+10]]:
-        [[x-18,y+12],[x-25,y+8],[x-18,y+3],[x-25,y-4],[x-14,y-1],[x-16,y-12],[x-6,y-4],[x,y-16],[x+6,y-4],[x+16,y-12],[x+14,y-1],[x+25,y-4],[x+18,y+3],[x+25,y+8],[x+18,y+12]];
-      H.poly(pts,hc).stamp({behind:true});
+    if(!ho&&side){
+      H.poly([[x-17,y+12],[x-25,y+8],[x-17,y+3],[x-24,y-3],[x-12,y-1],[x-16,y-10],[x-5,y-4],[x,y-12],[x+6,y-3],[x+13,y-10],[x+15,y+5],[x+9,y+10]],hc).stamp({behind:true});
       const Cap=G.layer();
       Cap.poly([[x-17,y+1],[x+14,y+1],[x+17,y+8],[x+12,y+14],[x+8,y+8],[x+3,y+12],[x-2,y+7],[x-9,y+13],[x-14,y+8],[x-18,y+13]],hc).stamp({edge:false,clip:(u,v)=>{
         const f=G.F.feat[v*G.W+u];return f!==FT.EYEL&&f!==FT.EYER;
       }});
+    }else if(!ho){
+      // Chín chỏm chung một khối, phủ chân tai để không hở nền hay viền trong.
+      const l=A.earL,r=A.earR,top=v=>Math.max(3,v),shade=ku?[245,211,111]:[218,165,37],E=G.layer();
+      // Chỉ giữ chóp tai có sẵn; bên dưới vẫn là tóc liền, không khoét ô trống.
+      for(const e of [l,r])for(let v=e[1];v<=e[1]+5;v++)for(let u=e[0]-5;u<=e[0]+5;u++){
+        if(G.F.part[v*G.W+u]===P.EAR&&G.F.role[v*G.W+u]>1)E.set(u,v,G.get(u,v));
+      }
+      H.poly([[x-20,y+4],[l[0]-19,y+8],[x-24,y+3],
+        [l[0]-18,top(l[1]+3)],[x-23,y],
+        [l[0]-11,top(l[1]-3)],[x-16,y-2],
+        [l[0],top(l[1]-9)],[x-6,y-5],
+        [x,top(y-19)],[x+6,y-5],
+        [r[0]+1,top(r[1]-9)],[x+16,y-2],
+        [r[0]+12,top(r[1]-3)],[x+23,y],
+        [r[0]+19,top(r[1]+3)],[x+24,y+3],
+        [r[0]+20,y+8],[x+20,y+4],
+        [x+17,y+9],[x+13,y+4],[x+10,y+4],[x+6,y+9],[x+3,y+4],
+        [x-3,y+4],[x-6,y+9],[x-10,y+4],[x-13,y+4],[x-17,y+9]],
+        (u,v)=>v>=y+2+(Math.abs(u-x)<13?0:1)?shade:hc).stamp();
+      E.stamp({outline:false});
     }else{
       const Bang=G.layer();
       for(let k=-1;k<=1;k++)Bang.poly([[x+k*8-4,y+7],[x+k*8+3,y+7],[x+k*8-2,y+13]],HAIR);
@@ -83,6 +100,15 @@ K.costume('v_naruto',{
       const by=y+(side?3:6);
       Band.rect(x-18,by+1,36,5,BLUE).rect(x-8,by,17,7,STEEL).rect(x-7,by+1,15,5,METAL).stamp({edge:false});
       const D=G.layer();glyph(D,LEAF,x-3,by+1,[92,98,120]);D.stamp({outline:false});
+    }
+    if(!side&&!ho){
+      // Mái ngắn phủ mép băng; chừa nguyên miếng kim loại và biểu tượng Lá.
+      const Bang=G.layer();
+      for(const k of [-1,1]){
+        Bang.poly([[x+k*20,y+1],[x+k*13,y+1],[x+k*17,y+9]],hc);
+        Bang.poly([[x+k*12,y+1],[x+k*4,y+1],[x+k*6,y+9]],hc);
+      }
+      Bang.stamp({outline:false});
     }
     // Ba vạch mỗi má; giữ nguyên mí mắt nhắm của Xoài.
     const M=G.layer(),mark=(e,k)=>{for(let j=0;j<3;j++)M.line(e[0]+k*4,e[1]+5+j*3,e[0]+k*9,e[1]+4+j*4,INK,ku?2:1)};
