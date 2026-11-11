@@ -12,10 +12,10 @@ K.costume('v_garfield',{
       }
       // Ngủ và chớp mắt giữ nét nhắm của Xoài, không ép mắt mở.
       if(!open)return;
-      L.ell(ex,ey,6,6,(x,y)=>{
-        if(((x-ex)/5)**2+((y-ey)/5)**2>1)return INK;
-        if(y<=ey)return lid;
-        if(y===ey+1||(Math.abs(x-ex)<=1&&y<=ey+5))return INK;
+      L.ell(ex,ey,7,7,(x,y)=>{
+        if(((x-ex)/6)**2+((y-ey)/6)**2>1)return INK;
+        if(y<ey)return lid;
+        if(y===ey||(x>=ex+1&&x<=ex+2&&y<=ey+4))return INK;
         return WHITE;
       });
     };
