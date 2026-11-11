@@ -11,7 +11,7 @@
 const TUT=(()=>{
   const TX=TUT_TEXT,Q=s=>document.querySelector(s),QA=s=>[...document.querySelectorAll(s)];
   const st=()=>S.tut||(S.tut={done:1,hints:{}});
-  let skipAsk=false,E=null,cs=null,line=0,typ=null,rp=false,raf=0,shownAt=0,scrolled=false,waiting=false,rpCat=null;
+  let scrollN=0,scrollT=0,skipAsk=false,E=null,cs=null,line=0,typ=null,rp=false,raf=0,shownAt=0,scrolled=false,waiting=false,rpCat=null;
   const subs={};
 
   /* ---------- móc vào hàm có sẵn của game (khai báo function toàn cục) ---------- */
@@ -66,7 +66,7 @@ const TUT=(()=>{
     {id:'hi',say:'hi',guide:1},
     {id:'pick',pick:1,noSkip:1,replayOff:1,skip:()=>!!(st().got&&st().got.starter&&catBy(st().cat))},
     {id:'room',say:'room',tab:'home',target:'#roomwrap',pass:1,enter(){const c=starter();if(c&&c.room!=='wait'&&c.room!==cur)setRoom(c.room)}},
-    {id:'pet',say:'pet',tab:'home',target:catRect,act:'petCat',enter(){const c=starter();$('roomwrap').scrollIntoView({block:'nearest'});if(c&&!onTrip(c.uid))follow(c.uid)},skip:()=>!starter()||onTrip(starter().uid)||starter().room!==cur},
+    {id:'pet',say:'pet',tab:'home',target:catRect,act:'petCat',enter(){const c=starter();reveal($('room'));if(c&&!onTrip(c.uid))follow(c.uid)},skip:()=>!starter()||onTrip(starter().uid)||starter().room!==cur},
     {id:'fol',say:'fol',tab:'home',target:'#folcard',enter(){const c=starter();if(c&&!fol&&!onTrip(c.uid)&&c.room===cur)follow(c.uid)}},
     {id:'poses',say:'poses',card:'poses'},
     {id:'view',say:'view',tab:'home',target:['#roomwrap','#zoomb'],pass:1,enter(){if(fol)unfollow(true)}},
@@ -152,7 +152,7 @@ const TUT=(()=>{
       if(s.skip&&s.skip()){if(s.leave)s.leave();i++;continue}
       break}
     if(i>=STEPS.length){finish();return}
-    cs=STEPS[i];line=0;scrolled=false;skipAsk=false;waiting=!!(cs.wait&&!rp);
+    cs=STEPS[i];line=0;scrolled=false;scrollN=0;skipAsk=false;waiting=!!(cs.wait&&!rp);
     if(!rp){st().step=cs.id;save()}
     if(cs.tab)ensureTab(cs.tab);
     if(cs.enter)cs.enter();
@@ -272,8 +272,18 @@ const TUT=(()=>{
     if(vis.length>1)return rectOf(vis);
     const r=vis[0].getBoundingClientRect();if(!r.width&&!r.height)return null;
     // lần đầu thấy đích: cuộn cho lộ hẳn ra (cả trong khung cuộn của hộp thoại, không chỉ cửa sổ)
-    if(!scrolled){scrolled=true;const vis0=r.top<0||r.bottom>vh()||r.left<0||r.right>vw();vis[0].scrollIntoView({block:vis0?'center':'nearest',inline:'nearest'});return null}
+    // còn nằm ngoài màn hình (vd thẻ đang phóng to dần lúc lần cuộn trước): cuộn lại, tối đa 4 lần, cách nhau 350ms
+    const off=r.top<0||r.bottom>vh()||r.left<0||r.right>vw(),tn=performance.now();
+    if(!scrolled||(off&&scrollN<4&&tn-scrollT>350)){scrolled=true;scrollN++;scrollT=tn;reveal(vis[0]);return null}
     return {left:r.left,top:r.top,width:r.width,height:r.height};
+  }
+  // cuộn cho đích lộ ra: cuộn khung cuộn gần nhất (hộp thoại, thẻ gacha); đích nằm trong lớp cố định thì thôi; còn lại cuộn trang
+  function reveal(el){
+    for(let p=el.parentElement;p&&p!==document.body;p=p.parentElement){const c=getComputedStyle(p);
+      if(/(auto|scroll)/.test(c.overflowY)&&p.scrollHeight>p.clientHeight+1){const pr=p.getBoundingClientRect(),r=el.getBoundingClientRect();
+        if(r.bottom>pr.bottom)p.scrollTop+=Math.min(r.top-pr.top-8,r.bottom-pr.bottom+12);else if(r.top<pr.top)p.scrollTop-=pr.top-r.top+12;return}
+      if(c.position==='fixed')return}
+    const r=el.getBoundingClientRect();if(r.top<0||r.bottom>vh())window.scrollBy(0,r.top+r.height/2-vh()/2);
   }
   function place(el,r){el.style.left=r.left+'px';el.style.top=r.top+'px';el.style.width=Math.max(0,r.width)+'px';el.style.height=Math.max(0,r.height)+'px'}
   function frame(){
@@ -298,8 +308,21 @@ const TUT=(()=>{
     }else{place(E.blk[0],{left:0,top:0,width:W,height:H});[1,2,3].forEach(i=>place(E.blk[i],{left:0,top:0,width:0,height:0}));E.paw.style.display='none'}
     // khung thoại: nằm phía còn nhiều chỗ hơn, không đè lên chỗ khoanh nếu tránh được
     const sy=E.say;if(sy.style.display==='none')return;
-    const h=sy.offsetHeight,m=8,sk=E.skip.offsetParent?E.skip.getBoundingClientRect().bottom+6:m;let top;  // sk: không đè lên nút Bỏ qua
-    if(cs.card){const ch=E.card.offsetHeight;top=H-h-m;E.card.style.maxHeight=Math.max(120,H-h-3*m)+'px';E.card.style.top=Math.max(m,(H-h-m-ch)/2)+'px'}
+    const m=8,sk=E.skip.offsetParent?E.skip.getBoundingClientRect().bottom+6:m;   // sk: không đè lên nút Bỏ qua
+    // màn thấp mà rộng (điện thoại ngang): khung thoại thành cột hẹp một bên, thẻ và chỗ khoanh ở phần còn lại
+    const side=H<520&&W>=640;E.root.classList.toggle('side',side);
+    if(side){
+      const sw=Math.min(330,Math.round(W*.4));sy.style.width=sw+'px';
+      const right=!(r&&r.left+r.width/2>W/2);   // khung thoại nằm phía không có chỗ khoanh
+      sy.style.left=(right?W-sw-m:m)+'px';const h=sy.offsetHeight;
+      sy.style.top=clamp(r&&cs.sayTop?sk:H-h-m,sk,Math.max(sk,H-h-m))+'px';
+      if(cs.card){const cw=W-sw-3*m;E.card.style.width=Math.min(460,cw)+'px';E.card.style.left=((right?m:sw+2*m)+cw/2)+'px';
+        E.card.style.maxHeight=(H-sk-m)+'px';const ch=E.card.offsetHeight;E.card.style.top=Math.max(sk,(H-ch)/2)+'px'}
+      return;
+    }
+    sy.style.width='';sy.style.left='';
+    const h=sy.offsetHeight;let top;
+    if(cs.card){const ch=E.card.offsetHeight;top=H-h-m;E.card.style.maxHeight=Math.max(120,H-h-m-sk-m)+'px';E.card.style.top=Math.max(sk,(H-h-m-ch)/2)+'px'}
     else if(r&&cs.sayTop)top=sk;
     else if(r){const up=r.top,down=H-(r.top+r.height);top=down>=h+2*m+(isAct()?44:0)?r.top+r.height+m+(isAct()&&E.paw.classList.contains('up')?44:0):up>=h+2*m?r.top-h-m:(down>up?H-h-m:m);
       top=clamp(top,m,H-h-m)}
@@ -370,7 +393,7 @@ const TUT=(()=>{
     next();
   }
   ['petCat','openFeed','doFeed','setTab','openPicker','doTrip','gachaDone'].forEach(n=>on(n,(a,r)=>act(n,a,r)));
-  on('gReveal',()=>{if(cs&&cs.wait==='gReveal'&&waiting){waiting=false;line=0;say()}});
+  on('gReveal',()=>{if(cs&&cs.wait==='gReveal'&&waiting){waiting=false;line=0;scrolled=false;scrollN=0;say()}});
   // lượt gacha đầu tiên: dùng vé, chắc chắn từ 3★ trở lên
   hook('doGacha');
   {const g=window.doGacha;window.doGacha=function(t){
