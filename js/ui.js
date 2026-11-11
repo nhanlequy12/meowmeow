@@ -891,15 +891,15 @@ const INTRO={
     const kg=formOf(gz.cat),k=K5(),W=innerWidth,Hh=innerHeight,cx=W*.5,cy=Hh*.5,BL=['#2f86e6','#5aa9ff','#bfe2ff','#ffffff'],FL=['#ff5a1a','#ff9a2a','#ffd24a','#fff3b0'];
     fxTint('radial-gradient(circle,#0c2a52 0,#04101f 78%)');
     const me=fxSpr('sit',k,50,60,'animation:pop .4s ease-out both');
-    T(250,()=>fxTxt('Hơi thở của Nước',50,20,'color:#bfe2ff;font-size:min(6vw,30px);letter-spacing:2px;text-shadow:0 0 12px #2f86e6','pop .5s ease-out both'));
-    T(900,()=>{fxTxt('THỨC THỨ MƯỜI',50,29,'color:#fff;font-size:min(8vw,40px);letter-spacing:3px;text-shadow:0 0 14px #5aa9ff,3px 3px 0 #0a3a7a','pop .5s ease-out both');seq([392,494,587,784],.09,.12,'triangle',.05)});
+    let t1,t2;T(250,()=>t1=fxTxt('Hơi thở của Nước',50,16,'color:#bfe2ff;font-size:min(6vw,30px);letter-spacing:2px;text-shadow:0 0 12px #2f86e6','pop .5s ease-out both'));
+    T(900,()=>{t2=fxTxt('THỨC THỨ MƯỜI',50,25,'color:#fff;font-size:min(8vw,40px);letter-spacing:3px;text-shadow:0 0 14px #5aa9ff,3px 3px 0 #0a3a7a','pop .5s ease-out both');seq([392,494,587,784],.09,.12,'triangle',.05)});
     // rồng nước: đầu rồng chạy theo đường xoắn ốc mở rộng, thân là vệt hạt để lại phía sau
     every(T,700,2500,22,()=>{const t=(performance.now()%100000)/1000,a=t*7.5,r=Math.min(W,Hh)*(.12+.28*Math.min(1,gz.dr=(gz.dr||0)+.012)),x=cx+Math.cos(a)*r*1.25,y=cy+Math.sin(a)*r*.8;
       for(let i=0;i<3;i++)part({x:x+rnd(-9,9),y:y+rnd(-9,9),vx:-Math.sin(a)*rnd(.5,2),vy:Math.cos(a)*rnd(.5,2),life:rnd(22,38),col:pick(BL),sz:pick([6,10,14])});
       part({x,y,life:8,col:'#ffffff',sz:18})});
     T(700,()=>{gz.dr=0;me.remove();glide(180,620,1.6,'sine',.05)});
     for(let i=0;i<9;i++)T(760+i*190,()=>fxSpr('run'+(i*2)%8,k,14+((i*23)%72),34+((i*31)%40),'animation:ghost .5s ease-out both',{flip:i%2,img:'filter:drop-shadow(0 0 8px #5aa9ff)'}));
-    T(2550,()=>{flash();fxEl('left:0;top:52%;width:100%;height:9px;margin-top:-4px;background:#fff;box-shadow:0 0 30px 12px '+(kg?'#ff7a2a':'#5aa9ff')+';transform-origin:left;transform:rotate(-8deg);animation:slash .55s ease-out forwards');
+    T(2550,()=>{flash();if(t1)t1.remove();if(t2)t2.remove();fxEl('left:0;top:52%;width:100%;height:9px;margin-top:-4px;background:#fff;box-shadow:0 0 30px 12px '+(kg?'#ff7a2a':'#5aa9ff')+';transform-origin:left;transform:rotate(-8deg);animation:slash .55s ease-out forwards');
       glide(1800,160,.4,'sawtooth',.06);if(kg)fxTint('radial-gradient(circle,#5a1404 0,#170402 78%)');
       fxTxt(kg?'ĐIỆU MÚA HỎA THẦN':'SINH SINH LƯU CHUYỂN',50,26,'color:'+(kg?'#ffd24a':'#bfe8ff')+';font-size:min(9.5vw,60px);letter-spacing:2px;font-style:italic;white-space:nowrap;text-shadow:0 0 18px '+(kg?'#ff5a1a,4px 4px 0 #6a1a00':'#2f86e6,4px 4px 0 #0a3a7a'),'skewIn 1.3s ease-out both')});
     every(T,2600,3800,45,()=>fount(kg?FL:BL,4));
