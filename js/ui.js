@@ -1307,12 +1307,16 @@ function doGacha(useTicket){
   const r=gachaRoll(useTicket); if(r.err){toast(r.err,{type:'warn'});return}
   render();playGacha(r.cat);
 }
-// mở 10 lượt liền: diễn hoạt ảnh của bé nhiều sao nhất, sau đó hiện bảng cả 10 bé
+// mở 10 lượt liền: mọi bé từ 4★ trở lên lần lượt diễn hoạt ảnh của mình (intro nếu có, không thì hiệu ứng mở hộp quà),
+// từ nhiều sao xuống ít sao (cùng sao thì bé sao cầu vồng trước), mỗi bé một thẻ kết quả; không có bé nào từ 4★ thì diễn bé nhiều sao nhất.
+// gz.seq là các bé còn chờ diễn, gz.seqN là tổng số bé diễn. Cuối cùng hiện bảng cả 10 bé.
 function doGacha10(useTicket){
   if(useTicket?S.tickets<10:S.coins<GACHA_COST*10){toast(useTicket?'Cần 10 vé.':'Không đủ xu.',{type:'warn'});return}
   const L=[];for(let i=0;i<10;i++){const r=gachaRoll(useTicket);if(r.err)break;L.push(r.cat)}
   if(!L.length)return;
-  render();gz.multi=L;playGacha(L.reduce((a,c)=>c.star>a.star?c:a,L[0]));
+  const rank=c=>c.star*2+(isRb(c)?1:0),Q=L.filter(c=>c.star>=4).sort((a,b)=>rank(b)-rank(a));
+  if(!Q.length)Q.push(L.reduce((a,c)=>c.star>a.star?c:a,L[0]));
+  render();gz.multi=L;gz.seq=Q;gz.seqN=Q.length;playGacha(gz.seq.shift());
 }
 function showMulti(L){
   const n5=L.filter(c=>c.star===5).length,n4=L.filter(c=>c.star===4).length;
@@ -1323,7 +1327,7 @@ function showMulti(L){
 function playGacha(c){
   const el=$('gz'),st=c.star,col=STAR[st].g,box=$('gbox'),T=(ms,f)=>gz.timers.push(setTimeout(f,ms));
   gz.cat=c;gz.done=false;gz.parts=[];fxClear();gz.timers.forEach(clearTimeout);gz.timers=[];
-  el.className='on';el.style.setProperty('--rc',col);
+  el.className='on';el.style.setProperty('--rc',col);el.scrollTop=el.scrollLeft=$('grev').scrollTop=0; // gacha 10 lượt mở hộp kế tiếp ngay khi lớp phủ còn hiện: bỏ vị trí cuộn của thẻ trước
   $('grev').style.display='none';$('gskip').style.display='block';
   box.style.display='block';box.src=furnCv('gift',st>=3?col:'#aab0bd',kk(5)).toDataURL();box.className='s';
   if(!gz.raf)gz.raf=requestAnimationFrame(gpLoop);
@@ -1358,7 +1362,8 @@ function gReveal(skipped){
   // bố cục thẻ: ảnh, hàng sao riêng một dòng, bậc hiếm, tên, câu thoại; rồi khung thông tin và khung thuộc tính; cuối cùng là đặt tên
   const ct=coatOf(c),row=(k,v)=>'<div class="k">'+k+'</div><div>'+v+'</div>',
     info=kindRow(sp,row)+(ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+(c.replay?'':row('Tuổi',ageTxt(c)));
-  rev.innerHTML='<div class="pop gv">'+(st===5?'<div class="legend">HUYỀN THOẠI</div>'+(ct&&ct.form?'<div class="legend" style="font-size:17px;letter-spacing:3px;color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">✨ TRANG PHỤC HIẾM ✨</div>':''):isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
+  const sq=gz.multi&&gz.seqN>1&&!c.replay,more=sq&&gz.seq.length;
+  rev.innerHTML='<div class="pop gv">'+(sq?'<div class="gv-seq">Bé '+(gz.seqN-gz.seq.length)+'/'+gz.seqN+' từ 4★ trở lên</div>':'')+(st===5?'<div class="legend">HUYỀN THOẠI</div>'+(ct&&ct.form?'<div class="legend" style="font-size:17px;letter-spacing:3px;color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">✨ TRANG PHỤC HIẾM ✨</div>':''):isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
     '<div class="gv-pic">'+catTag(big(c),innerHeight<860&&innerWidth<520?3:4,1)+'</div><div class="gv-stars">'+stars+'</div>'+
     '<div class="gv-rank" style="color:'+col+'">'+STAR[st].n+(c.isNew?' · <span style="color:var(--good)">MỚI!</span>':'')+'</div>'+
     '<h2 class="gv-name">'+sp.n+' '+sexIc(c)+'</h2>'+(sp.q&&st===5?'<div class="quote">“'+sp.q+'”</div>':'')+
@@ -1366,7 +1371,7 @@ function gReveal(skipped){
     '<div class="cd-sec"><h4>Thuộc tính ('+c.traits.length+')</h4><div class="cd-tags">'+c.traits.map(t=>tagOf(t)).join('')+'</div></div>'+
     (c.replay?'<button class="on gv-btn" onclick="endReplay()">Đóng</button></div>':
     '<div class="row gv-row"><input id="gname" maxlength="16" value="'+esc(c.name)+'" placeholder="Đặt tên cho bé" style="flex:1"><button class="sm" onclick="$(\'gname\').value=pick(NAMES)">🎲</button></div>'+
-    '<button class="on gv-btn" onclick="gachaDone()">Đón về nhà</button></div>');
+    '<button class="on gv-btn" onclick="gachaDone()">'+(more?'Đón về · bé tiếp theo ▸':'Đón về nhà')+'</button></div>');
   emoEl(rev);rev.style.display='block';
 }
 function endReplay(){gz.timers.forEach(clearTimeout);gz.timers=[];$('gz').className=''}
@@ -1376,7 +1381,9 @@ function gachaDone(){
   gz.timers.forEach(clearTimeout);gz.timers=[];
   const c=gz.cat,v=$('gname').value.trim().slice(0,16); if(v)c.name=v; delete c.isNew;
   save();$('gz').className='';syncEnts();render();
-  if(gz.multi){const L=gz.multi;gz.multi=null;showMulti(L);return}
+  if(gz.multi){
+    if(gz.seq&&gz.seq.length){playGacha(gz.seq.shift());return} // còn bé từ 4★ chờ diễn: mở hộp của bé kế tiếp ngay
+    const L=gz.multi;gz.multi=gz.seq=null;showMulti(L);return}
   toast('đã về '+ROOM[c.room].n,{type:'cat',title:c.name});
 }
 

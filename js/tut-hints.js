@@ -106,6 +106,7 @@
     gacha=c&&!c.replay?{cat:c,cats:(gz.multi||[c]).slice(),guided:guided()}:null;
   });
   TUT.on('gachaDone',()=>{
+    if(gz.multi)return; // gacha 10 lượt còn bé chờ diễn: đợi tới thẻ cuối
     const pull=gacha;gacha=null;
     if(guided()||!pull||pull.guided||pull.cat!==gz.cat)return;
     if(pull.cats.some(c=>c.star===5))request('five');

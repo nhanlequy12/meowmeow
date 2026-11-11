@@ -341,6 +341,27 @@ canvas#room{touch-action:none}
 @keyframes passBy{from{transform:translateX(85vw)}to{transform:translateX(-85vw)}}
 @keyframes hover{from{translate:0 -9px}to{translate:0 9px}}
 @keyframes flick{from{transform:scaleX(.75)}to{transform:scaleX(1.15)}}
+/* thanh cuộn hợp giao diện: ray màu giấy viền nâu nhạt, con trượt nâu bo tròn có hàng hạt cườm sáng chạy dọc.
+   Chrome, Edge, Safari dùng ::-webkit-scrollbar; Firefox chỉ đổi được màu nên dùng scrollbar-color (đặt riêng cho Firefox,
+   vì Chrome mới thấy scrollbar-color thì bỏ qua ::-webkit-scrollbar). Thẻ kết quả gacha dùng màu của bậc sao (--rc). */
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:var(--panel2);border-radius:8px;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--line) 45%,transparent)}
+::-webkit-scrollbar-thumb{background:radial-gradient(circle,rgba(255,255,255,.42) 0 1.6px,transparent 2.3px) 50% 50%/100% 9px repeat-y,var(--line);border:2px solid var(--panel2);border-radius:8px;min-height:36px}
+::-webkit-scrollbar-thumb:horizontal{background-size:9px 100%;background-repeat:repeat-x;min-width:36px}
+::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--line) 75%,var(--ink))}
+::-webkit-scrollbar-thumb:active{background-color:var(--ink)}
+::-webkit-scrollbar-corner{background:transparent}
+#modal .box::-webkit-scrollbar-track{margin:14px 0}
+#grev::-webkit-scrollbar{width:13px}
+#grev::-webkit-scrollbar-track{margin:18px 0;background:color-mix(in srgb,var(--rc) 16%,var(--panel2))}
+#grev::-webkit-scrollbar-thumb{background-color:var(--rc);border-color:color-mix(in srgb,var(--rc) 16%,var(--panel2));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--line) 70%,transparent)}
+#grev::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--rc) 80%,var(--line))}
+@supports not selector(::-webkit-scrollbar){
+  *{scrollbar-color:var(--line) var(--panel2)}
+  #grev{scrollbar-color:var(--rc) color-mix(in srgb,var(--rc) 16%,var(--panel2))}
+}
+/* gacha 10 lượt: thứ tự bé đang diễn trong số các bé từ 4★ */
+.gv-seq{display:inline-block;margin-bottom:6px;padding:2px 10px;border:2px solid var(--line);border-radius:999px;background:var(--panel2);font-size:12.5px;letter-spacing:.3px}
 </style>
 <link rel="stylesheet" href="css/tutorial.css">
 </head>
