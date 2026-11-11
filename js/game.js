@@ -35,6 +35,7 @@ function load(){
   // Naruto và Goku lên 5★ (2026-11-10): bé 4★ trong bản lưu cũ được nâng lên 5★ và nhận thêm một trait cho đủ 5
   if(!S.mig5){S.cats.forEach(c=>{if((c.sp==='v_goku'||c.sp==='v_naruto')&&c.star===4){c.star=5;const t=rollTraits(SP[c.sp],5).find(t=>!c.traits.includes(t)&&!c.traits.some(o=>conflict(o,t)));if(t)c.traits.push(t)}});S.mig5=1}
   // Tanjiro lên 5★ (2026-11-11): bé 4★ trong bản lưu cũ được nâng lên 5★ và nhận thêm một thuộc tính
+  delete S.nest; // ổ ghép đôi đã gỡ khỏi game (người dùng không yêu cầu tính năng này)
   if(!S.mig7){S.cats.forEach(c=>{if(c.sp==='v_tanjiro'&&c.star===4){c.star=5;if(!c.coat)c.coat='v_tanjiro_0';const t=rollTraits(SP[c.sp],5).find(t=>!c.traits.includes(t)&&!c.traits.some(o=>conflict(o,t)));if(t)c.traits.push(t)}});S.mig7=1}
   // năm giống thật 5★ có thuộc tính riêng: bé đang có được thêm vào đầu danh sách, đổi chỗ cho một thuộc tính xấu (nếu không có thì thuộc tính cuối) để số thuộc tính vẫn bằng số sao
   if(!S.mig6){S.cats.forEach(c=>{const bt=SP[c.sp]&&SP[c.sp].bt;if(bt&&!c.traits.includes(bt)){let i=-1;c.traits.forEach((t,j)=>{if(TRAITS[t]&&TRAITS[t].k==='b')i=j});if(i<0)for(let j=c.traits.length-1;j>=0;j--)if(TRAITS[c.traits[j]].k!=='x'){i=j;break}if(i>=0)c.traits.splice(i,1);c.traits.unshift(bt)}});S.mig6=1}
@@ -232,7 +233,8 @@ function tripInfo(c,did){
   let why='';
   if(onTrip(c.uid))why='Đang đi vắng'; else if(c.full<20)why='Đang đói'; else if(c.en<cost)why='Không đủ sức (cần '+cost+'⚡)';
   const ctx={night:isNight(),monday:isMonday(),sleepy:c.en<50,hf:happyF(c),bc:bf.coin||0,ac:auraCoin(c)};
-  return {dur,cost,why,ctx,est:Math.round(coinCalc(c,d,ctx).coins)};
+  const cc=coinCalc(c,d,ctx);
+  return {dur,cost,why,ctx,est:Math.round(cc.coins),acts:cc.acts};
 }
 function startTrip(slot,uid,did){
   const c=catBy(uid),d=DEST[did]; if(!c||S.trips[slot]||d.lvl>S.level)return false;
@@ -318,6 +320,12 @@ function petCat(c){
 }
 
 /* ---------- gacha ---------- */
+// mua n vé gacha bằng xu, TICKET_COST xu mỗi vé; trả {n, cost} hoặc {err}
+function buyTickets(n){
+  n=Math.max(1,Math.floor(n)||1);const cost=n*TICKET_COST;
+  if(S.coins<cost)return {err:'Không đủ xu: cần '+cost.toLocaleString('vi-VN')+' xu.'};
+  S.coins-=cost;S.tickets+=n;save();return {n,cost};
+}
 function gachaRoll(useTicket,opt){
   opt=opt||{}; // opt chỉ dùng cho Admin: {free, star}
   if(!opt.free){if(useTicket){if(S.tickets<1)return {err:'Hết vé.'};S.tickets--}else{if(S.coins<GACHA_COST)return {err:'Không đủ xu.'};S.coins-=GACHA_COST}}

@@ -238,11 +238,8 @@ const TUT_TEXT={
       {id:'checkin',ic:'📅',t:'Điểm danh 7 ngày',p:[
         'Mỗi ngày mở bảng 📜 Nhiệm vụ và bấm Điểm danh. Ngày đầu tiên vào game trong ngày, bảng tự mở để nhắc.',
         'Thưởng tăng dần qua 7 ngày, ngày 3 và 5 có vé, ngày 7 có 3 vé. Bỏ lỡ một ngày thì quay về Ngày 1.']},
-      {id:'nest',ic:'💞',t:'Ghép đôi ra mèo con',p:[
-        'Mở ở cấp 5, nằm đầu tab Mèo. Chọn một bé cái và một bé đực: giống thật, đã trưởng thành, đang ở nhà. Tốn xu và đợi vài giờ (tổng số sao của bố mẹ, tính bằng giờ). Từ cấp 12 có 2 ổ.',
-        'Mèo con mang giống của bố hoặc mẹ, có khi thừa hưởng màu lông, màu hiếm và một thuộc tính tốt. Bố mẹ vẫn đi viễn chinh, ăn, chơi bình thường trong lúc chờ.']},
       {id:'ach',ic:'🏆',t:'Thành tựu',p:[
-        'Có 114 thành tựu, chia bốn mức: Dễ, Vừa, Khó, Rất khó. Mỗi thành tựu đạt được thưởng ngay 30 xu, không cần bấm nhận.',
+        'Có 111 thành tựu, chia bốn mức: Dễ, Vừa, Khó, Rất khó. Mỗi thành tựu đạt được thưởng ngay 30 xu, không cần bấm nhận.',
         'Xem ở tab 🏆 Thành tựu trên thanh điều hướng: mỗi dòng ghi việc cần làm, mức khó và thanh tiến độ.',
         'Thành tựu tính theo số lần viễn chinh, cho ăn, vuốt ve, quay gacha, bắt khách lạ, làm nhiệm vụ, và theo những gì bạn đang có: cấp, số mèo, giống đã gặp, phòng, nội thất, xu.']},
       {id:'shop',ic:'🛋',t:'Cửa hàng và nội thất',p:[

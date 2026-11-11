@@ -360,6 +360,8 @@ canvas#room{touch-action:none}
   *{scrollbar-color:var(--line) var(--panel2)}
   #grev{scrollbar-color:var(--rc) color-mix(in srgb,var(--rc) 16%,var(--panel2))}
 }
+/* nút quay lại bảng kết quả gacha 10 lượt ở đầu màn chi tiết mèo (nằm bên trái, tránh nút ✕ ở góc phải) */
+.cd-back{text-align:left;margin:-2px 0 8px}
 /* gacha 10 lượt: thứ tự bé đang diễn trong số các bé từ 4★ */
 .gv-seq{display:inline-block;margin-bottom:6px;padding:2px 10px;border:2px solid var(--line);border-radius:999px;background:var(--panel2);font-size:12.5px;letter-spacing:.3px}
 </style>
@@ -457,7 +459,6 @@ canvas#room{touch-action:none}
 <script src="js/quest.js"></script>
 <script src="js/achieve.js"></script>
 <script src="js/wish.js"></script>
-<script src="js/breed.js"></script>
 <script src="js/net.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/tut-text.js"></script>

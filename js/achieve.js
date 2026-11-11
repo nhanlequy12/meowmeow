@@ -1,6 +1,6 @@
 "use strict";
 /* ============ THÀNH TỰU (2026-11-11) ============
-   114 thành tựu chia 5 nhóm, bốn mức Dễ, Vừa, Khó, Rất khó; đạt mỗi cái được ACH_XU xu (tự cộng, có thông báo).
+   111 thành tựu chia 5 nhóm, bốn mức Dễ, Vừa, Khó, Rất khó; đạt mỗi cái được ACH_XU xu (tự cộng, có thông báo).
    Số liệu đếm dồn lưu ở S.st (cộng qua onAct mà game.js và quest.js gọi); phần còn lại đọc thẳng từ trạng thái (cấp, số mèo, sưu tập, phòng, đồ...).
    Thành tựu đã đạt lưu ở S.ach[id] = thời điểm đạt. Trang xem là tab 🏆 Thành tựu riêng trên thanh điều hướng (PANEL.ach gọi achPage).
    Chỉ xét sau khi xong hướng dẫn tân thủ. */
@@ -34,7 +34,6 @@ achSer('coll','cos',()=>VARIANTS.filter(v=>S.seen[v.id]).length,n=>n>=VARIANTS.l
 achSer('coll','rare',()=>Object.keys(S.seenRare||{}).length,n=>n>=RARES.length?'Gặp đủ mọi màu lông hiếm.':'Gặp '+n+' màu lông hiếm.',[[1,1,'Màu hiếm đầu tiên'],[5,2,'Bảng màu quý'],[RARES.length,3,'Cầu vồng trọn vẹn']]);
 achSer('coll','five',()=>allSp().filter(s=>s.r===5&&S.seen[s.id]).length,n=>n>=allSp().filter(s=>s.r===5).length?'Gặp đủ mọi bé 5★.':'Gặp '+n+' bé 5★ khác nhau.',[[1,1,'Huyền thoại đầu tiên'],[5,2,'Ngũ huyền thoại'],[allSp().filter(s=>s.r===5).length,3,'Đại sảnh huyền thoại']]);
 achSer('coll','form',()=>Object.keys(S.seenCoat||{}).filter(k=>(ALLCOAT[k.split('~')[1]]||{}).form).length,n=>'Gặp '+n+' trang phục hiếm của bé 5★.',[[1,2,'Trang phục hiếm'],[5,3,'Tủ đồ huyền thoại']]);
-achSer('coll','kitten',stv('kitten'),n=>'Đón '+fN(n)+' mèo con từ ổ ghép đôi.',[[1,1,'Mèo con đầu lòng'],[10,2,'Đại gia đình'],[50,3,'Dòng họ lông xù']]);
 achSer('coll','rel',()=>S.released||0,n=>'Phóng sinh '+fN(n)+' bé về mái ấm mới.',[[1,0,'Lời tạm biệt'],[10,1,'Mái ấm mới'],[50,2,'Trạm cứu hộ'],[200,3,'Sứ giả nhân ái']]);
 // --- Nhà cửa ---
 const furnOwned=()=>new Set(S.items.map(i=>i.fid));

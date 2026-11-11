@@ -26,15 +26,13 @@ function ntfPlan(){
   S.trips.forEach(p=>{if(p&&p.end>t0)ev.push({t:p.end,k:'trip'})});
   ownedRooms().forEach(r=>{if(!catsIn(r.id).length)return;
     bowlsIn(r.id).forEach(b=>{if(!FURN[b.fid].bowl.auto&&(b.at||0)>t0)ev.push({t:b.at,k:'bowl'})})});   // máy cho ăn tự động tự đổ, không cần báo
-  (S.nest||[]).forEach(n=>{if(n&&n.end>t0)ev.push({t:n.end,k:'kit'})});
   ev.sort((a,b)=>a.t-b.t);
-  const back0=S.trips.filter(p=>p&&p.end<=t0).length,out0=S.trips.filter(p=>p).length,kit0=(S.nest||[]).filter(n=>n&&n.end<=t0).length,out=[];
+  const back0=S.trips.filter(p=>p&&p.end<=t0).length,out0=S.trips.filter(p=>p).length,out=[];
   ev.forEach((e,i)=>{
     if(i+1<ev.length&&ev[i+1].t-e.t<=90000)return;       // việc kế tiếp tới ngay sau đó: gộp vào thông báo của việc ấy
-    const done=ev.slice(0,i+1),tr=back0+done.filter(x=>x.k==='trip').length,kit=kit0+done.filter(x=>x.k==='kit').length,L=[];
+    const done=ev.slice(0,i+1),tr=back0+done.filter(x=>x.k==='trip').length,L=[];
     if(tr)L.push(tr>1&&tr>=out0?'🎒 Cả '+tr+' bé đã đi viễn chinh về, vào nhận xu nào':'🎒 '+tr+' bé đã đi viễn chinh về, vào nhận xu nào');
     if(done.some(x=>x.k==='bowl'))L.push('🍖 Bát ăn đã đổ lại được');
-    if(kit)L.push(kit>1?'🐣 '+kit+' mèo con đã chào đời':'🐣 Mèo con đã chào đời');
     out.push({t:e.t,body:L.join('\n')});
   });
   return out.slice(0,12);

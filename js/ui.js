@@ -776,6 +776,29 @@ function doFeed(fid){
   if(r.miss>0)toast(r.miss+' bé chưa có suất. Mỗi bát chỉ đủ cho số suất ghi trên bát, hãy mua thêm bát.',{type:'warn',title:'Thiếu bát ăn'});
   render();
 }
+/* Thuộc tính của bé có tác động tới chuyến viễn chinh đang chọn (theo điểm đến, giờ, ngày trong tuần): xu (lấy từ coinCalc),
+   thời gian, năng lượng, vé, chiến lợi phẩm, kinh nghiệm, may rủi. Mỗi thuộc tính một nhãn: xanh có ích, đỏ có hại, vàng vừa lợi vừa hại.
+   Thuộc tính không tác động ở chuyến này thì không hiện. */
+function tripFx(c,inf){
+  const M={},pc=v=>Math.round(Math.abs(v)*100)+'%',add=(t,txt,s)=>{if(!TRAITS[t]||!c.traits.includes(t))return; // bỏ phần thưởng đến từ bé khác (vd Mèo Thần Tài cộng xu cả nhà)
+(M[t]=M[t]||{t,l:[],g:0,b:0}).l.push(txt);if(s>0)M[t].g++;else if(s<0)M[t].b++};
+  (inf.acts||[]).forEach(a=>add(a.t,a.txt,a.txt[0]==='−'?-1:1));
+  c.traits.forEach(t=>{const e=TRAITS[t].e;
+    if(e.speed)add(t,(e.speed>0?'đi nhanh hơn ':'đi chậm hơn ')+pc(e.speed),e.speed);
+    if(e.cost&&e.cost!==1)add(t,e.cost<1?'tốn ít hơn '+pc(1-e.cost)+'⚡':'tốn thêm '+pc(e.cost-1)+'⚡',1-e.cost);
+    if(e.ticket)add(t,'+'+pc(e.ticket)+' cơ hội nhặt vé',1);
+    if(e.loot)add(t,pc(Math.min(1,e.loot))+' cơ hội +15 xu chiến lợi phẩm',1);
+    if(e.xp&&e.xp!==1)add(t,(e.xp>1?'+':'−')+pc(e.xp-1)+' kinh nghiệm',e.xp-1);
+    if(e.doubleCoin)add(t,pc(e.doubleCoin)+' cơ hội xu ×2',1);
+    if(e.doubleAll)add(t,pc(e.doubleAll)+' cơ hội nhân đôi phần thưởng',1);
+    if(e.gamble)add(t,'xu ×'+String(e.gamble[0]).replace('.',',')+'–'+String(e.gamble[1]).replace('.',',')+' ngẫu nhiên',0);
+    if(e.jackpot)add(t,'4,56% cơ hội trúng 456 xu',1);
+    if(e.alwaysHappy)add(t,'luôn vui nên xu như lúc vui nhất',1);
+  });
+  const L=Object.values(M).map(o=>({o,k:o.b?(o.g?'x':'b'):o.g?'g':'x'})).sort((a,b)=>'gxb'.indexOf(a.k)-'gxb'.indexOf(b.k));
+  return L.length?L.map(({o,k})=>'<span class="tag '+k+'" tabindex="0" onclick="event.stopPropagation()" data-tip="'+esc(TRAITS[o.t].d)+'">'+(k==='g'?'▲ ':k==='b'?'▼ ':'◆ ')+TRAITS[o.t].n+' · '+o.l.join(', ')+'</span>').join(''):
+    '<span class="dim" style="font-size:12px">Không có thuộc tính nào tác động ở chuyến này</span>';
+}
 let pk={slot:0,dest:'alley'};
 function openPicker(slot){pk.slot=slot;if(DEST[pk.dest].lvl>S.level)pk.dest='alley';drawPicker()}
 function drawPicker(){
@@ -785,7 +808,7 @@ function drawPicker(){
     DESTS.map(x=>'<button class="sm '+(x.id===pk.dest?'on':'')+'" '+(x.lvl>S.level?'disabled':'')+' onclick="pk.dest=\''+x.id+'\';drawPicker()">'+x.ic+' '+x.n+(x.lvl>S.level?' 🔒 cấp '+x.lvl:'')+'</button>').join('')+
     '</div><div class="dim" style="margin-top:6px">'+d.min+' phút · '+d.coin+' xu gốc · tốn '+d.en+'⚡'+(d.tags.length?' · '+d.tags.map(t=>TAGN[t]).join(', '):'')+' · bây giờ là '+(night?'ban đêm 🌙':'ban ngày ☀')+'</div><h3>Chọn mèo</h3>'+
     (cats.length?cats.map(o=>{const c=o.c,sp=SP[c.sp];
-      return '<div class="card '+(o.inf.why?'':'tap')+'" style="'+(o.inf.why?'opacity:.5':'')+'" '+(o.inf.why?'':'onclick="doTrip('+c.uid+')"')+'>'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+kind(c)+' · '+(o.inf.why||('~'+o.inf.est+' xu · '+fmt(o.inf.dur)+' · −'+o.inf.cost+'⚡'))+'</small><br>'+stats(c)+'</div></div>'}).join(''):'<div class="dim">Không còn bé nào ở nhà.</div>'));
+      return '<div class="card '+(o.inf.why?'':'tap')+'" style="'+(o.inf.why?'opacity:.5':'')+'" '+(o.inf.why?'':'onclick="doTrip('+c.uid+')"')+'>'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+(o.inf.why||('~'+o.inf.est+' xu · '+fmt(o.inf.dur)+' · −'+o.inf.cost+'⚡'))+'</small><div>'+tripFx(c,o.inf)+'</div>'+stats(c)+'</div></div>'}).join(''):'<div class="dim">Không còn bé nào ở nhà.</div>'));
 }
 function doTrip(uid){
   if(!startTrip(pk.slot,uid,pk.dest))return;
@@ -1318,19 +1341,34 @@ function doGacha10(useTicket){
   if(!Q.length)Q.push(L.reduce((a,c)=>c.star>a.star?c:a,L[0]));
   render();gz.multi=L;gz.seq=Q;gz.seqN=Q.length;playGacha(gz.seq.shift());
 }
-function showMulti(L){
-  const n5=L.filter(c=>c.star===5).length,n4=L.filter(c=>c.star===4).length;
-  modal('<h3>Kết quả '+L.length+' lượt</h3><div class="dim">'+(n5?n5+' bé 5★ · ':'')+(n4?n4+' bé 4★ · ':'')+'chạm vào một bé để xem thông tin và đổi tên.</div>'+
-    '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(104px,1fr));margin:8px 0">'+L.slice().sort((a,b)=>b.star-a.star).map(c=>'<div class="cell tap" style="border-color:'+scol(c.star)+(c.star>=4?';border-style:solid':'')+'" onclick="openCat('+c.uid+')">'+catTag(lk(c),1.5)+'<br>'+nm(c)+'<br>'+starsOf(c.star)+(c.isNew?'<br><span class="tag x">MỚI</span>':'')+'<br><span class="dim">'+ROOM[c.room].n+'</span></div>').join('')+'</div>');
-  L.forEach(c=>{delete c.isNew});save();
+function doBuyTk(n){
+  const r=buyTickets(n); if(r.err){toast(r.err,{type:'warn'});return}
+  toast('Đã mua '+r.n+' vé 🎟 · −'+r.cost.toLocaleString('vi-VN')+' xu',{type:'coin',title:'Mua vé'});render();
 }
-function playGacha(c){
+// bảng kết quả gacha 10 lượt. MULTI giữ danh sách và các bé MỚI để từ màn chi tiết bấm "Quay lại" về đúng bảng này
+let MULTI=null;
+function showMulti(L){
+  if(L){MULTI={L,nw:new Set(L.filter(c=>c.isNew).map(c=>c.uid))};L.forEach(c=>{delete c.isNew});save()}
+  if(!MULTI)return;
+  const A=MULTI.L.filter(c=>catBy(c.uid)),n5=A.filter(c=>c.star===5).length,n4=A.filter(c=>c.star===4).length; // bỏ bé đã phóng sinh từ màn chi tiết
+  modal('<h3>Kết quả '+MULTI.L.length+' lượt</h3><div class="dim">'+(n5?n5+' bé 5★ · ':'')+(n4?n4+' bé 4★ · ':'')+'chạm vào một bé để xem thông tin và đổi tên.</div>'+
+    '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(104px,1fr));margin:8px 0">'+A.slice().sort((a,b)=>b.star-a.star).map(c=>'<div class="cell tap" style="border-color:'+scol(c.star)+(c.star>=4?';border-style:solid':'')+'" onclick="openCat('+c.uid+',1)">'+catTag(lk(c),1.5)+'<br>'+nm(c)+'<br>'+starsOf(c.star)+(MULTI.nw.has(c.uid)?'<br><span class="tag x">MỚI</span>':'')+'<br><span class="dim">'+(onTrip(c.uid)?'Đang viễn chinh':ROOM[c.room].n)+'</span></div>').join('')+'</div>');
+}
+// quick: bé thứ hai trở đi của gacha 10 lượt, bỏ màn hộp quà: bé có intro thì vào intro luôn, không thì hiện thẻ kết quả luôn
+function playGacha(c,quick){
   const el=$('gz'),st=c.star,col=STAR[st].g,box=$('gbox'),T=(ms,f)=>gz.timers.push(setTimeout(f,ms));
   gz.cat=c;gz.done=false;gz.parts=[];fxClear();gz.timers.forEach(clearTimeout);gz.timers=[];
-  el.className='on';el.style.setProperty('--rc',col);el.scrollTop=el.scrollLeft=$('grev').scrollTop=0; // gacha 10 lượt mở hộp kế tiếp ngay khi lớp phủ còn hiện: bỏ vị trí cuộn của thẻ trước
+  el.className='on';el.style.setProperty('--rc',col);el.scrollTop=el.scrollLeft=$('grev').scrollTop=0; // gacha 10 lượt mở bé kế tiếp ngay khi lớp phủ còn hiện: bỏ vị trí cuộn của thẻ trước
   $('grev').style.display='none';$('gskip').style.display='block';
   box.style.display='block';box.src=furnCv('gift',st>=3?col:'#aab0bd',kk(5)).toDataURL();box.className='s';
   if(!gz.raf)gz.raf=requestAnimationFrame(gpLoop);
+  const it=st===5&&INTRO[c.sp];
+  if(quick){
+    box.style.display='none';
+    if(it){el.classList.add('dark');T(60,()=>{flash();it.run(T)});(MEOW[c.sp]||[]).forEach(m=>T(60+m[0],()=>meow(m[1])));T(60+it.dur,()=>{flash();gReveal()})}
+    else{if(st>=4)flash();gReveal()}
+    return;
+  }
   if(st<=2){T(850,()=>gReveal())}
   else if(st===3){box.classList.add('glow');for(let t=0;t<1300;t+=80)T(t,()=>sparkle(col,3));T(1400,()=>gReveal())}
   else if(st===4){box.className='h glow';el.classList.add('rayon');for(let t=0;t<1700;t+=60)T(t,()=>sparkle(col,4));T(1800,()=>{flash();gReveal()})}
@@ -1338,14 +1376,13 @@ function playGacha(c){
     el.classList.add('dark');
     T(900,()=>{box.className='h glow';el.classList.add('pil')});
     for(let t=900;t<2300;t+=50)T(t,()=>sparkle('#ffd24a',5));
-    const it=INTRO[c.sp];
     if(it){T(2400,()=>{flash();box.style.display='none';el.classList.remove('pil');it.run(T)});(MEOW[c.sp]||[]).forEach(m=>T(2400+m[0],()=>meow(m[1])));T(2400+it.dur,()=>{flash();gReveal()})}
     else T(2400,()=>{flash();gReveal()});
   }
 }
 // dòng cho biết bé là giống mèo thật hay mèo trang phục thuộc chủ đề nào (thẻ gacha và màn chi tiết dùng chung);
 // mèo trang phục có nhóm sp.g (Anime, Phim, Meme & Đặc biệt), giống thật thì không có trường g
-function kindRow(sp,row){const g=GROUPS.find(g=>g[0]===sp.g);return g?row('Chủ đề','<b>'+g[1]+'</b>'):row('Loại','<b>Giống mèo thật</b>')}
+function kindRow(sp,row){const t=themeOf(sp);return t?row('Chủ đề','<b>'+t+'</b>'):row('Loại','<b>Giống mèo thật</b>')}
 function gReveal(skipped){
   if(gz.done)return; gz.done=true;
   gz.timers.forEach(clearTimeout);gz.timers=[];
@@ -1379,20 +1416,23 @@ function endReplay(){gz.timers.forEach(clearTimeout);gz.timers=[];$('gz').classN
 function replayIntro(id){const sp=SP[id];playGacha({uid:0,sp:id,star:5,sex:'m',name:sp.n,traits:[sp.xt||sp.bt].filter(Boolean),replay:1})}
 function gachaDone(){
   gz.timers.forEach(clearTimeout);gz.timers=[];
-  const c=gz.cat,v=$('gname').value.trim().slice(0,16); if(v)c.name=v; delete c.isNew;
+  const c=gz.cat,v=$('gname').value.trim().slice(0,16); if(v)c.name=v; if(!gz.multi)delete c.isNew; // gacha 10 lượt: giữ dấu MỚI cho bảng kết quả, showMulti tự xóa
   save();$('gz').className='';syncEnts();render();
   if(gz.multi){
-    if(gz.seq&&gz.seq.length){playGacha(gz.seq.shift());return} // còn bé từ 4★ chờ diễn: mở hộp của bé kế tiếp ngay
+    if(gz.seq&&gz.seq.length){playGacha(gz.seq.shift(),1);return} // còn bé từ 4★ chờ diễn: bỏ hộp quà, vào intro hoặc thẻ của bé kế tiếp ngay
     const L=gz.multi;gz.multi=gz.seq=null;showMulti(L);return}
   toast('đã về '+ROOM[c.room].n,{type:'cat',title:c.name});
 }
 
 /* --- mèo --- */
-function openCat(uid){
+// back=1: mở từ bảng kết quả gacha 10 lượt, có nút quay lại bảng (giữ qua đổi tên, chuyển phòng nhờ catBack)
+let catBack=0;
+function openCat(uid,back){
   const c=catBy(uid); if(!c)return; const sp=SP[c.sp],away=onTrip(uid),bf=buffOf(c),ct=coatOf(c),rb=isRb(c);
+  catBack=back&&MULTI?1:0;
   const row=(k,v)=>'<div class="k">'+k+'</div><div>'+v+'</div>';
   const st=(ic,n,v,col)=>'<div class="k">'+ic+' '+n+'</div><div class="bar"><i style="width:'+Math.round(v)+'%;background:'+col+'"></i></div><div class="n">'+Math.round(v)+'%</div>';
-  modal(
+  modal((catBack?'<div class="cd-back"><button class="sm" onclick="showMulti()">‹ Kết quả '+MULTI.L.length+' lượt</button></div>':'')+
     // đầu trang: ảnh, tên, sao, bậc hiếm
     '<div class="cd-head r'+c.star+(rb?' rb':'')+'">'+catTag(big(c),3)+'<h2>'+esc(c.name)+' '+sexIc(c)+'</h2>'+
       '<div class="cd-star">'+starsC(c)+'</div><div class="cd-rank" style="color:'+scol(c.star)+'">'+STAR[c.star].n+(rb?' · '+(isRare(c)?'✨ Màu hiếm':formOf(c)?'✨ Trang phục hiếm':'💎 Mắt quý hiếm'):'')+'</div></div>'+
@@ -1415,8 +1455,8 @@ function openCat(uid){
     (away?'':'<div class="cd-sec"><h4>Chuyển phòng</h4><div class="row wrap">'+ownedRooms().concat([ROOM.wait]).map(r=>'<button class="sm '+(r.id===c.room?'on':'')+'" '+(r.id!==c.room&&catsIn(r.id).length>=r.cap?'disabled':'')+' onclick="doMove('+uid+',\''+r.id+'\')">'+r.n+' '+catsIn(r.id).length+'/'+(r.wait?'∞':r.cap)+'</button>').join('')+'</div></div>')+
     '<div class="row" style="justify-content:center;margin-top:12px"><button class="sm bad" '+(away||S.cats.length<=1?'disabled':'')+' onclick="doRehome('+uid+')">🕊 Phóng sinh (+'+STAR[c.star].sell+' xu'+(c.star===5?', +1 vé':'')+')</button></div>');
 }
-function doRename(uid){const v=$('cname').value.trim().slice(0,16);if(!v)return;catBy(uid).name=v;save();render();openCat(uid);toast('Đã đổi tên',{icon:'✏️',title:v})}
-function doMove(uid,rid){if(catBy(uid).room===rid)return;if(moveCat(uid,rid)){syncEnts();render();openCat(uid)}}
+function doRename(uid){const v=$('cname').value.trim().slice(0,16);if(!v)return;catBy(uid).name=v;save();render();openCat(uid,catBack);toast('Đã đổi tên',{icon:'✏️',title:v})}
+function doMove(uid,rid){if(catBy(uid).room===rid)return;if(moveCat(uid,rid)){syncEnts();render();openCat(uid,catBack)}}
 let relQ=[];
 function doRehome(uid){askRelease([uid])}
 function askRelease(uids,step){
@@ -1500,7 +1540,7 @@ function renderTop(){
     '<div class="chip xp">Cấp '+S.level+' <span class="dim">· '+S.xp+'/'+xpNeed()+'</span><div class="bar"><i style="width:'+(S.xp/xpNeed()*100)+'%"></i></div></div>';
   const o=ownedRooms();
   $('roomnav').innerHTML=(o.length>1?'<button onclick="navRoom(-1)" aria-label="Phòng trước">◀</button>':'')+'<button class="nm" onclick="openRooms()"><b>'+ROOM[cur].n+'</b> <span class="dim">· '+catsIn(cur).length+'/'+ROOM[cur].cap+' mèo'+(o.length>1?' · đổi phòng ▾':'')+'</span></button>'+(o.length>1?'<button onclick="navRoom(1)" aria-label="Phòng sau">▶</button>':'');
-  $('tabs').innerHTML=TABS.map(t=>'<button class="'+(tab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')"><span>'+t[1]+'</span>'+t[2]+(t[0]==='home'&&feedDue()?' ❗':'')+(t[0]==='trip'&&ready?' ❗':'')+(t[0]==='cats'&&(wt||(typeof nestReady==='function'&&nestReady()))?' ❗':'')+'</button>').join('');['top','roomnav','tabs'].forEach(i=>emoEl($(i)));
+  $('tabs').innerHTML=TABS.map(t=>'<button class="'+(tab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')"><span>'+t[1]+'</span>'+t[2]+(t[0]==='home'&&feedDue()?' ❗':'')+(t[0]==='trip'&&ready?' ❗':'')+(t[0]==='cats'&&wt?' ❗':'')+'</button>').join('');['top','roomnav','tabs'].forEach(i=>emoEl($(i)));
 }
 function openRooms(){
   modal('<h3>Chọn phòng</h3>'+ownedRooms().map(r=>'<div class="card tap" onclick="closeModal();setRoom(\''+r.id+'\')"><div style="font-size:24px">'+(r.id===cur?'📍':'🚪')+'</div><div class="g"><b>'+r.n+'</b> <small>· '+catsIn(r.id).length+'/'+r.cap+' mèo'+(catsIn(r.id).length>=r.cap?' · <span style="color:var(--bad)">đầy</span>':'')+'</small><br><small>'+r.d+'</small></div></div>').join(''));
@@ -1572,6 +1612,9 @@ const PANEL={
    (full?'<div class="dim">Các phòng đã đầy: bé mới sẽ vào Phòng chờ cho đến khi bạn xếp phòng.</div>':'')+
    '<div class="row wrap" style="justify-content:center"><button class="on" '+(S.coins<GACHA_COST?'disabled':'')+' onclick="doGacha(false)">Mở · '+GACHA_COST+' xu</button><button '+(S.tickets<1?'disabled':'')+' onclick="doGacha(true)">Dùng vé 🎟 ('+S.tickets+')</button></div>'+
    '<div class="row wrap" style="justify-content:center;margin-top:6px"><button class="on" '+(S.coins<GACHA_COST*10?'disabled':'')+' onclick="doGacha10(false)">Mở ×10 · '+(GACHA_COST*10).toLocaleString('vi-VN')+' xu</button><button '+(S.tickets<10?'disabled':'')+' onclick="doGacha10(true)">×10 bằng 10 vé 🎟</button></div>'+
+   // mua vé bằng xu: một vé, hoặc mua đủ số vé còn thiếu để quay ×10 (vd có 3 vé và 700 xu thì mua 7 vé)
+   '<div class="row wrap" style="justify-content:center;margin-top:6px"><button class="sm" '+(S.coins<TICKET_COST?'disabled':'')+' onclick="doBuyTk(1)">Mua 1 vé 🎟 · '+TICKET_COST+' xu</button>'+
+   (S.tickets<10?'<button class="sm" '+(S.coins<(10-S.tickets)*TICKET_COST?'disabled':'')+' onclick="doBuyTk('+(10-S.tickets)+')">Mua '+(10-S.tickets)+' vé cho đủ 10 · '+((10-S.tickets)*TICKET_COST).toLocaleString('vi-VN')+' xu</button>':'')+'</div>'+
    '<small>'+[1,2,3,4,5].map(s=>'<span style="color:'+scol(s)+'">'+s+'★ '+STAR[s].n+' '+STAR[s].p+'%</span>').join(' · ')+'</small>'+
    '<small>Bảo hiểm: chắc chắn 4★ trở lên sau '+PITY+' lượt (đã mở '+Math.min(S.pity,PITY)+'/'+PITY+'). Số trait bằng số sao. Mèo trang phục chỉ có ở 4★–5★; màu lông hiếm rơi khoảng '+Math.round(RARE_P*100)+'% mỗi lượt.</small></div>';
  },
@@ -1611,16 +1654,22 @@ const PANEL={
     sr[r.id]?'<div class="cell">'+catTag(sr[r.id]+'~'+r.id,1.5)+'<br><b style="color:'+scol(4)+'">'+r.n+'</b><br>'+starsOf(4,1)+'<br><span class="dim" style="font-size:11px">gặp lần đầu ở '+SP[sr[r.id]].n+'<br>'+tagOf(r.tr)+'</span></div>'
              :'<div class="cell" style="opacity:.75"><div style="font-size:44px;line-height:80px;color:var(--dim)">?</div><b style="color:'+scol(4)+'">???</b></div>').join('')+'</div>';
   const all=of(albumG).slice().sort((a,b)=>a.r-b.r);
-  return tabs+(albumG==='breed'?'<div class="dim" style="margin-bottom:8px">Chạm vào một giống đã gặp để xem các màu lông của giống đó.</div>':'')+'<div class="grid">'+all.map(s=>
-    S.seen[s.id]?'<div class="cell'+(s.coats?' tap" onclick="openBreed(\''+s.id+'\')':'')+'">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">'+s.n+'</b><br>'+starsOf(s.r)+(s.coats?'<br><b>'+(s.xt?'Trang phục':'Màu')+': '+nCoat(s)+'/'+s.coats.length+'</b>':'')+'<br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span>'+(s.r===5?'<br><button class="sm" onclick="event.stopPropagation();replayIntro(\''+s.id+'\')">▶ Xem lại intro</button>':'')+'</div>'
+  return tabs+'<div class="dim" style="margin-bottom:8px">'+(albumG==='breed'?'Chạm vào một giống đã gặp để xem các màu lông của giống đó.':'Chạm vào một bé đã gặp để xem các trang phục và thông tin của bé.')+'</div><div class="grid">'+all.map(s=>
+    S.seen[s.id]?'<div class="cell tap" onclick="openBreed(\''+s.id+'\')">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">'+s.n+'</b><br>'+starsOf(s.r)+(s.coats?'<br><b>'+(s.xt?'Trang phục':'Màu')+': '+nCoat(s)+'/'+s.coats.length+'</b>':'')+'<br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span>'+(s.r===5?'<br><button class="sm" onclick="event.stopPropagation();replayIntro(\''+s.id+'\')">▶ Xem lại intro</button>':'')+'</div>'
                :'<div class="cell unk">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">???</b><br>'+starsOf(s.r)+'</div>').join('')+'</div>';
  }
 };
+// xem một giống hoặc một mèo trang phục trong Sưu tập: các màu lông (giống thật) hoặc các trang phục (mèo trang phục).
+// Mèo trang phục không có trang phục hiếm thì chỉ có một ô là trang phục thường
 function openBreed(id){
-  const b=SP[id],sc=S.seenCoat||{};
-  modal('<h3>'+b.n+' '+starsOf(b.r)+'</h3><div class="dim">'+b.d+(b.short?' Giống chân ngắn.':'')+'</div><div class="grid" style="grid-template-columns:repeat(2,1fr);margin:10px 0">'+b.coats.map(k=>{const ct=COATS[k];
+  const b=SP[id],sc=S.seenCoat||{},th=themeOf(b);
+  const head='<h3>'+b.n+' '+starsOf(b.r)+'</h3>'+(th?'<div style="margin-bottom:4px"><b>'+th+'</b></div>':'')+'<div class="dim">'+b.d+(b.short?' Giống chân ngắn.':'')+'</div>'+(b.xt?'<div style="margin-top:6px">'+tagOf(b.xt)+'</div>':'');
+  if(!b.coats){modal(head+'<div class="grid" style="grid-template-columns:1fr;margin:10px 0"><div class="cell">'+catTag(id,2)+'<br><b>Trang phục thường</b><br><span class="dim">Bé này chỉ có một kiểu trang phục.</span></div></div>'+
+    (b.r===5?'<button class="sm" onclick="replayIntro(\''+id+'\')">▶ Xem lại intro</button>':''));return}
+  modal(head+'<div class="grid" style="grid-template-columns:repeat(2,1fr);margin:10px 0">'+b.coats.map(k=>{const ct=COATS[k];
     return sc[id+'~'+k]?'<div class="cell">'+catTag(id+'~'+k,2)+'<br><b>'+(ct.form?'✨ ':ct.u?'✦ ':'')+ct.n+'</b>'+(ct.f>=.99?'<br><span class="dim">gần như luôn là cái</span>':ct.f<=.25?'<br><span class="dim">đa số là đực</span>':'')+'</div>'
-                       :'<div class="cell unk">'+catTag(id+'~'+k,2)+'<br><b>???</b>'+(ct.form?'<br><span class="dim">trang phục hiếm</span>':ct.u?'<br><span class="dim">màu ít gặp</span>':'')+'</div>'}).join('')+'</div>');
+                       :'<div class="cell unk">'+catTag(id+'~'+k,2)+'<br><b>???</b>'+(ct.form?'<br><span class="dim">trang phục hiếm</span>':ct.u?'<br><span class="dim">màu ít gặp</span>':'')+'</div>'}).join('')+'</div>'+
+    (b.r===5&&INTRO[id]?'<button class="sm" onclick="replayIntro(\''+id+'\')">▶ Xem lại intro</button>':''));
 }
 
 /* ============ ADMIN (chỉ để test): Ctrl+Shift+A, hoặc chạm 7 lần liên tiếp vào tên game ============ */

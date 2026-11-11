@@ -6,7 +6,7 @@ const STAR=[null,
  {n:'Hiếm',c:'#2464aa',g:'#5aa9ff',m:1.7,p:14,good:.65,sell:100},
  {n:'Sử thi',c:'#7a4ccc',g:'#b98bff',m:2.3,p:5,good:.75,sell:300},
  {n:'Huyền thoại',c:'#855a05',g:'#ffd24a',m:3.2,p:1,good:.88,sell:1000}];
-const GACHA_COST=100, PITY=10;
+const GACHA_COST=100, PITY=10, TICKET_COST=100; // TICKET_COST: giá mua một vé gacha bằng xu (bằng giá một lượt nên không lời lỗ)
 
 /* ============ GIỐNG MÈO ============ */
 const BLK='#3a3448',WHT='#fbf7f0',ORG='#f0a050',DORG='#c96f28',CRM='#f6dfb8',GRY='#9aa3b5',DGRY='#646c80',BLU='#8794ad',BRN='#a8754a',DBRN='#5e3d28',SEAL='#5a4032',CHOC='#7a5238',SIL='#cfd4dc',GOLD='#e0b060',PNK='#f1c3b8',RUD='#c9783c',FAWN='#d9b48a',SAB='#6b4630';
@@ -154,6 +154,16 @@ const VARIANTS=[
  V('v_royal','Mèo Hoàng Gia',5,'meme',{c:WHT,c2:WHT,fur:1,eye:eC},'royal','v_royal','Bạn không nuôi ngài. Ngài cho phép bạn hầu hạ.','premium'),
 ];
 const GROUPS=[['breed','Giống thật'],['anime','Anime'],['film','Phim'],['meme','Meme & Đặc biệt']];
+// tên bộ anime, phim của mèo trang phục (trường src), hiện sau chủ đề: "Anime / Naruto". Nhóm Meme & Đặc biệt không có bộ gốc nên để trống.
+const SRC={v_naruto:'Naruto',v_luffy:'One Piece',v_goku:'Dragon Ball',v_tanjiro:'Thanh Gươm Diệt Quỷ',v_nezuko:'Thanh Gươm Diệt Quỷ',v_thunder:'Thanh Gươm Diệt Quỷ',
+  v_gojo:'Chú Thuật Hồi Chiến',v_itadori:'Chú Thuật Hồi Chiến',v_anya:'Gia Đình Điệp Viên',v_frieren:'Frieren: Pháp Sư Tiễn Táng',v_levi:'Đại Chiến Titan',v_pika:'Pokémon',
+  v_totoro:'Hàng Xóm Của Tôi Là Totoro',v_dora:'Doraemon',v_sailor:'Thủy Thủ Mặt Trăng',v_conan:'Thám Tử Lừng Danh Conan',
+  v_hero:'Superman',v_pirate:'Cướp Biển Vùng Caribbean',v_harry:'Harry Potter',v_phineas:'Phineas và Ferb',v_ferb:'Phineas và Ferb',v_hermione:'Harry Potter',v_voldemort:'Harry Potter',
+  v_wednesday:'Wednesday',v_eleven:'Stranger Things',v_heist:'Phi Vụ Triệu Đô',v_guard:'Trò Chơi Con Mực',v_456:'Trò Chơi Con Mực',v_iron:'Iron Man',v_spider:'Spider-Man',
+  v_batman:'Batman',v_jedi:'Star Wars',v_vader:'Star Wars',v_gandalf:'Chúa Tể Những Chiếc Nhẫn'};
+VARIANTS.forEach(v=>{if(SRC[v.id])v.src=SRC[v.id]});
+// chữ chủ đề của mèo trang phục: "Anime / Naruto"; giống thật trả chuỗi rỗng
+const themeOf=sp=>{const g=GROUPS.find(g=>g[0]===sp.g);return g?g[1]+(sp.src?' / '+sp.src:''):''};
 
 /* ============ TRAIT ============ */
 // k: g = có lợi, b = bất lợi, x = độc quyền biến thể
