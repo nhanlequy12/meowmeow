@@ -134,7 +134,7 @@ Thứ tự ưu tiên nếu hạn mức lại hết: B (18-22) → A2, A3, A4, A5
 
 - **Gacha**: đang giữ kiểu vẽ cũ hoàn toàn (intro và ảnh lúc mở trứng), nên mèo lúc mở gacha trông kiểu cũ, vào phòng trông kiểu Xoài. Muốn ảnh mở trứng dùng hình mới thì bỏ cờ `old` ở một dòng trong `js/ui.js` (`gv-pic`).
 - **Thuộc tính và con số của Tanjiro** (A6 bước 3): chờ duyệt. (Số sao Phineas, Ferb, Yani Neko = 4★, thuộc tính Itadori và cách vẽ gacha cho mèo mới: đã duyệt.)
-- **Chọn thêm nhân vật**: danh sách đề xuất ở `docs/DE-XUAT-NHAN-VAT.md`, chờ chủ game chọn. Chưa con nào được đưa vào kế hoạch.
+- **Chọn thêm nhân vật**: danh sách đề xuất đang ĐỂ TẠM ở `docs/DE-XUAT-NHAN-VAT.md`. Chủ game dặn (12:00): buổi chiều xử lý xong các việc A, B, C, D ở trên trước; KHÔNG đụng tới danh sách này cho tới khi chủ game chọn. Chưa con nào được đưa vào kế hoạch.
 - **Angora trắng**: màu mặc định mất màu mắt thứ hai do cách `look()` trong `js/data.js` ghép màu lông (có từ trước, không phải lỗi sprite). Có sửa không?
 
 ## F. Đã xong, để đối chiếu

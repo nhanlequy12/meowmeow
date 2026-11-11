@@ -1,6 +1,6 @@
 # Đề xuất nhân vật mới (chờ chủ game chọn)
 
-Lập ngày 2026-11-11. Chưa có con nào trong danh sách này được làm. Đánh dấu ★ là các con người điều phối khuyên chọn trước
+FILE TẠM, lập ngày 2026-11-11. Để dành: chỉ xem lại sau khi xong các việc trong `docs/BAO-CAO-VIEC-CON-LAI.md`. Chưa có con nào trong danh sách này được làm hay đưa vào kế hoạch. Đánh dấu ★ là các con người điều phối khuyên chọn trước
 (dễ nhận ra ở cỡ sprite nhỏ, hoặc tạo được thuộc tính "cùng phòng" với mèo đã có).
 
 ## Mèo nổi tiếng trên mạng (meme)
