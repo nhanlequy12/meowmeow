@@ -320,9 +320,12 @@ function painter(s,F,hooks){
     if(ctx.zone&&(ctx.feat===FT.MOUTH||ctx.feat===FT.RIM)){const m=ctx.feat===FT.MOUTH?(w>=1?WHITE:lt(b,soft)):b;return mix(m,oc,ctx.feat===FT.RIM?(r===R.B?.5:.32):(r===R.B?.55:r===R.C?.45:.34))}
     if(ctx.zone){const f=ctx.feat,li=isLight(r),u=ctx.u,v=ctx.v,A=ctx.A0;
       const blaze=w>=2&&ctx.part===P.HEAD&&(side?(u>=A.eye[0]+3&&v>=A.eye[1]-4):(v>=A.eyeL[1]-4&&Math.abs(u-A.head[0])<=(v-A.eyeL[1]+5)*.75));
-      if(blaze||((f===FT.MUZ||f===FT.CHEST)&&li&&w>=1)||(f===FT.PAW&&(w>=2||s.mit))){b=WHITE;if(li)ctx.lv-=2;else if(ctx.mark)ctx.lv=0}
+      const b0=b; // màu lông quanh vùng sáng
+      if(blaze||((f===FT.MUZ||f===FT.CHEST)&&li&&w>=1)||(f===FT.PAW&&(w>=2||s.mit))){b=WHITE;if(li)ctx.lv-=2;else if(ctx.mark||blaze)ctx.lv=0}
       else if(li&&(f===FT.MUZ||f===FT.CHEST)){b=lt(b,soft);ctx.lv-=2}
-      else if(li&&(f===FT.TIP||f===FT.PAW))ctx.lv-=2}
+      else if(li&&(f===FT.TIP||f===FT.PAW))ctx.lv-=2;
+      // ô E trong vùng sáng là bậc chuyển giữa lông và vùng sáng (như ở Xoài), không phải bóng: pha hai màu, nên trên lông trắng không còn viền xám quanh mõm
+      if(li&&r===R.E&&f)return mix(b,b0,.18)}
     return shade(b,ctx.lv)}}
 
 /* ================= 6. Vải vẽ phụ kiện (sau khi tô màu) ================= */

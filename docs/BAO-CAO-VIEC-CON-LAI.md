@@ -28,7 +28,7 @@ Script tự tạo worktree `../wt/agent-XX`, tự cập nhật nhánh từ `main
 
 | # | Yêu cầu | Nguyên nhân | Ai sửa | Trạng thái |
 |---|---|---|---|---|
-| A1 | Mèo lông trắng (Ba Tư, Hoàng Gia, Mèo trắng, Angora, Khao Manee...) miệng bị xấu | Nét miệng và viền mắt của Xoài vẽ bằng ô lông tối; trên lông trắng chúng chìm mất, chỉ còn vài chấm xám rời rạc. Mắt cũng mất viền nên trông như chấm nhỏ | Lõi (`js/catkit.js`) | **ĐÃ SỬA** và đã soát lại 1.038 ngoại hình. Miệng chữ "w" và mắt tròn giờ rõ trên mọi màu lông. Chủ game cần xem lại bằng mắt |
+| A1 | Mèo lông trắng (Ba Tư, Hoàng Gia, Mèo trắng, Angora, Khao Manee...) miệng bị xấu | Nét miệng và viền mắt của Xoài vẽ bằng ô lông tối; trên lông trắng chúng chìm mất, chỉ còn vài chấm xám rời rạc. Mắt cũng mất viền nên trông như chấm nhỏ | Lõi (`js/catkit.js`) | **ĐÃ SỬA** (hai lượt) và đã soát lại 1.038 ngoại hình. Lượt 1: miệng chữ "w" và mắt tròn rõ trên mọi màu lông. Lượt 2 (chủ game báo còn viền xám quanh miệng): các ô chuyển màu ở mép mõm không còn tô thành bóng xám, vệt trắng trên mặt tô phẳng. Chủ game cần xem lại bằng mắt |
 | A2 | Mèo lông nhiều (Himalayan...) khi đi, chạy, nhảy: mặt ở khung nhìn ngang hơi xấu | Trait `flat` cắt phẳng mõm thành vách đứng (mất mũi, miệng, mắt sát mép); trait `fur` tạo vết khía giữa đầu và lưng | Codex nhóm 07, `docs/tasks/agent-07-rerun.md` | Chưa chạy |
 | A3 | Tóc Naruto ở khung nhìn thẳng (ngồi, ngủ, liếm lông) xấu; khung nhìn ngang đẹp rồi, giữ nguyên | Tóc là một tam giác to cộng vài gai mảnh rời, hở nền, trông như vương miện giấy | Codex nhóm 09, `docs/tasks/agent-09-rerun.md` (chỉ sửa tóc nhìn thẳng) | Chưa chạy |
 
