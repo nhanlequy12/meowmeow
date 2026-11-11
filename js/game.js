@@ -245,6 +245,7 @@ function claimTrip(slot){
   const p=S.trips[slot]; if(!p||now()<p.end)return null;
   const c=catBy(p.uid),d=DEST[p.dest];
   S.trips[slot]=null; if(!c){save();return null}
+  if(c.room==='wait')fillWait(); // bé ở Phòng chờ đi viễn chinh về: vào phòng còn chỗ, phòng mua trước trước
   const r=coinCalc(c,d,p,rnd(.92,1.12)),g=gEff();let m2=1,dbl=false;
   const res={cat:c,dest:d,coins:0,acts:r.acts,item:pick(LOOT),ticket:0,bonus:0,happy:Math.round(c.hp)};
   c.traits.forEach(t=>{const e=TRAITS[t].e;
@@ -364,7 +365,11 @@ function buyItem(fid,rid,x){
 function sellItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it)return 0;S.items=S.items.filter(i=>i!==it);const v=Math.round(FURN[it.fid].price*.25);S.coins+=v;save();return v}
 function repairCost(it){return Math.round(FURN[it.fid].price*.3)}
 function repairItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it||!it.broken||S.coins<repairCost(it))return false;S.coins-=repairCost(it);it.broken=false;save();return true}
-function buyRoom(rid){const r=ROOM[rid];if(S.rooms[rid]||locked(r)||S.coins<r.price)return false;S.coins-=r.price;S.rooms[rid]={bowlAt:0};giveBowl(rid);addXp(20);save();return true}
+// phòng theo thứ tự mua (S.rooms[id].at); phòng chưa ghi lúc mua (Phòng khách, bản lưu cũ) đứng trước, giữa chúng theo thứ tự ROOMS
+const roomsByBuy=()=>ownedRooms().map((r,i)=>[r,S.rooms[r.id].at||0,i]).sort((a,b)=>a[1]-b[1]||a[2]-b[2]).map(x=>x[0]);
+// chuyển mèo ở Phòng chờ (trừ bé đang viễn chinh) vào chỗ trống, lấp phòng mua trước rồi mới tới phòng mua sau; trả về số bé đã chuyển
+function fillWait(){let n=0;catsIn('wait').filter(c=>!onTrip(c.uid)).forEach(c=>{const r=roomsByBuy().find(r=>catsIn(r.id).length<r.cap);if(r){c.room=r.id;n++}});return n}
+function buyRoom(rid){const r=ROOM[rid];if(S.rooms[rid]||locked(r)||S.coins<r.price)return false;S.coins-=r.price;S.rooms[rid]={bowlAt:0,at:now()};giveBowl(rid);addXp(20);const moved=fillWait();save();return {moved}}
 function clampItem(it){
   const f=FURN[it.fid];
   it.x=clamp(it.x,f.w/2,WORLD_W-f.w/2);

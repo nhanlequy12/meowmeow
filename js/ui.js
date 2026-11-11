@@ -98,10 +98,10 @@ function toast(msg,o){
   box.appendChild(d);
   requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('on')));
   if(o.coins){const n=d.querySelector('.num'),t0=performance.now(),run=t=>{const k=Math.min(1,(t-t0)/700);n.textContent=Math.round(o.coins*(1-Math.pow(1-k,3)));if(k<1&&d.isConnected)requestAnimationFrame(run)};requestAnimationFrame(run)}
-  // tự ẩn sau khoảng 4 giây đọc (cộng 0,6 giây trượt vào); chạm vào thì ẩn ngay
+  // tự ẩn sau 8 giây (lời gọi có ms dài hơn thì theo ms); chạm vào thì ẩn ngay
   const bye=()=>{if(d.classList.contains('out')||!d.isConnected)return;d.style.marginBottom=-(d.offsetHeight+7)+'px';d.classList.remove('on');d.classList.add('out');setTimeout(()=>d.remove(),340)};
   d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();bye()});
-  setTimeout(bye,o.ms||4600);
+  setTimeout(bye,Math.max(o.ms||0,8000));
 }
 notify=toast;
 
@@ -1419,7 +1419,7 @@ function doFlip(){const it=S.items.find(i=>i.iid===sel);if(it){it.flip=!it.flip;
 function doStore(){const it=S.items.find(i=>i.iid===sel);if(it){it.room=null;sel=null;save();render()}}
 function doPlace(iid){const it=S.items.find(i=>i.iid===iid);if(!it)return;it.room=cur;it.x=camX+VW/2;it.y=FURN[it.fid].kind==='wall'?70:140;clampItem(it);sel=iid;save();render()}
 function doRepair(iid){if(repairItem(iid)){toast('Đã sửa xong, hiệu ứng hoạt động lại',{type:'fix'});render()}else toast('Không đủ xu để sửa.',{type:'warn'})}
-function doBuyRoom(rid){if(buyRoom(rid)){toast('Đã mở phòng mới, chứa được '+ROOM[rid].cap+' mèo',{type:'room',title:ROOM[rid].n});setRoom(rid)}}
+function doBuyRoom(rid){const b=buyRoom(rid);if(b){if(b.moved)syncEnts();toast('Đã mở phòng mới, chứa được '+ROOM[rid].cap+' mèo'+(b.moved?'. Đã chuyển '+b.moved+' bé từ Phòng chờ vào các phòng còn chỗ, phòng mua trước được lấp trước.':''),{type:'room',title:ROOM[rid].n});setRoom(rid)}}
 function doSkip(){skipTime();syncEnts();render();toast('Đã tua nhanh 10 phút',{icon:'⏩'})}
 function resetAll(){if(confirm('Xóa toàn bộ dữ liệu và chơi lại?')){fresh();save();cur='living';camX=0;ents=[];syncEnts();render()}}
 
