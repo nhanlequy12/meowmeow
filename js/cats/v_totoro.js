@@ -6,7 +6,7 @@ K.costume('v_totoro',{
     // Tính mảng bụng một lần cho mỗi khung, kể cả lúc cuộn mình ngủ.
     const A=F.A;
     F.totoroBelly=F.view==='side'?[A.belly[0]+4,A.belly[1]-4,19,11]:
-      F.anim==='sleep'?[A.body[0]+4,A.body[1]+7,11,10]:[A.body[0],A.body[1]-2,12,10];
+      F.anim==='sleep'?[A.body[0]+4,A.body[1]+7,13,11]:[A.body[0],A.body[1]-2,14,12];
   },
   paint(c){
     if(c.kind!=='fur'||c.part!==P.BODY)return;
@@ -16,7 +16,7 @@ K.costume('v_totoro',{
   draw(G){
     const A=G.A,b=G.F.totoroBelly,L=G.layer(),sleep=G.F.anim==='sleep';
     // Các dấu V nằm trong mảng bụng, bị đầu và chân che tự nhiên.
-    const vy=b[1]-(sleep?2:4),xs=G.side?[-5,5]:sleep?[-2,5]:[-5,4];
+    const vy=b[1]-(sleep?2:4),xs=G.side?[-8,0,8]:sleep?[-6,0,6]:[-7,0,7];
     xs.forEach(dx=>{const x=b[0]+dx;L.line(x-2,vy,x,vy+2,MARK,2).line(x,vy+2,x+2,vy,MARK,2)});
     L.stamp({outline:false,clip:(x,y)=>{
       const i=y*G.W+x,dx=(x-b[0])/b[2],dy=(y-b[1])/b[3];
