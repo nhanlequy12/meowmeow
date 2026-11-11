@@ -156,7 +156,7 @@ function rigFrame(p,sh){rigParts();
   sh=sh||SHAPES.std;p=Object.assign({},p,{dy:(p.dy||0)+sh.drop});
   const cv=new Cv(),hips={},A={},sx=p.sx??1,feet={};
   for(const nm in HIP){const q=tmap(HIP[nm][0],HIP[nm][1],p);hips[nm]=q}
-  const leg=nm=>{const s=p.legs[nm];let fx,lift;if(s[0]==='abs'){fx=hips[nm][0]+(s[1]-hips[nm][0])*sh.k;lift=s[2]}else{fx=hips[nm][0]+s[0]*sh.k;lift=s[1]*sh.kl}feet[nm]=[Math.round(fx),Math.round(GROUND-lift)];return legPix(nm,hips[nm],fx,lift)};
+  const leg=nm=>{const s=p.legs[nm];let fx,lift;if(s[0]==='abs'){fx=HIP[nm][0]+(s[1]-HIP[nm][0])*sh.k;lift=s[2]}else{fx=hips[nm][0]+s[0]*sh.k;lift=s[1]*sh.kl}feet[nm]=[Math.round(fx),Math.round(GROUND-lift)];return legPix(nm,hips[nm],fx,lift)};
   cv.fill(leg('fh'),1,[],P.FH);cv.fill(leg('ff'),1,[],P.FF);
   const tl=p.tail||['orig',0,0];
   if(tl[0]==='orig'){const ty=tl[2]+pyround(tshift(0,p));cv.paste(TAILP,2,tl[1],ty);A.tailTip=[18+tl[1],21+ty]}
@@ -206,7 +206,7 @@ const JUMP=[
 function jumpP(f){const q=JUMP[f],p=Object.assign({},q,{tail:['run',q.tail[0],q.tail[1]]});p.hdy=-(q.dyf||0)*.4;return p}
 const STANDP={tail:['orig',0,0],legs:{fh:[0,0],nh:[0,0],ff:[1,0],nf:[1,0]}};
 // dáng thân: std = Xoài; short = giống chân ngắn (thân hạ 5 ô, sải chân ngắn hơn nên một vòng đi được 6 ô lưới gốc, chạy 13 ô)
-const SHAPES={std:{id:'std',drop:0,k:1,kl:1,stride:{walk:10,run:19}},short:{id:'short',drop:5,k:.6,kl:.6,kr:.684,stride:{walk:6,run:13}}};
+const SHAPES={std:{id:'std',drop:0,k:1,kl:1,stride:{walk:10,run:19}},short:{id:'short',drop:5,k:.6,kl:.6,kr:13/19,stride:{walk:6,run:13}}};
 
 /* ================= 3. Khung chuẩn (đã gắn nhãn, toạ độ kit), có đệm ================= */
 const NF={sit:4,sleep:4,groom:6,stand:1,walk:8,run:8,jump:8};

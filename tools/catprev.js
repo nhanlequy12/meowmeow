@@ -38,7 +38,7 @@ function gif(w,h,frames,delays){ // frames: mảng Uint8ClampedArray RGBA (đã 
   out.push(...Buffer.from('GIF89a'));w16(w);w16(h);out.push(0x80|(bits-1),0,0);
   for(let i=0;i<(1<<bits);i++){const c=pal[i]||[0,0,0];out.push(c[0],c[1],c[2])}
   out.push(0x21,0xFF,11,...Buffer.from('NETSCAPE2.0'),3,1,0,0,0);
-  fi.forEach((px,n)=>{out.push(0x21,0xF9,4,0);w16(Math.round(delays[n]/10));out.push(0,0,0x2C);w16(0);w16(0);w16(w);w16(h);out.push(0);
+  let acc=0;fi.forEach((px,n)=>{out.push(0x21,0xF9,4,0);const b0=Math.round(acc/10);acc+=delays[n];w16(Math.round(acc/10)-b0);out.push(0,0,0x2C);w16(0);w16(0);w16(w);w16(h);out.push(0);
     const min=Math.max(2,bits);out.push(min);const clear=1<<min,eoi=clear+1;let size=min+1,next=eoi+1,dict=new Map(),cur=0,nb=0;const bytes=[];
     const emit=c=>{cur|=c<<nb;nb+=size;while(nb>=8){bytes.push(cur&255);cur>>>=8;nb-=8}};
     emit(clear);let s=px[0];
