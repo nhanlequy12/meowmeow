@@ -33,6 +33,8 @@ function load(){
   S.cats.forEach(c=>{if(c.sp==='khaomanee'&&!RARE[c.coat]&&!/^km/.test(c.coat||''))c.coat='kmIce'});
   // Naruto và Goku lên 5★ (2026-11-10): bé 4★ trong bản lưu cũ được nâng lên 5★ và nhận thêm một trait cho đủ 5
   if(!S.mig5){S.cats.forEach(c=>{if((c.sp==='v_goku'||c.sp==='v_naruto')&&c.star===4){c.star=5;const t=rollTraits(SP[c.sp],5).find(t=>!c.traits.includes(t)&&!c.traits.some(o=>conflict(o,t)));if(t)c.traits.push(t)}});S.mig5=1}
+  // Tanjiro lên 5★ (2026-11-11): bé 4★ trong bản lưu cũ được nâng lên 5★ và nhận thêm một thuộc tính
+  if(!S.mig7){S.cats.forEach(c=>{if(c.sp==='v_tanjiro'&&c.star===4){c.star=5;if(!c.coat)c.coat='v_tanjiro_0';const t=rollTraits(SP[c.sp],5).find(t=>!c.traits.includes(t)&&!c.traits.some(o=>conflict(o,t)));if(t)c.traits.push(t)}});S.mig7=1}
   // năm giống thật 5★ có thuộc tính riêng: bé đang có được thêm vào đầu danh sách, đổi chỗ cho một thuộc tính xấu (nếu không có thì thuộc tính cuối) để số thuộc tính vẫn bằng số sao
   if(!S.mig6){S.cats.forEach(c=>{const bt=SP[c.sp]&&SP[c.sp].bt;if(bt&&!c.traits.includes(bt)){let i=-1;c.traits.forEach((t,j)=>{if(TRAITS[t]&&TRAITS[t].k==='b')i=j});if(i<0)for(let j=c.traits.length-1;j>=0;j--)if(TRAITS[c.traits[j]].k!=='x'){i=j;break}if(i>=0)c.traits.splice(i,1);c.traits.unshift(bt)}});S.mig6=1}
   S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
@@ -140,10 +142,15 @@ function happyTarget(c){
   let h=50+roomHappy(c.room)+tE(c,'self');
   c.traits.forEach(t=>{const e=TRAITS[t].e;if(e.like&&(roomHas(c.room,e.like[0])||(e.like[0]==='tree'&&itemsIn(c.room).some(i=>FURN[i.fid].lv&&!i.broken))))h+=e.like[1];if(e.outdoor&&ROOM[c.room].outdoor)h+=e.outdoor;if(e.bigRoom&&catsIn(c.room).length>=6)h+=e.bigRoom});
   homeCats(c.room).forEach(o=>{if(o!==c)h+=tE(o,'aura')});
+  h+=palHappy(c);
   if(ROOM[c.room].water){const w=tE(c,'water');h+=w>0?10:w<0?-10:0}
   if(c.full<20)h-=25;
   return clamp(h,0,100);
 }
+// "Bạn cùng phòng": thuộc tính có e.pal={ids, happy, both, hunger} chỉ có tác dụng khi trong phòng có mèo thuộc danh sách ids (không tính bé đang viễn chinh)
+const palN=(c,p)=>p.ids.filter(id=>homeCats(c.room).some(o=>o!==c&&o.sp===id)).length;
+const palHappy=c=>c.traits.reduce((a,t)=>{const p=TRAITS[t].e.pal;if(!p)return a;const n=palN(c,p);return a+(n>=2&&p.both?p.both:n?p.happy||0:0)},0);
+const palHunger=c=>c.traits.reduce((a,t)=>{const p=TRAITS[t].e.pal;return a*(p&&p.hunger&&palN(c,p)?p.hunger:1)},1);
 const auraCoin=c=>homeCats(c.room).reduce((a,o)=>a+(o!==c?tE(o,'auraCoin'):0),0);
 const auraHunger=c=>homeCats(c.room).reduce((a,o)=>a*(TRAITS_M(o,'auraHunger')),1);
 function TRAITS_M(c,k){return tM(c,k)}
@@ -154,7 +161,7 @@ function tick(dt,sim){
   S.cats.forEach(c=>{
     const away=onTrip(c.uid),bf=buffOf(c);
     if(c.buff&&c.buff.until<=now())c.buff=null;
-    c.full=clamp(c.full-dt*(100/12000)*tM(c,'hunger')*(bf.hunger||1)*auraHunger(c)*roomHunger(c.room),0,100);
+    c.full=clamp(c.full-dt*(100/12000)*tM(c,'hunger')*(bf.hunger||1)*auraHunger(c)*palHunger(c)*roomHunger(c.room),0,100);
     if(!away){
       const rg=tM(c,'regen')*roomRegen(c.room)*(c.full<=0?.3:1);
       c.en=clamp(c.en+dt/60*rg,0,100);

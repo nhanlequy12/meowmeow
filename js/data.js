@@ -106,10 +106,11 @@ const VARIANTS=[
  V('v_naruto','Mèo Naruto',5,'anime',{c:CRM,c2:CRM,eye:'#3d8fe8',noRare:1},[],'v_naruto','Ninja làng Lá tóc vàng. Hét “dattebayo” mỗi khi thấy bát mì ramen.','chicken'),
  V('v_luffy','Mèo Luffy',4,'anime',{c:CRM,c2:CRM,w:1},[['haircap','#3a3448',12,1],['strawhat'],['scar','under'],['suit','#e0483c',26],['belt','#f2d04a',33]],'v_luffy','Sẽ trở thành Vua Mèo Hải Tặc. Trước hết phải ăn đã.','chicken'),
  V('v_goku','Mèo Goku',5,'anime',{c:CRM,c2:CRM,eye:'#3a3448',noRare:1},[],'v_goku','Võ phục cam, vòng hào quang trên đầu, cưỡi Cân Đẩu Vân. Càng đói càng mạnh, ăn xong lại càng mạnh.','chicken'),
- V('v_tanjiro','Mèo Tanjiro',4,'anime',{c:CRM,c2:CRM,eye:'#b0303a'},[['haircap','#7a2a2e',12,1],['scar','tanjiro'],['earrings'],['checker','#3fa06a','#3a3448']],'v_tanjiro','Ngửi được mùi cá khô từ đầu ngõ.','salmon'),
+ V('v_tanjiro','Mèo Tanjiro',5,'anime',{c:CRM,c2:CRM,eye:'#b0303a'},[['sword'],['haircap','#7a2a2e',12,1],['scar','tanjiro'],['earrings'],['checker','#3fa06a','#3a3448']],'v_tanjiro','Trưởng nam nhà Kamado. Ngửi được mùi cá khô từ đầu ngõ, vung kiếm theo Hơi thở của Nước.','salmon'),
  V('v_nezuko','Mèo Nezuko',4,'anime',{c:WHT,c2:WHT,eye:'#f59ab5'},[['longhair','#3a3448',13,12,22],['haircap','#3a3448',11,1],['mr',21,8,4,2,'#f59ab5'],['bamboo'],['suit','#f7b3c6'],['belt','#c0392b',30]],'v_nezuko','Ngậm ống tre, thích chui hộp ngủ cả ngày.','churu'),
  V('v_thunder','Mèo Zenitsu',5,'anime',{c:CRM,c2:CRM,closed:1},[['sword'],['haircap','#f5cf3a',12,1],['tripat','#f5cf3a','#f08a2a'],['sparks','#f2c230']],'v_thunder','Nhát gan khi thức, nhưng ngủ gật là ra đòn nhanh như chớp.','chicken'),
  V('v_gojo','Mèo Gojo',5,'anime',{c:'#e9e4ef',c2:'#e9e4ef'},[['spikes','#fafbff'],['blindfold','#3a3448'],['suit','#2f3552',24,1],['collar','#2f3552']],'v_gojo','Bịt mắt vẫn bắt trúng chuột. Mạnh nhất, và biết điều đó.','premium'),
+ V('v_itadori','Mèo Itadori',5,'anime',{c:CRM,c2:CRM,eye:'#a8703a',kit:1},[['haircap','#f08aa0',11,1],['suit','#2a2d44',24,1],['collar','#c0392b']],'v_itadori','Chạy 50 mét trong 3 giây, lỡ nuốt một ngón tay bị nguyền và giờ sống chung với Vua Nguyền Rủa.','chicken'),
  V('v_anya','Mèo Anya',4,'anime',{c:CRM,c2:CRM,eye:eG},[['longhair','#f5a8c0',12,8,19],['haircap','#f5a8c0',13,1],['horns','#3a3448'],['suit','#3a3448'],['collar','#ffffff']],'v_anya','Thích đậu phộng. Biết bạn đang nghĩ gì.','churu'),
  V('v_frieren','Mèo Frieren',4,'anime',{c:WHT,c2:WHT,eye:eA},[['staff','#a8754a','#e0483c'],['twintails','#f4f6fb'],['haircap','#f4f6fb',12],['suit','#fbfbff'],['belt','#e0b040',28],['collar','#e0b040']],'v_frieren','Sống cả ngàn năm, ngủ nướng cũng tính bằng thập kỷ.','salmon'),
  V('v_levi','Mèo Levi',4,'anime',{c:CRM,c2:CRM,eye:'#8a8f9c'},[['cape','#4f7a52'],['haircap','#3a3448',12,1],['suit','#f4f0e6'],['cravat'],['belt','#6b4a34',31]],'v_levi','Binh trưởng. Thấy một sợi lông rơi là lau cả nhà.','tuna'),
@@ -122,6 +123,8 @@ const VARIANTS=[
  V('v_hero','Mèo Superman',4,'film',{c:CRM,c2:CRM,eye:eB},[['cape','#d0342c'],['haircap','#3a3448',10],['suit','#3d6fd0',24,1],['emblem','#f2c230','#d0342c'],['belt','#f2c230',33]],'v_hero','Áo choàng đỏ tung bay, giải cứu cá khô khắp phố.','tuna'),
  V('v_pirate','Mèo Jack Sparrow',4,'film',{c:BRN,c2:DBRN,pat:'tabby',w:1,eye:eY},[['longhair','#4a3020',12.5,9,20],['haircap','#c0392b',12],['tricorn'],['suit','#f1e6d0'],['sides','#5a4a6a'],['belt','#c0392b',31],['fr',16,24,1,3,'#4a3020'],['fr',19,24,1,3,'#4a3020']],'v_pirate','Thuyền trưởng. Lúc nào cũng hỏi rượu rum đâu rồi.','tuna'),
  V('v_harry','Mèo Harry Potter',5,'film',{c:CRM,c2:CRM,eye:eG},[['wand'],['haircap','#3a3448',12,1],['scar','bolt'],['glasses','#3a3448'],['suit','#3a3448'],['scarf','#b8323a','#f2c230']],'v_harry','Cậu bé sống sót, giờ sống sót qua cả bồn tắm.','chicken'),
+ V('v_phineas','Mèo Phineas',4,'film',{c:'#f6d2a8',c2:'#f6d2a8',eye:'#3a6ad0',kit:1},[['haircap','#e8642a',10,1],['suit','#f08a2a',24]],'v_phineas','Đầu hình tam giác, ngày nào cũng có một dự án mới. Này Ferb, tớ biết hôm nay mình làm gì rồi!','tuna'),
+ V('v_ferb','Mèo Ferb',4,'film',{c:'#f6d2a8',c2:'#f6d2a8',eye:'#3a3448',kit:1},[['haircap','#4aa84a',10,1],['suit','#f2e6b0',24]],'v_ferb','Tóc xanh lá, ít nói, cả ngày chỉ nói một câu nhưng việc gì cũng làm xong.','chicken'),
  V('v_hermione','Mèo Hermione',4,'film',{c:CRM,c2:CRM,eye:'#8a5a34'},[['wand'],['longhair','#8a5a34',14.5,11,19],['haircap','#8a5a34',12,1],['suit','#3a3448'],['tie','#b8323a','#f2c230']],'v_hermione','Là “Levi-Ô-sa”, không phải “Levio-SÁ”.','salmon'),
  V('v_voldemort','Mèo Voldemort',4,'film',{c:'#eef0ea',c2:'#eef0ea',eye:'#d0302a'},[['wand'],['flag','noFace'],['flag','noEars'],['fr',12,17,2,2,'#d0302a'],['fr',22,17,2,2,'#d0302a'],['fr',16,20,1,2,'#9a9aa6'],['fr',19,20,1,2,'#9a9aa6'],['suit','#3a3448',24,1]],'v_voldemort','Kẻ-mà-ai-cũng-biết-là-không-có-mũi.','tuna'),
  V('v_wednesday','Mèo Wednesday',4,'film',{c:'#f1ece6',c2:'#f1ece6',eye:'#3a3448'},[['twintails','#3a3448'],['haircap','#3a3448',12],['suit','#3a3448',24,1],['collar','#ffffff'],['lids']],'v_wednesday','Không cười. Không khóc. Chỉ nhìn.','tuna'),
@@ -139,6 +142,7 @@ const VARIANTS=[
  V('v_nyan','Nyan Cat',5,'meme',{c:'#9a9aa6',c2:'#9a9aa6',intro:'nyan'},[['nrainbow'],['npoptart'],['cheeks','#f59ab5'],['nstars']],'v_nyan','Thân bánh pop-tart, bay xuyên vũ trụ, để lại cầu vồng.','churu'),
  V('v_maneki','Mèo Thần Tài',5,'meme',{c:WHT,c2:ORG,c3:BLK,pat:'calico',closed:1,intro:'coins',f:.5},[['collar','#e0483c',1],['paw'],['coin']],'v_maneki','Maneki-neko vẫy tay gọi tài lộc, ôm khư khư đồng vàng.','salmon'),
  V('v_grumpy','Mèo Grumpy',4,'meme',{c:'#efe6da',c2:'#8a6a55',pat:'point',eye:eB},[['frown']],'v_grumpy','Mặt quạu bẩm sinh. Thật ra đang rất vui. Có lẽ.','pate'),
+ V('v_yani','Yani Neko',4,'meme',{c:'#efe6da',c2:'#efe6da',eye:'#6a7a3a',kit:1},[['suit','#fafaff',25]],'v_yani','Mèo nghiện thuốc trong truyện Yani Neko: mắt lờ đờ, lúc nào cũng ngậm một điếu, khói bay nghi ngút.','churu'),
  V('v_huh','Mèo “Huh?”',4,'meme',{c:WHT,c2:'#8a8f9c',pat:'cow',eye:eG},[['qmark']],'v_huh','Huh?','kibble'),
  V('v_garfield','Mèo Garfield',4,'meme',{c:'#f39a3a',c2:'#3a3448',pat:'tiger',f:.05},[['lenses','#ffffff',4,4],['pupils','#3a3448'],['lids','#f39a3a']],'v_garfield','Ghét thứ Hai, mê lasagna, coi thường mọi bài tập thể dục.','premium'),
  V('v_tank','Mèo Ba Lỗ',4,'meme',{c:ORG,c2:DORG,pat:'tabby',eye:eG},'tank','v_tank','Tập tạ mỗi sáng, mặc ba lỗ quanh năm.','chicken'),
@@ -207,7 +211,11 @@ const TRAITS={
  v_naruto:{n:'Ảnh phân thân',k:'x',d:'25% cơ hội phân thân đi cùng: xu chuyến đó ×2.',e:{doubleCoin:.25}},
  v_luffy:{n:'Vua hải tặc tương lai',k:'x',d:'+35% xu ở điểm gần nước, nhưng đói nhanh hơn 30%.',e:{water:.35,hunger:1.3}},
  v_goku:{n:'Siêu Saiyan',k:'x',d:'+15% xu, viễn chinh tốn ít hơn 40% năng lượng, đói nhanh hơn 50%.',e:{coin:.15,cost:.6,hunger:1.5}},
- v_tanjiro:{n:'Khứu giác siêu nhạy',k:'x',d:'+40% cơ hội có chiến lợi phẩm, +5% cơ hội nhặt vé.',e:{loot:.4,ticket:.05}},
+ v_tanjiro:{n:'Trưởng nam nhà Kamado',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Nezuko hoặc Mèo Zenitsu: +15 độ vui và đói chậm hơn 20%; có cả hai thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_nezuko','v_thunder'],happy:15,both:25,hunger:.8}}},
+ v_itadori:{n:'Thể lực phi thường',k:'x',d:'Viễn chinh nhanh hơn 20%, +10% xu. Cùng phòng có Mèo Gojo thì +10 độ vui.',e:{speed:.2,coin:.1,pal:{ids:['v_gojo'],happy:10}}},
+ v_phineas:{n:'Hôm nay mình làm gì nhỉ?',k:'x',d:'+50% kinh nghiệm từ viễn chinh, +10% xu.',e:{xp:1.5,coin:.1}},
+ v_ferb:{n:'Ít nói, làm nhiều',k:'x',d:'Viễn chinh nhanh hơn 20% và tốn ít hơn 15% năng lượng.',e:{speed:.2,cost:.85}},
+ v_yani:{n:'Giải lao một điếu',k:'x',d:'Hồi năng lượng nhanh hơn 40%, +15% xu ban đêm. Khói thuốc làm mèo khác cùng phòng −3 độ vui.',e:{regen:1.4,night:.15,aura:-3}},
  v_nezuko:{n:'Ngủ trong hộp',k:'x',d:'+20 độ vui khi phòng có thùng carton, hồi năng lượng nhanh hơn 50%.',e:{like:['box',20],regen:1.5}},
  v_gojo:{n:'Vô hạn',k:'x',d:'+20% xu. Mọi hiệu ứng trừ xu đều không chạm tới bé.',e:{coin:.2,noPenalty:1}},
  v_anya:{n:'Waku waku!',k:'x',d:'+15 độ vui, +10% cơ hội nhặt vé gacha.',e:{self:15,ticket:.1}},
@@ -330,6 +338,8 @@ const COATS={
  // form:1 = dạng hiếm (sao cầu vồng, có trait riêng tr); aura = màu luồng khí bốc quanh thân khi ở trong phòng. gkSSJ là dạng biến hình tạm thời, không rơi từ gacha.
  // Trang phục hiếm của 13 bé 5★ còn lại (2026-11-10): mỗi bé một bộ, gắn với chính nhân vật hoặc gốc gác của giống. Luôn có luồng khí (aura) để nổi hơn 5★ thường.
  ztGod:{n:'Hỏa Lôi Thần',c:CRM,aura:'#ffe14a',cos:[['sword'],['haircap','#ffe27a',12,1],['tripat','#fffbe8','#ffc21a'],['sparks','#fff3a0'],['bolts','#ffe14a'],['aura','#ffe14a']],u:1,rw:.12,form:1,tr:'f_zt'},
+ tjKagura:{n:'Điệu múa Hỏa Thần',c:CRM,eye:'#e8423a',aura:'#ff7a2a',cos:[['saber','#ff7a2a'],['haircap','#7a2a2e',12,1],['scar','tanjiro'],['earrings'],['checker','#3fa06a','#3a3448'],['aura','#ff7a2a']],u:1,rw:.12,form:1,tr:'f_kagura'},
+ itSukuna:{n:'Sukuna chiếm xác',c:CRM,eye:'#e0283a',aura:'#8a1020',cos:[['haircap','#f08aa0',10,1],['suit','#2a2d44',24,1],['collar','#c0392b'],['aura','#8a1020']],u:1,rw:.12,form:1,tr:'f_sukuna'},
  gjSix:{n:'Lục Nhãn giác ngộ',c:'#e9e4ef',eye:'#38b6ff',gem:1,lash:1,aura:'#b98bff',cos:[['spikes','#fafbff'],['suit','#1f1d2b',24,1],['collar','#7a5ae0'],['orb','#a45cff'],['aura','#b98bff']],u:1,rw:.12,form:1,tr:'f_six'},
  hpSeeker:{n:'Tầm thủ Gryffindor',c:CRM,eye:eG,aura:'#ffd24a',cos:[['cape','#8a1f2a'],['wand'],['haircap','#3a3448',12,1],['scar','bolt'],['glasses','#3a3448'],['suit','#c0303a'],['scarf','#f2c230','#b8323a'],['snitch'],['aura','#ffd24a']],u:1,rw:.12,form:1,tr:'f_seeker'},
  vdWhite:{n:'Vader Trắng',c:'#2e2a38',aura:'#bfe6ff',cos:[['vcape'],['flag','noFace'],['flag','noMuz'],['vhelm'],['vface'],['vsuit'],['inv'],['aura','#bfe6ff']],u:1,rw:.12,form:1,tr:'f_white'},
@@ -401,7 +411,7 @@ const BREED_COATS={
 };
 const FORMS={v_goku:'gkBase gkGod',v_naruto:'nrBase nrKurama nrHokage'};
 // tám mèo trang phục 5★ còn lại: trang phục thường (lấy đúng ngoại hình gốc) + một trang phục hiếm
-const FORM0={v_thunder:'ztGod',v_gojo:'gjSix',v_harry:'hpSeeker',v_vader:'vdWhite',v_nyan:'nyTac',v_maneki:'mkGold',v_astro:'asOrange',v_royal:'ryPurple'};
+const FORM0={v_tanjiro:'tjKagura',v_itadori:'itSukuna',v_thunder:'ztGod',v_gojo:'gjSix',v_harry:'hpSeeker',v_vader:'vdWhite',v_nyan:'nyTac',v_maneki:'mkGold',v_astro:'asOrange',v_royal:'ryPurple'};
 Object.keys(FORM0).forEach(id=>{const v=VARIANTS.find(x=>x.id===id);COATS[id+'_0']={n:'Trang phục thường',c:v.c,c2:v.c2,c3:v.c3,pat:v.pat,eye:v.eye};FORMS[id]=id+'_0 '+FORM0[id];v.noRare=1});
 VARIANTS.forEach(v=>{if(FORMS[v.id])v.coats=FORMS[v.id].split(' ')});
 BREEDS.forEach(b=>{b.coats=BREED_COATS[b.id].split(' ');if(SHORT_LEGS.includes(b.id))b.short=1;if(HAIRLESS.includes(b.id)){b.hl=1;b.noRare=1}if(b.id==='lykoi'||b.r===5)b.noRare=1}); // màu hiếm chỉ dành cho giống từ 4★ trở xuống; 5★ có "trang phục hiếm" riêng
@@ -437,6 +447,8 @@ Object.assign(TRAITS,{
  b_savannah:{n:'Cú nhảy 2 mét',k:'x',d:'Viễn chinh nhanh hơn 30%, +10% xu.',e:{speed:.3,coin:.1}},
  b_sokoke:{n:'Bóng rừng Kenya',k:'x',d:'+45% xu ở điểm thiên nhiên, +30% cơ hội có chiến lợi phẩm.',e:{nature:.45,loot:.3}},
  b_suphalak:{n:'Đồng đỏ cát tường',k:'x',d:'+12% xu, mèo khác cùng phòng +10 độ vui.',e:{coin:.12,aura:10}},
+ f_kagura:{n:'Điệu múa Hỏa Thần',k:'x',d:'Trang phục hiếm của Tanjiro: lưỡi kiếm rực lửa. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_sukuna:{n:'Vua Nguyền Rủa',k:'x',d:'Trang phục hiếm của Itadori: bị Sukuna chiếm xác. +25% xu ban đêm, nhưng mèo khác cùng phòng −5 độ vui.',e:{night:.25,aura:-5}},
  f_zt:{n:'Hỏa Lôi Thần',k:'x',d:'Trang phục hiếm của Zenitsu. Viễn chinh nhanh hơn 20%.',e:{speed:.2}},
  f_six:{n:'Lục Nhãn',k:'x',d:'Trang phục hiếm của Gojo. +15% xu, +30% kinh nghiệm.',e:{coin:.15,xp:1.3}},
  f_seeker:{n:'Bắt được trái Snitch',k:'x',d:'Trang phục hiếm của Harry. +10% cơ hội nhặt vé gacha, viễn chinh nhanh hơn 10%.',e:{ticket:.1,speed:.1}},
@@ -565,7 +577,7 @@ FURNS.forEach(f=>FURN[f.id]=f);
 const HAPPY_CAP=35; // tổng độ vui từ nội thất trong một phòng không vượt quá mức này
 
 /* ============ CÂU THOẠI CỦA MÈO 5★ (hiện ở thẻ giới thiệu sau intro) ============ */
-const QUOTE={v_goku:'Chào! Tớ là Goku! Nhà mình còn gì ăn không?',v_naruto:'Tớ sẽ trở thành Hokage, dattebayo!',v_thunder:'Zzz… Thần tốc… nhất thức…',v_gojo:'Yên tâm đi. Vì ta là mạnh nhất mà.',v_harry:'Tôi long trọng thề rằng tôi sắp làm đổ cốc nước.',v_vader:'Hãy gia nhập mặt tối. Ở đây có pate.',
+const QUOTE={v_goku:'Chào! Tớ là Goku! Nhà mình còn gì ăn không?',v_naruto:'Tớ sẽ trở thành Hokage, dattebayo!',v_thunder:'Zzz… Thần tốc… nhất thức…',v_tanjiro:'Hơi thở toàn tập trung! Thức thứ mười: Sinh Sinh Lưu Chuyển!',v_itadori:'Tớ sẽ ăn hết mấy ngón tay đó. Còn hạt thì để sau.',v_gojo:'Yên tâm đi. Vì ta là mạnh nhất mà.',v_harry:'Tôi long trọng thề rằng tôi sắp làm đổ cốc nước.',v_vader:'Hãy gia nhập mặt tối. Ở đây có pate.',
  v_nyan:'Nya nya nya nya nya nya nya~',v_maneki:'Vẫy một cái, tiền vô như nước.',v_astro:'Một bước nhỏ của mèo, một cú nhảy dài của loài mèo.',v_royal:'Ngươi được phép gãi cằm ta.',
  khaomanee:'Một mắt nhìn trời xanh, một mắt nhìn vàng ròng.',lykoi:'Awoooo… à nhầm, meo.',savannah:'Hai mét à? Nhảy khởi động thôi.',sokoke:'Rừng dạy ta đi không một tiếng động.',suphalak:'Hiếm như đồng đỏ, quý hơn vàng.'};
 BREEDS.concat(VARIANTS).forEach(s=>{if(QUOTE[s.id])s.q=QUOTE[s.id]});

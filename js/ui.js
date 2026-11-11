@@ -21,7 +21,8 @@ function bufCanvas(b,f){
 const CC={},CI={},FC={},FI={};
 const fk=k=>Math.max(1,Math.round(k/2)); // điểm ảnh mỗi ô gốc -> điểm ảnh mỗi ô mịn
 // old=1: vẽ kiểu cũ (không qua CatKit). Chỉ hoạt ảnh gacha dùng, để các cảnh intro giữ nguyên như trước
-const catCv=(sp,pose,k,old)=>{const f=fk(k||BS),key=sp+'|'+(pose||'sit')+'|'+f+(old?'|old':'');return CC[key]||(CC[key]=bufCanvas(Art.cat(look(sp),pose,old),f))};
+const KITONLY=key=>{const s=SP[String(key).split(/[~!]/)[0]];return !!(s&&s.kit)}; // mèo mới (không có hình kiểu cũ): gacha cũng dùng hình CatKit
+const catCv=(sp,pose,k,old)=>{if(old&&KITONLY(sp))old=0;const f=fk(k||BS),key=sp+'|'+(pose||'sit')+'|'+f+(old?'|old':'');return CC[key]||(CC[key]=bufCanvas(Art.cat(look(sp),pose,old),f))};
 const furnCv=(id,v,k)=>{const f=fk(k||BS),key=id+'|'+(v||'')+'|'+f;return FC[key]||(FC[key]=bufCanvas(Art.furn(id,v),f))};
 // ảnh trong giao diện: phóng đúng bội số nguyên rồi hiển thị 1:1 với điểm ảnh màn hình
 const kk=k=>2*fk(k*DPR());
@@ -156,6 +157,10 @@ const K={
 const TRAIL={
   // 5★
   v_thunder:[['bolt',{c:'#ffd83a'}]],
+  v_itadori:[['embers',{c:['#e0283a','#2a1a44']}],['lines',{c:['#0a0a0a','#e0283a']}]],
+  v_phineas:[['sparkle',{c:['#f08a2a','#ffd24a'],r:5}]],
+  v_ferb:[['sparkle',{c:['#4aa84a','#b5e08a'],r:5}]],
+  v_yani:[['mist',{c:['#cfd3de','#eceef4']}]],
   v_goku:[['cloud',{c:['#ffe07a','#fff3b0','#ffd24a']}]],
   v_naruto:[['petals',{c:['#6fbf6f','#3f9a55','#b5e08a']}],['lines',{c:['#f08a2a','#ffd83a']}]],
   v_nyan:[['rainbow']],
@@ -248,6 +253,11 @@ const S5={
   v_nyan:{n:'bay lơ lửng kéo cầu vồng',dur:3.4,pose:k=>'run'+Math.floor(k*14)%8,hover:k=>9+Math.sin(k*16)*2,glide:30,fx:(e,p)=>K.rainbow(e,p,p.x+(e.flip?-11:11),e.flip?-1:1,true)},
   v_maneki:{n:'vẫy tay rơi xu',dur:3,pose:'sit',start(){S.coins+=2},hover:k=>Math.abs(Math.sin(k*18))*2,fx:(e,p)=>{if(on(7))rp(p.x+10,p.y-28,'#f2c230',{sh:'coin',vx:rnd(-16,16),vy:-36,g:120,gy:e.y-1,life:1.1});if(on(5))rp(p.x+rnd(-12,12),p.y-rnd(8,34),'#ffe9a0',{sh:'star',life:.5})}},
   v_harry:{n:'vung đũa phép',dur:2.6,pose:'sit',fx:(e,p)=>{if(on(40))rp(p.x+14,p.y-24,pick(['#ffe9a0','#ffffff','#f2c230']),{vx:rnd(8,46),vy:-rnd(8,46),life:.5});if(on(10))rp(p.x+14+rnd(4,26),p.y-24-rnd(4,26),'#ffe9a0',{sh:'star',life:.5})}},
+  v_tanjiro:{n:'vung kiếm vẽ vòng nước (hoặc vòng lửa Hỏa Thần)',dur:2.4,pose:'sit',fx:(e,p,k)=>{const f=formOf(entCat(e)),C=f?['#ff5a1a','#ff9a2a','#ffd24a']:['#2f86e6','#5aa9ff','#bfe2ff'];orbit(p,10+16*k,5,C,7);
+      if(on(3))rp(p.x,p.y-16,C[1],{sh:'ring',r:5,vr:44,life:.5});if(f&&on(22))rp(p.x+rnd(-12,12),p.y-rnd(0,26),pick(C),{vy:-rnd(22,46),life:rnd(.25,.5),sz:ch(.4)?2:1})},end(e){e.cd=rnd(90,180)}},
+  v_itadori:{n:'đấm Hắc Thiểm (dạng Sukuna: các vệt chém)',dur:2,pose:k=>k<.55?'crouch'+(Math.floor(k*9)%2):'sit',fx:(e,p,k)=>{const f=formOf(entCat(e)),bd=e.flip?1:-1;
+      if(f){if(on(20))rp(p.x+rnd(-24,24),p.y-rnd(4,34),'#ffffff',{sh:'line',len:rnd(10,20),bd:ch(.5)?1:-1,life:.14});if(on(8))rp(p.x+rnd(-12,12),p.y-rnd(0,28),pick(['#8a1020','#e0283a']),{vy:-rnd(16,36),life:rnd(.25,.45)})}
+      else if(k>.5){if(on(30))rp(p.x+bd*rnd(6,18),p.y-rnd(8,24),pick(['#0a0a0a','#e0283a']),{sh:'bolt',pts:zig(bd,rnd(8,14),4,5),life:.1});if(!e.sgB){e.sgB=1;rp(p.x+bd*12,p.y-16,'#e0283a',{sh:'ring',r:3,vr:70,life:.4})}}},start(e){e.sgB=0},end(e){e.cd=rnd(90,180)}},
   v_thunder:{n:'ngủ gật rồi lóe sét lao đi',dur:2.6,pose:k=>'sleep'+(Math.floor(k*5)%2),fx:(e,p,k)=>{if(k>.7){if(on(26))rp(p.x+rnd(-6,6),p.y-46,'#ffd83a',{sh:'bolt',pts:zig(1,0,5,5).map((q,i)=>[q[1],(i+1)*9]),life:.1});if(on(30))rp(p.x+rnd(-9,9),e.y-1,pick(['#ffd83a','#ffffff']),{vx:rnd(-34,34),vy:-rnd(18,48),g:170,life:.25})}else if(on(1.5))rp(p.x+8,p.y-34,'#a58e7a',{vy:-6,life:.8})},end(e){e.state='run';e.left=1;e.pre=0;e.boost=2.4;runTarget(e)}},
   v_gojo:{n:'kéo băng mắt, mở lãnh địa',dur:3.2,pose:'sit',look:(k,e)=>lk(entCat(e))+'!open',draw(g,e,p,k){g.fillStyle='rgba(60,30,120,'+(.38*Math.sin(Math.PI*k)).toFixed(3)+')';g.beginPath();g.ellipse(p.x,p.y-18,24,20,0,0,6.283);g.fill()},fx:(e,p)=>{orbit(p,20,3,['#b46aff','#5a8cff','#ffffff'],3);if(on(2.5))rp(p.x,p.y-18,'#b46aff',{sh:'ring',r:4,vr:30,life:.6})}},
   v_vader:{n:'vung kiếm ánh sáng',dur:2.6,pose:'sit',fx:(e,p,k)=>{const a=-2.6+k*2.4;for(let r=10;r<26;r+=3)rp(p.x+Math.cos(a)*r,p.y-16+Math.sin(a)*r,r>20?'#ffffff':'#ff3a3a',{life:.18,sz:2})}},
@@ -834,6 +844,8 @@ const MEOW={
   v_nyan:[0,1,2,3,4,5,6,7].map(i=>[150+i*300,{f:[880,988,1047,988][i%4],d:.2}]),
   v_maneki:[[500,{f:520,d:.8}],[1700,{f:560,d:.18}],[1880,{f:500,d:.18}],[2060,{f:440,d:.22}],[3300,{f:500,d:.9}]],
   v_harry:[[300,{f:720,d:.3}],[1300,{f:800,d:.5,c:[.9,1.25,1.15]}],[2300,{f:900,d:.85,c:[1.25,1.1,.8,.55]}],[3200,{f:560,d:.7,c:[1,.9,1.05,.85]}]],
+  v_tanjiro:[[300,{f:520,d:.5}],[2550,{f:640,d:.8,c:[.9,1.3,1.2,.9]}],[3200,{f:500,d:.5}]],
+  v_itadori:[[250,{f:500,d:.4}],[2200,{f:700,d:.7,c:[1,1.35,1.1,.8]}],[3400,{f:380,d:.8,c:[1,.9,.8,.7]}]],
   v_thunder:[[150,{f:420,d:.7,c:[1,.92,.8],v:.14}],[1250,{f:840,d:.22}],[2350,{f:540,d:.6,c:[1,.95,.8,.7],v:.14}]],
   v_gojo:[[750,{f:480,d:.8}],[2400,{f:440,d:.9}]],
   v_vader:[[1900,{f:330,d:1.1,c:[.95,1.05,1,.8]}],[2850,{f:350,d:.5}]],
@@ -874,6 +886,52 @@ const mixc=(c,p,w)=>'color-mix(in srgb,'+c+' '+p+'%,'+(w||'#fff')+')';          
 const money=(t,o)=>part(Object.assign({t,x:rnd(0,innerWidth),y:-24,vx:rnd(-1.2,1.2),vy:rnd(2.5,6),g:.09,life:150,a:rnd(0,6.283),va:rnd(.08,.22)*(Math.random()<.5?-1:1),sz:t==='coin'?rnd(7,11):t==='bar'?rnd(13,19):rnd(15,21)},o));
 /* Mỗi bé 5★ có một cảnh riêng kể đúng "tính cách" của bé. Mọi thứ hẹn giờ qua T nên bấm Bỏ qua là dừng ngay. */
 const INTRO={
+  // Tanjiro: Hơi thở của Nước, Thức thứ mười Sinh Sinh Lưu Chuyển: con rồng nước cuộn tròn lớn dần rồi bổ xuống. Trang phục hiếm: nước bốc thành lửa của Điệu múa Hỏa Thần
+  v_tanjiro:{dur:3900,run(T){
+    const kg=formOf(gz.cat),k=K5(),W=innerWidth,Hh=innerHeight,cx=W*.5,cy=Hh*.5,BL=['#2f86e6','#5aa9ff','#bfe2ff','#ffffff'],FL=['#ff5a1a','#ff9a2a','#ffd24a','#fff3b0'];
+    fxTint('radial-gradient(circle,#0c2a52 0,#04101f 78%)');
+    const me=fxSpr('sit',k,50,60,'animation:pop .4s ease-out both');
+    T(250,()=>fxTxt('Hơi thở của Nước',50,20,'color:#bfe2ff;font-size:min(6vw,30px);letter-spacing:2px;text-shadow:0 0 12px #2f86e6','pop .5s ease-out both'));
+    T(900,()=>{fxTxt('THỨC THỨ MƯỜI',50,29,'color:#fff;font-size:min(8vw,40px);letter-spacing:3px;text-shadow:0 0 14px #5aa9ff,3px 3px 0 #0a3a7a','pop .5s ease-out both');seq([392,494,587,784],.09,.12,'triangle',.05)});
+    // rồng nước: đầu rồng chạy theo đường xoắn ốc mở rộng, thân là vệt hạt để lại phía sau
+    every(T,700,2500,22,()=>{const t=(performance.now()%100000)/1000,a=t*7.5,r=Math.min(W,Hh)*(.12+.28*Math.min(1,gz.dr=(gz.dr||0)+.012)),x=cx+Math.cos(a)*r*1.25,y=cy+Math.sin(a)*r*.8;
+      for(let i=0;i<3;i++)part({x:x+rnd(-9,9),y:y+rnd(-9,9),vx:-Math.sin(a)*rnd(.5,2),vy:Math.cos(a)*rnd(.5,2),life:rnd(22,38),col:pick(BL),sz:pick([6,10,14])});
+      part({x,y,life:8,col:'#ffffff',sz:18})});
+    T(700,()=>{gz.dr=0;me.remove();glide(180,620,1.6,'sine',.05)});
+    for(let i=0;i<9;i++)T(760+i*190,()=>fxSpr('run'+(i*2)%8,k,14+((i*23)%72),34+((i*31)%40),'animation:ghost .5s ease-out both',{flip:i%2,img:'filter:drop-shadow(0 0 8px #5aa9ff)'}));
+    T(2550,()=>{flash();fxEl('left:0;top:52%;width:100%;height:9px;margin-top:-4px;background:#fff;box-shadow:0 0 30px 12px '+(kg?'#ff7a2a':'#5aa9ff')+';transform-origin:left;transform:rotate(-8deg);animation:slash .55s ease-out forwards');
+      glide(1800,160,.4,'sawtooth',.06);if(kg)fxTint('radial-gradient(circle,#5a1404 0,#170402 78%)');
+      fxTxt(kg?'ĐIỆU MÚA HỎA THẦN':'SINH SINH LƯU CHUYỂN',50,26,'color:'+(kg?'#ffd24a':'#bfe8ff')+';font-size:min(9.5vw,60px);letter-spacing:2px;font-style:italic;white-space:nowrap;text-shadow:0 0 18px '+(kg?'#ff5a1a,4px 4px 0 #6a1a00':'#2f86e6,4px 4px 0 #0a3a7a'),'skewIn 1.3s ease-out both')});
+    every(T,2600,3800,45,()=>fount(kg?FL:BL,4));
+    if(kg)every(T,2600,3800,60,()=>part({x:rnd(0,W),y:Hh+10,vx:rnd(-.6,.6),vy:-rnd(3,8),life:rnd(30,60),col:pick(FL),sz:pick([6,10])}));
+    T(3100,()=>fxSpr('sit',k,50,60,'animation:pop .45s ease-out both'));
+  }},
+  // Itadori: ngón tay bị nguyền của Sukuna lơ lửng, bé nhảy lên nuốt, rồi tung Hắc Thiểm (sét đen viền đỏ). Trang phục hiếm: Sukuna chiếm xác, mở Phục Ma Ngự Trù Tử, các vệt chém trắng cắt ngang màn hình
+  v_itadori:{dur:4200,run(T){
+    const sk=formOf(gz.cat),k=K5(),d=cell(k),W=innerWidth,Hh=innerHeight,CUR=['#2a1a44','#6a3ab0','#12091f','#b04aff'],BF=['#0a0a0a','#e0283a','#0a0a0a','#ff6a6a'];
+    fxTint('radial-gradient(circle,#24103a 0,#07030f 78%)');
+    const me=fxSpr('sit',k,50,66,'animation:pop .4s ease-out both');
+    // ngón tay Sukuna: khúc ngón tay sẫm màu, móng đen, quấn khí nguyền tím
+    const fg=fxEl('left:50%;top:34%;width:'+5*d+'px;height:'+13*d+'px;margin:'+(-6.5*d)+'px 0 0 '+(-2.5*d)+'px;background:linear-gradient(#1a0d10 0 24%,#7a3038 24% 52%,#5a2028 52% 56%,#7a3038 56% 100%);border-radius:'+2*d+'px '+2*d+'px '+d+'px '+d+'px;box-shadow:0 0 22px 8px #6a3ab0;animation:bob .7s ease-in-out infinite alternate');
+    every(T,0,1150,50,()=>part({x:W*.5+rnd(-10,10)*d,y:Hh*.34+rnd(-8,8)*d,vx:rnd(-.5,.5),vy:-rnd(.5,2.2),life:rnd(22,44),col:pick(CUR),sz:pick([4,8])}));
+    T(150,()=>glide(90,60,.9,'sawtooth',.05));
+    T(1150,()=>{me.remove();fxSpr('leap1',k,50,44,'animation:ghost .45s ease-out both');glide(300,900,.25,'square',.04)});
+    T(1400,()=>{fg.remove();flash();fxTint('radial-gradient(circle,#3a0508 0,#060001 78%)');bolt(W*.5,'#e0283a');fxSpr('sit',k,50,66,'animation:shH .35s linear 3')});
+    for(let i=0;i<5;i++)T(1900+i*55,()=>fxSpr('run'+(i*2)%8,k,8+i*15,62,'animation:ghost .5s ease-out both',{flip:1}));
+    // Hắc Thiểm: lõi đen viền đỏ nổ ra ở điểm chạm, sét đen đỏ toả quanh
+    T(2200,()=>{flash();fxEl('left:72%;top:60%;width:'+34*d+'px;height:'+34*d+'px;margin:'+(-17*d)+'px 0 0 '+(-17*d)+'px;border-radius:50%;background:radial-gradient(circle,#000 0 46%,#e0283a 50% 58%,transparent 62%);box-shadow:0 0 40px 14px #e0283a;animation:pop .28s ease-out both,ghost .7s .28s ease-out forwards');
+      [.52,.66,.8,.9].forEach((x,i)=>T(i*70,()=>bolt(W*x,i%2?'#0a0a0a':'#e0283a')));
+      for(let i=0;i<60;i++){const a=rnd(0,6.283),v=rnd(3,11);part({x:W*.72,y:Hh*.6,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(18,40),col:pick(BF),sz:pick([4,8,12])})}
+      $('gz').classList.add('quake');setTimeout(()=>$('gz').classList.remove('quake'),500);glide(120,40,.7,'sawtooth',.07);
+      fxTxt('HẮC THIỂM',50,26,'color:#0a0a0a;font-size:min(14vw,80px);letter-spacing:4px;font-style:italic;-webkit-text-stroke:2px #e0283a;text-shadow:0 0 22px #ff2a3a,5px 5px 0 #5a0008','skewIn 1.2s ease-out both')});
+    if(sk){
+      T(3000,()=>{flash();fxTint('radial-gradient(circle,#7a0a10 0,#1a0002 80%)');glide(70,45,1,'sawtooth',.07);
+        fxTxt('PHỤC MA NGỰ TRÙ TỬ',50,40,'color:#fff;font-size:min(8.5vw,52px);letter-spacing:2px;white-space:nowrap;text-shadow:0 0 16px #ff2a3a,4px 4px 0 #3a0004','pop .5s ease-out both')});
+      every(T,3050,4100,70,()=>fxEl('left:-10%;top:'+rnd(8,92)+'%;width:120%;height:4px;background:#fff;box-shadow:0 0 14px 4px #ffb0b0;transform-origin:'+pick(['left','right'])+';transform:rotate('+rnd(-38,38)+'deg);animation:slash .32s ease-out forwards'));
+    }
+    T(sk?3350:3050,()=>fxSpr('sit',k,50,66,'animation:pop .45s ease-out both'+(sk?';filter:drop-shadow(0 0 14px #e0283a)':'')));
+    every(T,2300,4100,55,()=>fount(BF,2));
+  }},
   // Goku: cưỡi Cân Đẩu Vân bay tới, gồng mình hóa Siêu Saiyan (hai tai chuyển vàng, hào quang vàng), tụ chưởng "KA-ME-HA-ME" rồi "HAAA!": luồng chưởng xanh thổi bay nửa trên ngọn núi
   v_goku:{dur:5000,run(T){
     fxTint('linear-gradient(#58aef0 0,#a6dcf8 54%,#f2dca6 80%)');
