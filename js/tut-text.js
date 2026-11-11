@@ -228,6 +228,10 @@ const TUT_TEXT={
       {id:'level',ic:'⭐',t:'Cấp và mở khóa',p:[
         'Viễn chinh, cho ăn, vuốt ve, gacha và mua sắm đều cho kinh nghiệm. Cấp cao nhất là 18.',
         'Lên cấp mở thêm ô viễn chinh, điểm đến, phòng, món ăn và nội thất. Cửa hàng luôn ghi cấp kế tiếp sẽ mở gì.']},
+      {id:'quest',ic:'📜',t:'Nhiệm vụ và khách lạ',p:[
+        'Bấm 📜 Nhiệm vụ trên thanh trên cùng. Mỗi giờ có 2 nhiệm vụ nhanh, mỗi ngày có 3 nhiệm vụ lớn; xong cả ba nhiệm vụ trong ngày được thêm xu và 2 vé.',
+        'Nhiệm vụ xong thì bấm Nhận. Quên nhận cũng không sao: hết giờ hay sang ngày, thưởng được cộng tự động.',
+        'Ở tab Phòng, thỉnh thoảng có khách lạ chạy qua: chuột nhắt, bướm, cuộn len vàng, hiếm khi có bướm vàng. Chạm vào để bắt, được xu; cuộn len vàng và bướm vàng còn có vé.']},
       {id:'shop',ic:'🛋',t:'Cửa hàng và nội thất',p:[
         'Có 17 phòng; phòng sau đắt hơn nhưng chứa nhiều mèo hơn và có hiệu ứng riêng như hồi năng lượng, thêm vui, thêm xu.',
         'Nội thất chia nhiều mục. Mỗi loại đồ chỉ tính hiệu ứng một lần; độ vui từ nội thất trong một phòng tối đa +35. Xu và tốc độ tính cho cả nhà.',

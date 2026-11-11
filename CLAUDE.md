@@ -112,27 +112,27 @@ Chạm vào mèo: mỗi bé 10 phút nhận xu một lần (`PET_CD`), số xu b
 Chủ đề sáng hoặc tối, độ tối nền phòng, và cỡ hạt cườm (`S.set.bead`): "Tự động" hoặc "Hạt to, rõ" (ép mức zoom nhỏ nhất lên 6, tức mỗi hạt ít nhất 3 điểm ảnh thật).
 
 ### Phòng
-17 phòng mua được, cộng Phòng chờ. Sức chứa và bonus:
+17 phòng mua được, cộng Phòng chờ. Sức chứa và bonus (giá đã nhân hệ số cày lâu, xem mục 18):
 
 | Phòng | Giá | Chứa | Bonus |
 |---|---|---|---|
 | Phòng khách | 0 | 8 | Không |
-| Phòng ngủ | 600 | 8 | Hồi năng lượng +25% |
-| Bếp | 850 | 6 | Đói chậm hơn 20% |
-| Ban công | 1.200 | 6 | +8 vui, ngoài trời |
-| Phòng tắm | 1.700 | 5 | +4 vui, hồi năng lượng +10% |
-| Phòng chơi | 2.400 | 10 | +6 vui |
-| Phòng ăn | 3.300 | 8 | +2 xu cảm ơn mỗi bé mỗi bữa |
-| Gác mái | 4.600 | 6 | Hồi năng lượng +20%, +3 vui |
-| Sân vườn | 6.500 | 12 | +10 vui, ngoài trời |
-| Thư viện | 9.000 | 8 | +6% xu viễn chinh |
-| Phòng game | 12.500 | 10 | +9 vui |
-| Nhà kính | 17.500 | 8 | +7 vui, đói chậm hơn 10%, ngoài trời |
-| Phòng Nhật | 24.500 | 8 | Hồi năng lượng +25%, +5 vui |
-| Tầng hầm | 34.000 | 10 | +10% xu khi đi ban đêm |
-| Hồ bơi | 48.000 | 10 | +8 vui, mèo thích nước +10, sợ nước −10 |
-| Sân thượng | 67.000 | 12 | +6 vui, +3% cơ hội nhặt vé, ngoài trời |
-| Phòng hoàng gia | 90.000 | 12 | +8 vui, +10% xu viễn chinh |
+| Phòng ngủ | 900 | 8 | Hồi năng lượng +25% |
+| Bếp | 1.400 | 6 | Đói chậm hơn 20% |
+| Ban công | 2.200 | 6 | +8 vui, ngoài trời |
+| Phòng tắm | 3.400 | 5 | +4 vui, hồi năng lượng +10% |
+| Phòng chơi | 5.200 | 10 | +6 vui |
+| Phòng ăn | 7.700 | 8 | +2 xu cảm ơn mỗi bé mỗi bữa |
+| Gác mái | 11.500 | 6 | Hồi năng lượng +20%, +3 vui |
+| Sân vườn | 17.500 | 12 | +10 vui, ngoài trời |
+| Thư viện | 25.500 | 8 | +6% xu viễn chinh |
+| Phòng game | 37.500 | 10 | +9 vui |
+| Nhà kính | 55.500 | 8 | +7 vui, đói chậm hơn 10%, ngoài trời |
+| Phòng Nhật | 81.500 | 8 | Hồi năng lượng +25%, +5 vui |
+| Tầng hầm | 119.000 | 10 | +10% xu khi đi ban đêm |
+| Hồ bơi | 176.000 | 10 | +8 vui, mèo thích nước +10, sợ nước −10 |
+| Sân thượng | 257.000 | 12 | +6 vui, +3% cơ hội nhặt vé, ngoài trời |
+| Phòng hoàng gia | 360.000 | 12 | +8 vui, +10% xu viễn chinh |
 
 Mỗi phòng có kiểu tường và sàn riêng (`THEMES` trong ui.js). Thế giới của một phòng rộng 480 × 170 ô; tường kết thúc ở hàng 96, mèo đi trên sàn từ hàng 106 đến 166.
 
@@ -436,7 +436,7 @@ Chưa đụng tới, cần người dùng quyết: gacha 100 xu cố định và
 
 Từ đợt này mèo trong phòng và trong giao diện không còn vẽ bằng `Art.cat` kiểu cũ mà dựng lúc chạy trên bộ khung hoạt ảnh của mèo Xoài. Các mục 4 (art.js) ở trên chỉ còn đúng cho hình kiểu cũ, nay chỉ dùng trong gacha.
 
-- Thứ tự nạp script: `js/data.js`, `js/sprites.js` (khung Xoài), `js/art.js`, `js/catkit.js`, `js/cats/*.js`, `js/game.js`, `js/ui.js`, `js/net.js`, rồi các file hướng dẫn tân thủ. Khối thẻ `<script>` của `js/cats` nằm giữa `<!-- cats:begin -->` và `<!-- cats:end -->` trong `index.html` và `preview/index.html`, do `node tools/mkmods.js` ghi. Thêm module mới thì chạy lại lệnh này.
+- Thứ tự nạp script: `js/data.js`, `js/sprites.js` (khung Xoài), `js/art.js`, `js/catkit.js`, `js/cats/*.js`, `js/game.js`, `js/ui.js`, `js/quest.js` (nhiệm vụ và khách lạ, mục 19), `js/net.js`, rồi các file hướng dẫn tân thủ. Khối thẻ `<script>` của `js/cats` nằm giữa `<!-- cats:begin -->` và `<!-- cats:end -->` trong `index.html` và `preview/index.html`, do `node tools/mkmods.js` ghi. Thêm module mới thì chạy lại lệnh này.
 - `js/catkit.js`: gắn nhãn từng ô của khung Xoài (bộ phận, chi tiết mặt, toạ độ nghỉ `u, v`, mỏ neo), bộ khớp đi, chạy, nhảy (bản JS trùng từng ô với 24 khung của `tools/xoai_rig.py`), dáng chân ngắn, bộ tô màu, vải vẽ phụ kiện. `Art.cat(s, pose)` gọi `CatKit.render`; nếu ngoại hình còn thiếu module thì trả `null` và game vẽ kiểu cũ.
 - Ba loại module trong `js/cats/`: `CatKit.pattern` (hoa văn lông), `CatKit.trait` (tai, đuôi, lông dài, mặt tịt, không lông, mắt kim cương), `CatKit.costume` (mỗi mèo trang phục một file `v_<id>.js`; năm giống 5★ có `b_<id>.js` cho trang phục hiếm). Tra nhanh API: `docs/catkit-card.md`; đặc tả đầy đủ: `docs/cat-sprite-spec.md`.
 - Gacha (intro, ảnh mở hộp) cố ý giữ hình kiểu cũ: `catCv(sp, pose, k, old)` với `old=1`. Người dùng dặn KHÔNG sửa hoạt ảnh gacha. Ngoại lệ đã duyệt: mèo thêm sau đợt này không có hình kiểu cũ (cờ `kit:1` trong `VARIANTS`: Itadori, Phineas, Ferb, Yani Neko) nên gacha của chúng dùng hình CatKit (`KITONLY` trong ui.js).
@@ -444,3 +444,38 @@ Từ đợt này mèo trong phòng và trong giao diện không còn vẽ bằng
 - Chạy Codex song song: `tools/run_codex.sh NN [rerun]` (worktree `../wt/agent-NN`, nhánh `sprite/agent-NN`, nhiệm vụ `docs/tasks/agent-NN.md` sinh bởi `tools/mktasks.js`; script commit thay Codex). Luật tiết kiệm token cho Codex ở `AGENTS.md` và skill `tools/skills/sprite-lean/SKILL.md` (đã cài vào `~/.codex/skills/`): một phiên vẽ 3–4 mèo tốn khoảng 35–95 nghìn token, trước đó trung bình 108 nghìn.
 - Thay đổi luật chơi cùng đợt: Tanjiro lên 5★ (bản lưu cũ được nâng qua cờ `S.mig7`), trang phục hiếm `tjKagura` Điệu múa Hỏa Thần; mèo mới Itadori 5★ (trang phục hiếm `itSukuna`), Phineas, Ferb, Yani Neko 4★. Hiệu ứng thuộc tính mới `pal:{ids, happy, both, hunger}` trong game.js (`palN`, `palHappy`, `palHunger`): chỉ có tác dụng khi cùng phòng có mèo thuộc `ids`. Tổng 86 giống và 47 mèo trang phục (5★: 5 giống, 12 trang phục).
 - Chưa kiểm tra được: cảm giác chuyển động thật trong game của từng mèo (mới xem ảnh tĩnh, bảng khung và trang xem trước), âm thanh intro mới.
+
+## 18. Giá cày lâu (2026-11-11)
+
+Người dùng muốn nội thất và phòng đắt hơn để người chơi cày lâu, chơi liên tục. Giá gốc trong `data.js` giữ nguyên; khối "GIÁ CÀY LÂU" ở cuối `data.js` nhân giá SAU khi đã gán cấp mở khóa (cấp vẫn tính theo giá gốc):
+
+- Phòng: hệ số tăng dần theo thứ tự giá, ×1,5 (Phòng ngủ 900) tới ×4 (Phòng hoàng gia 360.000). Tổng 1.161.800 xu (trước 323.650).
+- Nội thất: ×1,5 ở cấp 1, cộng 0,15 mỗi cấp mở (cấp 18 là ×4,05). Bát ăn chỉ ×1,5. 141 món không phải bát tổng 298.890 xu.
+- Làm tròn đẹp (`nicePrice`). Đổi nhịp chỉ cần sửa năm hằng số `ROOM_K0, ROOM_K1, FURN_K0, FURN_KS, BOWL_K`.
+- Hoàn 25% khi bán và sửa 30% tính theo giá mới, nên đồ mua từ trước khi tăng giá bán lại được nhiều xu hơn.
+
+Đo bằng bot chơi liên tục (script Node ngoài repo, ghé 10 phút một lần: nhận viễn chinh, cho ăn hạt khô, vuốt mọi bé, gửi viễn chinh xu mỗi phút cao nhất, gacha khi còn chỗ, mua phòng khi gần đầy, còn dư thì mua mỗi món nội thất một cái):
+
+| Mốc | Trước | Sau |
+|---|---|---|
+| Cấp 18 | 33 giờ | 41 giờ |
+| Phòng thứ 5 (Phòng chơi) | 4,2 giờ | 7 giờ |
+| Phòng thứ 9 (Thư viện) | 8,8 giờ | 20 giờ |
+| Phòng hoàng gia | 44 giờ | 163 giờ |
+| Đủ mọi món nội thất | 52 giờ | 188 giờ |
+
+Đầu game gần như giữ nhịp cũ; cuối game tiền là nút thắt chứ không còn là cấp. Thu nhập cuối game khoảng 7.000 xu mỗi giờ, phần lớn từ vuốt ve và cảm ơn bữa ăn của gần 150 bé. Chưa có người chơi thật thử nhịp mới.
+
+## 19. Nhiệm vụ và khách lạ trong phòng (2026-11-11)
+
+Người dùng chọn hai gameplay đầu tiên trong danh sách gợi ý để hợp kiểu chơi liên tục. Toàn bộ nằm trong `js/quest.js` (nạp ngay sau `ui.js`), trạng thái lưu ở `S.q`. Chỉ chạy khi đã xong hướng dẫn tân thủ (`S.tut.done`).
+
+- Móc vào game: `game.js` có `let onAct=()=>{}` và gọi `onAct(loại, số)` trong `claimTrip` (`trip`, `tripcoin`), `feedRoom` (`feed`, `fav`), `petCat` (`pet`), `gachaRoll` (`gacha`), `buyItem` (`buy`). `ui.js` có `let critStep, critDraw, critHit` (mặc định rỗng), gọi trong `loop` (chỉ ở tab Phòng), `drawRoom` (sau mèo và đồ, trước hạt) và `ptrEnd` (trước khi xét chạm mèo). `quest.js` gán lại các hàm này và bọc `renderTop` để thêm nút 📜 Nhiệm vụ vào thanh trên cùng.
+- Nhiệm vụ trong giờ: 2 nhiệm vụ, đổi mới đầu mỗi giờ theo đồng hồ máy, chọn từ `trip, feed, pet, catch, tripcoin`; thưởng `20 + 8 × cấp` xu mỗi cái.
+- Nhiệm vụ hôm nay: 3 nhiệm vụ, đổi lúc nửa đêm, chọn từ thêm `gacha, fav, buy`; thưởng `120 + 70 × cấp` xu, nhiệm vụ gacha và mua đồ thêm 1 vé. Xong cả ba: `200 + 120 × cấp` xu và 2 vé. Cấp trong công thức tối đa 18 (`qLv`).
+- Số cần đạt theo cấp, số ô viễn chinh, số mèo (`Q_DEF`). Nhiệm vụ xong mà chưa bấm Nhận thì được cộng tự động khi hết giờ hoặc sang ngày.
+- Khách lạ (`CRIT`): chuột nhắt, bướm, cuộn len vàng (20% có vé), bướm vàng hiếm (chắc chắn có vé), mỗi lúc tối đa một con, 70–150 giây một lần, chỉ khi đang xem tab Phòng, không ở chế độ Sắp xếp và trang đang hiện. Xuất hiện ở mép khung nhìn, đi ngang qua phần phòng đang thấy (điện thoại ngang chỉ thấy một dải nên vị trí theo `camY`, `VHV`). Chạm trúng: `(2 + cấp) × hệ số` xu, 2 kinh nghiệm, cộng nhiệm vụ `catch`. Khách chạy dưới sàn có 60% bị một bé đang rảnh đuổi theo (`e.chase`), chỉ để vui.
+- Sổ tay có thêm mục "Nhiệm vụ và khách lạ" (`tut-text.js`). Lần đầu có `S.q` hiện thông báo giới thiệu tính năng.
+- Ước tính thưởng thêm cho người chơi chăm (bắt hết khách, làm hết nhiệm vụ): khoảng +30% thu nhập ở cấp 6, khoảng +15–20% ở cấp 18. Bot chưa mô phỏng phần này.
+- Đã thử bằng Playwright ở PC, điện thoại dọc, điện thoại ngang: tiến độ, nút Nhận, tự cộng khi qua giờ, bắt khách bằng chuột và chạm, ẩn khi đang hướng dẫn. Chưa có người chơi thật thử, chưa thử để qua đêm thật.
+

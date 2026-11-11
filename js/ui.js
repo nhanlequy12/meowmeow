@@ -73,7 +73,7 @@ setInterval(()=>{if(tipFor&&!tipFor.isConnected)hideTip()},400);
 
 // lock = hộp thoại bắt buộc trả lời: ẩn nút ✕ và không đóng bằng phím Esc
 /* ---------- icon riêng của game thay cho emoji: vẽ bằng Art.icon, cùng kiểu hạt cườm với mèo ---------- */
-const EMO_IC={'🪙':'coin','🎟':'ticket','🐱':'cat','🐈':'cat','👥':'cat','😾':'grumpy','🍗':'drum','🍖':'drum','⚡':'bolt','😊':'smile','❤':'heart','🏠':'house','🥚':'gacha','🎒':'pack','🛋':'sofa','📖':'book','⚙':'gear','🔒':'lock','🔐':'lock','✨':'sparkle','💎':'gem','🚪':'door','🎁':'gift','🔧':'wrench','🛠':'wrench','🕊':'bird','⚠':'warn','🌙':'moon','🎲':'dice','✏':'pencil','⏩':'ff','❗':'excl','🗑':'trash','🍽':'bowl','🍚':'rice','🥣':'kibble','🥫':'can','🐟':'fish','🍣':'salmon','🍥':'churu','🌿':'leaf','🍱':'bento','🏘':'town','🌳':'tree','🎣':'lake','⚓':'anchor','📍':'pin','✅':'check','📦':'box','🐾':'paw','🤚':'paw','🎉':'party','⭐':'star','👑':'crown','☀':'sun','🌤':'sun','⏳':'hourglass','🍼':'bottle'};
+const EMO_IC={'🪙':'coin','🎟':'ticket','🐱':'cat','🐈':'cat','👥':'cat','😾':'grumpy','🍗':'drum','🍖':'drum','⚡':'bolt','😊':'smile','❤':'heart','🏠':'house','🥚':'gacha','🎒':'pack','🛋':'sofa','📖':'book','⚙':'gear','🔒':'lock','🔐':'lock','✨':'sparkle','💎':'gem','🚪':'door','🎁':'gift','🔧':'wrench','🛠':'wrench','🕊':'bird','⚠':'warn','🌙':'moon','🎲':'dice','✏':'pencil','⏩':'ff','❗':'excl','🗑':'trash','🍽':'bowl','🍚':'rice','🥣':'kibble','🥫':'can','🐟':'fish','🍣':'salmon','🍥':'churu','🌿':'leaf','🍱':'bento','🏘':'town','🌳':'tree','🎣':'lake','⚓':'anchor','📍':'pin','✅':'check','📦':'box','🐾':'paw','🤚':'paw','🎉':'party','⭐':'star','👑':'crown','☀':'sun','🌤':'sun','⏳':'hourglass','🍼':'bottle','📜':'scroll','🦋':'bfly','🐭':'mouse'};
 const EMO_RE=new RegExp('('+Object.keys(EMO_IC).join('|')+')\\uFE0F?','gu'),ICO={};
 const icoTag=n=>'<img class="px ico" alt="" src="'+(ICO[n]||(ICO[n]=bufCanvas(Art.icon(n),2).toDataURL()))+'">';
 // đổi emoji trong phần chữ của một đoạn HTML thành icon; không đụng vào bên trong thẻ, thuộc tính hay <option>
@@ -101,6 +101,7 @@ notify=toast;
 /* ============ HẠT HIỆU ỨNG TRONG PHÒNG ============ */
 // Mỗi hạt có vòng đời: sinh ra, bay theo vận tốc/trọng lực, mờ dần rồi biến mất. sh là hình dạng.
 let rparts=[],FDT=.016;
+let critStep=()=>{},critDraw=()=>{},critHit=()=>false; // khách lạ trong phòng, js/quest.js gán lại
 const PMAX=280; // trần số hạt để phòng đông mèo không bị lag
 const rp=(x,y,col,o)=>{if(rparts.length<PMAX){const p=Object.assign({x,y,vx:0,vy:0,g:0,life:.6,col,sz:1},o);p.max=p.life;rparts.push(p)}};
 const ch=pr=>Math.random()<pr;
@@ -678,6 +679,7 @@ function drawRoom(){
   const list=its.filter(i=>FURN[i.fid].kind==='floor').map(i=>({y:i.y,f:()=>drawItem(i)}));
   ents.forEach(e=>{const p=entPos(e);list.push({y:p.sy,f:()=>drawEnt(e,p)})});
   list.sort((a,b)=>a.y-b.y).forEach(o=>o.f());
+  critDraw(g);
   drawParts(g);
   g.setTransform(ZC,0,0,ZC,0,0);
   g.fillStyle='rgba(150,100,70,.5)';const my=Math.round(VHV/2);
@@ -713,7 +715,9 @@ function ptrEnd(ev){
   if(!ptr)return;const p=ppos(ev),was=ptr;ptr=null;
   if(was.item){save();return}
   if(was.moved||edit)return;
-  const wx=p.x+camX,wy=p.y+camY,hit=ents.filter(e=>!e.ghost).map(e=>({e,p:entPos(e)})).sort((a,b)=>b.p.sy-a.p.sy).find(o=>wx>=o.p.x-12&&wx<=o.p.x+12&&wy>=o.p.y-35&&wy<=o.p.y+1);
+  const wx=p.x+camX,wy=p.y+camY;
+  if(critHit(wx,wy))return; // chạm trúng khách lạ (chuột, bướm, cuộn len)
+  const hit=ents.filter(e=>!e.ghost).map(e=>({e,p:entPos(e)})).sort((a,b)=>b.p.sy-a.p.sy).find(o=>wx>=o.p.x-12&&wx<=o.p.x+12&&wy>=o.p.y-35&&wy<=o.p.y+1);
   if(!hit){unfollow(true);return} // chạm khoảng trống: thôi theo dõi, camera về chỗ cũ
   if(hit.e.clone){poof(hit.p.x,hit.p.y);hit.e.dead=1;return} // chạm vào phân thân của Naruto: tan thành khói
   const c=catBy(hit.e.uid);hit.e.emoT=1.5;follow(c.uid);
@@ -1630,7 +1634,7 @@ load();applySet();$('app').dataset.tab=tab;fitCanvas();syncEnts();render();
 fitCanvas();camY=VH;clampCam(); // đo lại sau khi thanh trên, tên phòng và menu đã có nội dung (nếu không khung phòng lần đầu cao quá cửa sổ), rồi nhìn lại sát sàn
 if(AWAY.n)setTimeout(()=>toast(AWAY.n+' suất đã được các bé tự ra ăn'+(AWAY.cost?' · máy cho ăn tốn '+AWAY.cost+' xu':''),{type:'feed',title:'Lúc bạn vắng',coins:AWAY.coins,ms:5200}),600);
 let last=performance.now();
-function loop(t){const dt=Math.min(.1,(t-last)/1000);last=t;ents.forEach(e=>stepEnt(e,dt));if(ents.some(e=>e.dead))ents=ents.filter(e=>!e.dead);stepParts(dt);if(tab==='home'){stepCam(dt);drawRoom()}requestAnimationFrame(loop)}
+function loop(t){const dt=Math.min(.1,(t-last)/1000);last=t;ents.forEach(e=>stepEnt(e,dt));if(ents.some(e=>e.dead))ents=ents.filter(e=>!e.dead);stepParts(dt);if(tab==='home'){stepCam(dt);critStep(dt);drawRoom()}requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 let lastTick=now(),sec=0;
 setInterval(()=>{

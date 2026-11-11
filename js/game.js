@@ -2,6 +2,7 @@
 /* ============ TRẠNG THÁI & LOGIC (không đụng tới DOM) ============ */
 const KEY='meoxu_v2';
 let S, notify=()=>{};
+let onAct=()=>{};         // js/quest.js gán lại để cộng tiến độ nhiệm vụ: onAct(loại, số lượng)
 let TOFF=0;                 // độ lệch đồng hồ (ms), chỉ khác 0 khi đang bù thời gian vắng mặt lúc tải game
 const AWAY={n:0,coins:0,cost:0}; // tổng kết lúc vắng: số suất mèo tự ăn, xu cảm ơn, xu máy cho ăn đã tiêu
 const now=()=>Date.now()+TOFF, rnd=(a,b)=>a+Math.random()*(b-a), pick=a=>a[Math.floor(Math.random()*a.length)], clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -260,7 +261,7 @@ function claimTrip(slot){
   S.coins+=res.coins+res.bonus;
   res.xp=Math.round(10*Math.pow(d.min/10,.8)*tM(c,'xp'));
   if(tM(c,'xp')>1)c.traits.forEach(t=>{if(TRAITS[t].e.xp)res.acts.push({t,txt:'+50% kinh nghiệm'})});
-  addXp(res.xp); save(); return res;
+  addXp(res.xp); onAct('trip',1); onAct('tripcoin',res.coins+res.bonus); save(); return res;
 }
 
 /* ---------- cho ăn ---------- */
@@ -303,7 +304,7 @@ function feedRoom(rid,fid){
   let cost=0,n=0;
   ready.forEach(b=>{const p=bowlCost(b,fid);if(S.coins<p)return;S.coins-=p;cost+=p;n++;fillBowl(b,fid)});
   if(!n)return null;
-  const r=eatCheck(rid,true); addXp(5); save();
+  const r=eatCheck(rid,true); addXp(5); onAct('feed',1); if(r.loved.length)onAct('fav',r.loved.length); save();
   return Object.assign(r,{cost,bowls:n,miss:cats.length-r.n});
 }
 const PET_CD=600000; // mỗi bé nhận xu vuốt ve 10 phút một lần (trước là 20 giây: bấm liên tục kiếm xu và kinh nghiệm nhanh hơn cả viễn chinh)
@@ -312,7 +313,7 @@ function petCat(c){
   c.petAt=now();
   const n=Math.round((c.star+gEff().pet+tE(c,'pet'))*gMult()); S.coins+=n;   // mỗi bé cho số xu bằng số sao, cùng nhịp 10 phút với bát ăn và viễn chinh
   c.hp=clamp(c.hp+3*(tE(c,'petHappy')||1),0,100);
-  addXp(1); save(); return n;
+  addXp(1); onAct('pet',1); save(); return n;
 }
 
 /* ---------- gacha ---------- */
@@ -339,7 +340,7 @@ function gachaRoll(useTicket,opt){
     c=newCat(sp,star);c.isNew=!S.seen[sp.id]||(sp.coats&&!(S.seenCoat||{})[lk(c)]);
   }
   c.room=freeRoom();
-  S.cats.push(c); markSeen(c); addXp(3); save();
+  S.cats.push(c); markSeen(c); addXp(3); onAct('gacha',1); save();
   return {cat:c};
 }
 // phóng sinh: nhận lại ít xu theo sao, mèo 5★ tặng thêm 1 vé gacha. Bộ sưu tập vẫn ghi nhận đã từng sở hữu.
@@ -358,7 +359,7 @@ function buyItem(fid,rid,x){
   const f=FURN[fid]; if(locked(f)||S.coins<f.price)return null;
   S.coins-=f.price;
   const it={iid:S.nid++,fid,room:rid,x:clamp(x,f.w/2,WORLD_W-f.w/2),y:f.kind==='wall'?70:rnd(125,160),flip:false,broken:false};
-  S.items.push(it); addXp(8); save(); return it;
+  S.items.push(it); addXp(8); onAct('buy',1); save(); return it;
 }
 function sellItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it)return 0;S.items=S.items.filter(i=>i!==it);const v=Math.round(FURN[it.fid].price*.25);S.coins+=v;save();return v}
 function repairCost(it){return Math.round(FURN[it.fid].price*.3)}
