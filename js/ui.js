@@ -70,7 +70,14 @@ document.addEventListener('scroll',hideTip,true);addEventListener('resize',hideT
 setInterval(()=>{if(tipFor&&!tipFor.isConnected)hideTip()},400);
 
 // lock = hộp thoại bắt buộc trả lời: ẩn nút ✕ và không đóng bằng phím Esc
-function modal(html,lock){$('mbox').innerHTML=html;$('mbox').scrollTop=0;$('modal').classList.toggle('lock',!!lock);$('modal').style.display='flex'}
+/* ---------- icon riêng của game thay cho emoji: vẽ bằng Art.icon, cùng kiểu hạt cườm với mèo ---------- */
+const EMO_IC={'🪙':'coin','🎟':'ticket','🐱':'cat','🐈':'cat','👥':'cat','😾':'grumpy','🍗':'drum','🍖':'drum','⚡':'bolt','😊':'smile','❤':'heart','🏠':'house','🥚':'gacha','🎒':'pack','🛋':'sofa','📖':'book','⚙':'gear','🔒':'lock','🔐':'lock','✨':'sparkle','💎':'gem','🚪':'door','🎁':'gift','🔧':'wrench','🛠':'wrench','🕊':'bird','⚠':'warn','🌙':'moon','🎲':'dice','✏':'pencil','⏩':'ff','❗':'excl','🗑':'trash','🍽':'bowl','🍚':'rice','🥣':'kibble','🥫':'can','🐟':'fish','🍣':'salmon','🍥':'churu','🌿':'leaf','🍱':'bento','🏘':'town','🌳':'tree','🎣':'lake','⚓':'anchor','📍':'pin','✅':'check','📦':'box','🐾':'paw','🤚':'paw','🎉':'party','⭐':'star','👑':'crown','☀':'sun','🌤':'sun','⏳':'hourglass','🍼':'bottle'};
+const EMO_RE=new RegExp('('+Object.keys(EMO_IC).join('|')+')\\uFE0F?','gu'),ICO={};
+const icoTag=n=>'<img class="px ico" alt="" src="'+(ICO[n]||(ICO[n]=bufCanvas(Art.icon(n),2).toDataURL()))+'">';
+// đổi emoji trong phần chữ của một đoạn HTML thành icon; không đụng vào bên trong thẻ, thuộc tính hay <option>
+function emo(h){const a=String(h).split(/(<[^>]*>)/);return a.map((p,i)=>p[0]==='<'||(i>0&&/^<option/i.test(a[i-1]))?p:p.replace(EMO_RE,(m,k)=>icoTag(EMO_IC[k]))).join('')}
+function emoEl(el){const h=el.innerHTML,n=emo(h);if(n!==h)el.innerHTML=n}
+function modal(html,lock){$('mbox').innerHTML=emo(html);$('mbox').scrollTop=0;$('modal').classList.toggle('lock',!!lock);$('modal').style.display='flex'}
 function closeModal(){$('modal').style.display='none'}
 /* thông báo nhỏ: trượt từ trên xuống, mỗi loại một icon và màu nhấn, số xu đếm chạy lên */
 const TT={pet:['🤚','#e88aa2'],feed:['🍖','#e39a4a'],coin:['🪙','#d1a02a'],shop:['🛋','#5fb3a1'],room:['🚪','#6fa3d6'],level:['🎉','#9a78d8'],trip:['🎒','#6fb486'],cat:['🐱','#e88aa2'],warn:['⚠️','#d97070'],fix:['🔧','#5fb3a1'],info:['🐾','#a07654']};
@@ -79,7 +86,7 @@ function toast(msg,o){
   if(!o.type){const m=/^(🎉|😾)\s*/.exec(msg);if(m){o.type=m[1]==='🎉'?'level':'warn';if(m[1]==='😾')o.icon='😾';msg=msg.slice(m[0].length)}else o.type='info'}
   const t=TT[o.type]||TT.info,box=$('toast'),d=document.createElement('div');
   d.className='tst';d.style.setProperty('--ac',t[1]);
-  d.innerHTML='<div class="ic">'+(o.icon||t[0])+'</div><div class="bd">'+(o.title?'<b>'+esc(o.title)+'</b>':'')+'<span>'+esc(msg)+'</span></div>'+(o.coins?'<div class="cn">+<span class="num">0</span> 🪙</div>':'');
+  d.innerHTML=emo('<div class="ic">'+(o.icon||t[0])+'</div><div class="bd">'+(o.title?'<b>'+esc(o.title)+'</b>':'')+'<span>'+esc(msg)+'</span></div>'+(o.coins?'<div class="cn">+<span class="num">0</span> 🪙</div>':''));
   while(box.children.length>=4)box.firstChild.remove();
   box.style.top=($('pop').classList.contains('on')?Math.round($('pop').getBoundingClientRect().bottom)+14:10)+'px';
   box.appendChild(d);
@@ -360,7 +367,7 @@ function unfollow(back){
 function showFol(){
   const el=$('folcard'),c=fol&&catBy(fol.uid); if(!c){el.style.display='none';return}
   el.style.display='block';
-  el.innerHTML='<div class="row"><div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+kind(c)+'</small></div><button class="sm" onclick="openCat('+c.uid+')">Chi tiết</button><button class="sm" aria-label="Thôi theo dõi" onclick="unfollow(true)">✕</button></div><div style="margin-top:4px">'+stats(c)+'</div><div class="ft">'+c.traits.map(t=>tagOf(t)).join('')+'</div>';
+  el.innerHTML='<div class="row"><div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+kind(c)+'</small></div><button class="sm" onclick="openCat('+c.uid+')">Chi tiết</button><button class="sm" aria-label="Thôi theo dõi" onclick="unfollow(true)">✕</button></div><div style="margin-top:4px">'+stats(c)+'</div><div class="ft">'+c.traits.map(t=>tagOf(t)).join('')+'</div>';emoEl(el);
 }
 // camera: zoom mượt quanh điểm neo, bám theo mèo đang theo dõi, hoặc trượt về chỗ cũ
 function stepCam(dt){
@@ -1269,7 +1276,7 @@ function gReveal(skipped){
     (c.replay?'<button class="on gv-btn" onclick="endReplay()">Đóng</button></div>':
     '<div class="row gv-row"><input id="gname" maxlength="16" value="'+esc(c.name)+'" placeholder="Đặt tên cho bé" style="flex:1"><button class="sm" onclick="$(\'gname\').value=pick(NAMES)">🎲</button></div>'+
     '<button class="on gv-btn" onclick="gachaDone()">Đón về nhà</button></div>');
-  rev.style.display='block';
+  emoEl(rev);rev.style.display='block';
 }
 function endReplay(){gz.timers.forEach(clearTimeout);gz.timers=[];$('gz').className=''}
 // xem lại intro của một bé 5★ đã gặp, từ tab Sưu tập
@@ -1361,12 +1368,12 @@ function renderTop(){
     '<div class="chip xp">Cấp '+S.level+' <span class="dim">· '+S.xp+'/'+xpNeed()+'</span><div class="bar"><i style="width:'+(S.xp/xpNeed()*100)+'%"></i></div></div>';
   const o=ownedRooms();
   $('roomnav').innerHTML=(o.length>1?'<button onclick="navRoom(-1)" aria-label="Phòng trước">◀</button>':'')+'<button class="nm" onclick="openRooms()"><b>'+ROOM[cur].n+'</b> <span class="dim">· '+catsIn(cur).length+'/'+ROOM[cur].cap+' mèo'+(o.length>1?' · đổi phòng ▾':'')+'</span></button>'+(o.length>1?'<button onclick="navRoom(1)" aria-label="Phòng sau">▶</button>':'');
-  $('tabs').innerHTML=TABS.map(t=>'<button class="'+(tab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')"><span>'+t[1]+'</span>'+t[2]+(t[0]==='trip'&&ready?' ❗':'')+(t[0]==='cats'&&wt?' ❗':'')+'</button>').join('');
+  $('tabs').innerHTML=TABS.map(t=>'<button class="'+(tab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')"><span>'+t[1]+'</span>'+t[2]+(t[0]==='trip'&&ready?' ❗':'')+(t[0]==='cats'&&wt?' ❗':'')+'</button>').join('');['top','roomnav','tabs'].forEach(i=>emoEl($(i)));
 }
 function openRooms(){
   modal('<h3>Chọn phòng</h3>'+ownedRooms().map(r=>'<div class="card tap" onclick="closeModal();setRoom(\''+r.id+'\')"><div style="font-size:24px">'+(r.id===cur?'📍':'🚪')+'</div><div class="g"><b>'+r.n+'</b> <small>· '+catsIn(r.id).length+'/'+r.cap+' mèo'+(catsIn(r.id).length>=r.cap?' · <span style="color:var(--bad)">đầy</span>':'')+'</small><br><small>'+r.d+'</small></div></div>').join('')+'<button onclick="closeModal()">Đóng</button>');
 }
-function renderPanel(){$('panel').innerHTML=PANEL[tab]()}
+function renderPanel(){$('panel').innerHTML=emo(PANEL[tab]())}
 function render(){renderTop();renderPanel()}
 const nm=c=>c.star===5?'<b class="n5">'+esc(c.name)+'</b>':'<b>'+esc(c.name)+'</b>'; // mèo 5★ có khung tên vàng kim
 const catCard=c=>'<div class="card tap" onclick="openCat('+c.uid+')">'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+' <small>'+kind(c)+(onTrip(c.uid)?' · đang viễn chinh':'')+'</small><br>'+stats(c)+'</div><div class="dim" style="font-size:20px">›</div></div>';
@@ -1539,3 +1546,6 @@ setInterval(()=>{
   if((tab==='home'&&!edit)||tab==='trip')renderPanel();
   if(sec%10===0)save();
 },1000);
+
+// icon ở phần đầu trang (HTML tĩnh)
+['.hdr h1','.hdr button'].forEach(q=>{const el=document.querySelector(q);if(el)emoEl(el)});

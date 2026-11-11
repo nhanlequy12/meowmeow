@@ -165,6 +165,13 @@ a{color:var(--blue)}
 .tst,#pop,#gbox,#grev,#gfly .fl,#gz .rays,#gz .pillar{will-change:transform,opacity;backface-visibility:hidden}
 .tst{transition:transform .55s cubic-bezier(.22,1.4,.36,1),opacity .28s ease-out,margin-bottom .32s cubic-bezier(.4,0,.2,1)}
 #modal .box{animation:mIn .22s cubic-bezier(.2,.9,.3,1.15)}
+/* icon riêng của game (thay emoji): ảnh 48px, hiển thị 24px hoặc 48px để giữ nét */
+.ico{width:24px;height:24px;vertical-align:-6px;image-rendering:pixelated;display:inline-block}
+[style*="font-size:2"]>.ico,[style*="font-size:3"]>.ico{width:48px;height:48px;vertical-align:middle}
+.stat .ico{width:16px;height:16px;vertical-align:-3px;image-rendering:auto}
+.tabs button span .ico{vertical-align:middle}
+.tst .ic .ico{vertical-align:middle}
+@media(min-width:1024px){.tabs button span .ico{width:48px;height:48px}}
 /* nút đóng ghim ở góc hộp thoại, không cuộn theo nội dung */
 #modal .mwrap{position:relative;max-width:420px;width:100%}
 #mx{position:absolute;top:-10px;right:-6px;z-index:2;width:44px;min-height:44px;padding:0;border-radius:50%;font-size:18px;background:var(--pink);color:#3a1020;border-color:#b85a70;box-shadow:0 3px 8px rgba(40,24,12,.3)}
