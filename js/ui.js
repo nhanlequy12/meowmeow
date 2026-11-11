@@ -265,6 +265,8 @@ function spawnClones(e){
   e.cd=60+rnd(60,150);
 }
 const orbit=(p,r,n,cols,sp)=>{const t=performance.now()/1000;for(let i=0;i<n;i++){const a=t*sp+i*6.283/n;rp(p.x+Math.cos(a)*r,p.y-18+Math.sin(a)*r*.6,pick(cols),{life:.25})}};
+// hành động đang diễn của một bé: S5[sp], hoặc hành động phụ S5[sp].alt khi e.sga bật (js/pack18.js khai báo alt cho 10 bé thêm ngày 2026-11-11)
+const sigOf=(e,c)=>{const s=S5[c.sp];return s&&e.sga&&s.alt?s.alt:s};
 // S5: hành động đặc trưng của mèo 5★, thỉnh thoảng tự diễn. pose: tư thế, hover: độ lơ lửng theo tiến độ k (0..1), fx: hạt mỗi khung hình
 const S5={
   v_goku:{n:'gồng mình hóa Siêu Saiyan trong 1 phút',dur:2.6,pose:'sit',look:(k,e)=>k>.6&&!formOf(entCat(e))?SSJK:undefined,start(e){e.sgB=0},
@@ -443,10 +445,14 @@ function freeSpot(e){
   }
   return best;
 }
+// chỗ nằm của bé trên ổ ngủ trong phòng đang xem: {it, x, y (chỗ nằm), sy (thứ tự vẽ: trước ổ, tầng trên vẽ trước tầng dưới), fy (sàn trước ổ)}
+const bedSpot=c=>{const it=c&&bedItem(c);if(!it||it.room!==cur)return null;const a=FURN[it.fid].bed.at,p=a[c.bk]||a[0];
+  return {it,x:it.x+(it.flip?-1:1)*p[0],y:it.y+p[1],sy:it.y+.5+p[1]*.001,fy:clamp(it.y+3,FLOOR_MIN,FLOOR_MAX)}};
+const bedIn=(e,bs)=>{e.state='bed';e.emo='z';e.goal=null;e.bx=bs.x;e.by=bs.y;e.bsy=bs.sy;e.bfy=bs.fy;e.x=clamp(bs.x,14,WORLD_W-14);e.y=bs.fy};
 function syncEnts(){
   const home=homeCats(cur);
   ents=ents.filter(e=>e.ghost||home.some(c=>c.uid===e.uid));
-  home.forEach(c=>{if(!ents.some(e=>e.uid===c.uid)){const e={uid:c.uid,x:0,y:0,tx:0,ty:0,state:'idle',t:rnd(0,2.5),flip:Math.random()<.5,goal:null,emo:null,emoT:0,wt:rnd(0,5),left:0};const p=freeSpot(e);e.x=p.x;e.y=p.y;ents.push(e)}});
+  home.forEach(c=>{if(!ents.some(e=>e.uid===c.uid)){const e={uid:c.uid,x:0,y:0,tx:0,ty:0,state:'idle',t:rnd(0,2.5),flip:Math.random()<.5,goal:null,emo:null,emoT:0,wt:rnd(0,5),left:0};const p=freeSpot(e);e.x=p.x;e.y=p.y;const bs=bedSpot(c);if(bs)bedIn(e,bs);ents.push(e)}}); // bé đang ngủ thì nằm sẵn trên ổ
 }
 function setRoom(rid){cur=rid;camX=0;camY=VH;clampCam();fol=null;ret=null;showFol();sel=null;ents=[];syncEnts();render()}
 function navRoom(d){const o=ownedRooms(),i=o.findIndex(r=>r.id===cur);setRoom(o[(i+d+o.length)%o.length].id)}
@@ -470,7 +476,7 @@ function choose(e){
     const b=bowlsIn(cur).slice().sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y))[0];
     if(b){e.tx=clamp(b.x+rnd(-14,14),14,WORLD_W-14);e.ty=clamp(b.y+rnd(0,5),FLOOR_MIN,FLOOR_MAX);e.state='walk';e.pre=.2;e.goal={wait:1};return}
   }
-  if(c.star===5&&S5[c.sp]&&!e.clone&&!e.fm&&!(e.cd>0)&&ch(.2)){const sg=S5[c.sp];e.state='sig';e.t=sg.dur;if(sg.start)sg.start(e);return} // mèo 5★ thỉnh thoảng diễn hành động riêng
+  if(c.star===5&&S5[c.sp]&&!e.clone&&!e.fm&&!(e.cd>0)&&ch(.2)){e.sga=!!(S5[c.sp].alt&&ch(.4));const sg=sigOf(e,c);e.state='sig';e.t=sg.dur;if(sg.start)sg.start(e);return} // mèo 5★ thỉnh thoảng diễn hành động riêng (hoặc hành động phụ alt, nếu có)
   const md=e.fm&&e.fm.md;
   if(md&&md.run&&c.en>=25&&ch(md.run)){e.state='run';e.pre=.2;e.left=1+Math.floor(rnd(1,3));runTarget(e);return} // đang trong trạng thái đặc trưng: chạy/bay nhiều hơn
   let a=(k<0?.32:k>0?.06:.14)+(ag===2?.12:ag===0?-.03:0); // mèo già ngủ nhiều hơn
@@ -479,7 +485,7 @@ function choose(e){
   a+=(k>0?.26:k<0?.03:.1)+(ag===0?.08:ag===2?-.02:0); if(r<a){e.state='run';e.pre=.2;e.left=1+Math.floor(rnd(1,4));runTarget(e);return}
   const ck=climbK(c);
   a+=.28+(ck>=3?.16:0); if(r<a){
-    const cand=itemsIn(cur).filter(i=>{const f=FURN[i.fid];return f.lv?lvFree(e,i).length:f.use&&(f.use.floor||!ents.some(o=>o!==e&&o.goal&&o.goal.iid===i.iid))});
+    const cand=itemsIn(cur).filter(i=>{const f=FURN[i.fid];return f.lv?lvFree(e,i).length:f.use&&!(f.bed&&bedCats(i.iid).length)&&(f.use.floor||!ents.some(o=>o!==e&&o.goal&&o.goal.iid===i.iid))});  // ổ đang có bé ngủ thì bé khác không tới nằm chen
     const w=cand.map(i=>FURN[i.fid].lv?ck:1);let q=Math.random()*w.reduce((x,y)=>x+y,0),n=0;
     while(n<cand.length-1&&q>w[n]){q-=w[n];n++}
     const it=cand[n];
@@ -501,6 +507,12 @@ const JP=.36,JL=.26; // thời gian thu mình lấy đà và khựng lại khi t
 const usePos=(it)=>{const u=FURN[it.fid].use;return {x:it.x+(it.flip?-1:1)*u.dx,y:it.y+u.dy}};
 function arrive(e){
   if(e.goal&&e.goal.bye){e.dead=1;return}
+  if(e.goal&&e.goal.bed!=null){ // tới trước ổ ngủ: nhảy lên chỗ nằm của mình (bị đuổi ra giữa đường thì thôi)
+    const bs=bedSpot(entCat(e));e.goal=null;
+    if(bs){e.j={fx:e.x,fy:e.y,tx:bs.x,ty:bs.y,sy:bs.sy,next:'bed'};e.jt=0;e.jd=clamp(Math.abs(bs.y-e.y)/90+.35,.35,.9);if(Math.abs(bs.x-e.x)>.5)e.flip=bs.x>e.x;e.state='jump';e.emo=null}
+    else{e.state='idle';e.t=rnd(.5,1.5)}
+    return;
+  }
   if(e.goal&&e.goal.bowl){e.state='use';e.t=rnd(5,9);e.emo='heart';return}
   const it=e.goal&&e.goal.iid&&S.items.find(i=>i.iid===e.goal.iid&&i.room===cur);
   if(it){
@@ -521,10 +533,21 @@ function stepEnt(e,dt){
   if(e.cd>0)e.cd-=dt;
   if(e.clone&&(e.life-=dt)<=0){const q=entPos(e);poof(q.x,q.y);e.dead=1;return}                    // phân thân hết giờ thì tan thành khói
   if(e.fm&&(e.fm.t-=dt)<=0){e.fm=null;e.cd=rnd(90,180);for(let i=0;i<12;i++)rp(e.x+rnd(-11,11),e.y-rnd(2,32),'#fff7d0',{vy:-rnd(6,16),life:rnd(.3,.6)})} // hết 1 phút biến hình
+  // ổ ngủ: bé được cho đi ngủ thì đi tới ổ, nhảy lên chỗ nằm và nằm yên tới khi dậy (đầy năng lượng hoặc bị đuổi ra)
+  if(!e.clone&&!e.ghost){
+    const bs=bedSpot(c);
+    if(e.state==='bed'){
+      if(bs){e.bx=bs.x;e.by=bs.y;e.bsy=bs.sy;e.bfy=bs.fy;return}   // ổ có thể vừa bị kéo đi trong chế độ Sắp xếp
+      e.j={fx:e.bx,fy:e.by,tx:clamp(e.bx+rnd(-8,8),14,WORLD_W-14),ty:e.bfy,sy:e.bsy,next:'idle'};e.jt=0;e.jd=.4;e.state='jump';e.emo=null;e.goal=null;return; // thôi ngủ: nhảy xuống sàn
+    }
+    if(bs&&e.state!=='jump'&&e.state!=='sig'&&e.state!=='bye'&&!(e.goal&&e.goal.bed===bs.it.iid)){
+      e.goal={bed:bs.it.iid};e.tx=clamp(bs.x,14,WORLD_W-14);e.ty=bs.fy;e.state='walk';e.pre=.2;e.left=0;e.emo=null;
+    }
+  }
   if(c.eat&&c.eat.t>(e.eatT||0)){ // vừa được chia một suất: chạy ra đúng cái bát đó
     if(e.clone){const q=entPos(e);poof(q.x,q.y);e.dead=1;return}                                     // được cho ăn: các phân thân biến mất, chỉ bản thể ra bát
     e.eatT=c.eat.t;const b=S.items.find(i=>i.iid===c.eat.iid&&i.room===cur);
-    if(b&&now()-c.eat.t<4000&&!e.ghost&&e.state!=='jump'&&!(e.state==='use'&&e.goal&&e.goal.at>=0)){e.goal={bowl:b.iid};e.tx=clamp(b.x+rnd(-13,13),14,WORLD_W-14);e.ty=clamp(b.y+rnd(1,5),FLOOR_MIN,FLOOR_MAX);e.state='run';e.pre=0;e.left=0;e.emo=null}
+    if(b&&now()-c.eat.t<4000&&!e.ghost&&e.state!=='jump'&&!bedItem(c)&&!(e.state==='use'&&e.goal&&e.goal.at>=0)){e.goal={bowl:b.iid};e.tx=clamp(b.x+rnd(-13,13),14,WORLD_W-14);e.ty=clamp(b.y+rnd(1,5),FLOOR_MIN,FLOOR_MAX);e.state='run';e.pre=0;e.left=0;e.emo=null}
   }
   if(e.state==='walk'||e.state==='run'){
     const k=vigor(c),lo=SP[c.sp].short,sp=(e.state==='run'?(lo?48:58):(lo?10:13))*(k>0?1.15:k<0?.8:1)*[1.1,1,.85][ageStage(c)]*(e.boost||1)*((e.fm&&e.fm.md&&e.fm.md.sp)||1),dx=e.tx-e.x,dy=e.ty-e.y,d=Math.hypot(dx,dy);
@@ -545,11 +568,12 @@ function stepEnt(e,dt){
         else if(g.at<g.lv)climbJump(e,it,1);
         else{e.state='use';e.t=rnd(7,15);g.sleep=FURN[it.fid].lvs||ch(.4);e.emo=g.sleep?'z':'note';c.hp=clamp(c.hp+1+g.at,0,100)} // ở trên cao thì vui hơn, càng cao càng vui
       }
+      else if(e.j.next==='bed'){const bs=bedSpot(c);if(bs)bedIn(e,bs);else{e.x=e.j.fx;e.y=e.j.fy;e.state='idle';e.t=rnd(.5,1.5)}}
       else if(e.j.next==='use'){const it=S.items.find(i=>i.iid===e.goal.iid);e.state='use';e.t=rnd(5,10);e.emo=it?FURN[it.fid].use.emo:null}
       else{e.x=e.j.tx;e.y=e.j.ty;e.goal=null;e.state='idle';e.t=rnd(.5,1.5)}
     }
   }else{
-    const sg=e.state==='sig'&&S5[c.sp];
+    const sg=e.state==='sig'&&sigOf(e,c);
     if(sg&&sg.glide){e.x+=(e.flip?1:-1)*sg.glide*dt;if(e.x<20){e.x=20;e.flip=true}if(e.x>WORLD_W-20){e.x=WORLD_W-20;e.flip=false}}
     e.t-=dt;
     if(e.t<=0){
@@ -565,6 +589,7 @@ function stepEnt(e,dt){
 }
 // vị trí vẽ, thứ tự trước sau và tư thế của một bé
 function entPos(e){
+  if(e.state==='bed'){const cc=entCat(e),sh=cc&&Art.sheetOf(look((e.fm&&e.fm.key)||lk(cc)));return {x:e.bx,y:e.by,sy:e.bsy,pose:sh?'sleep'+Math.floor(e.wt*1.6)%4+'s':'sleep'+(Math.floor(e.wt*.8)%2)}}
   if(e.state==='jump'){
     const j=e.j,t=e.jt;
     if(t<JP)return {x:j.fx,y:j.fy,sy:j.sy,pose:'crouch'+Math.floor(t*11)%4};   // chuẩn bị: hạ người, ngoáy mông
@@ -580,7 +605,7 @@ function entPos(e){
     else{const u=FURN[it.fid].use;if(!u.floor){const q=usePos(it);return {x:q.x,y:q.y,sy:it.y+(u.front?.5:-.5),pose:u.sleep?'sleep'+(Math.floor(e.wt*.8)%2):idlePose(e)}}}
   }
   if(e.state==='bye')return {x:e.x,y:e.y-Math.abs(Math.sin(e.wt*9))*3,gy:e.y,sy:e.y,pose:'sitt'};
-  if(e.state==='sig'){const c5=entCat(e),sg=c5&&S5[c5.sp];if(sg){const k=1-clamp(e.t/sg.dur,0,1);return {x:e.x,y:e.y-(sg.hover?sg.hover(k):0),gy:sg.hover?e.y:0,sy:e.y,pose:typeof sg.pose==='function'?sg.pose(k):sg.pose,look:typeof sg.look==='function'?sg.look(k,e):sg.look,k,sg}}}
+  if(e.state==='sig'){const c5=entCat(e),sg=c5&&sigOf(e,c5);if(sg){const k=1-clamp(e.t/sg.dur,0,1);return {x:e.x,y:e.y-(sg.hover?sg.hover(k):0),gy:sg.hover?e.y:0,sy:e.y,pose:typeof sg.pose==='function'?sg.pose(k):sg.pose,look:typeof sg.look==='function'?sg.look(k,e):sg.look,k,sg}}}
   const cc=entCat(e),lo=cc&&SP[cc.sp].short,moving=e.state==='walk'||e.state==='run',sh=cc&&Art.sheetOf(look((e.fm&&e.fm.key)||lk(cc)));
   // một chu kỳ bước đi được đúng 10 ô (chân ngắn: 6 ô) nên bàn chân không trượt trên sàn
   // đi 12 khung và chạy 8 khung mỗi chu kỳ, tính theo quãng đường nên chân khớp với sàn ở mọi tốc độ và mọi máy
@@ -670,10 +695,11 @@ function drawEnt(e,p){
   RX.fillStyle='rgba(70,42,28,.24)';RX.beginPath();RX.ellipse(p.x,(p.gy||p.y)-1,p.gy?9:(w===36?11:15),p.gy?2.2:3,0,0,6.283);RX.fill(); // bóng đổ dưới chân
   const px=Math.round((p.x-(e.flip?w-ax:ax))*ZC)/ZC,py=Math.round((p.y-39)*ZC)/ZC,F=fol&&fol.uid===e.uid&&!e.ghost&&!e.clone;
   if(F){const t=performance.now()/1000;RX.strokeStyle='rgba(255,236,150,'+(.55+.3*Math.sin(t*4))+')';RX.lineWidth=1;RX.beginPath();RX.ellipse(p.x,(p.gy||p.y)-1,16,4.5,0,0,6.283);RX.stroke();RX.shadowColor='rgba(255,244,170,.95)';RX.shadowBlur=ZC*2.5} // viền sáng quanh bé đang theo dõi
-  const al=md&&md.alpha?md.alpha(e):1,tl=md&&md.tilt?md.tilt(e):0;
+  const al=md&&md.alpha?md.alpha(e):p.sg&&p.sg.alpha?p.sg.alpha(p.k):1,tl=md&&md.tilt?md.tilt(e):0;   // p.sg.alpha: hành động riêng làm bé mờ đi (tàng hình, chui vào hộp)
   if(al<1||tl){RX.save();RX.globalAlpha=al;RX.translate(px+w/2,py+20);RX.rotate(tl);if(e.flip)RX.scale(-1,1);RX.drawImage(cv,-w/2,-20,w,40);RX.restore()} // mờ (ngụy trang) hoặc nghiêng (không trọng lực)
   else if(e.flip){RX.save();RX.translate(px+w,py);RX.scale(-1,1);RX.drawImage(cv,0,0,w,40);RX.restore()}else RX.drawImage(cv,px,py,w,40);
   RX.shadowBlur=0;
+  if(p.sg&&p.sg.over)p.sg.over(RX,e,p,p.k);   // đạo cụ của hành động riêng vẽ đè lên bé (draw thì vẽ phía sau)
   if(p.ride){const r=p.ride,rc=r.cv(),nx=Math.round((p.x-(e.flip?r.w-r.off:r.off))*ZC)/ZC,ny=Math.round((p.y+r.dy)*ZC)/ZC;                              // vật cưỡi (chổi bay) vẽ đè lên chân
     if(e.flip){RX.save();RX.translate(nx+r.w,ny);RX.scale(-1,1);RX.drawImage(rc,0,0,r.w,r.h);RX.restore()}else RX.drawImage(rc,nx,ny,r.w,r.h)}
   if(md){if(md.over)md.over(RX,e,p,c);if(md.fx)md.fx(e,p,c)}
@@ -735,6 +761,7 @@ room.addEventListener('pointermove',ev=>{
   if(ptr.item){ptr.item.x=Math.round((p.x+camX+ptr.ox)/4)*4;ptr.item.y=Math.round((p.y+camY+ptr.oy)/4)*4;clampItem(ptr.item);if(p.x>VW-14)camX+=3;if(p.x<14)camX-=3;clampCam()}
   else{if(fol)unfollow(false);ret=null;zan=null;camX=ptr.cx-(p.x-ptr.x0);camY=ptr.cy-(p.y-ptr.y0);clampCam()}
 });
+let lastTap=null; // lần chạm trước vào mèo {uid, t}, để nhận chạm hai lần
 function ptrEnd(ev){
   PT.delete(ev.pointerId);
   if(!ptr)return;const p=ppos(ev),was=ptr;ptr=null;
@@ -743,9 +770,12 @@ function ptrEnd(ev){
   const wx=p.x+camX,wy=p.y+camY;
   if(critHit(wx,wy))return; // chạm trúng khách lạ (chuột, bướm, cuộn len)
   const hit=ents.filter(e=>!e.ghost).map(e=>({e,p:entPos(e)})).sort((a,b)=>b.p.sy-a.p.sy).find(o=>wx>=o.p.x-12&&wx<=o.p.x+12&&wy>=o.p.y-35&&wy<=o.p.y+1);
-  if(!hit){unfollow(true);return} // chạm khoảng trống: thôi theo dõi, camera về chỗ cũ
+  if(!hit){const it=hitItem(wx,wy);if(it&&FURN[it.fid].bed){openBed(it.iid);return} // chạm vào ổ ngủ: chọn bé đi ngủ, đuổi bé ra
+    unfollow(true);return} // chạm khoảng trống: thôi theo dõi, camera về chỗ cũ
   if(hit.e.clone){poof(hit.p.x,hit.p.y);hit.e.dead=1;return} // chạm vào phân thân của Naruto: tan thành khói
-  const c=catBy(hit.e.uid);hit.e.emoT=1.5;follow(c.uid);
+  // chạm một lần: vuốt ve; chạm hai lần liền trong 0,4 giây vào cùng một bé: quan sát (camera theo dõi bé)
+  const c=catBy(hit.e.uid),tn=performance.now(),dbl=lastTap&&lastTap.uid===c.uid&&tn-lastTap.t<400;lastTap=dbl?null:{uid:c.uid,t:tn};hit.e.emoT=1.5;
+  if(dbl){follow(c.uid);return}
   const n=petCat(c);
   if(n){toast('kêu grừ grừ… ❤️ +'+3*(tE(c,'petHappy')||1)+' độ vui',{type:'pet',title:c.name,coins:n,key:'pet',mtitle:'Vuốt ve'});render()}
 }
@@ -1447,7 +1477,8 @@ function openCat(uid,back){
     '</div><div class="cd-desc">'+sp.d+'</div></div>'+
     // chỉ số
     '<div class="cd-sec"><h4>Chỉ số</h4><div class="cd-stats">'+st('🍗','Độ no',c.full,c.full<20?'#ff6b6b':'#ffb347')+st('⚡','Năng lượng',c.en,'#7fb7ff')+st('😊','Độ vui',c.hp,'#5fd08a')+'</div>'+
-      (away&&!bf.food?'':'<div class="dim cd-note">'+(away?'':'Độ vui đang hướng tới '+Math.round(happyTarget(c))+'%.')+(bf.food?' Đang có buff '+FOOD[bf.food].n+' (còn '+fmt(bf.until-now())+').':'')+'</div>')+'</div>'+
+      (away&&!bf.food?'':'<div class="dim cd-note">'+(away?'':'Độ vui đang hướng tới '+Math.round(happyTarget(c))+'%.')+(bf.food?' Đang có buff '+FOOD[bf.food].n+' (còn '+fmt(bf.until-now())+').':'')+'</div>')+
+      (bedItem(c)?'<div class="row" style="margin-top:8px;align-items:center"><span class="g">😴 Đang ngủ ở <b>'+FURN[bedItem(c).fid].n+'</b></span><button class="sm" onclick="kickBed('+uid+');openCat('+uid+',catBack)">Đánh thức</button></div>':'')+'</div>'+
     // thuộc tính
     '<div class="cd-sec"><h4>Thuộc tính ('+c.traits.length+')</h4><div class="cd-tags">'+c.traits.map(t=>tagOf(t)).join('')+'</div></div>'+
     // đổi tên, chuyển phòng
@@ -1456,6 +1487,22 @@ function openCat(uid,back){
     '<div class="row" style="justify-content:center;margin-top:12px"><button class="sm bad" '+(away||S.cats.length<=1?'disabled':'')+' onclick="doRehome('+uid+')">🕊 Phóng sinh (+'+STAR[c.star].sell+' xu'+(c.star===5?', +1 vé':'')+')</button></div>');
 }
 function doRename(uid){const v=$('cname').value.trim().slice(0,16);if(!v)return;catBy(uid).name=v;save();render();openCat(uid,catBack);toast('Đã đổi tên',{icon:'✏️',title:v})}
+/* --- ổ ngủ: chạm vào ổ trong phòng mở hộp này: bé đang ngủ (đuổi ra), các bé khác trong phòng (cho đi ngủ, bé mệt nhất đứng đầu) --- */
+function openBed(iid){
+  const it=S.items.find(i=>i.iid===iid);if(!it||it.room!==cur||!FURN[it.fid].bed){closeModal();return}
+  const f=FURN[it.fid],cap=f.bed.at.length,inb=bedCats(iid),full=inb.length>=cap,others=homeCats(cur).filter(c=>c.bed!==iid).sort((a,b)=>a.en-b.en);
+  const eta=c=>Math.max(1,Math.ceil((100-c.en)/(tM(c,'regen')*roomRegen(cur)*f.bed.en*(c.full<=0?.3:1))))+' phút';
+  const card=(c,note,btn)=>'<div class="card">'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+starsC(c)+'<br><small>⚡ '+Math.round(c.en)+'%'+(note?' · '+note:'')+'</small><div class="bar" style="margin-top:4px"><i style="width:'+Math.round(c.en)+'%;background:#7fb7ff"></i></div></div>'+btn+'</div>';
+  const h4=t=>'<h4 style="margin:12px 0 6px;text-align:left">'+t+'</h4>';
+  modal('<h3>'+f.n+'</h3><div class="dim">Ngủ ở đây hồi năng lượng nhanh gấp '+String(f.bed.en).replace('.',',')+' lần. Chứa '+cap+' bé. Bé tự dậy khi đầy năng lượng.</div>'+
+    h4('😴 Đang ngủ ('+inb.length+'/'+cap+')')+(inb.length?inb.map(c=>card(c,'đầy sau khoảng '+eta(c),'<button class="sm bad" onclick="doKick('+c.uid+','+iid+')">Đuổi ra</button>')).join('')+
+      (inb.length>1?'<div style="text-align:right"><button class="sm" onclick="doKickAll('+iid+')">Đuổi hết ra</button></div>':''):'<div class="dim">Chưa có bé nào ngủ ở đây.</div>')+
+    h4('Cho bé đi ngủ'+(full?' · ổ đã đủ chỗ':''))+(others.length?others.map(c=>{const b2=bedItem(c),mx=c.en>=100;
+      return card(c,b2?'đang ngủ ở '+FURN[b2.fid].n:'','<button class="sm on" '+(mx||full?'disabled':'')+' onclick="doBed('+c.uid+','+iid+')">'+(mx?'Đầy sức':b2?'Chuyển sang':'Cho ngủ')+'</button>')}).join(''):'<div class="dim">Không còn bé nào khác ở nhà trong phòng này.</div>'));
+}
+function doBed(uid,iid){const r=putBed(uid,iid);if(r.err)toast(r.err,{type:'warn'});openBed(iid)}
+function doKick(uid,iid){kickBed(uid);openBed(iid)}
+function doKickAll(iid){bedCats(iid).forEach(c=>kickBed(c.uid));openBed(iid)}
 function doMove(uid,rid){if(catBy(uid).room===rid)return;if(moveCat(uid,rid)){syncEnts();render();openCat(uid,catBack)}}
 let relQ=[];
 function doRehome(uid){askRelease([uid])}
@@ -1592,7 +1639,7 @@ const PANEL={
    (typeof wishLine==='function'?wishLine():'')+
    broken.map(i=>'<div class="card"><div class="g">😾 <b>'+FURN[i.fid].n+'</b> bị cào hỏng, mất hiệu ứng.</div><button class="sm" onclick="doRepair('+i.iid+')">🔧 Sửa '+repairCost(i)+' xu</button></div>').join('')+
    (cats.length?cats.map(catCard).join(''):'<div class="dim">Phòng này chưa có bé nào. Vào tab Mèo để chuyển bé sang.</div>')+
-   '<div class="dim">Kéo để xem phòng; giữ Ctrl rồi lăn chuột, chụm 2 ngón hoặc bấm ＋ － để phóng to thu nhỏ. Chạm vào mèo để theo dõi và vuốt ve (mỗi bé 10 phút nhận xu một lần, bé càng nhiều sao càng nhiều xu), chạm chỗ trống để thôi theo dõi; chạm vào thẻ bên dưới để xem thông tin và chuyển phòng. 🍗 no · ⚡ năng lượng · 😊 độ vui.</div>';
+   '<div class="dim">Kéo để xem phòng; giữ Ctrl rồi lăn chuột, chụm 2 ngón hoặc bấm ＋ － để phóng to thu nhỏ. Chạm một lần vào mèo để vuốt ve (mỗi bé 10 phút nhận xu một lần, bé càng nhiều sao càng nhiều xu), chạm hai lần để quan sát bé, chạm chỗ trống để thôi quan sát; chạm vào ổ, nệm để cho bé đi ngủ; chạm vào thẻ bên dưới để xem thông tin và chuyển phòng. 🍗 no · ⚡ năng lượng · 😊 độ vui.</div>';
  },
  trip(){
   let h='';const ready=S.trips.filter(p=>p&&now()>=p.end).length;

@@ -12,11 +12,17 @@ Dữ liệu nằm trong thư mục data/ cạnh file này (không commit):
 Thông báo đẩy: game (js/pwa.js) gửi lên "kế hoạch" các việc sắp xong (viễn chinh về, bát đổ lại được, mèo con chào đời);
 tới giờ mà người chơi đã tắt game thì máy chủ gửi một thông báo đẩy không kèm nội dung, service worker (sw.js) nhận được sẽ hỏi lại
 nội dung ở /api/push/pull. Trình duyệt chỉ cho đăng ký nhận đẩy khi game được mở bằng localhost hoặc HTTPS, và máy chủ phải ra được Internet.
-Chỉ dùng thư viện chuẩn của Python 3.8+.
+Chống gian lận: máy chủ giữ bản lưu hợp lệ cuối cùng của mỗi người chơi làm gốc. Mỗi lần đồng bộ, trọng tài tools/guard.js
+(chạy nền bằng Node, dùng đúng mã game) so bản mới với bản gốc: mèo không được đổi, mèo gacha phải khớp hạt giống máy chủ phát,
+tài sản và kinh nghiệm không được tăng nhanh hơn mức chơi thật. Bản lưu sai bị từ chối, máy người chơi được trả về bản gốc.
+Máy không có Node thì chỉ kiểm cơ bản (in cảnh báo lúc khởi động).
+Bảo mật: chỉ phục vụ file game (index.html, manifest.json, sw.js, js/, css/, icons/), không liệt kê thư mục, header chống nhúng khung
+và chặn nội dung lạ (CSP), giới hạn số yêu cầu, số lần tạo hồ sơ và số lần nhập sai mã quản trị theo từng địa chỉ IP.
+Chỉ dùng thư viện chuẩn của Python 3.8+ (và Node cho trọng tài).
 """
-import base64, hashlib, hmac, http.client, json, os, re, secrets, sys, threading, time
+import base64, hashlib, hmac, http.client, json, os, queue, re, secrets, shutil, subprocess, sys, threading, time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA = os.environ.get('MEOXU_DATA') or os.path.join(ROOT, 'data')
@@ -36,6 +42,108 @@ PUSH_HOSTS = ('fcm.googleapis.com', 'push.services.mozilla.com', 'notify.windows
 PUSH_SUB = 'mailto:meoxu@example.com'   # địa chỉ liên hệ ghi trong khóa VAPID; đổi ở trường "sub" của data/vapid.json nếu muốn
 PLAN_AT = {}           # id người chơi -> thời điểm của việc sớm nhất trong kế hoạch thông báo (để vòng lặp không phải đọc mọi hồ sơ)
 EP_OF = {}             # địa chỉ đăng ký đẩy -> id người chơi
+RQ_N = 30              # số lượt gacha phát sẵn cho mỗi người chơi
+STATIC_FILES = {'', 'index.html', 'manifest.json', 'sw.js'}
+STATIC_DIRS = ('js/', 'css/', 'icons/')
+CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
+       "media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; "
+       "object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
+SEC_HEADERS = (('X-Content-Type-Options', 'nosniff'), ('X-Frame-Options', 'DENY'), ('Referrer-Policy', 'no-referrer'),
+               ('Cross-Origin-Opener-Policy', 'same-origin'), ('Cross-Origin-Resource-Policy', 'same-origin'),
+               ('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()'), ('Content-Security-Policy', CSP))
+LIM_API = (240, 60)        # tối đa 240 yêu cầu API mỗi 60 giây mỗi IP
+LIM_JOIN = (5, 3600)       # tối đa 5 hồ sơ mới mỗi giờ mỗi IP
+LIM_ADMFAIL = (8, 900)     # nhập sai mã quản trị 8 lần trong 15 phút thì khóa IP đó 15 phút
+
+
+class Rate:
+    """Đếm số lần theo khóa (loại, IP) trong một cửa sổ thời gian."""
+    def __init__(self):
+        self.h, self.lk = {}, threading.Lock()
+
+    def _win(self, key, win):
+        t = time.time()
+        a = [x for x in self.h.get(key, ()) if t - x < win]
+        self.h[key] = a
+        if len(self.h) > 20000:
+            self.h = {k: v for k, v in self.h.items() if v}
+        return a, t
+
+    def hit(self, key, lim):          # ghi một lần; trả False nếu đã quá giới hạn
+        with self.lk:
+            a, t = self._win(key, lim[1])
+            if len(a) >= lim[0]:
+                return False
+            a.append(t)
+            return True
+
+    def over(self, key, lim):         # chỉ xem đã quá giới hạn chưa, không ghi
+        with self.lk:
+            return len(self._win(key, lim[1])[0]) >= lim[0]
+
+
+RATE = Rate()
+
+
+class Judge:
+    """Trọng tài tools/guard.js chạy nền bằng Node; tự khởi động lại khi mã game hoặc trọng tài đổi."""
+    FILES = ('js/data.js', 'js/game.js', 'tools/guard.js')
+
+    def __init__(self):
+        self.node = shutil.which('node')
+        self.proc, self.q, self.mt, self.lk = None, None, None, threading.Lock()
+
+    @property
+    def on(self):
+        return bool(self.node)
+
+    def _mtime(self):
+        return tuple(os.path.getmtime(os.path.join(ROOT, f)) for f in self.FILES)
+
+    def stop(self):
+        if self.proc:
+            try:
+                self.proc.kill()
+            except OSError:
+                pass
+        self.proc = None
+
+    @staticmethod
+    def _read(proc, q):
+        for line in proc.stdout:
+            q.put(line)
+        q.put(None)
+
+    def _start(self):
+        self.stop()
+        self.proc = subprocess.Popen([self.node, os.path.join(ROOT, 'tools', 'guard.js')], cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                     stderr=subprocess.DEVNULL, text=True, encoding='utf-8', bufsize=1)
+        self.q = queue.Queue()
+        threading.Thread(target=self._read, args=(self.proc, self.q), daemon=True).start()
+        self.mt = self._mtime()
+        if not (self.q.get(timeout=20) or '').startswith('{"ready"'):
+            raise RuntimeError('trọng tài không khởi động được')
+
+    def call(self, req):
+        if not self.node:
+            return None
+        with self.lk:
+            try:
+                if self.proc is None or self.proc.poll() is not None or self._mtime() != self.mt:
+                    self._start()
+                self.proc.stdin.write(json.dumps(req, ensure_ascii=False) + '\n')
+                self.proc.stdin.flush()
+                line = self.q.get(timeout=15)
+                if line is None:
+                    raise RuntimeError('trọng tài dừng đột ngột')
+                return json.loads(line)
+            except Exception as e:                              # lỗi, quá giờ: báo "bận", không nhận cũng không từ chối bản lưu
+                sys.stderr.write('Trọng tài lỗi: %s\n' % e)
+                self.stop()
+                return None
+
+
+JUDGE = Judge()
 
 
 def now():
@@ -46,7 +154,7 @@ def admin_key():
     os.makedirs(PDIR, exist_ok=True)
     if not os.path.exists(KEYF):
         with open(KEYF, 'w', encoding='utf-8') as f:
-            f.write(secrets.token_hex(4))
+            f.write(secrets.token_hex(8))
     with open(KEYF, encoding='utf-8') as f:
         return f.read().strip()
 
@@ -297,7 +405,7 @@ def public(p, full=False):
         s.pop('cats', None)
     o = {'id': p['id'], 'name': p['name'], 'created': p.get('created'), 'last': p.get('last'), 'play': p.get('play', 0),
          'online': now() - p.get('last', 0) < ONLINE, 'pending': len(p.get('cmds', [])), 'sum': s, 'ip': p.get('ip', ''),
-         'warn': sum(1 for e in p.get('log', []) if e.get('w'))}
+         'warn': sum(1 for e in p.get('log', []) if e.get('w')), 'trust': bool(p.get('trust')), 'rej': p.get('rej', 0)}
     if full:
         o['log'] = p.get('log', [])[-120:]
         o['cmds'] = p.get('cmds', [])
@@ -306,7 +414,17 @@ def public(p, full=False):
 
 
 class H(SimpleHTTPRequestHandler):
-    server_version = 'MeoXu/1'
+    server_version = 'MeoXu'
+    sys_version = ''
+    timeout = 20                      # kết nối treo quá 20 giây thì đóng (chống giữ kết nối chậm)
+
+    def ip(self):
+        a = self.client_address[0]
+        if a in ('127.0.0.1', '::1'):  # đi qua đường hầm HTTPS (cloudflared...) thì lấy IP thật do đường hầm ghi
+            f = self.headers.get('CF-Connecting-IP') or (self.headers.get('X-Forwarded-For') or '').split(',')[-1].strip()
+            if f:
+                return f[:64]
+        return a
 
     def __init__(self, *a, **k):
         super().__init__(*a, directory=ROOT, **k)
@@ -327,7 +445,10 @@ class H(SimpleHTTPRequestHandler):
         self.wfile.write(b)
 
     def body(self):
-        n = int(self.headers.get('Content-Length') or 0)
+        try:
+            n = int(self.headers.get('Content-Length') or 0)
+        except ValueError:
+            return None
         if n <= 0 or n > MAX_BODY:
             return None
         try:
@@ -339,19 +460,41 @@ class H(SimpleHTTPRequestHandler):
     def is_admin(self):
         return hmac.compare_digest((self.headers.get('X-Admin-Key') or '').encode(), self.server.akey.encode())
 
+    def admin_gate(self):
+        """Kiểm mã quản trị, có giới hạn số lần nhập sai theo IP. Trả None nếu được vào, hoặc (mã lỗi, nội dung)."""
+        k = ('afail', self.ip())
+        if RATE.over(k, LIM_ADMFAIL):
+            return 429, {'err': 'Nhập sai mã quản trị quá nhiều lần, đợi 15 phút rồi thử lại'}
+        if self.is_admin():
+            return None
+        RATE.hit(k, LIM_ADMFAIL)
+        return 403, {'err': 'Sai mã quản trị'}
+
     def end_headers(self):
         if not self.path.startswith('/api/'):
             self.send_header('Cache-Control', 'no-cache')   # file game: luôn hỏi lại máy chủ, khỏi phải Ctrl+F5 sau khi cập nhật
+        for k, v in SEC_HEADERS:
+            self.send_header(k, v)
         super().end_headers()
 
-    # ---- file tĩnh: chỉ phục vụ game, không lộ data/, .git, mã nguồn máy chủ ----
+    def list_directory(self, path):   # không bao giờ liệt kê thư mục
+        self.send_error(404)
+        return None
+
+    # ---- file tĩnh: chỉ phục vụ đúng các file của game (danh sách cho phép), không lộ data/, tools/, docs/, .git, mã nguồn máy chủ ----
     def blocked(self):
-        parts = [x for x in urlparse(self.path).path.split('/') if x]
-        return any(x.startswith('.') for x in parts) or (parts and (parts[0] == 'data' or parts[0].endswith(('.py', '.md'))))
+        rel = unquote(urlparse(self.path).path).lstrip('/')
+        if '\\' in rel or '\x00' in rel or any(x in ('..', '.') or x.startswith('.') for x in rel.split('/')):
+            return True
+        if rel in STATIC_FILES:
+            return False
+        return not (rel.startswith(STATIC_DIRS) and os.path.isfile(os.path.join(ROOT, *rel.split('/'))))
 
     def do_GET(self):
         u = urlparse(self.path)
         if u.path.startswith('/api/'):
+            if not RATE.hit(('api', self.ip()), LIM_API):
+                return self.send_json({'err': 'Gửi yêu cầu quá nhanh, đợi một chút'}, 429)
             return self.api_get(u.path[5:], parse_qs(u.query))
         if self.blocked():
             return self.send_error(404)
@@ -366,6 +509,8 @@ class H(SimpleHTTPRequestHandler):
         u = urlparse(self.path)
         if not u.path.startswith('/api/'):
             return self.send_error(404)
+        if not RATE.hit(('api', self.ip()), LIM_API):
+            return self.send_json({'err': 'Gửi yêu cầu quá nhanh, đợi một chút'}, 429)
         b = self.body()
         if b is None:
             return self.send_json({'err': 'Dữ liệu gửi lên không hợp lệ'}, 400)
@@ -379,8 +524,9 @@ class H(SimpleHTTPRequestHandler):
             return self.send_json({'ok': 1, 'key': self.server.vapid['pub']})
         if not ep.startswith('admin/'):
             return self.send_json({'err': 'Không có'}, 404)
-        if not self.is_admin():
-            return self.send_json({'err': 'Sai mã quản trị'}, 403)
+        g = self.admin_gate()
+        if g:
+            return self.send_json(g[1], g[0])
         with LOCK:
             if ep == 'admin/check':
                 return self.send_json({'ok': 1})
@@ -394,6 +540,8 @@ class H(SimpleHTTPRequestHandler):
     def api_post(self, ep, b):
         with LOCK:
             if ep == 'join':
+                if not RATE.hit(('join', self.ip()), LIM_JOIN):
+                    return self.send_json({'err': 'Đã tạo quá nhiều hồ sơ từ máy này, thử lại sau'}, 429)
                 p = {'id': secrets.token_hex(6), 'tok': secrets.token_hex(16), 'name': clean_name(b.get('name')), 'created': now(), 'last': now(),
                      'play': 0, 'cn': 0, 'nn': 0, 'cmds': [], 'log': [], 'sum': None, 'save': None}
                 psave(p)
@@ -404,8 +552,9 @@ class H(SimpleHTTPRequestHandler):
                 return self.push_api(ep[5:], b)
             if not ep.startswith('admin/'):
                 return self.send_json({'err': 'Không có'}, 404)
-            if not self.is_admin():
-                return self.send_json({'err': 'Sai mã quản trị'}, 403)
+            g = self.admin_gate()
+            if g:
+                return self.send_json(g[1], g[0])
             if ep == 'admin/cmd':
                 return self.admin_cmd(b)
             p = pload(str(b.get('id') or ''))
@@ -424,6 +573,11 @@ class H(SimpleHTTPRequestHandler):
                 log(p, 'Quản trị hủy %d lệnh đang chờ' % n)
                 psave(p)
                 return self.send_json({'ok': 1, 'n': n})
+            if ep == 'admin/trust':         # tin tưởng người chơi: bỏ kiểm tra chống gian lận (vẫn ghi nhận lượt gacha)
+                p['trust'] = bool(b.get('on'))
+                log(p, 'Quản trị ' + ('bỏ kiểm tra chống gian lận' if p['trust'] else 'bật lại kiểm tra chống gian lận'))
+                psave(p)
+                return self.send_json({'ok': 1})
             if ep == 'admin/delete':
                 os.remove(ppath(p['id']))
                 return self.send_json({'ok': 1})
@@ -442,26 +596,90 @@ class H(SimpleHTTPRequestHandler):
         p['last'] = t
         p['ip'] = self.client_address[0]
         p['ua'] = (self.headers.get('User-Agent') or '')[:160]
-        # lệnh đã áp dụng xong ở máy người chơi thì bỏ khỏi hàng chờ
+        # lệnh đã áp dụng ở máy người chơi (số thứ tự <= cn): chỉ bỏ khỏi hàng chờ khi bản lưu mang chúng được chấp nhận,
+        # bản lưu bị từ chối thì máy người chơi quay về bản cũ và nhận lại các lệnh này
         cn = b.get('cn') if isinstance(b.get('cn'), int) else 0
         done = [c for c in p.get('cmds', []) if c['n'] <= cn]
-        p['cmds'] = [c for c in p.get('cmds', []) if c['n'] > cn]
-        p['gift'] = p.get('gift', 0) + sum(c.get('amt', 0) for c in done if c['type'] == 'coins')   # quà xu không tính là tăng bất thường
+        rest = [c for c in p.get('cmds', []) if c['n'] > cn]
+        out = {'ok': 1, 'name': p['name']}
         raw = b.get('save')
+        sv = None
         if isinstance(raw, str) and raw:
             try:
                 sv = json.loads(raw)
-                if isinstance(sv, dict):
-                    new = summarize(sv)
-                    diff_log(p, p.get('sum'), new)
-                    p['sum'] = new
-                    p['save'] = raw
             except ValueError:
-                pass
+                sv = None
+        if isinstance(sv, dict):
+            v = self.verdict(p, sv, done, t)
+            if v.get('ok'):
+                if 'used' in v:
+                    p['rq'] = p.get('rq', [])[v['used']:]
+                    p['rqack'] = v['ack']
+                    p['gpity'] = v['pity']
+                if v.get('budget') is not None:
+                    p['bud'] = v['budget']
+                p['jt'] = t
+                p['cmds'] = rest
+                p['gift'] = p.get('gift', 0) + sum(c.get('amt', 0) for c in done if c['type'] == 'coins')   # quà xu không tính là tăng bất thường
+                new = summarize(sv)
+                diff_log(p, p.get('sum'), new)
+                p['sum'] = new
+                p['save'] = raw
+            elif v.get('busy'):
+                out['busy'] = 1
+            elif v.get('fresh') or not p.get('save'):
+                out['fresh'] = 1
+                out['why'] = v.get('why', '')
+                log(p, 'Từ chối bản lưu, yêu cầu chơi lại từ đầu: ' + v.get('why', ''), True)
+            else:
+                out['restore'] = p['save']
+                out['why'] = v.get('why', '')
+                if not v.get('restore'):          # bản lưu cũ hơn (xóa dữ liệu trình duyệt...) chỉ là khôi phục, không phải gian lận
+                    p['rej'] = p.get('rej', 0) + 1
+                log(p, ('Khôi phục bản lưu: ' if v.get('restore') else 'Từ chối bản lưu, trả về bản trước: ') + v.get('why', ''), not v.get('restore'))
+        else:
+            p['cmds'] = rest
         if 'plan' in b:
             set_plan(p, b.get('plan'))
+        if JUDGE.on:                              # phát thêm lượt gacha cho đủ hàng
+            rq = p.setdefault('rq', [])
+            while len(rq) < RQ_N:
+                p['rqn'] = p.get('rqn', 0) + 1
+                rq.append({'q': p['rqn'], 's': secrets.randbits(32)})
+            out.update(rq=rq, ack=p.get('rqack', 0), pity=p.get('gpity', 0))
+        out['cmds'] = p['cmds']
         psave(p)
-        self.send_json({'ok': 1, 'name': p['name'], 'cmds': p['cmds']})
+        self.send_json(out)
+
+    def verdict(self, p, sv, done, t):
+        """Hỏi trọng tài về bản lưu mới. Trả {ok:1,...} | {ok:0, why, fresh?, restore?} | {busy:1}."""
+        reset = any(c['type'] == 'reset' for c in done)
+        first = reset or not p.get('save')
+        trust = self.is_admin() or bool(p.get('trust'))
+        if not JUDGE.on:                          # không có Node: chỉ kiểm cơ bản
+            if (sv.get('adm') or {}).get('inf') and not trust:
+                return {'ok': 0, 'why': 'Bật "xu vô hạn" của bảng Admin'}
+            return {'ok': 1}
+        try:
+            old = None if first else json.loads(p['save'])
+        except ValueError:
+            old, first = None, True
+        if 'gpity' not in p:                      # hồ sơ có từ trước khi có trọng tài: lấy bảo hiểm gacha từ bản lưu cũ
+            try:
+                p['gpity'] = max(0, min(int((old or {}).get('pity') or 0), 50))
+            except (TypeError, ValueError):
+                p['gpity'] = 0
+        gift = {'coins': sum(c.get('amt', 0) for c in done if c['type'] == 'coins'),
+                'tickets': sum(c.get('amt', 0) for c in done if c['type'] == 'tickets'),
+                'cats': [{'sp': c.get('sp'), 'star': c.get('star') or 0} for c in done if c['type'] == 'cat']}
+        req = {'old': old, 'neu': sv, 'dt': max(0, t - p.get('jt', t)), 'issued': p.get('rq', []), 'ack': p.get('rqack', 0),
+               'pity': p.get('gpity', 0), 'gift': gift, 'first': first, 'trust': trust, 'budget': p.get('bud')}
+        r = JUDGE.call(req)
+        if r is None or r.get('err'):
+            if r:
+                sys.stderr.write('%s\n' % r.get('why'))
+            return {'busy': 1}
+        return r
 
     def push_api(self, ep, b):
         if ep == 'pull':                    # service worker vừa nhận một thông báo đẩy, hỏi nội dung cần hiện
@@ -550,6 +768,15 @@ def main():
     print('Mèo Xu đang chạy ở cổng %d. Máy này vào: http://localhost:%d' % (port, port))
     print('Máy khác trong mạng vào bằng http://<địa chỉ IP máy này>:%d' % port)
     print('Mã quản trị (nhập khi mở bảng Admin): %s   (lưu ở data/admin_key.txt)' % srv.akey)
+    if JUDGE.on:
+        try:
+            with JUDGE.lk:
+                JUDGE._start()
+            print('Chống gian lận: đang bật (trọng tài tools/guard.js chạy bằng %s).' % JUDGE.node)
+        except Exception as e:
+            print('CẢNH BÁO: trọng tài chống gian lận không khởi động được (%s). Bản lưu sẽ được kiểm lại ở lần đồng bộ sau.' % e)
+    else:
+        print('CẢNH BÁO: không tìm thấy Node.js nên chỉ kiểm tra chống gian lận cơ bản. Cài Node (nodejs.org) để bật đầy đủ.')
     print('Cài ứng dụng và thông báo đẩy chỉ chạy khi mở game bằng localhost hoặc HTTPS (địa chỉ http://<IP> thì trình duyệt không cho).')
     try:
         srv.serve_forever()

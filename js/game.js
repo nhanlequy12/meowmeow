@@ -51,7 +51,8 @@ function load(){
     TOFF=0;notify=nt;scratchTick();
   }
 }
-function save(){S.last=now(); try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let SAVE_OFF=false; // net.js bật khi đang khôi phục bản lưu từ máy chủ, để trang sắp tải lại không ghi đè bản vừa khôi phục
+function save(){if(SAVE_OFF)return;S.last=now(); try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 
 /* ---------- cấp độ ---------- */
 const slotCount=()=>Math.min(5,1+Math.floor((S.level-1)/2));
@@ -128,6 +129,20 @@ const freeRoom=()=>{const r=roomsByBuy().find(r=>catsIn(r.id).length<r.cap);retu
 const roomHunger=rid=>{let m=ROOM[rid].hunger||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].hunger;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.max(.5,m)};
 const roomRegen=rid=>{let m=ROOM[rid].regen||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].regen;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.min(2,m)};
 const itemsIn=rid=>S.items.filter(i=>i.room===rid);
+/* ---------- ổ ngủ: c.bed = iid của ổ, c.bk = chỗ nằm (chỉ số trong FURN[..].bed.at). Ngủ thì hồi năng lượng nhanh gấp bed.en lần, đầy thì tự dậy.
+   Ổ bị cất, bán, hỏng, bé đổi phòng hay đi viễn chinh thì bé tự thôi ngủ (bedItem trả null, tick xóa c.bed). */
+const bedItem=c=>{if(c.bed==null)return null;const it=S.items.find(i=>i.iid===c.bed);return it&&it.room===c.room&&!it.broken&&FURN[it.fid].bed&&!onTrip(c.uid)?it:null};
+const bedCats=iid=>S.cats.filter(c=>c.bed===iid&&bedItem(c));
+function putBed(uid,iid){
+  const c=catBy(uid),it=S.items.find(i=>i.iid===iid),f=it&&FURN[it.fid];
+  if(!c||!f||!f.bed)return {err:'Không tìm thấy ổ.'};
+  if(it.room!==c.room||onTrip(uid))return {err:c.name+' không ở phòng này.'};
+  if(c.en>=100)return {err:c.name+' đang đầy năng lượng, chưa buồn ngủ.'};
+  const used=bedCats(iid).filter(o=>o!==c).map(o=>o.bk),k=f.bed.at.findIndex((_,i)=>!used.includes(i));
+  if(k<0)return {err:f.n+' đã hết chỗ.'};
+  c.bed=iid;c.bk=k;save();return {ok:1};
+}
+function kickBed(uid){const c=catBy(uid);if(!c||c.bed==null)return false;delete c.bed;delete c.bk;save();return true}
 const roomHas=(rid,fid)=>S.items.some(i=>i.room===rid&&i.fid===fid&&!i.broken);
 function gEff(){
   const e={coin:0,speed:0,ticket:0,pet:0,night:0},seen={};
@@ -150,8 +165,12 @@ function happyTarget(c){
   return clamp(h,0,100);
 }
 // "Bạn cùng phòng": thuộc tính có e.pal={ids, happy, both, hunger} chỉ có tác dụng khi trong phòng có mèo thuộc danh sách ids (không tính bé đang viễn chinh)
-const palN=(c,p)=>p.ids.filter(id=>homeCats(c.room).some(o=>o!==c&&o.sp===id)).length;
-const palHappy=c=>c.traits.reduce((a,t)=>{const p=TRAITS[t].e.pal;if(!p)return a;const n=palN(c,p);return a+(n>=2&&p.both?p.both:n?p.happy||0:0)},0);
+// số "bạn" cùng phòng của một thuộc tính pal: p.ids là danh sách mèo (đếm số loại có mặt), p.grp là mọi bé cùng chủ đề (đếm số bé, không tính chính mình)
+const palN=(c,p)=>{const L=homeCats(c.room).filter(o=>o!==c);return p.grp?L.filter(o=>SP[o.sp].g===p.grp).length:p.ids.filter(id=>L.some(o=>o.sp===id)).length};
+// mức "both": thường là có từ hai bạn; nếu có p.plus thì cần một bạn trong p.ids VÀ một bé khác thuộc p.plus (danh sách ids hoặc chủ đề grp)
+const palBoth=(c,p)=>{const n=palN(c,p);if(!p.both||!n)return false;if(!p.plus)return n>=2;
+  const L=homeCats(c.room).filter(o=>o!==c&&!(p.ids||[]).includes(o.sp));return p.plus.grp?L.some(o=>SP[o.sp].g===p.plus.grp):L.some(o=>p.plus.ids.includes(o.sp))};
+const palHappy=c=>c.traits.reduce((a,t)=>{const p=TRAITS[t].e.pal;if(!p)return a;const n=palN(c,p);return a+(palBoth(c,p)?p.both:n?p.happy||0:0)},0);
 const palHunger=c=>c.traits.reduce((a,t)=>{const p=TRAITS[t].e.pal;return a*(p&&p.hunger&&palN(c,p)?p.hunger:1)},1);
 const auraCoin=c=>homeCats(c.room).reduce((a,o)=>a+(o!==c?tE(o,'auraCoin'):0),0);
 const auraHunger=c=>homeCats(c.room).reduce((a,o)=>a*(TRAITS_M(o,'auraHunger')),1);
@@ -164,9 +183,11 @@ function tick(dt,sim){
     const away=onTrip(c.uid),bf=buffOf(c);
     if(c.buff&&c.buff.until<=now())c.buff=null;
     c.full=clamp(c.full-dt*(100/12000)*tM(c,'hunger')*(bf.hunger||1)*auraHunger(c)*palHunger(c)*roomHunger(c.room),0,100);
+    const bi=bedItem(c); if(c.bed!=null&&!bi){delete c.bed;delete c.bk}
     if(!away){
-      const rg=tM(c,'regen')*roomRegen(c.room)*(c.full<=0?.3:1);
+      const rg=tM(c,'regen')*roomRegen(c.room)*(c.full<=0?.3:1)*(bi?FURN[bi.fid].bed.en:1);
       c.en=clamp(c.en+dt/60*rg,0,100);
+      if(bi&&c.en>=100){delete c.bed;delete c.bk;notify('ngủ đủ giấc, năng lượng đã đầy',{icon:'😴',title:c.name,key:'wake',mtitle:'Ngủ dậy'})}
       const t=happyTarget(c),step=tE(c,'fixedHappy')?100:dt/60;
       c.hp=Math.abs(t-c.hp)<=step?t:c.hp+Math.sign(t-c.hp)*step;
     }
@@ -326,9 +347,23 @@ function buyTickets(n){
   if(S.coins<cost)return {err:'Không đủ xu: cần '+cost.toLocaleString('vi-VN')+' xu.'};
   S.coins-=cost;S.tickets+=n;save();return {n,cost};
 }
+/* Chống gian lận khi chơi qua server.py (js/net.js bật RQ_ON): máy chủ phát sẵn hàng lượt gacha S.rq = [{q: số thứ tự, s: hạt giống}].
+   Mỗi lượt (trừ lượt Admin miễn phí) lấy lượt đầu hàng, chạy gachaCore với Math.random thay bằng prng(hạt giống), ghi c.q và S.rqUsed.
+   Máy chủ chạy lại đúng gachaCore với cùng hạt giống (tools/guard.js) để kiểm mèo ra có đúng không, nên sửa mã gacha ở máy người chơi không ép ra mèo hiếm được. */
+let RQ_ON=false;
+const prng=a=>()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296}; // mulberry32
 function gachaRoll(useTicket,opt){
-  opt=opt||{}; // opt chỉ dùng cho Admin: {free, star}
+  opt=opt||{}; // opt.free, opt.star, opt.rare chỉ dùng cho Admin; opt.min, opt.max cho lượt đầu của hướng dẫn tân thủ
+  const q=RQ_ON&&!opt.free; if(q&&!(S.rq&&S.rq.length))return {err:'Đang kết nối máy chủ, thử lại sau vài giây.'};
   if(!opt.free){if(useTicket){if(S.tickets<1)return {err:'Hết vé.'};S.tickets--}else{if(S.coins<GACHA_COST)return {err:'Không đủ xu.'};S.coins-=GACHA_COST}}
+  if(!q)return gachaCore(opt);
+  const r=S.rq.shift(),R0=Math.random;let res;
+  Math.random=prng(r.s);try{res=gachaCore(opt)}finally{Math.random=R0}
+  res.cat.q=r.q;(S.rqUsed=S.rqUsed||[]).push({q:r.q,t:opt.min?1:0});save();
+  if(S.rq.length<12&&typeof netSync==='function')setTimeout(netSync,50); // hàng lượt sắp hết: đồng bộ để máy chủ phát thêm
+  return res;
+}
+function gachaCore(opt){
   S.pity++;
   let r=Math.random()*100,star=1,acc=0;
   for(let s=5;s>=1;s--){acc+=STAR[s].p;if(r<acc){star=s;break}}

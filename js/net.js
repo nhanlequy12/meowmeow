@@ -18,7 +18,7 @@ function netInit(){
     try{NET.pl=JSON.parse(lsGet(PKEY))}catch(e){NET.pl=null}
     NET.adm=lsGet(AKEY)||'';
     if(NET.adm)api('admin/check',null,1).then(()=>{NET.admOk=true}).catch(()=>{NET.adm='';lsSet(AKEY,null)});
-    if(NET.pl&&NET.pl.id)netSync();else setTimeout(netAskName,700);
+    if(NET.pl&&NET.pl.id){if(S.rq)RQ_ON=true;netSync()}else setTimeout(netAskName,700); // bản lưu đã có hàng lượt gacha của máy chủ: dùng ngay, khỏi đợi lần đồng bộ đầu
     setInterval(netSync,30000);
     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')netSync()});
   }).catch(()=>{});
@@ -37,14 +37,27 @@ function netJoin(){
 function netSync(){
   if(!NET.on||!NET.pl||NET.busy)return;
   NET.busy=true;save();
-  api('sync',{id:NET.pl.id,tok:NET.pl.tok,cn:S.cn||0,save:JSON.stringify(S),plan:typeof ntfSyncPlan==='function'?ntfSyncPlan():[]}).then(j=>{
+  api('sync',{id:NET.pl.id,tok:NET.pl.tok,cn:S.cn||0,save:JSON.stringify(S),plan:typeof ntfSyncPlan==='function'?ntfSyncPlan():[]},NET.admOk?1:0).then(j=>{
     NET.busy=false;NET.okAt=Date.now();
+    if(j.restore){netRestore(j.restore,j.why);return}   // máy chủ từ chối bản lưu: quay về bản hợp lệ cuối cùng trên máy chủ
+    if(j.fresh){netRestore(null,j.why);return}          // bản lưu đầu tiên đã có sẵn tiến độ: chơi lại từ đầu
+    if(j.rq){ // hàng lượt gacha máy chủ phát: bỏ các lượt máy chủ đã ghi nhận, giữ các lượt vừa dùng sau khi gửi
+      S.rqUsed=(S.rqUsed||[]).filter(u=>u.q>j.ack);const used=new Set(S.rqUsed.map(u=>u.q));
+      S.rq=j.rq.filter(r=>!used.has(r.q));if(!S.rqUsed.length)S.pity=j.pity;RQ_ON=true;save();
+    }
     if(j.name&&j.name!==NET.pl.name){NET.pl.name=j.name;lsSet(PKEY,JSON.stringify(NET.pl))}
     const todo=(j.cmds||[]).filter(c=>c.n>(S.cn||0)).sort((a,b)=>a.n-b.n);
     if(!todo.length)return;
     todo.forEach(c=>{try{netApply(c)}catch(e){}S.cn=c.n});
     save();render();setTimeout(netSync,400); // báo ngay cho máy chủ là đã nhận, để lệnh không bị gửi lại
   }).catch(e=>{NET.busy=false;if(e.code===404){NET.pl=null;lsSet(PKEY,null);setTimeout(netAskName,500)}}); // hồ sơ bị xóa trên máy chủ: hỏi tên lại, bản lưu vẫn giữ
+}
+// máy chủ không nhận bản lưu này (sửa dữ liệu, sửa mã game, hoặc bản trên máy cũ hơn): ghi bản hợp lệ của máy chủ (raw) rồi tải lại trang;
+// raw rỗng là bắt đầu ván mới. SAVE_OFF chặn mọi lần ghi sau đó để trang đang đóng không ghi đè lại
+function netRestore(raw,why){
+  SAVE_OFF=true;try{raw?localStorage.setItem(KEY,raw):localStorage.removeItem(KEY)}catch(e){}
+  modal('<h3>🛡 Máy chủ đã khôi phục bản lưu</h3><div class="dim">'+(raw?'Bản lưu trên máy này không khớp với máy chủ nên được trả về bản hợp lệ gần nhất.':'Bản lưu trên máy này không dùng được trên máy chủ nên bạn sẽ bắt đầu ván mới.')+(why?'<br>Lý do: '+esc(why):'')+'</div><div class="dim" style="margin-top:8px">Đang tải lại…</div>',true);
+  setTimeout(()=>location.reload(),2600);
 }
 // áp dụng một lệnh của quản trị viên lên bản lưu đang chơi
 function netApply(c){
@@ -135,9 +148,10 @@ function netPlayer(id){
     const box=(t,h)=>'<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>'+t+'</b>'+h+'</div>';
     modal('<h3>'+(p.online?'🟢':'⚪')+' '+esc(p.name)+' <span class="dim">· '+(p.online?'đang chơi':'lần cuối '+nago(p.last,j.now))+'</span></h3>'+
       box('Tổng quan',(s.level?'<div>Cấp '+s.level+' ('+s.xp+' kinh nghiệm) · 🪙 '+nfmt(s.coins)+' · 🎟 '+nfmt(s.tickets)+'</div><div>🐱 '+s.ncat+' mèo: '+st.map((n,i)=>(i+1)+'★ '+n).join(' · ')+' · màu hiếm '+s.rare+'</div><div>🏠 '+s.rooms+' phòng · 🪑 '+s.items+' nội thất · 🎒 '+s.trips+' chuyến đang đi · đã phóng sinh '+s.released+' · bảo hiểm gacha '+s.pity+'/'+PITY+(s.inf?' · <b style="color:var(--bad)">đang bật xu vô hạn</b>':'')+'</div>':'<div class="dim">Chưa gửi bản lưu nào.</div>')+
-        '<div class="dim">Đã chơi '+ndur(p.play||0)+' · tham gia '+nday(p.created)+' · địa chỉ '+esc(p.ip||'?')+(p.pending?' · ⏳ '+p.pending+' lệnh đang chờ':'')+'</div>')+
+        '<div class="dim">Đã chơi '+ndur(p.play||0)+' · tham gia '+nday(p.created)+' · địa chỉ '+esc(p.ip||'?')+(p.pending?' · ⏳ '+p.pending+' lệnh đang chờ':'')+'</div>'+
+        '<div class="dim">🛡 '+(p.trust?'<b>Đang tin tưởng: không kiểm tra chống gian lận</b>':'Chống gian lận đang bật')+(p.rej?' · <b style="color:var(--bad)">đã từ chối '+p.rej+' bản lưu</b> (xem nhật ký)':'')+'</div>')+
       netActs(id)+
-      box('Hồ sơ','<div class="row"><input id="nname" maxlength="20" value="'+esc(p.name)+'" style="flex:1"><button class="sm" onclick="netRename(\''+id+'\')">Đổi tên</button></div><div class="row wrap">'+(p.pending?'<button class="sm" onclick="netPost(\'uncmd\',\''+id+'\')">Hủy '+p.pending+' lệnh đang chờ</button>':'')+'<button class="sm bad" onclick="netCmd(\''+id+'\',\'reset\')">Đặt lại dữ liệu</button><button class="sm bad" onclick="netDelete(\''+id+'\')">Xóa khỏi máy chủ</button></div>')+
+      box('Hồ sơ','<div class="row"><input id="nname" maxlength="20" value="'+esc(p.name)+'" style="flex:1"><button class="sm" onclick="netRename(\''+id+'\')">Đổi tên</button></div><div class="row wrap">'+(p.pending?'<button class="sm" onclick="netPost(\'uncmd\',\''+id+'\')">Hủy '+p.pending+' lệnh đang chờ</button>':'')+'<button class="sm" onclick="netPost(\'trust\',\''+id+'\',{on:'+(p.trust?0:1)+'})">'+(p.trust?'🛡 Bật lại kiểm tra chống gian lận':'Tin tưởng: bỏ kiểm tra chống gian lận')+'</button><button class="sm bad" onclick="netCmd(\''+id+'\',\'reset\')">Đặt lại dữ liệu</button><button class="sm bad" onclick="netDelete(\''+id+'\')">Xóa khỏi máy chủ</button></div>')+
       box('Đàn mèo ('+cats.length+')','<div style="max-height:150px;overflow:auto;line-height:1.7">'+(cats.length?cats.map(cn).join(''):'<span class="dim">Chưa có dữ liệu</span>')+'</div>')+
       box('Nhật ký','<div style="max-height:190px;overflow:auto;font-size:13px">'+(lg||'<span class="dim">Chưa có gì</span>')+'</div>')+
       '<div class="row" style="justify-content:center"><button class="sm" onclick="netPlayer(\''+id+'\')">↻ Tải lại</button><button class="sm" onclick="netPlayers()">← Danh sách</button></div>');

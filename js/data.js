@@ -119,6 +119,12 @@ const VARIANTS=[
  V('v_dora','Mèo Doraemon',4,'anime',{c:'#4aa8e8',c2:'#4aa8e8',w:2,short:1,base:'munchkin'},[['flag','noEars'],['collar','#e0483c',1],['pocket']],'v_dora','Mèo máy không tai, túi thần kỳ chứa toàn bánh rán.','premium'),
  V('v_sailor','Mèo Sailor Moon',4,'anime',{c:CRM,c2:CRM,eye:eB},[['twintails','#f5cf3a'],['buns','#f5cf3a'],['haircap','#f5cf3a',12,1],['tiara'],['suit','#ffffff'],['sailor','#3d5fc0'],['bow','#e0483c']],'v_sailor','Nhân danh mặt trăng, đòi thêm pate.','churu'),
  V('v_conan','Mèo Conan',4,'anime',{c:CRM,c2:CRM,eye:eB},[['haircap','#5e3d28',12,1],['glasses','#3a3448'],['suit','#3d5fc0'],['bow','#e0483c']],'v_conan','Sự thật chỉ có một: ai đã ăn vụng cá.','tuna'),
+ // gói 17 mèo ngày 2026-11-11 (kit:1: chỉ có hình CatKit; phần cos chỉ là hình tạm khi thiếu module)
+ V('v_fushiguro','Mèo Fushiguro',5,'anime',{c:'#b7becb',c2:'#b7becb',eye:'#19354b',kit:1},[['haircap','#171923',11,1],['suit','#202936',24,1]],'v_fushiguro','Chú thuật sư lạnh lùng sở hữu Thập Chủng Ảnh Pháp Thuật. Chập hai chân trước, thức thần hiện ra từ bóng tối. Thích nhất: cá thu nướng.','salmon'),
+ V('v_nobara','Mèo Nobara',4,'anime',{c:'#f0ddcb',c2:'#f0ddcb',eye:'#ad7754',kit:1},[['haircap','#c9793f',11,1],['suit','#243049',24,1]],'v_nobara','Mèo cá tính thích làm đẹp và sử dụng búa đinh. Thích nhất: bánh dâu.','churu'),
+ V('v_inumaki','Mèo Inumaki',4,'anime',{c:'#e3e1dd',c2:'#e3e1dd',eye:'#a9a4c9',kit:1},[['haircap','#e9e8e7',11,1],['suit','#243049',24,1]],'v_inumaki','Mèo ít nói, dùng tên cơm nắm để giao tiếp. Thích nhất: cơm nắm cá hồi.','salmon'),
+ V('v_luna','Mèo Luna',4,'anime',{c:'#292339',c2:'#292339',eye:'#a94a50',kit:1},[['collar','#f4d56b']],'v_luna','Mèo cố vấn có trăng khuyết trên trán. Thích nhất: cá ngừ.','tuna'),
+ V('v_chi','Mèo Chi',5,'anime',{c:'#f5f5ed',c2:'#f5f5ed',eye:'#292c2f',kit:1},[['collar','#f1d789']],'v_chi','Mèo con tò mò, một chiếc hộp giấy cũng đủ chơi cả ngày. Thích nhất: sữa và cá ngừ.','tuna'),
  // --- Phim ---
  V('v_hero','Mèo Superman',4,'film',{c:CRM,c2:CRM,eye:eB},[['cape','#d0342c'],['haircap','#3a3448',10],['suit','#3d6fd0',24,1],['emblem','#f2c230','#d0342c'],['belt','#f2c230',33]],'v_hero','Áo choàng đỏ tung bay, giải cứu cá khô khắp phố.','tuna'),
  V('v_pirate','Mèo Jack Sparrow',4,'film',{c:BRN,c2:DBRN,pat:'tabby',w:1,eye:eY},[['longhair','#4a3020',12.5,9,20],['haircap','#c0392b',12],['tricorn'],['suit','#f1e6d0'],['sides','#5a4a6a'],['belt','#c0392b',31],['fr',16,24,1,3,'#4a3020'],['fr',19,24,1,3,'#4a3020']],'v_pirate','Thuyền trưởng. Lúc nào cũng hỏi rượu rum đâu rồi.','tuna'),
@@ -152,15 +158,33 @@ const VARIANTS=[
  V('v_dj','Mèo DJ',4,'meme',{c:'#6a6480',c2:'#6a6480',w:1,eye:eA},'dj','v_dj','Chơi nhạc lúc 3 giờ sáng, hàng xóm rất “thích”.','churu'),
  V('v_astro','Mèo Phi Hành Gia',5,'meme',{c:WHT,c2:WHT,eye:eB},'astro','v_astro','Tin rằng chấm laser đỏ đến từ sao Hỏa và quyết đi tìm.','premium'),
  V('v_royal','Mèo Hoàng Gia',5,'meme',{c:WHT,c2:WHT,fur:1,eye:eC},'royal','v_royal','Bạn không nuôi ngài. Ngài cho phép bạn hầu hạ.','premium'),
+ // --- Esports ---
+ V('v_faker','Mèo Faker',5,'esport',{c:'#f0e2d3',c2:'#f0e2d3',eye:'#30251f',kit:1},[['haircap','#1c1c20',11,1],['glasses','#17171b'],['suit','#c92438',24,1]],'v_faker','Quỷ Vương Bất Tử của T1. Một lần Shhh là cả đấu trường im lặng. Thích nhất: cá ngừ.','tuna'),
+ V('v_oner','Mèo Oner',5,'esport',{c:'#c4b9af',c2:'#c4b9af',eye:'#292728',kit:1},[['haircap','#202025',11,1],['suit','#c92438',24,1]],'v_oner','Chiến thần đi rừng T1, ba lần vô địch thế giới. Thích nhất: cá hồi nướng.','salmon'),
+ V('v_keria','Mèo Keria',5,'esport',{c:'#f3e6d8',c2:'#f3e6d8',eye:'#49332e',kit:1},[['haircap','#292326',11,1],['suit','#c92438',24,1]],'v_keria','Thiên tài hỗ trợ T1, luôn bảo vệ đồng đội; ba lần vô địch thế giới. Thích nhất: bánh cá nhân đậu đỏ.','churu'),
+ // --- Game ---
+ V('v_hackclaw','Mèo Hackclaw',5,'game',{c:'#b0b9c5',c2:'#b0b9c5',eye:'#67e5be',kit:1},[['haircap','#1a2730',11,1],['suit','#242c35',24,1]],'v_hackclaw','Đặc vụ trinh sát, định vị mọi cá khô bị giấu. Thích nhất: cá ngừ hun khói.','tuna'),
+ // --- Dễ thương ---
+ V('v_hellokitty','Mèo Hello Kitty',5,'cute',{c:'#fff9f4',c2:'#fff9f4',eye:'#242424',kit:1},[['suit','#377dc7',26]],'v_hellokitty','Chiếc nơ đỏ mang tình bạn và bánh táo đến căn phòng. Thích nhất: bánh táo.','churu'),
+ V('v_kuromi','Mèo Kuromi',5,'cute',{c:'#f8f4f5',c2:'#f8f4f5',eye:'#6e407d',kit:1},[['hood','#292234']],'v_kuromi','Nữ hoàng nghịch ngợm, bên ngoài lạnh lùng nhưng rất thích nhật ký và đồ ngọt. Thích nhất: kẹo nho.','churu'),
+ V('v_pusheen','Mèo Pusheen',5,'cute',{c:'#a9a39f',c2:'#a9a39f',eye:'#292929',kit:1},[],'v_pusheen','Mèo ú mê bánh ngọt, ngủ thêm năm phút và ăn thêm một miếng. Thích nhất: pizza cá ngừ.','tuna'),
+ V('v_stormy','Mèo Stormy',4,'cute',{c:'#aaa6b4',c2:'#aaa6b4',eye:'#28272d',kit:1},[['collar','#9cc9e8']],'v_stormy','Em gái nhỏ của Pusheen, lông xù và mê ngủ. Thích nhất: bánh quy sữa.','churu'),
+ V('v_pip','Mèo Pip',4,'cute',{c:'#c2c2c4',c2:'#c2c2c4',eye:'#262626',kit:1},[['collar','#9acb9b']],'v_pip','Mèo nhỏ nghịch ngợm trong gia đình Pusheen. Thích nhất: cá khô.','kibble'),
+ V('v_marie','Mèo Marie',5,'cute',{c:'#fffaf8',c2:'#fffaf8',eye:'#65aee4',kit:1},[['collar','#ed98b7']],'v_marie','Tiểu thư mèo trắng thanh lịch từ Paris, yêu âm nhạc và nơ hồng. Thích nhất: cá hồi sốt kem.','salmon'),
+ V('v_toulouse','Mèo Toulouse',4,'cute',{c:'#de9957',c2:'#de9957',eye:'#86aa76',kit:1},[['collar','#5599cb']],'v_toulouse','Mèo con họa sĩ, rất thích màu sắc. Thích nhất: cá sốt bơ.','salmon'),
+ V('v_berlioz','Mèo Berlioz',4,'cute',{c:'#4c4b53',c2:'#4c4b53',eye:'#82a7c8',kit:1},[['collar','#d84b56']],'v_berlioz','Mèo con yêu piano và giai điệu. Thích nhất: cá hấp sữa.','tuna'),
 ];
-const GROUPS=[['breed','Giống thật'],['anime','Anime'],['film','Phim'],['meme','Meme & Đặc biệt']];
+const GROUPS=[['breed','Giống thật'],['anime','Anime'],['film','Phim'],['meme','Meme & Đặc biệt'],['esport','Esports'],['game','Game'],['cute','Dễ thương']];   // ba chủ đề sau thêm cùng gói 17 mèo ngày 2026-11-11
 // tên bộ anime, phim của mèo trang phục (trường src), hiện sau chủ đề: "Anime / Naruto". Nhóm Meme & Đặc biệt không có bộ gốc nên để trống.
 const SRC={v_naruto:'Naruto',v_luffy:'One Piece',v_goku:'Dragon Ball',v_tanjiro:'Thanh Gươm Diệt Quỷ',v_nezuko:'Thanh Gươm Diệt Quỷ',v_thunder:'Thanh Gươm Diệt Quỷ',
   v_gojo:'Chú Thuật Hồi Chiến',v_itadori:'Chú Thuật Hồi Chiến',v_anya:'Gia Đình Điệp Viên',v_frieren:'Frieren: Pháp Sư Tiễn Táng',v_levi:'Đại Chiến Titan',v_pika:'Pokémon',
   v_totoro:'Hàng Xóm Của Tôi Là Totoro',v_dora:'Doraemon',v_sailor:'Thủy Thủ Mặt Trăng',v_conan:'Thám Tử Lừng Danh Conan',
   v_hero:'Superman',v_pirate:'Cướp Biển Vùng Caribbean',v_harry:'Harry Potter',v_phineas:'Phineas và Ferb',v_ferb:'Phineas và Ferb',v_hermione:'Harry Potter',v_voldemort:'Harry Potter',
   v_wednesday:'Wednesday',v_eleven:'Stranger Things',v_heist:'Phi Vụ Triệu Đô',v_guard:'Trò Chơi Con Mực',v_456:'Trò Chơi Con Mực',v_iron:'Iron Man',v_spider:'Spider-Man',
-  v_batman:'Batman',v_jedi:'Star Wars',v_vader:'Star Wars',v_gandalf:'Chúa Tể Những Chiếc Nhẫn'};
+  v_batman:'Batman',v_jedi:'Star Wars',v_vader:'Star Wars',v_gandalf:'Chúa Tể Những Chiếc Nhẫn',
+  v_fushiguro:'Chú Thuật Hồi Chiến',v_nobara:'Chú Thuật Hồi Chiến',v_inumaki:'Chú Thuật Hồi Chiến',v_luna:'Thủy Thủ Mặt Trăng',v_chi:'Chi’s Sweet Home',
+  v_faker:'T1',v_oner:'T1',v_keria:'T1',v_hackclaw:'Delta Force',v_hellokitty:'Sanrio',v_kuromi:'Sanrio',v_pusheen:'Internet Cats',v_stormy:'Pusheen',v_pip:'Pusheen',
+  v_marie:'The Aristocats',v_toulouse:'The Aristocats',v_berlioz:'The Aristocats'};
 VARIANTS.forEach(v=>{if(SRC[v.id])v.src=SRC[v.id]});
 // chữ chủ đề của mèo trang phục: "Anime / Naruto"; giống thật trả chuỗi rỗng
 const themeOf=sp=>{const g=GROUPS.find(g=>g[0]===sp.g);return g?g[1]+(sp.src?' / '+sp.src:''):''};
@@ -222,6 +246,24 @@ const TRAITS={
  v_luffy:{n:'Vua hải tặc tương lai',k:'x',d:'+35% xu ở điểm gần nước, nhưng đói nhanh hơn 30%.',e:{water:.35,hunger:1.3}},
  v_goku:{n:'Siêu Saiyan',k:'x',d:'+15% xu, viễn chinh tốn ít hơn 40% năng lượng, đói nhanh hơn 50%.',e:{coin:.15,cost:.6,hunger:1.5}},
  v_tanjiro:{n:'Trưởng nam nhà Kamado',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Nezuko hoặc Mèo Zenitsu: +15 độ vui và đói chậm hơn 20%; có cả hai thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_nezuko','v_thunder'],happy:15,both:25,hunger:.8}}},
+ // gói 17 mèo ngày 2026-11-11. pal.grp: bạn là mọi bé cùng chủ đề; pal.plus: mức "both" cần thêm một bé thuộc nhóm thứ hai (xem palBoth trong game.js)
+ v_fushiguro:{n:'Thập Chủng Ảnh Pháp Thuật',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Itadori hoặc Mèo Nobara: +15 độ vui và đói chậm hơn 20%; có cả hai thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_itadori','v_nobara'],happy:15,both:25,hunger:.8}}},
+ v_faker:{n:'Quỷ Vương Bất Tử',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Oner hoặc Mèo Keria: +15 độ vui và đói chậm hơn 20%; có cả hai thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_oner','v_keria'],happy:15,both:25,hunger:.8}}},
+ v_oner:{n:'Chúa Tể Rừng Xanh',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Faker hoặc Mèo Keria: +15 độ vui và đói chậm hơn 20%; có cả hai thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_faker','v_keria'],happy:15,both:25,hunger:.8}}},
+ v_keria:{n:'Thiên Tài Hỗ Trợ',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Faker hoặc Mèo Oner: +15 độ vui và đói chậm hơn 20%; có cả hai thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_faker','v_oner'],happy:15,both:25,hunger:.8}}},
+ v_hackclaw:{n:'Silent Step',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có một bé khác thuộc chủ đề Game: +15 độ vui và đói chậm hơn 20%; có từ hai bé thì +25 độ vui.',e:{loot:.4,pal:{grp:'game',happy:15,both:25,hunger:.8}}},
+ v_hellokitty:{n:'Món Quà Tình Bạn',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Kuromi: +15 độ vui và đói chậm hơn 20%; có thêm một bé khác thuộc chủ đề Dễ thương thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_kuromi'],happy:15,both:25,hunger:.8,plus:{grp:'cute'}}}},
+ v_kuromi:{n:'Tiểu Ác Ma Đáng Yêu',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Hello Kitty: +15 độ vui và đói chậm hơn 20%; có thêm Mèo Marie hoặc Mèo Pusheen thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_hellokitty'],happy:15,both:25,hunger:.8,plus:{ids:['v_marie','v_pusheen']}}}},
+ v_pusheen:{n:'Chiếc Bụng Không Đáy',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Stormy hoặc Mèo Pip: +15 độ vui và đói chậm hơn 20%; có cả hai thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_stormy','v_pip'],happy:15,both:25,hunger:.8}}},
+ v_marie:{n:'Tiểu Thư Quý Tộc',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Toulouse hoặc Mèo Berlioz: +15 độ vui và đói chậm hơn 20%; có cả hai thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_toulouse','v_berlioz'],happy:15,both:25,hunger:.8}}},
+ v_chi:{n:'Khám Phá Thế Giới',k:'x',d:'+40% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Pusheen hoặc Mèo Marie: +15 độ vui và đói chậm hơn 20%; có cả hai thì +25 độ vui.',e:{loot:.4,pal:{ids:['v_pusheen','v_marie'],happy:15,both:25,hunger:.8}}},
+ v_nobara:{n:'Búp Bê Rơm',k:'x',d:'+20% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Itadori hoặc Mèo Fushiguro: +10 độ vui.',e:{loot:.2,pal:{ids:['v_itadori','v_fushiguro'],happy:10}}},
+ v_inumaki:{n:'Chú Ngôn',k:'x',d:'+20% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Fushiguro: +10 độ vui.',e:{loot:.2,pal:{ids:['v_fushiguro'],happy:10}}},
+ v_luna:{n:'Ánh Trăng Dẫn Lối',k:'x',d:'+20% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Kuromi hoặc Mèo Hello Kitty: +10 độ vui.',e:{loot:.2,pal:{ids:['v_kuromi','v_hellokitty'],happy:10}}},
+ v_stormy:{n:'Đám Mây Nhỏ',k:'x',d:'+20% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Pusheen: +10 độ vui.',e:{loot:.2,pal:{ids:['v_pusheen'],happy:10}}},
+ v_pip:{n:'Nghịch Ngợm Không Ngừng',k:'x',d:'+20% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Pusheen hoặc Mèo Stormy: +10 độ vui.',e:{loot:.2,pal:{ids:['v_pusheen','v_stormy'],happy:10}}},
+ v_toulouse:{n:'Họa Sĩ Nhí',k:'x',d:'+20% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Marie hoặc Mèo Berlioz: +10 độ vui.',e:{loot:.2,pal:{ids:['v_marie','v_berlioz'],happy:10}}},
+ v_berlioz:{n:'Nghệ Sĩ Nhí',k:'x',d:'+20% cơ hội có chiến lợi phẩm. Cùng phòng có Mèo Marie hoặc Mèo Toulouse: +10 độ vui.',e:{loot:.2,pal:{ids:['v_marie','v_toulouse'],happy:10}}},
  v_itadori:{n:'Thể lực phi thường',k:'x',d:'Viễn chinh nhanh hơn 20%, +10% xu. Cùng phòng có Mèo Gojo thì +10 độ vui.',e:{speed:.2,coin:.1,pal:{ids:['v_gojo'],happy:10}}},
  v_phineas:{n:'Hôm nay mình làm gì nhỉ?',k:'x',d:'+50% kinh nghiệm từ viễn chinh, +10% xu.',e:{xp:1.5,coin:.1}},
  v_ferb:{n:'Ít nói, làm nhiều',k:'x',d:'Viễn chinh nhanh hơn 20% và tốn ít hơn 15% năng lượng.',e:{speed:.2,cost:.85}},
@@ -349,6 +391,17 @@ const COATS={
  // Trang phục hiếm của 13 bé 5★ còn lại (2026-11-10): mỗi bé một bộ, gắn với chính nhân vật hoặc gốc gác của giống. Luôn có luồng khí (aura) để nổi hơn 5★ thường.
  ztGod:{n:'Hỏa Lôi Thần',c:CRM,aura:'#ffe14a',cos:[['sword'],['haircap','#ffe27a',12,1],['tripat','#fffbe8','#ffc21a'],['sparks','#fff3a0'],['bolts','#ffe14a'],['aura','#ffe14a']],u:1,rw:.12,form:1,tr:'f_zt'},
  tjKagura:{n:'Điệu múa Hỏa Thần',c:CRM,eye:'#e8423a',aura:'#ff7a2a',cos:[['saber','#ff7a2a'],['haircap','#7a2a2e',12,1],['scar','tanjiro'],['earrings'],['checker','#3fa06a','#3a3448'],['aura','#ff7a2a']],u:1,rw:.12,form:1,tr:'f_kagura'},
+ fgSukuna:{n:'Vật Chứa Sukuna',c:'#b7becb',eye:'#a51b32',aura:'#87182e',cos:[['aura','#87182e']],u:1,rw:.12,form:1,tr:'f_fgsukuna'},
+ fkWhite2026:{n:'T1 Worlds 2026 – White Legacy',c:'#f0e2d3',eye:'#30251f',aura:'#f6d987',cos:[['aura','#f6d987']],u:1,rw:.056,form:1,tr:'f_fkwhite'},
+ fkAhriHall:{n:'Ahri Đại Sảnh Huyền Thoại',c:'#f0e2d3',eye:'#30251f',aura:'#b92137',cos:[['aura','#b92137']],u:1,rw:.056,form:1,tr:'f_fkahri'},
+ onLeeSin:{n:'T1 Lee Sin – Quyền Vương',c:'#c4b9af',eye:'#292728',aura:'#bb9458',cos:[['aura','#bb9458']],u:1,rw:.12,form:1,tr:'f_onleesin'},
+ krBard:{n:'T1 Bard – Người Giữ Cổng Ngân Hà',c:'#f3e6d8',eye:'#49332e',aura:'#7fd8e4',cos:[['aura','#7fd8e4']],u:1,rw:.12,form:1,tr:'f_krbard'},
+ hcInky:{n:'Inky Reflections – Mặc Ảnh',c:'#b0b9c5',eye:'#67e5be',aura:'#8f96a3',cos:[['aura','#8f96a3']],u:1,rw:.12,form:1,tr:'f_hcinky'},
+ hkStrawberry:{n:'Công Chúa Dâu Tây',c:'#fff9f4',eye:'#242424',aura:'#ffbbd2',cos:[['aura','#ffbbd2']],u:1,rw:.12,form:1,tr:'f_hkstrawberry'},
+ krmDarkMoon:{n:'Nữ Hoàng Hắc Nguyệt',c:'#f8f4f5',eye:'#6e407d',aura:'#8a4fc0',cos:[['aura','#8a4fc0']],u:1,rw:.12,form:1,tr:'f_krmdarkmoon'},
+ psUnicorn:{n:'Pusheen Kỳ Lân',c:'#a9a39f',eye:'#292929',aura:'#f5d9e6',cos:[['aura','#f5d9e6']],u:1,rw:.12,form:1,tr:'f_psunicorn'},
+ mrParis:{n:'Công Chúa Vũ Hội Paris',c:'#fffaf8',eye:'#65aee4',aura:'#f5b8d1',cos:[['aura','#f5b8d1']],u:1,rw:.12,form:1,tr:'f_mrparis'},
+ chiExplorer:{n:'Chi Thám Hiểm',c:'#f5f5ed',eye:'#292c2f',aura:'#9ec8a2',cos:[['aura','#9ec8a2']],u:1,rw:.12,form:1,tr:'f_chiexplorer'},
  itSukuna:{n:'Sukuna chiếm xác',c:CRM,eye:'#e0283a',aura:'#8a1020',cos:[['haircap','#f08aa0',10,1],['suit','#2a2d44',24,1],['collar','#c0392b'],['aura','#8a1020']],u:1,rw:.12,form:1,tr:'f_sukuna'},
  gjSix:{n:'Lục Nhãn giác ngộ',c:'#e9e4ef',eye:'#38b6ff',gem:1,lash:1,aura:'#b98bff',cos:[['spikes','#fafbff'],['suit','#1f1d2b',24,1],['collar','#7a5ae0'],['orb','#a45cff'],['aura','#b98bff']],u:1,rw:.12,form:1,tr:'f_six'},
  hpSeeker:{n:'Tầm thủ Gryffindor',c:CRM,eye:eG,aura:'#ffd24a',cos:[['cape','#8a1f2a'],['wand'],['haircap','#3a3448',12,1],['scar','bolt'],['glasses','#3a3448'],['suit','#c0303a'],['scarf','#f2c230','#b8323a'],['snitch'],['aura','#ffd24a']],u:1,rw:.12,form:1,tr:'f_seeker'},
@@ -421,8 +474,11 @@ const BREED_COATS={
 };
 const FORMS={v_goku:'gkBase gkGod',v_naruto:'nrBase nrKurama nrHokage'};
 // tám mèo trang phục 5★ còn lại: trang phục thường (lấy đúng ngoại hình gốc) + một trang phục hiếm
-const FORM0={v_tanjiro:'tjKagura',v_itadori:'itSukuna',v_thunder:'ztGod',v_gojo:'gjSix',v_harry:'hpSeeker',v_vader:'vdWhite',v_nyan:'nyTac',v_maneki:'mkGold',v_astro:'asOrange',v_royal:'ryPurple'};
+const FORM0={v_tanjiro:'tjKagura',v_itadori:'itSukuna',v_thunder:'ztGod',v_gojo:'gjSix',v_harry:'hpSeeker',v_vader:'vdWhite',v_nyan:'nyTac',v_maneki:'mkGold',v_astro:'asOrange',v_royal:'ryPurple',
+  v_fushiguro:'fgSukuna',v_faker:'fkWhite2026 fkAhriHall',v_oner:'onLeeSin',v_keria:'krBard',v_hackclaw:'hcInky',v_hellokitty:'hkStrawberry',v_kuromi:'krmDarkMoon',v_pusheen:'psUnicorn',v_marie:'mrParis',v_chi:'chiExplorer'};   // Faker có hai trang phục hiếm, mỗi bộ khoảng 5%
 Object.keys(FORM0).forEach(id=>{const v=VARIANTS.find(x=>x.id===id);COATS[id+'_0']={n:'Trang phục thường',c:v.c,c2:v.c2,c3:v.c3,pat:v.pat,eye:v.eye};FORMS[id]=id+'_0 '+FORM0[id];v.noRare=1});
+// tên riêng cho trang phục thường của các bé thêm ngày 2026-11-11
+Object.entries({v_fushiguro:'Đồng phục chú thuật',v_faker:'T1 đỏ',v_oner:'Áo thi đấu T1 đỏ',v_keria:'Áo thi đấu T1 đỏ',v_hackclaw:'Trinh sát chiến thuật',v_hellokitty:'Nơ đỏ',v_kuromi:'Tiểu ác ma',v_pusheen:'Pusheen cổ điển',v_marie:'Tiểu thư Paris',v_chi:'Chi cổ điển'}).forEach(([id,n])=>{COATS[id+'_0'].n=n});
 VARIANTS.forEach(v=>{if(FORMS[v.id])v.coats=FORMS[v.id].split(' ')});
 BREEDS.forEach(b=>{b.coats=BREED_COATS[b.id].split(' ');if(SHORT_LEGS.includes(b.id))b.short=1;if(HAIRLESS.includes(b.id)){b.hl=1;b.noRare=1}if(b.id==='lykoi'||b.r===5)b.noRare=1}); // màu hiếm chỉ dành cho giống từ 4★ trở xuống; 5★ có "trang phục hiếm" riêng
 
@@ -457,6 +513,17 @@ Object.assign(TRAITS,{
  b_savannah:{n:'Cú nhảy 2 mét',k:'x',d:'Viễn chinh nhanh hơn 30%, +10% xu.',e:{speed:.3,coin:.1}},
  b_sokoke:{n:'Bóng rừng Kenya',k:'x',d:'+45% xu ở điểm thiên nhiên, +30% cơ hội có chiến lợi phẩm.',e:{nature:.45,loot:.3}},
  b_suphalak:{n:'Đồng đỏ cát tường',k:'x',d:'+12% xu, mèo khác cùng phòng +10 độ vui.',e:{coin:.12,aura:10}},
+ f_fgsukuna:{n:'Vật Chứa Sukuna',k:'x',d:'Trang phục hiếm của Fushiguro: vết ấn Sukuna, mắt đỏ, Nue điện tím đỏ. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_fkwhite:{n:'T1 Worlds 2026 – White Legacy',k:'x',d:'Trang phục hiếm của Faker: áo trắng kem, sáu sao vàng. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_fkahri:{n:'Ahri Đại Sảnh Huyền Thoại',k:'x',d:'Trang phục hiếm của Faker: chín đuôi linh lực, tai cáo, quả cầu đỏ vàng. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_onleesin:{n:'T1 Lee Sin – Quyền Vương',k:'x',d:'Trang phục hiếm của Oner: giáp vai vàng, tóc bạc, bóng hổ. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_krbard:{n:'T1 Bard – Người Giữ Cổng Ngân Hà',k:'x',d:'Trang phục hiếm của Keria: áo choàng kem viền vàng, chuông vàng, ba linh thể. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_hcinky:{n:'Inky Reflections – Mặc Ảnh',k:'x',d:'Trang phục hiếm của Hackclaw: đồ đen trắng hoa văn mực tàu, vòng âm dương. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_hkstrawberry:{n:'Công Chúa Dâu Tây',k:'x',d:'Trang phục hiếm của Hello Kitty: váy hồng ren trắng, vương miện, đũa phép trái tim. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_krmdarkmoon:{n:'Nữ Hoàng Hắc Nguyệt',k:'x',d:'Trang phục hiếm của Kuromi: váy gothic tím đen, vương miện đá tím, cánh dơi. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_psunicorn:{n:'Pusheen Kỳ Lân',k:'x',d:'Trang phục hiếm của Pusheen: đồ kỳ lân trắng kem, sừng vàng, bờm cầu vồng. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_mrparis:{n:'Công Chúa Vũ Hội Paris',k:'x',d:'Trang phục hiếm của Marie: váy dạ hội hồng, vương miện bạc, vòng ngọc trai. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
+ f_chiexplorer:{n:'Chi Thám Hiểm',k:'x',d:'Trang phục hiếm của Chi: mũ thám hiểm, balo có hình cá, kính viễn vọng. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
  f_kagura:{n:'Điệu múa Hỏa Thần',k:'x',d:'Trang phục hiếm của Tanjiro: lưỡi kiếm rực lửa. +20% xu mọi chuyến viễn chinh.',e:{coin:.2}},
  f_sukuna:{n:'Vua Nguyền Rủa',k:'x',d:'Trang phục hiếm của Itadori: bị Sukuna chiếm xác. +25% xu ban đêm, nhưng mèo khác cùng phòng −5 độ vui.',e:{night:.25,aura:-5}},
  f_zt:{n:'Hỏa Lôi Thần',k:'x',d:'Trang phục hiếm của Zenitsu. Viễn chinh nhanh hơn 20%.',e:{speed:.2}},
@@ -587,7 +654,9 @@ FURNS.forEach(f=>FURN[f.id]=f);
 const HAPPY_CAP=35; // tổng độ vui từ nội thất trong một phòng không vượt quá mức này
 
 /* ============ CÂU THOẠI CỦA MÈO 5★ (hiện ở thẻ giới thiệu sau intro) ============ */
-const QUOTE={v_goku:'Chào! Tớ là Goku! Nhà mình còn gì ăn không?',v_naruto:'Tớ sẽ trở thành Hokage, dattebayo!',v_thunder:'Zzz… Thần tốc… nhất thức…',v_tanjiro:'Hơi thở toàn tập trung! Thức thứ mười: Sinh Sinh Lưu Chuyển!',v_itadori:'Tớ sẽ ăn hết mấy ngón tay đó. Còn hạt thì để sau.',v_gojo:'Yên tâm đi. Vì ta là mạnh nhất mà.',v_harry:'Tôi long trọng thề rằng tôi sắp làm đổ cốc nước.',v_vader:'Hãy gia nhập mặt tối. Ở đây có pate.',
+const QUOTE={v_fushiguro:'Thập Chủng Ảnh Pháp Thuật… Nue!',v_faker:'All roads lead to me. Shhh…',v_oner:'Một cú Trừng Phạt quyết định tất cả!',v_keria:'Đồng đội của tớ, không ai được chạm vào!',v_hackclaw:'Signal detected. Target locked.',v_hellokitty:'Một chiếc nơ nhỏ, một tình bạn thật lớn!',v_kuromi:'Hừm! Đừng tưởng ta dễ thương nhé!',v_pusheen:'Meo! Ăn trước, phiêu lưu tính sau!',v_marie:'Một quý cô phải luôn thật duyên dáng!',v_chi:'Mii! Hôm nay có gì để chơi nào?',
+ v_nobara:'Đừng đánh giá thấp ta nhé!',v_inumaki:'Shake!',v_luna:'Hãy tin vào ánh trăng!',v_stormy:'Meo… ngủ thêm một chút nhé?',v_pip:'Bắt được tớ thì giỏi!',v_toulouse:'Để tớ vẽ một bức tranh thật đẹp!',v_berlioz:'Nghe bản nhạc của tớ nhé!',
+ v_goku:'Chào! Tớ là Goku! Nhà mình còn gì ăn không?',v_naruto:'Tớ sẽ trở thành Hokage, dattebayo!',v_thunder:'Zzz… Thần tốc… nhất thức…',v_tanjiro:'Hơi thở toàn tập trung! Thức thứ mười: Sinh Sinh Lưu Chuyển!',v_itadori:'Tớ sẽ ăn hết mấy ngón tay đó. Còn hạt thì để sau.',v_gojo:'Yên tâm đi. Vì ta là mạnh nhất mà.',v_harry:'Tôi long trọng thề rằng tôi sắp làm đổ cốc nước.',v_vader:'Hãy gia nhập mặt tối. Ở đây có pate.',
  v_nyan:'Nya nya nya nya nya nya nya~',v_maneki:'Vẫy một cái, tiền vô như nước.',v_astro:'Một bước nhỏ của mèo, một cú nhảy dài của loài mèo.',v_royal:'Ngươi được phép gãi cằm ta.',
  khaomanee:'Một mắt nhìn trời xanh, một mắt nhìn vàng ròng.',lykoi:'Awoooo… à nhầm, meo.',savannah:'Hai mét à? Nhảy khởi động thôi.',sokoke:'Rừng dạy ta đi không một tiếng động.',suphalak:'Hiếm như đồng đỏ, quý hơn vàng.'};
 BREEDS.concat(VARIANTS).forEach(s=>{if(QUOTE[s.id])s.q=QUOTE[s.id]});
@@ -684,6 +753,26 @@ FURN.tree.lv=FURN.treegreen.lv=[[-6,-36],[2,-71]];
  F('duckfloat','Phao vịt',900,'floor',30,18,'set','duckfloat',[],{happy:5,set:'Biển',d:'+5 độ vui.',use:{dx:-2,dy:-7,front:1,emo:'note'}}),
  F('sandcastle','Lâu đài cát',800,'floor',26,22,'set','sandcastle',[],{happy:4,g:{ticket:.02},set:'Biển',d:'+4 độ vui, +2% cơ hội nhặt vé gacha.'}),
 ].forEach(f=>{if(FURN[f.id]&&FURNS.includes(FURN[f.id]))throw new Error('trùng id nội thất '+f.id);FURNS.push(f);FURN[f.id]=f});
+/* ============ Ổ NGỦ (2026-11-11) ============
+   Món có trường bed:{en, at} là ổ ngủ: chạm vào ổ trong phòng để chọn bé đi ngủ (game.js: putBed, kickBed).
+   at = chỗ nằm của từng bé [dx, dy] tính từ tâm ngang và chân món đồ (số chỗ = sức chứa); en = ngủ ở đây hồi năng lượng nhanh gấp en lần.
+   Nệm cũ được gắn thêm trường bed; 9 món mới (ổ, nệm, nhà, chuồng) có nhiều chỗ hơn. */
+const BED_OLD={cushion:[2.5,[[0,-3]]],basket:[3,[[0,-5]]],donutbed:[3,[[0,-5]]],feltcave:[3.5,[[0,-3]]],bed:[3,[[-9,-5],[9,-5]]],bedblue:[3,[[-9,-5],[9,-5]]],bedgreen:[3,[[-9,-5],[9,-5]]],
+  cloudbed:[3.5,[[-9,-6],[9,-6]]],heatbed:[4,[[-8,-5],[8,-5]]],royalbed:[4.5,[[-9,-5],[9,-5]]]};
+Object.entries(BED_OLD).forEach(([id,v])=>{FURN[id].bed={en:v[0],at:v[1]}});
+const BSPOT=(xs,dy)=>xs.map(x=>[x,dy]),NAPU=dy=>({dx:0,dy,front:1,sleep:1,emo:'z'});
+[
+ F('nestfluff','Ổ lông xù',200,'floor',30,12,'bed','nestfluff',[],{happy:2,bed:{en:3,at:[[0,-4]]},d:'+2 độ vui.',use:NAPU(-4)}),
+ F('knitnest','Ổ len đan',280,'floor',34,14,'bed','knitnest',[],{happy:3,bed:{en:3.2,at:[[0,-5]]},d:'+3 độ vui.',use:NAPU(-5)}),
+ F('checkbed','Nệm caro',380,'floor',48,16,'bed','checkbed',[],{happy:2,bed:{en:3,at:BSPOT([-10,10],-5)},d:'+2 độ vui.',use:NAPU(-5)}),
+ F('tent','Lều mèo',600,'floor',40,36,'bed','tent',[],{happy:3,bed:{en:3.5,at:BSPOT([-8,8],-2)},d:'+3 độ vui. Mèo nằm ngủ trước cửa lều.',use:NAPU(-2)}),
+ F('dblbed','Nệm đôi êm ái',750,'floor',62,18,'bed','dblbed',[],{happy:3,regen:1.05,bed:{en:3.5,at:BSPOT([-18,0,18],-6)},d:'+3 độ vui, hồi năng lượng cả phòng nhanh hơn 5%.',use:NAPU(-6)}),
+ F('woodhouse','Nhà gỗ cho mèo',1400,'floor',60,48,'bed','woodhouse',[],{happy:4,bed:{en:4,at:[[-18,-2],[0,-3],[18,-2]]},d:'+4 độ vui.',use:NAPU(-3)}),
+ F('longbed','Nệm dài cả nhà',1500,'floor',96,18,'bed','longbed',[],{happy:3,regen:1.05,bed:{en:3.5,at:BSPOT([-36,-18,0,18,36],-6)},d:'+3 độ vui, hồi năng lượng cả phòng nhanh hơn 5%.',use:NAPU(-6)}),
+ F('kennel','Chuồng mèo lớn',2400,'floor',84,52,'bed','kennel',[],{happy:4,regen:1.05,bed:{en:4,at:BSPOT([-32,-16,0,16,32],-3)},d:'+4 độ vui, hồi năng lượng cả phòng nhanh hơn 5%.',use:NAPU(-3)}),
+ F('mansion','Biệt thự mèo',4000,'floor',110,72,'bed','mansion',[],{happy:6,regen:1.1,bed:{en:4.5,at:BSPOT([-39,-13,13,39],-3).concat(BSPOT([-26,0,26],-37))},d:'+6 độ vui, hồi năng lượng cả phòng nhanh hơn 10%. Hai tầng, tầng trên có ban công.',use:NAPU(-3)}),
+].forEach(f=>{if(FURN[f.id])throw new Error('trùng id nội thất '+f.id);FURNS.push(f);FURN[f.id]=f});
+FURNS.forEach(f=>{if(f.bed)f.d+=' Ổ ngủ: chạm vào ổ trong phòng để cho '+(f.bed.at.length>1?'tối đa '+f.bed.at.length+' bé':'một bé')+' đi ngủ, hồi năng lượng nhanh gấp '+String(f.bed.en).replace('.',',')+' lần.'});
 // gán cấp mở khóa (trường ul; trường lv của nội thất là các tầng leo trèo, đừng nhầm)
 const priceLv=p=>p<=150?1:p<=260?2:p<=400?3:p<=600?4:p<=900?5:p<=1200?6:p<=1500?7:p<=2200?8:p<=3200?10:12;
 const ROOM_LV={living:1,bedroom:2,kitchen:3,balcony:4,bathroom:5,playroom:6,dining:7,attic:8,garden:9,library:10,gameroom:11,greenhouse:12,tatami:13,basement:14,pool:15,rooftop:16,royal:18};

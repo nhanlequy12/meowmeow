@@ -192,7 +192,7 @@ const TUT_TEXT={
         'Game tự lưu 10 giây một lần và sau mỗi hành động.']},
       {id:'room',ic:'🏠',t:'Phòng và mèo',p:[
         'Kéo khung phòng để xem khắp nơi. Bấm ＋ －, giữ Ctrl rồi lăn chuột, hoặc chụm 2 ngón để phóng to thu nhỏ.',
-        'Chạm vào mèo để theo dõi và vuốt ve: mỗi bé 10 phút một lần cho số xu bằng số sao, thêm 3 độ vui. Chạm chỗ trống để thôi theo dõi.',
+        'Chạm một lần vào mèo để vuốt ve: mỗi bé 10 phút một lần cho số xu bằng số sao, thêm 3 độ vui. Chạm hai lần liền để quan sát (camera theo dõi bé), chạm chỗ trống để thôi quan sát.',
         'Mỗi bé có độ no 🍗, năng lượng ⚡, độ vui 😊; xem chương Ba chỉ số của mèo.',
         'Bé tự sinh hoạt: ngồi, liếm lông, ngủ, đi dạo, chạy, nhảy, trèo đồ nhiều tầng. Mèo con (dưới 3 ngày) hiếu động, mèo già (từ 30 ngày) hay ngủ và ít trèo. Tuổi chỉ đổi cách sinh hoạt, không đổi xu.']},
       {id:'stats',ic:'😊',t:'Ba chỉ số của mèo',p:[
@@ -255,7 +255,7 @@ const TUT_TEXT={
         'Hết chỗ thì bé mới vào Phòng chờ (không giới hạn nhưng bị trừ 10 vui).',
         'Phóng sinh: nhận xu theo sao (1★ 20 xu tới 5★ 1.000 xu và 1 vé). Bé 4★–5★ được hỏi lại lần hai. Luôn giữ lại ít nhất một bé.']},
       {id:'album',ic:'📖',t:'Sưu tập',p:[
-        'Ghi lại mọi giống và mèo trang phục bạn từng gặp, chia nhóm Giống thật, Anime, Phim, Meme & Đặc biệt, Màu hiếm.',
+        'Ghi lại mọi giống và mèo trang phục bạn từng gặp, chia nhóm Giống thật, Anime, Phim, Meme & Đặc biệt, Esports, Game, Dễ thương, Màu hiếm.',
         'Chạm vào một giống đã gặp để xem các màu lông. Bé 5★ có nút xem lại intro.']},
       {id:'five',ic:'👑',t:'Mèo 5★ và trang phục hiếm',p:[
         'Mỗi bé 5★ có intro riêng khi mở hộp, hành động riêng trong phòng và trạng thái đặc biệt kéo dài 60 giây.',
