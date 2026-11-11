@@ -20,7 +20,7 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 - Style: hạt cườm (perler bead), pastel, viền nâu đậm. Khi sửa tỉ lệ thì chỉ sửa tỉ lệ, không đổi cách vẽ, bảng màu hay nét viền.
 - Admin chỉ để thử, không hiện với người chơi thường.
 - Việc nào tự làm được thì tự làm, không giao cho Codex. Chỉ dùng Codex khi việc thật sự cần chạy song song quy mô lớn mà một mình không kịp, hoặc khi người dùng bảo dùng Codex.
-- Chỉ commit và push khi người dùng bảo. Commit message tiếng Việt, kết thúc bằng dòng `Co-Authored-By: Claude <noreply@anthropic.com>`.
+- Chỉ commit và push khi người dùng bảo. Commit message tiếng Việt. KHÔNG thêm dòng `Co-Authored-By` hay bất kỳ dòng ghi công Claude nào (người dùng đã cho gỡ khỏi toàn bộ lịch sử ngày 2026-11-11).
 
 ### Git
 - Remote: `git@github.com:nhanlequy12/meowmeow.git`, nhánh `main`. (Người dùng từng gõ nhầm tên tài khoản là `nhan.lequy12`; tên đúng không có dấu chấm.)
