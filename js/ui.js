@@ -98,7 +98,10 @@ function toast(msg,o){
   box.appendChild(d);
   requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('on')));
   if(o.coins){const n=d.querySelector('.num'),t0=performance.now(),run=t=>{const k=Math.min(1,(t-t0)/700);n.textContent=Math.round(o.coins*(1-Math.pow(1-k,3)));if(k<1&&d.isConnected)requestAnimationFrame(run)};requestAnimationFrame(run)}
-  setTimeout(()=>{d.style.marginBottom=-(d.offsetHeight+7)+'px';d.classList.remove('on');d.classList.add('out');setTimeout(()=>d.remove(),340)},o.ms||2600);
+  // tự ẩn sau khoảng 4 giây đọc (cộng 0,6 giây trượt vào); chạm vào thì ẩn ngay
+  const bye=()=>{if(d.classList.contains('out')||!d.isConnected)return;d.style.marginBottom=-(d.offsetHeight+7)+'px';d.classList.remove('on');d.classList.add('out');setTimeout(()=>d.remove(),340)};
+  d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();bye()});
+  setTimeout(bye,o.ms||4600);
 }
 notify=toast;
 

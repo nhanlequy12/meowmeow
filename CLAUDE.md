@@ -505,3 +505,4 @@ Người dùng chọn gợi ý 1, 3, 4, 5, 6. Chỉ đổi vị trí và kích t
 - PC (rộng từ 1024px): các ô chỉ số trên cùng chia đều phần trống (`flex:1 1 auto`), ô cấp rộng gấp ba, thay vì ô cấp kéo dài một mình.
 - Nút ＋ － phóng to dời lên góc trên phải khung phòng (vùng tường, ít mèo đứng). Thẻ theo dõi mèo hẹp lại (`calc(100% - 76px)`) để không đè nút.
 - Đã cho bot chơi hết hướng dẫn tân thủ ở PC, điện thoại dọc, điện thoại ngang. Ở điện thoại dọc bot đôi khi kẹt ở bước `pet` vì bấm lúc ô sáng còn chạy; bản HEAD cũ cũng vậy, chạm thật vào mèo thì qua ngay.
+- Thông báo tự ẩn sau 4,6 giây (khoảng 4 giây đọc sau khi trượt vào; trước là 2,6 giây). Chạm hoặc bấm vào thông báo thì ẩn ngay, cú chạm không lọt xuống nút hay thẻ bên dưới. Lời gọi có `ms` riêng (quà hướng dẫn 4,2 giây, tin quản trị 7–10 giây) giữ nguyên.

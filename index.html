@@ -57,6 +57,7 @@ input{font:inherit;color:var(--ink);background:#fbf5ea;border:2px solid var(--li
 #toast{position:fixed;left:0;right:0;top:10px;display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;z-index:50}
 .tst{display:flex;align-items:center;gap:10px;width:min(92vw,400px);background:#fbf5ea;color:var(--ink);border:2px solid var(--ac);border-left-width:8px;border-radius:14px;padding:8px 12px;box-shadow:0 5px 12px rgba(82,56,40,.22);transform:translateY(-170%);opacity:0;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .25s,margin-bottom .3s ease}
 .tst.on{transform:none;opacity:1}
+#toast .tst{pointer-events:auto;cursor:pointer}#toast .tst.out{pointer-events:none}
 .tst.out{transform:translateY(-50%);opacity:0}
 #toast.low .tst{transform:translateY(170%)}#toast.low .tst.on{transform:none}#toast.low .tst.out{transform:translateY(50%)}
 .tst .ic{font-size:22px;width:38px;height:38px;border-radius:50%;background:color-mix(in srgb,var(--ac) 30%,#fff);display:flex;align-items:center;justify-content:center;flex:none}
