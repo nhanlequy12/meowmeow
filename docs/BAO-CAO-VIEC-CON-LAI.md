@@ -1,3 +1,14 @@
+# Chuyển mọi mèo sang khung Xoài: ĐÃ XONG (cập nhật 2026-11-11, 15:15)
+
+Mọi việc trong file này đã làm xong buổi chiều 2026-11-11. Phần dưới dòng kẻ là bản kế hoạch cũ, giữ để đối chiếu.
+
+- 133 / 133 mèo (86 giống, 47 mèo trang phục) dựng trên khung Xoài và đạt soát tự động ở mọi dáng, trên 1.044 ngoại hình. Bảng mèo × dáng: `docs/BANG-MEO-DANG.md`.
+- 24 nhánh Codex đã gộp vào `main`, worktree và nhánh `sprite/agent-*` đã xoá. Chưa push.
+- A1 đến A7, B, C, D đều xong. Còn chờ chủ game quyết: mục E (gacha cũ hay mới, Angora trắng, danh sách nhân vật để tạm) và con số thuộc tính của Tanjiro (đang dùng +15 độ vui, đói chậm hơn 20%; có cả Nezuko và Zenitsu thì +25).
+- Nên xem bằng mắt: mặt nhìn ngang của Himalayan và Ba Tư; Sukuna ở dáng ngủ (thân lộ hình xăm); gậy của Frieren ở khung nhìn ngang; số 456 ở khung nhìn ngang chỉ còn một vạch; Sphynx và Lykoi nét miệng mờ.
+
+---
+
 # Chuyển mọi mèo sang khung Xoài: việc còn lại
 
 Cập nhật 2026-11-11, 11:45. Dùng file này để chạy tiếp vào buổi chiều, sau khi hạn mức Codex mở lại (14:20).
