@@ -10,7 +10,7 @@ const CatKit=(()=>{
 const U=Art.U,{Buf,hex,mix,lt,lum}=U;
 const X=SHEETS.xoai,RO='.ABCDEFGHIJKLM',H=80,OY=4,OXS=8,GROUND=71;
 const P={NONE:0,HEAD:1,EAR:2,BODY:3,TAIL:4,LEG:5,NH:6,FH:7,NF:8,FF:9};
-const FT={NONE:0,EYEL:1,EYER:2,NOSE:3,CHEEK:4,EARIN:5,MUZ:6,CHEST:7,PAW:8,TIP:9};
+const FT={NONE:0,EYEL:1,EYER:2,NOSE:3,CHEEK:4,EARIN:5,MUZ:6,CHEST:7,PAW:8,TIP:9,MOUTH:10,RIM:11};
 const R={A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:10,K:11,L:12,M:13};
 const isPink=r=>r>=8&&r<=10,isEyeR=r=>r>=11,isLight=r=>r>=5&&r<=7,isFur=r=>r>=2&&r<=7,isLeg=p=>p>=5;
 const pyround=x=>{const f=Math.floor(x),d=x-f;return d>.5?f+1:d<.5?f:(f%2===0?f:f+1)}; // làm tròn kiểu Python để khung rig trùng từng ô với tools/xoai_rig.py
@@ -33,6 +33,15 @@ function outlineParts(g){const {W,role,part}=g;
     for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const u=x+dx,v=y+dy;if(u<0||v<0||u>=W||v>=H)continue;const j=v*W+u;if(role[j]<2)continue;const d=dx*dx+dy*dy;if(d<bd||(d===bd&&PRI[part[j]]>PRI[best])){bd=d;best=part[j]}}
     part[i]=best}}
 const bbox=(g,ok)=>{const {W}=g;let x0=999,y0=999,x1=-1,y1=-1,n=0;for(let i=0;i<W*H;i++)if(ok(i)){const x=i%W,y=(i-x)/W;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;n++}return {x0,y0,x1,y1,n,cx:(x0+x1)/2,cy:(y0+y1)/2}};
+/* Nét miệng và viền mắt của Xoài được vẽ bằng các ô lông tối (B, C, D) nằm lọt trong vùng mõm sáng hoặc sát con mắt.
+   Trên lông sáng màu các ô này sẽ chìm mất, nên gắn nhãn riêng (MOUTH, RIM) để lõi tô bằng màu nét thay vì màu lông. */
+function faceLines(g,nose){const {W,role,part,feat}=g,rx={},cy={};
+  for(let i=0;i<W*H;i++)if(feat[i]===FT.MUZ){const x=i%W,y=(i-x)/W;(rx[y]=rx[y]||[x,x]);if(x<rx[y][0])rx[y][0]=x;if(x>rx[y][1])rx[y][1]=x;(cy[x]=cy[x]||[y,y]);if(y<cy[x][0])cy[x][0]=y;if(y>cy[x][1])cy[x][1]=y}
+  for(let i=0;i<W*H;i++){const r=role[i];if(feat[i]||part[i]!==P.HEAD||r<2||r>4)continue;const x=i%W,y=(i-x)/W;
+    if(rx[y]&&cy[x]&&x>rx[y][0]&&x<rx[y][1]&&y>cy[x][0]&&y<cy[x][1]&&Math.abs(x-nose[0])<=9&&y>=nose[1]-1&&y<=nose[1]+10){feat[i]=FT.MOUTH;continue}
+    if(r===4)continue;
+    let near=false;for(let dy=-1;dy<=1&&!near;dy++)for(let dx=-1;dx<=1;dx++){const u=x+dx,v=y+dy;if(u<0||v<0||u>=W||v>=H)continue;const f=feat[v*W+u];if(f===FT.EYEL||f===FT.EYER){near=true;break}}
+    if(near)feat[i]=FT.RIM}}
 // chi tiết trên đầu khung nhìn thẳng: tai, mắt, mũi, má, mõm trắng
 function headFront(g,cx,crownY,ny){const {W,role,part,feat,A}=g;
   for(let i=0;i<W*H;i++)if(part[i]===P.HEAD&&((i/W)|0)<crownY)part[i]=P.EAR;
@@ -40,13 +49,14 @@ function headFront(g,cx,crownY,ny){const {W,role,part,feat,A}=g;
   A.head=[Math.round(cx),Math.round((crownY+ny)/2)];A.crown=[Math.round(cx),crownY];A.earL=tip(true);A.earR=tip(false);A.chin=[Math.round(cx),ny];A.neck=[Math.round(cx),ny+1];
   const hd=i=>part[i]===P.HEAD||part[i]===P.EAR;
   [true,false].forEach(l=>{const b=bbox(g,i=>hd(i)&&isEyeR(role[i])&&((i%W)<cx)===l);
-    if(b.n){for(let y=b.y0;y<=b.y1;y++)for(let x=b.x0;x<=b.x1;x++){const i=y*W+x;if(hd(i)&&(isEyeR(role[i])||isLight(role[i])))feat[i]=l?FT.EYEL:FT.EYER}A[l?'eyeL':'eyeR']=[Math.round(b.cx),Math.round(b.cy)]}
+    if(b.n){for(let y=b.y0;y<=b.y1;y++)for(let x=b.x0;x<=b.x1;x++){const i=y*W+x;if(hd(i)&&(isEyeR(role[i])||isLight(role[i])||role[i]===R.B||role[i]===R.C))feat[i]=l?FT.EYEL:FT.EYER}A[l?'eyeL':'eyeR']=[Math.round(b.cx),Math.round(b.cy)]}
     else A[l?'eyeL':'eyeR']=[Math.round(cx+(l?-11:11)),crownY+16]});
   const ey=(A.eyeL[1]+A.eyeR[1])/2;let ns=0,nx=0,nyy=0;
   for(let i=0;i<W*H;i++){if(!hd(i)||feat[i])continue;const x=i%W,y=(i-x)/W,r=role[i];
     if(isPink(r)){if(y<=crownY+7&&Math.abs(x-cx)>=5)feat[i]=FT.EARIN;else if(Math.abs(x-cx)<=6){feat[i]=FT.NOSE;ns++;nx+=x;nyy+=y}else feat[i]=FT.CHEEK}
     else if(isLight(r)&&y>=ey+1&&part[i]===P.HEAD)feat[i]=FT.MUZ}
   A.nose=ns?[Math.round(nx/ns),Math.round(nyy/ns)]:[Math.round(cx),Math.round(ey+6)];
+  faceLines(g,A.nose);
 }
 // tâm đầu ước lượng từ hai chóp tai (4 hàng trên cùng của vùng ok)
 function earMid(g,ok){const {W}=g;let y0=-1;for(let i=0;i<W*H&&y0<0;i++)if(ok(i))y0=(i/W)|0;const xs=[];for(let y=y0;y<y0+4;y++)for(let x=0;x<W;x++)if(ok(y*W+x))xs.push(x);xs.sort((a,b)=>a-b);
@@ -99,7 +109,7 @@ function labelStand(g){const {W,role,part,feat,A}=g,N=W*H;
   const eb=bbox(g,i=>(part[i]===P.HEAD)&&isEyeR(role[i]));
   for(let i=0;i<N;i++){const r=role[i],p=part[i],x=i%W,y=(i-x)/W;if(r<2)continue;
     if(p===P.HEAD||p===P.EAR){
-      if(x>=eb.x0&&x<=eb.x1&&y>=eb.y0&&y<=eb.y1&&(isEyeR(r)||isLight(r)))feat[i]=FT.EYEL;
+      if(x>=eb.x0&&x<=eb.x1&&y>=eb.y0&&y<=eb.y1&&(isEyeR(r)||isLight(r)||r===R.B||r===R.C))feat[i]=FT.EYEL;
       else if(isPink(r))feat[i]=y<=25?FT.EARIN:x>=82?FT.NOSE:FT.CHEEK;
       else if(isLight(r)&&y>=29&&p===P.HEAD)feat[i]=FT.MUZ}
     else if(p===P.BODY){if(isLight(r))feat[i]=FT.CHEST}
@@ -107,6 +117,7 @@ function labelStand(g){const {W,role,part,feat,A}=g,N=W*H;
     else if(y>=69)feat[i]=FT.PAW}
   Object.assign(A,{head:[68,31],crown:[66,16],earN:[73,8],earF:[57,11],eye:[Math.round(eb.cx),Math.round(eb.cy)],nose:[85,31],chin:[73,47],cheek:[69,34],
     neck:[50,41],throat:[60,48],chest:[65,53],back:[44,40],hip:[25,42],belly:[44,61],tailBase:[27,46],tailTip:[18,21],footNH:[28,GROUND],footFH:[34,GROUND],footNF:[54,GROUND],footFF:[61,GROUND]});
+  faceLines(g,A.nose);
 }
 
 /* ================= 2. Bộ khớp (rig): bản JS của tools/xoai_rig.py, giữ nhãn và toạ độ nghỉ của từng ô ================= */
@@ -302,9 +313,11 @@ function painter(s,F,hooks){
       if(o)return o;
       if(r===1)return oc;
       if(ctx.kind==='pink')return NATIVE[r];
-      const e=ctx.feat===FT.EYER?e2:e1;return r===R.K?mix(e,[20,30,30],.75):r===R.L?e:r===R.M?lt(e,.6):WHITE}
+      const e=ctx.feat===FT.EYER?e2:e1;return r===R.K?mix(e,[20,30,30],.75):r===R.L?e:r===R.M?lt(e,.6):r===R.B?mix(e,[20,30,30],.62):r===R.C?mix(e,[20,30,30],.42):WHITE}
     if(o)return shade(o,ctx.lv);
     let b=pat(ctx)||c;
+    // nét miệng và viền mắt: luôn sẫm hơn nền quanh nó một mức cố định, kể cả trên lông trắng
+    if(ctx.zone&&(ctx.feat===FT.MOUTH||ctx.feat===FT.RIM)){const m=ctx.feat===FT.MOUTH?(w>=1?WHITE:lt(b,soft)):b;return mix(m,oc,ctx.feat===FT.RIM?(r===R.B?.5:.32):(r===R.B?.55:r===R.C?.45:.34))}
     if(ctx.zone){const f=ctx.feat,li=isLight(r),u=ctx.u,v=ctx.v,A=ctx.A0;
       const blaze=w>=2&&ctx.part===P.HEAD&&(side?(u>=A.eye[0]+3&&v>=A.eye[1]-4):(v>=A.eyeL[1]-4&&Math.abs(u-A.head[0])<=(v-A.eyeL[1]+5)*.75));
       if(blaze||((f===FT.MUZ||f===FT.CHEST)&&li&&w>=1)||(f===FT.PAW&&(w>=2||s.mit))){b=WHITE;if(li)ctx.lv-=2;else if(ctx.mark)ctx.lv=0}
