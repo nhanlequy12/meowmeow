@@ -57,7 +57,7 @@ input{font:inherit;color:var(--ink);background:#fbf5ea;border:2px solid var(--li
 #toast{position:fixed;left:0;right:0;top:10px;display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none;z-index:50}
 .tst{display:flex;align-items:center;gap:10px;width:min(92vw,400px);background:#fbf5ea;color:var(--ink);border:2px solid var(--ac);border-left-width:8px;border-radius:14px;padding:8px 12px;box-shadow:0 5px 12px rgba(82,56,40,.22);transform:translateY(-170%);opacity:0;transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .25s,margin-bottom .3s ease}
 .tst.on{transform:none;opacity:1}
-#toast .tst{pointer-events:auto;cursor:pointer}#toast .tst.out{pointer-events:none}
+#toast .tst{pointer-events:auto;cursor:pointer}.tst.bump .cn{animation:tbump .35s ease-out}@keyframes tbump{40%{transform:scale(1.25)}}#toast .tst.out{pointer-events:none}
 .tst.out{transform:translateY(-50%);opacity:0}
 #toast.low .tst{transform:translateY(170%)}#toast.low .tst.on{transform:none}#toast.low .tst.out{transform:translateY(50%)}
 .tst .ic{font-size:22px;width:38px;height:38px;border-radius:50%;background:color-mix(in srgb,var(--ac) 30%,#fff);display:flex;align-items:center;justify-content:center;flex:none}
@@ -164,6 +164,9 @@ canvas#room{background:#b5a086}
 @keyframes qpulse{50%{transform:scale(1.06)}}
 .qbadge{display:inline-block;background:#e2484e;color:#fff;border-radius:9px;padding:0 6px;font-size:12px;font-weight:800;line-height:18px}
 .qrow{gap:8px}.qrow .qic{font-size:22px;width:26px;text-align:center;flex:none}.qrow .bar{margin:4px 0 2px}.qrow button{flex:none;min-width:64px}.qgot{opacity:.62}.qhd{margin:10px 2px 4px}
+.nestl{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0 8px}.nestl .card{cursor:pointer;margin-bottom:6px;padding:6px}.nestc .row{margin-top:6px}
+.cig{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.cid{background:var(--panel);border:2px solid var(--line);border-radius:9px;padding:4px 2px;text-align:center;line-height:1.2;font-size:12px}.cid b{display:block;font-size:16px;margin:2px 0}.cid small{font-size:10.5px}.cid.got{opacity:.55}.cid.now{border-color:var(--gold);background:var(--panel2);border-width:3px}
+@media(max-width:480px){.cig{grid-template-columns:repeat(4,1fr)}}
 .feedbar{display:flex;align-items:center;gap:10px;margin-bottom:8px}.fdinfo{flex:1;min-width:0}.fdbtns{display:flex;gap:6px;flex:none}.fdbtns .fdgo{min-width:180px}
 @media(max-width:560px){.feedbar{flex-direction:column;align-items:stretch;gap:6px}.fdbtns .fdgo{flex:1;min-width:0}}
 .achh{margin:12px 2px 6px}.achg{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px}.achc{display:flex;gap:8px;align-items:flex-start;background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:7px 9px;opacity:.82}.achc.done{opacity:1;border-color:var(--gold);background:var(--panel2)}.achc .aic{font-size:22px;width:26px;text-align:center;flex:none}.achc .g{flex:1;min-width:0}.achc .bar{margin:4px 0 2px}.adf{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:8px;color:#fff;vertical-align:1px;white-space:nowrap}
@@ -424,6 +427,8 @@ canvas#room{touch-action:none}
 <script src="js/ui.js"></script>
 <script src="js/quest.js"></script>
 <script src="js/achieve.js"></script>
+<script src="js/wish.js"></script>
+<script src="js/breed.js"></script>
 <script src="js/net.js"></script>
 <script src="js/tut-text.js"></script>
 <script src="js/tutorial.js"></script>

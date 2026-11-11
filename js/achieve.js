@@ -1,6 +1,6 @@
 "use strict";
 /* ============ THÀNH TỰU (2026-11-11) ============
-   105 thành tựu chia 5 nhóm, bốn mức Dễ, Vừa, Khó, Rất khó; đạt mỗi cái được ACH_XU xu (tự cộng, có thông báo).
+   114 thành tựu chia 5 nhóm, bốn mức Dễ, Vừa, Khó, Rất khó; đạt mỗi cái được ACH_XU xu (tự cộng, có thông báo).
    Số liệu đếm dồn lưu ở S.st (cộng qua onAct mà game.js và quest.js gọi); phần còn lại đọc thẳng từ trạng thái (cấp, số mèo, sưu tập, phòng, đồ...).
    Thành tựu đã đạt lưu ở S.ach[id] = thời điểm đạt. Trang xem là tab 🏆 Thành tựu riêng trên thanh điều hướng (PANEL.ach gọi achPage).
    Chỉ xét sau khi xong hướng dẫn tân thủ. */
@@ -20,6 +20,7 @@ achSer('trip','lv',()=>S.level,n=>'Đạt cấp '+n+'.',[[3,0,'Chập chững'],
 achSer('care','feed',stv('feed'),n=>'Cho mèo ăn '+fN(n)+' lần.',[[1,0,'Bữa đầu tiên'],[10,0,'Đầu bếp tập sự'],[100,1,'Bếp trưởng'],[500,2,'Nhà hàng meo'],[2000,2,'Bếp ăn tập thể'],[6000,3,'Thần bếp']]);
 achSer('care','fav',stv('fav'),n=>'Cho bé ăn đúng món khoái khẩu '+fN(n)+' lần.',[[1,0,'Trúng món khoái khẩu'],[25,1,'Hiểu khẩu vị'],[100,2,'Sành ăn'],[500,3,'Tri kỷ ẩm thực']]);
 achSer('care','pet',stv('pet'),n=>'Vuốt ve mèo '+fN(n)+' lần.',[[1,0,'Cái vuốt đầu tiên'],[100,0,'Bàn tay ấm'],[1000,1,'Chuyên gia gãi cằm'],[5000,2,'Bậc thầy vuốt ve'],[20000,3,'Bàn tay vàng'],[60000,3,'Thánh vuốt mèo']]);
+achSer('care','wish',stv('wish'),n=>'Làm đúng '+fN(n)+' ước muốn của mèo.',[[1,0,'Hiểu ý mèo'],[50,1,'Đọc vị mèo'],[300,2,'Thần giao cách mèo']]);
 achSer('care','hp100',()=>S.cats.some(c=>c.hp>=99.5)?1:0,()=>'Có một bé vui 100%.',[[1,0,'Bé vui hết cỡ']]);
 achSer('care','hpall',()=>S.cats.length>=10&&S.cats.reduce((a,c)=>a+c.hp,0)/S.cats.length>=90?1:0,()=>'Nhà có từ 10 bé, độ vui trung bình từ 90% trở lên.',[[1,2,'Cả nhà hạnh phúc']]);
 achSer('care','kit',()=>S.cats.some(c=>ageStage(c)===0)?1:0,()=>'Nuôi một bé mèo con.',[[1,0,'Mèo con nhà mình']]);
@@ -33,6 +34,7 @@ achSer('coll','cos',()=>VARIANTS.filter(v=>S.seen[v.id]).length,n=>n>=VARIANTS.l
 achSer('coll','rare',()=>Object.keys(S.seenRare||{}).length,n=>n>=RARES.length?'Gặp đủ mọi màu lông hiếm.':'Gặp '+n+' màu lông hiếm.',[[1,1,'Màu hiếm đầu tiên'],[5,2,'Bảng màu quý'],[RARES.length,3,'Cầu vồng trọn vẹn']]);
 achSer('coll','five',()=>allSp().filter(s=>s.r===5&&S.seen[s.id]).length,n=>n>=allSp().filter(s=>s.r===5).length?'Gặp đủ mọi bé 5★.':'Gặp '+n+' bé 5★ khác nhau.',[[1,1,'Huyền thoại đầu tiên'],[5,2,'Ngũ huyền thoại'],[allSp().filter(s=>s.r===5).length,3,'Đại sảnh huyền thoại']]);
 achSer('coll','form',()=>Object.keys(S.seenCoat||{}).filter(k=>(ALLCOAT[k.split('~')[1]]||{}).form).length,n=>'Gặp '+n+' trang phục hiếm của bé 5★.',[[1,2,'Trang phục hiếm'],[5,3,'Tủ đồ huyền thoại']]);
+achSer('coll','kitten',stv('kitten'),n=>'Đón '+fN(n)+' mèo con từ ổ ghép đôi.',[[1,1,'Mèo con đầu lòng'],[10,2,'Đại gia đình'],[50,3,'Dòng họ lông xù']]);
 achSer('coll','rel',()=>S.released||0,n=>'Phóng sinh '+fN(n)+' bé về mái ấm mới.',[[1,0,'Lời tạm biệt'],[10,1,'Mái ấm mới'],[50,2,'Trạm cứu hộ'],[200,3,'Sứ giả nhân ái']]);
 // --- Nhà cửa ---
 const furnOwned=()=>new Set(S.items.map(i=>i.fid));
@@ -48,6 +50,7 @@ achSer('home','tk',()=>S.tickets,n=>'Để dành '+n+' vé gacha cùng lúc.',[[
 achSer('play','catch',stv('catch'),n=>'Bắt '+fN(n)+' vị khách lạ trong phòng.',[[1,0,'Bắt được rồi!'],[10,0,'Thợ săn nhỏ'],[50,1,'Thợ săn lành nghề'],[200,2,'Mắt diều hâu'],[500,2,'Phản xạ mèo'],[1000,3,'Thần săn']]);
 achSer('play','gold',stv('gold'),n=>'Bắt '+n+' con bướm vàng.',[[1,2,'Bướm vàng'],[10,3,'Kẻ săn bướm vàng']]);
 achSer('play','quest',stv('quest'),n=>'Hoàn thành '+fN(n)+' nhiệm vụ.',[[1,0,'Nhiệm vụ đầu tiên'],[10,0,'Người chăm chỉ'],[50,1,'Chiến binh nhiệm vụ'],[200,2,'Không bỏ sót'],[500,3,'Cỗ máy nhiệm vụ']]);
+achSer('play','ci',()=>(S.ci&&S.ci.n)||0,n=>'Điểm danh tổng cộng '+n+' ngày.',[[7,0,'Một tuần ghé thăm'],[30,1,'Khách quen'],[100,3,'Trăm ngày bên mèo']]);
 achSer('play','qday',stv('qday'),n=>'Xong cả ba nhiệm vụ trong '+n+' ngày.',[[1,0,'Trọn một ngày'],[7,1,'Một tuần chăm chỉ'],[30,2,'Một tháng bền bỉ'],[100,3,'Trăm ngày như một']]);
 
 function achSeed(){S.st=S.st||{};if(S.q&&S.q.n>(S.st.catch||0))S.st.catch=S.q.n}

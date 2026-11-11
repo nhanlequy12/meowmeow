@@ -513,3 +513,13 @@ Người dùng chọn gợi ý 1, 3, 4, 5, 6. Chỉ đổi vị trí và kích t
 - `fillWait()` (game.js): lấy mèo ở Phòng chờ theo thứ tự trong `S.cats` (bé vào chờ trước đi trước), bỏ qua bé đang viễn chinh, đưa vào phòng còn chỗ theo `roomsByBuy()`: phòng mua trước được lấp trước. Phòng chưa có `at` (Phòng khách, phòng của bản lưu cũ, phòng mở bằng trang quản trị) đứng trước, giữa chúng theo thứ tự `ROOMS`.
 - `claimTrip`: bé ở Phòng chờ đi viễn chinh về thì cũng gọi `fillWait()`.
 - Mèo mới từ gacha vẫn dùng `freeRoom()` (thứ tự `ROOMS`, không theo thứ tự mua).
+
+## 24. Ước muốn, điểm danh, ghép đôi và 3 tối ưu (2026-11-11)
+
+- `js/wish.js`: ước muốn của mèo (vuốt ve, thèm món, xem bắt khách lạ), bong bóng 💭 trên đầu bé, dòng nhắc dưới nút Cho ăn (`wishLine()` gọi trong `PANEL.home`). Nối vào `critStep`, `critDraw`, bọc `petCat`, `feedRoom`, `onAct`. Không lưu vào bản lưu.
+- `js/quest.js`: điểm danh 7 ngày (`S.ci`, `ciClaim`, `ciBox`) ở đầu bảng Nhiệm vụ; ngày đầu vào game tự mở bảng một lần; bỏ lỡ một ngày về Ngày 1.
+- `js/breed.js`: ghép đôi ra mèo con (`S.nest`), thẻ ổ ở đầu tab Mèo (bọc `PANEL.cats`, đồng hồ cập nhật qua `renderTop`), ❗ tab Mèo khi mèo con chào đời. Quy tắc thừa hưởng ở đầu file.
+- Thứ tự nạp: `quest.js`, `achieve.js`, `wish.js`, `breed.js`, rồi `net.js`.
+- Thành tựu thêm 9 (ước muốn, mèo con, điểm danh), tổng 114. Sổ tay thêm 3 mục.
+- Tối ưu: gộp thông báo cùng loại (`toast` có `key`, `mtitle`; `tstMerge`); ❗ tab Phòng khi bát đầy lại mà có bé no dưới 50 (`feedDue`); tab Mèo: ảnh từ canvas dùng blob URL (`cvURL`) và ô chọn phòng chỉ dựng đủ danh sách khi chạm (`mgOpts`), 150 bé vẽ lại 28 ms (trước 69 ms).
+- Đã thử bằng Playwright ở 3 cỡ màn, không lỗi JS. Chưa cho bot chơi lại hướng dẫn tân thủ sau đợt này (xem `VIEC-CAN-LAM.md`). Kế hoạch mục 4–6 ở `docs/KE-HOACH.md`.

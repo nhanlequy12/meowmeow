@@ -26,11 +26,14 @@ const catCv=(sp,pose,k,old)=>{if(old&&KITONLY(sp))old=0;const f=fk(k||BS),key=sp
 const furnCv=(id,v,k)=>{const f=fk(k||BS),key=id+'|'+(v||'')+'|'+f;return FC[key]||(FC[key]=bufCanvas(Art.furn(id,v),f))};
 // ảnh trong giao diện: phóng đúng bội số nguyên rồi hiển thị 1:1 với điểm ảnh màn hình
 const kk=k=>2*fk(k*DPR());
-const catSrc=(sp,k,old)=>{const n=kk(k),key=sp+'|'+n+(old?'|old':'');return CI[key]||(CI[key]=catCv(sp,'sit',n,old).toDataURL())};
+// ảnh dựng từ canvas đưa vào thẻ <img> bằng đường dẫn blob ngắn thay cho chuỗi data URL dài: tab có hàng trăm biểu tượng (tab Mèo 150 bé)
+// dựng lại nhanh hơn nhiều vì trình duyệt không phải đọc lại chuỗi base64 cho từng thẻ. Ảnh được giữ trong bộ nhớ đệm suốt phiên chơi.
+const cvURL=cv=>{try{const b=atob(cv.toDataURL().slice(22)),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return URL.createObjectURL(new Blob([u],{type:'image/png'}))}catch(e){return cv.toDataURL()}};
+const catSrc=(sp,k,old)=>{const n=kk(k),key=sp+'|'+n+(old?'|old':'');return CI[key]||(CI[key]=cvURL(catCv(sp,'sit',n,old)))};
 const catTag=(sp,k,old)=>{const n=kk(k),d=DPR();return '<img class="px'+(sp.indexOf('~r_')>0||(COATS[sp.split('~')[1]]||{}).form?' rareglow':'')+'" width="'+36*n/d+'" height="'+40*n/d+'" src="'+catSrc(sp,k,old)+'">'};
 function furnTag(id,v,mw,mh){
   const d=DPR(),sz=id==='gift'?[28,28]:[FURN[id].w,FURN[id].h],fit=Math.min((mw||48)*d/sz[0],(mh||40)*d/sz[1]),n=2*Math.max(1,Math.floor(fit/2)),sh=Math.min(n,Math.max(1,Math.floor(fit)));
-  const key=id+'|'+(v||'')+'|'+n,src=FI[key]||(FI[key]=furnCv(id,v,n).toDataURL());
+  const key=id+'|'+(v||'')+'|'+n,src=FI[key]||(FI[key]=cvURL(furnCv(id,v,n)));
   return '<img class="px" width="'+sz[0]*sh/d+'" height="'+sz[1]*sh/d+'" src="'+src+'">';
 }
 const sexIc=c=>c.sex==='f'?'<span class="f">♀</span>':'<span class="m">♂</span>';
@@ -75,7 +78,7 @@ setInterval(()=>{if(tipFor&&!tipFor.isConnected)hideTip()},400);
 /* ---------- icon riêng của game thay cho emoji: vẽ bằng Art.icon, cùng kiểu hạt cườm với mèo ---------- */
 const EMO_IC={'🪙':'coin','🎟':'ticket','🐱':'cat','🐈':'cat','👥':'cat','😾':'grumpy','🍗':'drum','🍖':'drum','⚡':'bolt','😊':'smile','❤':'heart','🏠':'house','🥚':'gacha','🎒':'pack','🛋':'sofa','📖':'book','⚙':'gear','🔒':'lock','🔐':'lock','✨':'sparkle','💎':'gem','🚪':'door','🎁':'gift','🔧':'wrench','🛠':'wrench','🕊':'bird','⚠':'warn','🌙':'moon','🎲':'dice','✏':'pencil','⏩':'ff','❗':'excl','🗑':'trash','🍽':'bowl','🍚':'rice','🥣':'kibble','🥫':'can','🐟':'fish','🍣':'salmon','🍥':'churu','🌿':'leaf','🍱':'bento','🏘':'town','🌳':'tree','🎣':'lake','⚓':'anchor','📍':'pin','✅':'check','📦':'box','🐾':'paw','🤚':'paw','🎉':'party','⭐':'star','👑':'crown','☀':'sun','🌤':'sun','⏳':'hourglass','🍼':'bottle','📜':'scroll','🦋':'bfly','🐭':'mouse','🏆':'trophy'};
 const EMO_RE=new RegExp('('+Object.keys(EMO_IC).join('|')+')\\uFE0F?','gu'),ICO={};
-const icoTag=n=>'<img class="px ico" alt="" src="'+(ICO[n]||(ICO[n]=bufCanvas(Art.icon(n),2).toDataURL()))+'">';
+const icoTag=n=>'<img class="px ico" alt="" src="'+(ICO[n]||(ICO[n]=cvURL(bufCanvas(Art.icon(n),2))))+'">';
 // đổi emoji trong phần chữ của một đoạn HTML thành icon; không đụng vào bên trong thẻ, thuộc tính hay <option>
 function emo(h){const a=String(h).split(/(<[^>]*>)/);return a.map((p,i)=>p[0]==='<'||(i>0&&/^<option/i.test(a[i-1]))?p:p.replace(EMO_RE,(m,k)=>icoTag(EMO_IC[k]))).join('')}
 function emoEl(el){const h=el.innerHTML,n=emo(h);if(n!==h)el.innerHTML=n}
@@ -86,8 +89,13 @@ const TT={pet:['🤚','#e88aa2'],feed:['🍖','#e39a4a'],coin:['🪙','#d1a02a']
 function toast(msg,o){
   o=o||{};
   if(!o.type){const m=/^(🎉|😾)\s*/.exec(msg);if(m){o.type=m[1]==='🎉'?'level':'warn';if(m[1]==='😾')o.icon='😾';msg=msg.slice(m[0].length)}else o.type='info'}
-  const t=TT[o.type]||TT.info,box=$('toast'),d=document.createElement('div');
-  d.className='tst';d.style.setProperty('--ac',t[1]);
+  const t=TT[o.type]||TT.info,box=$('toast'),ms=Math.max(o.ms||0,8000);
+  // gộp: thông báo cùng loại đang hiện (cùng key, mặc định cùng loại + tiêu đề) thì cộng dồn vào thẻ cũ thay vì thêm thẻ mới.
+  // o.mtitle: tiêu đề chung khi gộp nhiều tiêu đề khác nhau (vd. vuốt ve nhiều bé: "Vuốt ve: Chanh, Tí, Bơ")
+  const key=o.key||(o.type+'|'+(o.title||'')+'|'+(o.icon||'')),old=(o.key||o.title)&&[...box.children].find(x=>x._key===key&&!x.classList.contains('out'));
+  if(old)return tstMerge(old,msg,o,ms);
+  const d=document.createElement('div');
+  d.className='tst';d.style.setProperty('--ac',t[1]);d._key=key;d._n=1;d._coins=o.coins||0;d._titles=o.title?[o.title]:[];
   d.innerHTML=emo('<div class="ic">'+(o.icon||t[0])+'</div><div class="bd">'+(o.title?'<b>'+esc(o.title)+'</b>':'')+'<span>'+esc(msg)+'</span></div>'+(o.coins?'<div class="cn">+<span class="num">0</span> 🪙</div>':''));
   // điện thoại dọc (đã xong hướng dẫn): thông báo hiện ở dưới, ngay trên thanh tab, tối đa 2 cái để không che xu, cấp và phòng
   const low=!!(S&&S.tut&&S.tut.done)&&matchMedia('(orientation:portrait) and (max-width:700px)').matches;
@@ -97,11 +105,21 @@ function toast(msg,o){
   else{box.style.bottom='';box.style.top=($('pop').classList.contains('on')?Math.round($('pop').getBoundingClientRect().bottom)+14:10)+'px'}
   box.appendChild(d);
   requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('on')));
-  if(o.coins){const n=d.querySelector('.num'),t0=performance.now(),run=t=>{const k=Math.min(1,(t-t0)/700);n.textContent=Math.round(o.coins*(1-Math.pow(1-k,3)));if(k<1&&d.isConnected)requestAnimationFrame(run)};requestAnimationFrame(run)}
-  // tự ẩn sau 8 giây (lời gọi có ms dài hơn thì theo ms); chạm vào thì ẩn ngay
-  const bye=()=>{if(d.classList.contains('out')||!d.isConnected)return;d.style.marginBottom=-(d.offsetHeight+7)+'px';d.classList.remove('on');d.classList.add('out');setTimeout(()=>d.remove(),340)};
-  d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();bye()});
-  setTimeout(bye,Math.max(o.ms||0,8000));
+  if(o.coins)tstCount(d,0,o.coins);
+  // tự ẩn sau 8 giây (lời gọi có ms dài hơn thì theo ms; mỗi lần gộp thì đếm lại từ đầu); chạm vào thì ẩn ngay
+  d._bye=()=>{if(d.classList.contains('out')||!d.isConnected)return;d.style.marginBottom=-(d.offsetHeight+7)+'px';d.classList.remove('on');d.classList.add('out');setTimeout(()=>d.remove(),340)};
+  d.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();d._bye()});
+  d._t=setTimeout(d._bye,ms);
+}
+// số xu trên thông báo chạy từ a lên b
+function tstCount(d,a,b){const n=d.querySelector('.num'),t0=performance.now(),run=t=>{const k=Math.min(1,(t-t0)/700);n.textContent=Math.round(a+(b-a)*(1-Math.pow(1-k,3)));if(k<1&&d.isConnected)requestAnimationFrame(run)};requestAnimationFrame(run)}
+function tstMerge(d,msg,o,ms){
+  d._n++;if(o.title&&!d._titles.includes(o.title))d._titles.push(o.title);
+  const T=d._titles,ti=o.mtitle&&T.length>1?o.mtitle+': '+T.slice(-3).join(', ')+(T.length>3?'…':''):(o.title||'')+' ×'+d._n,bd=d.querySelector('.bd');
+  bd.innerHTML=emo('<b>'+esc(ti)+'</b><span>'+esc(msg)+'</span>');
+  if(o.coins){const a=d._coins;d._coins+=o.coins;if(!d.querySelector('.cn'))d.insertAdjacentHTML('beforeend',emo('<div class="cn">+<span class="num">0</span> 🪙</div>'));tstCount(d,a,d._coins)}
+  d.classList.remove('bump');void d.offsetWidth;d.classList.add('bump');
+  clearTimeout(d._t);d._t=setTimeout(d._bye,ms);
 }
 notify=toast;
 
@@ -729,7 +747,7 @@ function ptrEnd(ev){
   if(hit.e.clone){poof(hit.p.x,hit.p.y);hit.e.dead=1;return} // chạm vào phân thân của Naruto: tan thành khói
   const c=catBy(hit.e.uid);hit.e.emoT=1.5;follow(c.uid);
   const n=petCat(c);
-  if(n){toast('kêu grừ grừ… ❤️ +'+3*(tE(c,'petHappy')||1)+' độ vui',{type:'pet',title:c.name,coins:n});render()}
+  if(n){toast('kêu grừ grừ… ❤️ +'+3*(tE(c,'petHappy')||1)+' độ vui',{type:'pet',title:c.name,coins:n,key:'pet',mtitle:'Vuốt ve'});render()}
 }
 room.addEventListener('pointerup',ptrEnd);room.addEventListener('pointercancel',ev=>{PT.delete(ev.pointerId);if(ptr&&ptr.item)save();ptr=null});
 // Lăn chuột trên khung phòng thì cuộn trang như bình thường. Giữ Ctrl (hoặc ⌘, hoặc chụm hai ngón trên bàn di chuột) rồi lăn mới zoom quanh con trỏ.
@@ -1458,6 +1476,8 @@ function shopGrid(items,sel){
 let tab='home',albumG='breed',shopT='rooms',shopSel=null,mg={sort:'star',room:'all',multi:false,sel:{}};
 const TABS=[['home','🏠','Phòng'],['gacha','🥚','Gacha'],['trip','🎒','Viễn chinh'],['shop','🛋','Cửa hàng'],['album','📖','Sưu tập'],['ach','🏆','Thành tựu'],['cats','🐱','Mèo']];
 function setTab(t){tab=t;$('app').dataset.tab=t;if(edit&&t!=='home'){toggleEdit();return}if(t==='home')fitCanvas();render();scrollTo(0,0)}
+// có phòng bát đổ lại được mà còn bé ở nhà đang hơi đói (no dưới 50): báo ❗ ở tab Phòng
+const feedDue=()=>!!(S.tut&&S.tut.done)&&ownedRooms().some(r=>bowlsIn(r.id).length&&bowlReady(r.id)&&homeCats(r.id).some(c=>c.full<50));
 function renderTop(){
   const ready=S.trips.filter(p=>p&&now()>=p.end).length,n=S.cats.length||1;
   const hungry=S.cats.filter(c=>c.full<20).length,af=Math.round(S.cats.reduce((a,c)=>a+c.full,0)/n),ah=Math.round(S.cats.reduce((a,c)=>a+c.hp,0)/n),wt=catsIn('wait').length;
@@ -1469,7 +1489,7 @@ function renderTop(){
     '<div class="chip xp">Cấp '+S.level+' <span class="dim">· '+S.xp+'/'+xpNeed()+'</span><div class="bar"><i style="width:'+(S.xp/xpNeed()*100)+'%"></i></div></div>';
   const o=ownedRooms();
   $('roomnav').innerHTML=(o.length>1?'<button onclick="navRoom(-1)" aria-label="Phòng trước">◀</button>':'')+'<button class="nm" onclick="openRooms()"><b>'+ROOM[cur].n+'</b> <span class="dim">· '+catsIn(cur).length+'/'+ROOM[cur].cap+' mèo'+(o.length>1?' · đổi phòng ▾':'')+'</span></button>'+(o.length>1?'<button onclick="navRoom(1)" aria-label="Phòng sau">▶</button>':'');
-  $('tabs').innerHTML=TABS.map(t=>'<button class="'+(tab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')"><span>'+t[1]+'</span>'+t[2]+(t[0]==='trip'&&ready?' ❗':'')+(t[0]==='cats'&&wt?' ❗':'')+'</button>').join('');['top','roomnav','tabs'].forEach(i=>emoEl($(i)));
+  $('tabs').innerHTML=TABS.map(t=>'<button class="'+(tab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')"><span>'+t[1]+'</span>'+t[2]+(t[0]==='home'&&feedDue()?' ❗':'')+(t[0]==='trip'&&ready?' ❗':'')+(t[0]==='cats'&&(wt||(typeof nestReady==='function'&&nestReady()))?' ❗':'')+'</button>').join('');['top','roomnav','tabs'].forEach(i=>emoEl($(i)));
 }
 function openRooms(){
   modal('<h3>Chọn phòng</h3>'+ownedRooms().map(r=>'<div class="card tap" onclick="closeModal();setRoom(\''+r.id+'\')"><div style="font-size:24px">'+(r.id===cur?'📍':'🚪')+'</div><div class="g"><b>'+r.n+'</b> <small>· '+catsIn(r.id).length+'/'+r.cap+' mèo'+(catsIn(r.id).length>=r.cap?' · <span style="color:var(--bad)">đầy</span>':'')+'</small><br><small>'+r.d+'</small></div></div>').join(''));
@@ -1479,6 +1499,9 @@ function render(){renderTop();renderPanel()}
 const nm=c=>c.star===5?'<b class="n5">'+esc(c.name)+'</b>':'<b>'+esc(c.name)+'</b>'; // mèo 5★ có khung tên vàng kim
 const catCard=c=>'<div class="card tap" onclick="openCat('+c.uid+')">'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+' <small>'+kind(c)+(onTrip(c.uid)?' · đang viễn chinh':'')+'</small><br>'+stats(c)+'</div><div class="dim" style="font-size:20px">›</div></div>';
 function list_all(){S.cats.filter(c=>(mg.room==='all'||c.room===mg.room)&&!onTrip(c.uid)).forEach(c=>mg.sel[c.uid]=1);renderPanel()}
+function mgCount(){const N={};S.cats.forEach(c=>N[c.room]=(N[c.room]||0)+1);return N}
+function mgOpt(r,on,N){const n=N[r.id]||0,f=n>=r.cap;return '<option value="'+r.id+'"'+(on?' selected':'')+(!on&&f?' disabled':'')+'>'+r.n+' · '+n+'/'+(r.wait?'∞':r.cap)+(f?' (đầy)':'')+'</option>'}
+function mgOpts(sel){if(sel.dataset.full)return;sel.dataset.full=1;const N=mgCount(),cur=sel.value;sel.innerHTML=ownedRooms().concat([ROOM.wait]).map(r=>mgOpt(r,r.id===cur,N)).join('')}
 function mgMove(uid,rid){
   const c=catBy(uid); if(!c||c.room===rid){renderPanel();return}
   if(moveCat(uid,rid)){syncEnts();render();toast('đã chuyển sang '+ROOM[rid].n,{type:'room',title:c.name})}
@@ -1514,6 +1537,7 @@ const PANEL={
   // hàng hành động dưới phòng: tình trạng bát (đọc trước) bên trái, nút bên phải; điện thoại dọc thì tình trạng ở trên, hai nút chia đôi ở dưới
   return '<div class="feedbar"><div class="fdinfo dim">🍽️ '+bs.length+' bát · còn '+left+'/'+cap+' suất cho '+hm+' bé ở nhà'+(cap<hm?' · <b style="color:var(--bad)">Thiếu bát ăn, mua thêm ở Cửa hàng</b>':'')+'</div>'+
    '<div class="fdbtns"><button class="fdgo '+(ready?'go':'')+'" '+(ready||!bs.length?'':'disabled')+' onclick="openFeed()">🍚 '+(!bs.length?'Chưa có bát ăn':ready?'Cho ăn':'Bát đổ lại được sau '+fmt(bowlNext(cur)-now()))+'</button><button onclick="toggleEdit()">✏️ Sắp xếp đồ</button></div></div>'+
+   (typeof wishLine==='function'?wishLine():'')+
    broken.map(i=>'<div class="card"><div class="g">😾 <b>'+FURN[i.fid].n+'</b> bị cào hỏng, mất hiệu ứng.</div><button class="sm" onclick="doRepair('+i.iid+')">🔧 Sửa '+repairCost(i)+' xu</button></div>').join('')+
    (cats.length?cats.map(catCard).join(''):'<div class="dim">Phòng này chưa có bé nào. Vào tab Mèo để chuyển bé sang.</div>')+
    '<div class="dim">Kéo để xem phòng; giữ Ctrl rồi lăn chuột, chụm 2 ngón hoặc bấm ＋ － để phóng to thu nhỏ. Chạm vào mèo để theo dõi và vuốt ve (mỗi bé 10 phút nhận xu một lần, bé càng nhiều sao càng nhiều xu), chạm chỗ trống để thôi theo dõi; chạm vào thẻ bên dưới để xem thông tin và chuyển phòng. 🍗 no · ⚡ năng lượng · 😊 độ vui.</div>';
@@ -1554,7 +1578,8 @@ const PANEL={
    '<div class="dim" style="margin-top:8px">Mỗi loại đồ chỉ tính hiệu ứng một lần. Độ vui từ nội thất trong một phòng tối đa +'+HAPPY_CAP+'; xu và tốc độ tính cho cả nhà.</div>';
  },
  cats(){
-  const rooms=ownedRooms().concat([ROOM.wait]),cnt=r=>catsIn(r.id).length,full=r=>cnt(r)>=r.cap,cap=r=>r.wait?'∞':r.cap;
+  // đếm mèo mỗi phòng một lần; ô chọn phòng trên thẻ chỉ có phòng hiện tại, đủ danh sách khi chạm vào (mgOpts) để 150 thẻ không phải dựng 2.700 dòng
+  const rooms=ownedRooms().concat([ROOM.wait]),N=mgCount(),cnt=r=>N[r.id]||0,full=r=>cnt(r)>=r.cap,cap=r=>r.wait?'∞':r.cap,opt=(r,on)=>mgOpt(r,on,N);
   const SORT={star:['Sao',(a,b)=>b.star-a.star],breed:['Giống',(a,b)=>SP[a.sp].n.localeCompare(SP[b.sp].n,'vi')],room:['Phòng',(a,b)=>ROOM[a.room].n.localeCompare(ROOM[b.room].n,'vi')],full:['Đói nhất',(a,b)=>a.full-b.full],hp:['Buồn nhất',(a,b)=>a.hp-b.hp]};
   const list=S.cats.filter(c=>mg.room==='all'||c.room===mg.room).sort(SORT[mg.sort][1]);
   return '<div class="dim" style="margin-bottom:6px">Chạm một ô phòng để lọc. Đổi phòng bằng ô chọn trên mỗi thẻ, hoặc kéo thẻ mèo thả vào ô phòng (trên máy tính).</div>'+
@@ -1563,7 +1588,7 @@ const PANEL={
    '<div class="row wrap" style="margin:8px 0"><b>Sắp xếp:</b>'+Object.keys(SORT).map(k=>'<button class="sm '+(mg.sort===k?'on':'')+'" onclick="mg.sort=\''+k+'\';renderPanel()">'+SORT[k][0]+'</button>').join('')+'</div>'+
    (list.length?list.map(c=>{const away=onTrip(c.uid);
      return '<div class="card'+(mg.multi&&mg.sel[c.uid]?' sel':'')+'" '+(mg.multi&&!away?'onclick="mgSel('+c.uid+')" ':'')+'draggable="'+(!away&&!mg.multi)+'" ondragstart="event.dataTransfer.setData(\'text\',\''+c.uid+'\')">'+(mg.multi?'<div style="font-size:24px">'+(away?'🎒':mg.sel[c.uid]?'☑':'☐')+'</div>':'')+'<div class="tap" onclick="'+(mg.multi?'':'openCat('+c.uid+')')+'">'+catTag(lk(c),1.5)+'</div><div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+kind(c)+'</small><br>'+stats(c)+'<div>'+coatTags(c)+c.traits.map(t=>tagOf(t)).join('')+'</div>'+
-       '<div class="row" style="margin-top:6px" onclick="event.stopPropagation()"><select style="flex:1" aria-label="Phòng của '+esc(c.name)+'" '+(away?'disabled':'')+' onchange="mgMove('+c.uid+',this.value)">'+rooms.map(r=>'<option value="'+r.id+'" '+(r.id===c.room?'selected':'')+' '+(r.id!==c.room&&full(r)?'disabled':'')+'>'+r.n+' · '+cnt(r)+'/'+cap(r)+(full(r)?' (đầy)':'')+'</option>').join('')+'</select>'+(away?'<small>đang viễn chinh</small>':'')+'</div></div></div>'}).join('')
+       '<div class="row" style="margin-top:6px" onclick="event.stopPropagation()"><select style="flex:1" aria-label="Phòng của '+esc(c.name)+'" '+(away?'disabled':'')+' onpointerdown="mgOpts(this)" onfocus="mgOpts(this)" onchange="mgMove('+c.uid+',this.value)">'+opt(ROOM[c.room],true)+'</select>'+(away?'<small>đang viễn chinh</small>':'')+'</div></div></div>'}).join('')
      :'<div class="dim">Không có bé nào ở '+ROOM[mg.room].n+'.</div>');
  },
  album(){

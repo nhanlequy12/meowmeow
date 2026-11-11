@@ -5,6 +5,8 @@
    - game.js gọi onAct(loại, số lượng) khi viễn chinh về, cho ăn, vuốt ve, quay gacha, mua đồ; file này gán onAct để cộng tiến độ.
    - ui.js gọi critStep(dt) mỗi khung khi đang ở tab Phòng, critDraw(g) lúc vẽ phòng, critHit(x, y) khi chạm vào phòng.
    - Trạng thái lưu ở S.q: {day, d:[nhiệm vụ ngày], all (đã nhận thưởng hoàn thành cả ngày), hour, h:[nhiệm vụ trong giờ], n (số khách đã bắt)}.
+   Điểm danh 7 ngày (S.ci, nằm đầu bảng Nhiệm vụ): {d: số ngày đã nhận trong vòng 7 ngày, last: ngày nhận gần nhất, n: tổng số ngày, st: chuỗi ngày liên tục, ask: ngày đã tự mở bảng}.
+   Bỏ lỡ một ngày thì vòng quay về Ngày 1. Mỗi ngày đầu tiên vào game, bảng Nhiệm vụ tự mở một lần để nhắc điểm danh.
    Chỉ chạy sau khi xong hướng dẫn tân thủ (S.tut.done). */
 
 /* ---------- nhiệm vụ ---------- */
@@ -35,7 +37,7 @@ function qAuto(list,rew){let c=0,t=0;(list||[]).forEach(x=>{if(x.p>=x.n&&!x.got)
 function qSync(){
   if(!qOn())return false;
   const first=!S.q,q=S.q||(S.q={n:0});let c=0,t=0;
-  if(first&&typeof toast==='function')setTimeout(()=>toast('Mỗi giờ và mỗi ngày đều có nhiệm vụ mới, bấm 📜 Nhiệm vụ trên cùng để xem. Ở tab Phòng, chạm vào khách lạ chạy qua để bắt.',{type:'level',title:'Mới: Nhiệm vụ và khách lạ',icon:'📜',ms:6000}),1500);
+  if(first&&typeof toast==='function'){const nf=()=>{if($('modal').style.display==='flex')return setTimeout(nf,2000);toast('Mỗi giờ và mỗi ngày đều có nhiệm vụ mới, bấm 📜 Nhiệm vụ trên cùng để xem. Ở tab Phòng, chạm vào khách lạ chạy qua để bắt.',{type:'level',title:'Mới: Nhiệm vụ và khách lạ',icon:'📜',ms:6000})};setTimeout(nf,1500)}
   if(q.day!==qDay()){
     const a=qAuto(q.d,q.rd||0);c+=a.c;t+=a.t;
     if(q.d&&q.d.length&&q.d.every(x=>x.got)&&!q.all){const b=qRewAll();c+=b.coins;t+=b.tickets}
@@ -45,7 +47,29 @@ function qSync(){
   if(c||t){S.coins+=c;S.tickets+=t;save();if(typeof toast==='function')toast('Thưởng nhiệm vụ đã xong mà chưa nhận được cộng tự động.',{type:'coin',title:'📜 Nhiệm vụ',coins:c,icon:'📜'})}
   return true;
 }
-const qReady=()=>!qOn()||!S.q?0:[...(S.q.h||[]),...(S.q.d||[])].filter(x=>x.p>=x.n&&!x.got).length+(S.q.d&&S.q.d.every(x=>x.got)&&!S.q.all?1:0);
+/* ---------- điểm danh 7 ngày ---------- */
+// thưởng theo ngày trong vòng (theo cấp, tối đa cấp 18); ngày 3 và 5 thêm 1 vé, ngày 7 thêm 3 vé
+const ciRew=i=>{const L=qLv();return [{c:r10(80+40*L)},{c:r10(100+50*L)},{c:r10(120+60*L),t:1},{c:r10(150+70*L)},{c:r10(180+80*L),t:1},{c:r10(220+100*L)},{c:r10(400+200*L),t:3}][i]};
+const ciYest=()=>{const d=qDate();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const ciS=()=>S.ci||(S.ci={d:0,last:'',n:0,st:0});
+const ciReady=()=>qOn()&&ciS().last!==qDay();
+// số ngày đã nhận trong vòng hiện tại (0 = chưa ngày nào; bỏ lỡ một ngày thì về 0)
+const ciDone=()=>{const c=ciS();return c.last===qDay()?(c.d||7):c.last===ciYest()?c.d:0};
+function ciClaim(){
+  if(!ciReady())return;const c=ciS(),i=ciDone(),r=ciRew(i);
+  c.st=c.last===ciYest()?(c.st||0)+1:1;c.d=(i+1)%7;c.last=qDay();c.n=(c.n||0)+1;
+  S.coins+=r.c;S.tickets+=r.t||0;addXp(5);onAct('checkin',1);save();
+  toast('Ngày '+(i+1)+' trong vòng 7 ngày'+(r.t?' · +'+r.t+' vé 🎟':'')+' · chuỗi '+c.st+' ngày liên tục',{type:'level',title:'📅 Điểm danh',coins:r.c,icon:'📅'});
+  openQuests();render();
+}
+function ciBox(){
+  const k=ciDone(),ready=ciReady();
+  return '<div class="qhd"><b>📅 Điểm danh 7 ngày</b> <small class="dim">· chuỗi '+(ciS().st||0)+' ngày'+(ready?' · bỏ lỡ một ngày là quay về Ngày 1':'')+'</small></div><div class="cig">'+
+    [0,1,2,3,4,5,6].map(i=>{const r=ciRew(i),st=i<k?' got':i===k&&ready?' now':'';
+      return '<div class="cid'+st+'"><small>Ngày '+(i+1)+'</small><b>'+(i<k?'✅':'🪙')+'</b><small>'+fmtN(r.c)+(r.t?'<br>+'+r.t+' 🎟':'')+'</small></div>'}).join('')+'</div>'+
+    (ready?'<button class="go" style="width:100%;margin:6px 0 2px" onclick="ciClaim()">📅 Điểm danh hôm nay</button>':'<div class="dim" style="margin:4px 2px">Đã điểm danh hôm nay. Mai quay lại nhé.</div>');
+}
+const qReady=()=>!qOn()||!S.q?0:[...(S.q.h||[]),...(S.q.d||[])].filter(x=>x.p>=x.n&&!x.got).length+(S.q.d&&S.q.d.every(x=>x.got)&&!S.q.all?1:0)+(ciReady()?1:0);
 onAct=(k,v)=>{
   if(!qSync())return;
   [['h','trong giờ'],['d','hôm nay']].forEach(([w,lb])=>(S.q[w]||[]).forEach(x=>{
@@ -68,7 +92,7 @@ function qRow(w,x,i,rew){
 }
 function openQuests(){
   if(!qSync())return;const q=S.q,all=q.d.every(x=>x.got),b=qRewAll();
-  modal('<h3>📜 Nhiệm vụ</h3>'+
+  modal('<h3>📜 Nhiệm vụ</h3>'+ciBox()+
     '<div class="qhd"><b>Trong giờ</b> <small class="dim">· đổi mới sau '+qLeft('h')+'</small></div>'+q.h.map((x,i)=>qRow('h',x,i,q.rh)).join('')+
     '<div class="qhd"><b>Hôm nay</b> <small class="dim">· đổi mới sau '+qLeft('d')+'</small></div>'+q.d.map((x,i)=>qRow('d',x,i,q.rd)).join('')+
     '<div class="card qrow'+(q.all?' qgot':'')+'"><div class="qic">🎁</div><div class="g"><b>Xong cả ba nhiệm vụ hôm nay</b><br><small>thưởng 🪙 '+fmtN(b.coins)+' + '+b.tickets+' 🎟</small></div>'+(q.all?'<span class="dim">✅ Đã nhận</span>':'<button class="sm'+(all?' on':'')+'" '+(all?'':'disabled')+' onclick="qClaim(\'all\')">'+(all?'Nhận':q.d.filter(x=>x.got).length+'/3')+'</button>')+'</div>'+
@@ -76,6 +100,8 @@ function openQuests(){
 }
 // nút Nhiệm vụ trên thanh trên cùng (thanh này được vẽ lại mỗi giây)
 {const rt=renderTop;renderTop=function(){rt.apply(this,arguments);if(!qSync())return;const n=qReady(),el=document.createElement('div');
+  // ngày mới, chưa điểm danh: tự mở bảng một lần khi không có hộp thoại, hoạt ảnh gacha hay hướng dẫn nào đang chạy
+  if(ciReady()&&ciS().ask!==qDay()&&$('modal').style.display!=='flex'&&!$('gz').classList.contains('on')&&!(typeof TUT!=='undefined'&&TUT.active())){S.ci.ask=qDay();setTimeout(()=>{if($('modal').style.display!=='flex')openQuests()},600)}
   el.className='chip qchip'+(n?' ready':'');el.setAttribute('onclick','openQuests()');el.innerHTML=emo('📜 <b>Nhiệm vụ</b>'+(n?' <span class="qbadge">'+n+'</span>':''));$('top').appendChild(el)}}
 
 /* ---------- khách lạ trong phòng ---------- */
