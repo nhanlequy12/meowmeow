@@ -1,3 +1,9 @@
 data/
 __pycache__/
 .claude/
+# file thử nghiệm của công cụ tạo sprite
+art/
+.forge/
+preview/*
+!preview/index.html
+logs/

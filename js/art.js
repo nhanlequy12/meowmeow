@@ -472,8 +472,13 @@ const P={
   sparks:['post',(b,s,c)=>{[[2,9],[3,10],[2,11],[33,22],[34,23],[33,24],[1,27],[2,28]].forEach(p=>b.set(p[0],p[1],H(c),'x'))}],
 };
 
-/* ---------- vẽ mèo: lưới 36x40, chân chạm hàng 38 ---------- */
-function cat(s,pose){
+/* ---------- mèo dựng trên khung Xoài: xem js/catkit.js ---------- */
+// thông số bước chân của ngoại hình s nếu CatKit dựng được, ngược lại null (game vẽ kiểu cũ)
+function sheetOf(s){return typeof CatKit!=='undefined'?CatKit.sheetOf(s):null}
+/* ---------- vẽ mèo kiểu cũ: lưới 36x40, chân chạm hàng 38 ---------- */
+// legacy=true: luôn vẽ kiểu cũ (dùng cho hoạt ảnh gacha, giữ nguyên như trước)
+function cat(s,pose,legacy){
+  if(!legacy&&typeof CatKit!=='undefined'){const kb=CatKit.render(s,pose);if(kb)return kb}
   if(sidePose(pose||''))return side(s,pose);
   const b=new Buf(36,40),col=colorer(s),M=x=>35-x,sym=f=>{f(x=>x);f(M)};
   const parts=Array.isArray(s.cos)?s.cos:[],oldP=parts.find(p=>p[0]==='old'),old=typeof s.cos==='string'?(COS[s.cos]||{}):oldP?(COS[oldP[1]]||{}):{}; // ['old', tên]: dùng bộ kiểu cũ trong COS rồi vẽ thêm các bộ phận khác
@@ -1011,5 +1016,6 @@ const IC=(()=>{
   };
 })();
 function icon(name){const b=new Buf(12,12);(IC[name]||IC.paw)(b);b.shade(.12);b.outline([96,62,46]);return b}
-return {cat,furn,icon,icons:Object.keys(IC),Buf,hex};
+return {cat,furn,sheetOf,icon,icons:Object.keys(IC),Buf,hex,
+  U:{Buf,Q,hex,H,mix,dk,lt,lum,OC,PINK,WH,hsh,vnoise,spotAt,bandC,blob,fleck,marble,nacreC,auraFx,spark}};
 })();

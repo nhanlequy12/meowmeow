@@ -20,12 +20,13 @@ function bufCanvas(b,f){
 }
 const CC={},CI={},FC={},FI={};
 const fk=k=>Math.max(1,Math.round(k/2)); // điểm ảnh mỗi ô gốc -> điểm ảnh mỗi ô mịn
-const catCv=(sp,pose,k)=>{const f=fk(k||BS),key=sp+'|'+(pose||'sit')+'|'+f;return CC[key]||(CC[key]=bufCanvas(Art.cat(look(sp),pose),f))};
+// old=1: vẽ kiểu cũ (không qua CatKit). Chỉ hoạt ảnh gacha dùng, để các cảnh intro giữ nguyên như trước
+const catCv=(sp,pose,k,old)=>{const f=fk(k||BS),key=sp+'|'+(pose||'sit')+'|'+f+(old?'|old':'');return CC[key]||(CC[key]=bufCanvas(Art.cat(look(sp),pose,old),f))};
 const furnCv=(id,v,k)=>{const f=fk(k||BS),key=id+'|'+(v||'')+'|'+f;return FC[key]||(FC[key]=bufCanvas(Art.furn(id,v),f))};
 // ảnh trong giao diện: phóng đúng bội số nguyên rồi hiển thị 1:1 với điểm ảnh màn hình
 const kk=k=>2*fk(k*DPR());
-const catSrc=(sp,k)=>{const n=kk(k),key=sp+'|'+n;return CI[key]||(CI[key]=catCv(sp,'sit',n).toDataURL())};
-const catTag=(sp,k)=>{const n=kk(k),d=DPR();return '<img class="px'+(sp.indexOf('~r_')>0||(COATS[sp.split('~')[1]]||{}).form?' rareglow':'')+'" width="'+36*n/d+'" height="'+40*n/d+'" src="'+catSrc(sp,k)+'">'};
+const catSrc=(sp,k,old)=>{const n=kk(k),key=sp+'|'+n+(old?'|old':'');return CI[key]||(CI[key]=catCv(sp,'sit',n,old).toDataURL())};
+const catTag=(sp,k,old)=>{const n=kk(k),d=DPR();return '<img class="px'+(sp.indexOf('~r_')>0||(COATS[sp.split('~')[1]]||{}).form?' rareglow':'')+'" width="'+36*n/d+'" height="'+40*n/d+'" src="'+catSrc(sp,k,old)+'">'};
 function furnTag(id,v,mw,mh){
   const d=DPR(),sz=id==='gift'?[28,28]:[FURN[id].w,FURN[id].h],fit=Math.min((mw||48)*d/sz[0],(mh||40)*d/sz[1]),n=2*Math.max(1,Math.floor(fit/2)),sh=Math.min(n,Math.max(1,Math.floor(fit)));
   const key=id+'|'+(v||'')+'|'+n,src=FI[key]||(FI[key]=furnCv(id,v,n).toDataURL());
@@ -457,7 +458,9 @@ function choose(e){
   a+=.12; if(r<a){e.state='idle';e.t=rnd(1.5,4);return}
   const p=freeSpot(e);e.tx=p.x;e.ty=p.y;e.state='walk';e.pre=.2;
 }
-const idlePose=e=>e.wt%4.3<.13?'sitb':e.wt%7.1<.45?'sitt':'sit'; // ngồi yên vẫn chớp mắt và vẫy đuôi
+// ngồi yên vẫn chớp mắt và vẫy đuôi, vào lúc ngẫu nhiên (mỗi bé một nhịp riêng) chứ không theo chu kỳ cố định
+const rnd01=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233)*43758.5453;return v-Math.floor(v)};
+const idlePose=e=>{const s=Math.floor(e.wt/.7),s2=Math.floor(e.wt/1.3);return rnd01(s,e.uid)<.16&&e.wt-s*.7<.14?'sitb':rnd01(s2,e.uid+7)<.12&&e.wt-s2*1.3<.45?'sitt':'sit'};
 const JP=.36,JL=.26; // thời gian thu mình lấy đà và khựng lại khi tiếp đất
 const usePos=(it)=>{const u=FURN[it.fid].use;return {x:it.x+(it.flip?-1:1)*u.dx,y:it.y+u.dy}};
 function arrive(e){
@@ -542,10 +545,11 @@ function entPos(e){
   }
   if(e.state==='bye')return {x:e.x,y:e.y-Math.abs(Math.sin(e.wt*9))*3,gy:e.y,sy:e.y,pose:'sitt'};
   if(e.state==='sig'){const c5=entCat(e),sg=c5&&S5[c5.sp];if(sg){const k=1-clamp(e.t/sg.dur,0,1);return {x:e.x,y:e.y-(sg.hover?sg.hover(k):0),gy:sg.hover?e.y:0,sy:e.y,pose:typeof sg.pose==='function'?sg.pose(k):sg.pose,look:typeof sg.look==='function'?sg.look(k,e):sg.look,k,sg}}}
-  const cc=entCat(e),lo=cc&&SP[cc.sp].short,moving=e.state==='walk'||e.state==='run';
+  const cc=entCat(e),lo=cc&&SP[cc.sp].short,moving=e.state==='walk'||e.state==='run',sh=cc&&Art.sheetOf(look((e.fm&&e.fm.key)||lk(cc)));
   // một chu kỳ bước đi được đúng 10 ô (chân ngắn: 6 ô) nên bàn chân không trượt trên sàn
   // đi 12 khung và chạy 8 khung mỗi chu kỳ, tính theo quãng đường nên chân khớp với sàn ở mọi tốc độ và mọi máy
-  const pose=(moving&&e.pre>0)||(e.post>0&&(e.state==='idle'||e.state==='use'))?'stand':e.state==='nap'?'sleep'+(Math.floor(e.wt*.8)%2):e.state==='groom'?'groom'+Math.floor(e.wt*5)%4
+  const pose=(moving&&e.pre>0)||(e.post>0&&(e.state==='idle'||e.state==='use'))?'stand':e.state==='nap'?(sh?'sleep'+Math.floor(e.wt*1.6)%4+'s':'sleep'+(Math.floor(e.wt*.8)%2)):e.state==='groom'?(sh?'groom'+Math.floor(e.wt*7.5)%6+'s':'groom'+Math.floor(e.wt*5)%4) // sprite vẽ sẵn: đủ 4 khung ngủ và 6 khung liếm lông, tổng thời lượng một vòng như cũ
+    :moving&&sh?e.state+Math.floor((e.wd||0)/sh.stride[e.state]*sh.n[e.state])%sh.n[e.state]+'s' // mèo dùng sprite vẽ sẵn: quãng đường một vòng bước như mèo cũ (đi 10 ô, chạy 19 ô) nên chân chạm đất không trượt
     :e.state==='walk'?'walk'+Math.floor((e.wd||0)/(lo?6:10)*12)%12:e.state==='run'?'run'+Math.floor((e.wd||0)/(lo?13:19)*8)%8:idlePose(e);
   if(cc&&cc.sp==='v_goku'&&moving&&!(e.pre>0))return {x:e.x,y:e.y-9+Math.sin(e.wt*5)*.8,gy:e.y,sy:e.y,pose:'stand',cloud:1}; // Goku đứng trên Cân Đẩu Vân lướt đi
   const md=e.fm&&e.fm.md;
@@ -856,11 +860,11 @@ const stars=n=>{for(let k=0;k<n;k++)part({x:rnd(0,innerWidth),y:rnd(0,innerHeigh
 function coinRain(){rain(['#f2c230','#f2c230','#fff3b0'],5)}
 const every=(T,t0,t1,step,f)=>{for(let t=t0;t<t1;t+=step)T(t,f)};
 /* --- dựng cảnh cho intro: sprite của bé ở tư thế bất kỳ, chữ lớn --- */
-const sprSrc=(key,pose,k)=>{const n=kk(k),id=key+'|'+pose+'|'+n;return CI[id]||(CI[id]=catCv(key,pose,n).toDataURL())};
+const sprSrc=(key,pose,k)=>{const n=kk(k),id=key+'|'+pose+'|'+n+'|old';return CI[id]||(CI[id]=catCv(key,pose,n,1).toDataURL())};
 const pct=v=>typeof v==='number'?v+'%':v;
 // đặt sprite sao cho tâm nằm ở (x, y) của màn hình (số là %, chuỗi là giá trị CSS). o.flip lật ngang, o.key đổi ngoại hình, o.img là CSS thêm cho ảnh
 function fxSpr(pose,k,x,y,css,o){
-  o=o||{};const key=o.key||lk(gz.cat),n=kk(k),d=DPR(),cv=catCv(key,pose,n),w=cv.lw*n/d,h=cv.lh*n/d;
+  o=o||{};const key=o.key||lk(gz.cat),n=kk(k),d=DPR(),cv=catCv(key,pose,n,1),w=cv.lw*n/d,h=cv.lh*n/d;
   return fxEl('left:'+pct(x)+';top:'+pct(y)+';width:'+w+'px;height:'+h+'px;margin:'+(-h/2)+'px 0 0 '+(-w/2)+'px;'+(css||''),'<img class="px" src="'+sprSrc(key,pose,k)+'" style="width:100%;height:100%;display:block;'+(o.flip?'transform:scaleX(-1);':'')+(o.img||'')+'">');
 }
 const fxTxt=(txt,x,y,css,anim)=>fxEl('left:'+pct(x)+';top:'+pct(y)+';transform:translate(-50%,-50%);white-space:nowrap','<div style="font-weight:900;line-height:1;'+(css||'')+(anim?';animation:'+anim:'')+'">'+txt+'</div>');
@@ -976,7 +980,7 @@ const INTRO={
     fxTint('linear-gradient(#0b1a4a,#1d2f7a)');
     for(let i=0;i<16;i++)fxTxt('✦',rnd(4,96),rnd(6,94),'color:'+pick(['#fff','#ffe07a','#9cd0ff'])+';font-size:'+Math.round(rnd(12,26))+'px','twk '+rnd(.3,.6).toFixed(2)+'s '+rnd(0,.4).toFixed(2)+'s ease-in-out infinite alternate');
     fxEl('left:0;bottom:12%;white-space:nowrap;font-size:min(7vw,40px);font-weight:900;letter-spacing:3px;color:#ffd6f0;text-shadow:3px 3px 0 #e2489a;animation:marq 2.7s linear both','NYA NYA NYA NYA NYA NYA NYA NYA~');
-    const f=$('gfly');f.innerHTML='<div class="fl" style="animation-duration:2.4s"><div class="rb"></div><img class="px" src="'+catSrc(lk(gz.cat),3)+'"></div>';f.className='';void f.offsetWidth;f.className='go';
+    const f=$('gfly');f.innerHTML='<div class="fl" style="animation-duration:2.4s"><div class="rb"></div><img class="px" src="'+catSrc(lk(gz.cat),3,1)+'"></div>';f.className='';void f.offsetWidth;f.className='go';
     seq([659,784,1047,784,659,784,1175,988,1047,1319,1175,988,1047,784,659,523,587,784,988,784,1047,1319,1568,2093,1568,2093,2637],.085,.08);
     every(T,0,2600,100,()=>{for(let k=0;k<4;k++)part({x:rnd(0,innerWidth),y:rnd(0,innerHeight),vx:-rnd(3,7),life:rnd(20,40),sz:Math.random()<.5?4:8})});
   }},
@@ -1268,7 +1272,7 @@ function gReveal(skipped){
   const ct=coatOf(c),row=(k,v)=>'<div class="k">'+k+'</div><div>'+v+'</div>',
     info=(ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+(c.replay?'':row('Tuổi',ageTxt(c)));
   rev.innerHTML='<div class="pop gv">'+(st===5?'<div class="legend">HUYỀN THOẠI</div>'+(ct&&ct.form?'<div class="legend" style="font-size:17px;letter-spacing:3px;color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">✨ TRANG PHỤC HIẾM ✨</div>':''):isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
-    '<div class="gv-pic">'+catTag(big(c),innerHeight<860&&innerWidth<520?3:4)+'</div><div class="gv-stars">'+stars+'</div>'+
+    '<div class="gv-pic">'+catTag(big(c),innerHeight<860&&innerWidth<520?3:4,1)+'</div><div class="gv-stars">'+stars+'</div>'+
     '<div class="gv-rank" style="color:'+col+'">'+STAR[st].n+(c.isNew?' · <span style="color:var(--good)">MỚI!</span>':'')+'</div>'+
     '<h2 class="gv-name">'+sp.n+' '+sexIc(c)+'</h2>'+(sp.q&&st===5?'<div class="quote">“'+sp.q+'”</div>':'')+
     '<div class="cd-sec">'+(info?'<div class="cd-grid">'+info+'</div>':'')+'<div class="cd-desc'+(info?'':' solo')+'">'+sp.d+'</div></div>'+

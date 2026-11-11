@@ -460,7 +460,7 @@ function look(key){
   const [id,ct]=key.split('~'),sp=BREEDS.concat(VARIANTS).find(s=>s.id===id);
   if(!sp.coats)return LOOKS[key]=sp;
   const coat=ALLCOAT[ct]||COATS[sp.coats[0]];
-  const L=Object.assign({},sp,{c2:undefined,c3:undefined,w:0,mit:0,pat:'solid',eye2:undefined},coat,{eye:coat.eye||sp.eye,c2:coat.c2||coat.c,rare:RARE[ct]||coat.form?1:0});
+  const L=Object.assign({},sp,{c2:undefined,c3:undefined,w:0,mit:0,pat:'solid',eye2:undefined},coat,{eye:coat.eye||sp.eye,c2:coat.c2||coat.c,rare:RARE[ct]||coat.form?1:0,bid:sp.id,ct:ALLCOAT[ct]?ct:sp.coats[0]}); // bid: id giống gốc (màu hiếm ghi đè id); ct: id màu lông / trang phục đang mang
   if(sp.odd&&!coat.eye2){L.eye=sp.odd[0];L.eye2=sp.odd[1]} // giống luôn có hai mắt hai màu (Khao Manee), kể cả khi mang màu lông hiếm
   return LOOKS[key]=L;
 }
