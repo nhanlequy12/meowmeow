@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mèo Xu: xem trước mọi mèo</title>
+<style>
+:root{--bg:#e2d5bf;--card:#f4ead8;--ink:#4e3026;--dim:#8a6a55;--line:#c9b596;--ok:#2f8a55;--bad:#c0392b;--floor:#a07d58}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:2px solid var(--line);padding:8px 16px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+header h1{font-size:16px;margin:0 8px 0 0}
+header label{display:flex;gap:5px;align-items:center;white-space:nowrap}
+button,select,input[type=search]{font:inherit;color:inherit;background:#fffaf0;border:2px solid var(--line);border-radius:8px;padding:4px 9px}
+button.on{background:var(--ink);color:#fffaf0;border-color:var(--ink)}
+#sum{margin-left:auto;color:var(--dim)}
+main{padding:10px 16px 60px}
+.row{display:flex;gap:10px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:10px;margin:6px 0;padding:6px 10px;overflow-x:auto}
+.row.ref{border-color:var(--ink);position:sticky;top:52px;z-index:4}
+.meta{flex:0 0 190px;min-width:0}
+.meta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta small{color:var(--dim);display:block}
+.meta select{max-width:100%;margin-top:3px;padding:1px 4px;font-size:12px}
+.tag{display:inline-block;font-size:11px;border-radius:6px;padding:0 6px;color:#fff;background:var(--ok)}
+.tag.old{background:var(--bad)}
+.cell{flex:0 0 auto;text-align:center;font-size:11px;color:var(--dim)}
+.cell canvas{display:block;background:var(--floor);border-radius:6px;image-rendering:pixelated}
+.flip .side canvas{transform:scaleX(-1)}
+.hide{display:none}
+h2{font-size:15px;margin:18px 0 4px}
+</style></head><body>
+<header>
+  <h1>Mèo Xu: mọi mèo trên khung Xoài</h1>
+  <label>Hướng <button id="dir">quay trái (như trong game)</button></label>
+  <label><input type="checkbox" id="rare"> Màu hiếm / trang phục hiếm</label>
+  <label>Màu hiếm cho giống thường <select id="rareSel"></select></label>
+  <label>Cỡ <select id="zoom"><option value="1">1×</option><option value="2">2×</option><option value="3">3×</option></select></label>
+  <label>Tốc độ <select id="spd"><option value="1" selected>trong game</option><option value="0.5">chậm 2 lần</option><option value="0.25">chậm 4 lần</option></select></label>
+  <label><input type="checkbox" id="onlyOld"> Chỉ mèo chưa đạt</label>
+  <input type="search" id="q" placeholder="lọc theo tên hoặc id">
+  <span id="sum"></span>
+</header>
+<main id="main"></main>
+<script src="../js/data.js"></script>
+<script src="../js/sprites.js"></script>
+<script src="../js/art.js"></script>
+<script src="../js/catkit.js"></script>
+<!-- cats:begin -->
+<script src="../js/cats/core.js"></script>
+<!-- cats:end -->
+<script>
+"use strict";
+(()=>{
+/* Hoạt ảnh và thời lượng đúng như trong game (docs/cat-sprite-spec.md mục 4), mèo trưởng thành ở tốc độ gốc. */
+const TL=short=>({
+  sit:[['sit',1500],['sitb',140],['sit',1500],['sitt',450]],
+  sleep:[0,1,2,3].map(i=>['sleep'+i+'s',625]),
+  groom:[0,1,2,3,4,5].map(i=>['groom'+i+'s',133]),
+  stand:[['stand',1000]],
+  walk:[0,1,2,3,4,5,6,7].map(i=>['walk'+i+'s',short?75:96]),
+  run:[0,1,2,3,4,5,6,7].map(i=>['run'+i+'s',short?34:41]),
+  jump:[['crouch0',90],['crouch1',90],['crouch2',90],['crouch3',90],['leap0',150],['leap1',150],['leap2',150],['leap3',150],['land0',130],['land1',130],['stand',400]]});
+const NAMES={sit:'ngồi',sleep:'ngủ',groom:'liếm lông',stand:'đứng',walk:'đi',run:'chạy',jump:'nhảy'},ANIMS=Object.keys(NAMES),SIDE=['stand','walk','run','jump'];
+const $=id=>document.getElementById(id),main=$('main');
+const IMG={};
+function img(key,pose){const id=key+'|'+pose;if(IMG[id])return IMG[id];const b=Art.cat(look(key),pose),c=document.createElement('canvas');c.width=b.W;c.height=b.H;c.getContext('2d').putImageData(new ImageData(b.rgba(),b.W,b.H),0,0);return IMG[id]=c}
+RARES.forEach(r=>$('rareSel').add(new Option(r.n,r.id)));
+const rows=[];
+function keyOf(r){const s=r.sp;if($('rare').checked){if(s.coats){const f=s.coats.find(c=>COATS[c].form);if(f)return s.id+'~'+f}if(!s.noRare&&!s.g)return s.id+'~'+$('rareSel').value}return r.coat?s.id+'~'+r.coat:s.id+(s.coats?'~'+s.coats[0]:'')}
+function mkRow(sp,ref){
+  const el=document.createElement('div');el.className='row'+(ref?' ref':'');
+  const meta=document.createElement('div');meta.className='meta';el.appendChild(meta);
+  const r={sp,el,meta,cv:{},coat:null,ref,vis:false};
+  ANIMS.forEach(a=>{const d=document.createElement('div');d.className='cell'+(SIDE.includes(a)?' side':'');const c=document.createElement('canvas');c.width=SIDE.includes(a)?100:72;c.height=80;d.appendChild(c);d.appendChild(document.createTextNode(NAMES[a]));el.appendChild(d);r.cv[a]=c});
+  rows.push(r);return r}
+function label(r){
+  const s=r.sp,key=keyOf(r),L=look(key),miss=CatKit.missing(L);r.key=key;r.miss=miss;r.tl=TL(!!L.short);
+  r.meta.innerHTML='<b>'+(r.ref?'Xoài (chuẩn so sánh)':s.n)+'</b><small>'+key+' · '+s.r+'★</small><span class="tag'+(miss.length?' old':'')+'" title="'+miss.join(', ')+'">'+(miss.length?'kiểu cũ: thiếu '+miss.join(', '):'khung Xoài')+'</span>';
+  if(s.coats&&!r.ref){const sel=document.createElement('select');s.coats.forEach(c=>sel.add(new Option(COATS[c].n,c)));sel.value=r.coat||s.coats[0];sel.onchange=()=>{r.coat=sel.value;label(r);filter()};r.meta.appendChild(document.createElement('br'));r.meta.appendChild(sel)}
+}
+const io=new IntersectionObserver(es=>es.forEach(e=>{const r=rows.find(x=>x.el===e.target);if(r)r.vis=e.isIntersecting}),{rootMargin:'200px'});
+function build(){
+  const ref=mkRow(BREEDS.find(b=>b.id==='venxam'),true);main.appendChild(ref.el);
+  [['Giống mèo',BREEDS],['Mèo trang phục và đặc biệt',VARIANTS]].forEach(([t,list])=>{const h=document.createElement('h2');h.textContent=t+' ('+list.length+')';main.appendChild(h);list.forEach(sp=>{const r=mkRow(sp);main.appendChild(r.el)})});
+  rows.forEach(r=>{label(r);io.observe(r.el)});zoom();filter()}
+function zoom(){const z=+$('zoom').value;rows.forEach(r=>ANIMS.forEach(a=>{const c=r.cv[a];c.style.width=c.width*z+'px';c.style.height=80*z+'px'}))}
+function filter(){const q=$('q').value.trim().toLowerCase(),oo=$('onlyOld').checked;let ok=0,n=0;
+  rows.forEach(r=>{if(r.ref)return;n++;if(!r.miss.length)ok++;const show=(!q||(r.sp.n+' '+r.sp.id).toLowerCase().includes(q))&&(!oo||r.miss.length);r.el.classList.toggle('hide',!show)});
+  $('sum').textContent=ok+' / '+n+' mèo đang dựng trên khung Xoài (ở màu đang chọn)'}
+$('dir').onclick=()=>{const f=document.body.classList.toggle('flip');$('dir').textContent=f?'quay phải':'quay trái (như trong game)'};
+$('rare').onchange=$('rareSel').onchange=()=>{rows.forEach(label);filter()};
+$('zoom').onchange=zoom;$('q').oninput=$('onlyOld').onchange=filter;
+function tick(t){const sp=+$('spd').value;
+  rows.forEach(r=>{if(!r.vis||r.el.classList.contains('hide'))return;
+    ANIMS.forEach(a=>{const tl=r.tl[a],tot=tl.reduce((s,f)=>s+f[1],0);let x=(t*sp)%tot,k=0;while(x>=tl[k][1]){x-=tl[k][1];k++}
+      const c=r.cv[a],id=r.key+'|'+tl[k][0];if(c._id===id)return;c._id=id;
+      try{const g=c.getContext('2d');g.clearRect(0,0,c.width,80);g.drawImage(img(r.key,tl[k][0]),0,0)}catch(e){c._id='err'}})});
+  requestAnimationFrame(tick)}
+$('zoom').value=innerWidth>=1560?'2':'1';build();requestAnimationFrame(tick);
+})();
+</script>
+</body></html>
