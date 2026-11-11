@@ -135,7 +135,7 @@ function tutPickFacts(tspStarter) {
 }
 
 function tutPickProfile(tspStarter) {
-  return '<div class="tsp-name"><b>' + esc(tspStarter.name) + '</b>' + starsOf(2) + '</div>' +
+  return '<div class="tsp-name"><b>' + esc(tspStarter.name) + '</b>' + starsOf(1) + '</div>' +
     '<div class="tsp-role">' + esc(tspStarter.role) + '</div><div class="tsp-style">' + esc(tspStarter.style) + '</div>';
 }
 

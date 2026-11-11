@@ -325,6 +325,7 @@ function gachaRoll(useTicket,opt){
   if(S.pity>=PITY&&star<4)star=4;
   // opt.min (lượt gacha đầu của hướng dẫn tân thủ): dưới mức này thì rút lại trong các bậc từ min trở lên, giữ đúng tỉ lệ giữa các bậc đó
   if(opt.min&&star<opt.min){let t=0;for(let s=opt.min;s<=5;s++)t+=STAR[s].p;let r2=Math.random()*t;star=opt.min;for(let s=5;s>=opt.min;s--){r2-=STAR[s].p;if(r2<0){star=s;break}}}
+  if(opt.max&&star>opt.max)star=opt.max;
   if(opt.star)star=opt.star;
   if(star>=4)S.pity=0;
   let c;
