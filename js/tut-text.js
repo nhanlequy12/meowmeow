@@ -242,6 +242,22 @@ const TUT_TEXT={
         'Có 111 thành tựu, chia bốn mức: Dễ, Vừa, Khó, Rất khó. Mỗi thành tựu đạt được thưởng ngay 30 xu, không cần bấm nhận.',
         'Xem ở tab 🏆 Thành tựu trên thanh điều hướng: mỗi dòng ghi việc cần làm, mức khó và thanh tiến độ.',
         'Thành tựu tính theo số lần viễn chinh, cho ăn, vuốt ve, quay gacha, bắt khách lạ, làm nhiệm vụ, và theo những gì bạn đang có: cấp, số mèo, giống đã gặp, phòng, nội thất, xu.']},
+      {id:'weather',ic:'🌦',t:'Thời tiết và mùa',p:[
+        'Chip thời tiết trên cùng cho biết trời, nhiệt độ và mùa; bấm vào để xem dự báo các đợt tới. Thời tiết đổi mỗi 5 giờ (đợt cuối ngày 4 giờ), mỗi mùa kéo dài một ngày (xuân, hạ, thu, đông), và giống nhau với mọi người chơi cùng máy chủ.',
+        'Nắng đẹp, lý tưởng thì mèo vui; nắng nóng làm mèo mệt và khát; mưa, tuyết làm ướt và lạnh mèo ở phòng ngoài trời; mưa giông ồn ào; gió mạnh khó chịu; sương mù làm viễn chinh dễ lạc. Sau một đợt xấu thì trời thường đẹp trở lại, hiếm khi xấu liên tục. Thỉnh thoảng có thời tiết cực đoan.',
+        'Trời sắp xấu thì game báo trước (chip có dấu ⚠). Lắp Trạm dự báo thời tiết để xem 6 đợt tới và được báo sớm hơn. Phần lớn các phòng có cửa sổ nhìn ra ngoài (trừ tầng hầm và các phòng vốn ở ngoài trời): trời sáng tối theo giờ, mây, mưa, tuyết, sấm, cây đổi màu theo mùa.']},
+      {id:'climate',ic:'🌡',t:'Khí hậu phòng và thiết bị',p:[
+        'Mỗi phòng có nhiệt độ, độ ẩm và độ thoải mái riêng (dòng 🌡 dưới nút Cho ăn, bấm vào để xem chi tiết). Ban công, sân vườn, sân thượng, hồ bơi chịu thời tiết mạnh nhất; phòng ngủ, thư viện, phòng hoàng gia kín đáo nhất.',
+        'Cửa hàng có thêm các mục Giữ ấm, Làm mát, Chống thời tiết và Tiện nghi: máy sưởi, quạt, điều hòa, rèm, mái che, lều trú mưa, máy sấy lông, máy tạo tiếng ồn trắng… Mỗi món ghi rõ độ hiếm, phòng dùng được và số món cùng loại tối đa có tác dụng.',
+        'Mùa đông phòng trong nhà vẫn lạnh (khoảng 11–15°C, ấm hơn ngoài trời nhiều) nên cần sưởi. Máy sưởi, quạt thường chạy liên tục khi bật (chạm vào món trong phòng hoặc bấm dòng 🌡 để bật tắt). Loại giá rẻ chạy pin (máy sưởi, đèn sưởi, quạt tích điện) yếu hơn nhiều; bật liên tục 12 giờ thì tự ngắt, sạc 1 giờ rồi chạy lại; loại cao cấp và Bộ điều chỉnh nhiệt độ thì tự bật khi cần. Chăn, thảm, giường sưởi hoặc làm mát là ổ ngủ chỉnh nhiệt riêng cho bé nằm trên.']},
+      {id:'health',ic:'❤️',t:'Sức khỏe, nước uống và trạng thái',p:[
+        'Mèo có thêm Sức khỏe ❤️, Nước uống 💧 và Độ thoải mái. Mỗi phòng được tặng một bát nước; bấm Đổ nước (miễn phí) để đổ đầy, mèo khát tự ra uống. Máy lọc nước tự đổ đầy.',
+        'Trạng thái tạm thời: Lạnh 🥶, Nóng quá 🥵, Ướt 💦, Kiệt sức 😵, Ốm 🤒, Khát 💧, Thoải mái 😌, Ngủ ngon 🌙. Màn chi tiết của bé ghi rõ lý do, cách chữa và thời gian còn lại; vật phẩm như thuốc chống cảm, súp nóng dùng được ngay ở đó.',
+        'Lúc bạn vắng, thời tiết không làm mèo tụt quá sâu và không làm mèo bị ốm mới.']},
+      {id:'supply',ic:'🎒',t:'Viễn chinh và vật phẩm sinh tồn',p:[
+        'Trước khi đi, màn chọn mèo cho biết thời tiết ở điểm đến, nhiệt độ, mức nguy hiểm, thời tiết từng chặng và tỉ lệ thành công của từng bé. Rừng núi lạnh hơn, đồi cát nóng hơn thành phố.',
+        'Thời tiết xấu có thể gây sự cố nhỏ (lạnh, nóng, ướt, lạc đường) hoặc buộc rút lui sớm: bé vẫn về nhà an toàn và vẫn có một phần phần thưởng. Thời tiết lý tưởng được thưởng thêm. Xem lại ở Nhật ký viễn chinh cuối tab Viễn chinh.',
+        'Mua vật phẩm sinh tồn ở Cửa hàng, mục 🎒 Sinh tồn, rồi chọn mang theo (tối đa 4 loại). Loại dùng khi xuất phát bị trừ lúc đi; loại tự dùng khi cần (thuốc, sơ cứu, cứu hộ, thanh năng lượng) chỉ bị trừ khi thật sự dùng.']},
       {id:'shop',ic:'🛋',t:'Cửa hàng và nội thất',p:[
         'Có 17 phòng; phòng sau đắt hơn nhưng chứa nhiều mèo hơn và có hiệu ứng riêng như hồi năng lượng, thêm vui, thêm xu.',
         'Nội thất chia nhiều mục. Mỗi loại đồ chỉ tính hiệu ứng một lần; độ vui từ nội thất trong một phòng tối đa +35. Xu và tốc độ tính cho cả nhà.',

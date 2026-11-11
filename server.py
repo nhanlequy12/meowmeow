@@ -29,6 +29,7 @@ DATA = os.environ.get('MEOXU_DATA') or os.path.join(ROOT, 'data')
 PDIR = os.path.join(DATA, 'players')
 KEYF = os.path.join(DATA, 'admin_key.txt')
 VAPF = os.path.join(DATA, 'vapid.json')
+WXF = os.path.join(DATA, 'wx_seed.txt')   # hạt giống thời tiết chung của nhóm (tự sinh lần đầu)
 LOCK = threading.Lock()
 ID_RE = re.compile(r'^[0-9a-f]{12}$')
 MAX_BODY = 4 * 1024 * 1024
@@ -87,7 +88,7 @@ RATE = Rate()
 
 class Judge:
     """Trọng tài tools/guard.js chạy nền bằng Node; tự khởi động lại khi mã game hoặc trọng tài đổi."""
-    FILES = ('js/data.js', 'js/game.js', 'tools/guard.js')
+    FILES = ('js/data.js', 'js/wx-data.js', 'js/game.js', 'tools/guard.js')
 
     def __init__(self):
         self.node = shutil.which('node')
@@ -518,8 +519,8 @@ class H(SimpleHTTPRequestHandler):
 
     # ---- API ----
     def api_get(self, ep, q):
-        if ep == 'ping':
-            return self.send_json({'ok': 1, 'app': 'meoxu'})
+        if ep == 'ping':                     # kèm hạt giống thời tiết và giờ máy chủ: mọi người chơi cùng một trời
+            return self.send_json({'ok': 1, 'app': 'meoxu', 'wx': {'seed': self.server.wxseed, 't': int(time.time() * 1000)}})
         if ep == 'push/key':                # khóa công khai để trình duyệt đăng ký nhận thông báo đẩy
             return self.send_json({'ok': 1, 'key': self.server.vapid['pub']})
         if not ep.startswith('admin/'):
@@ -758,6 +759,11 @@ def main():
     host = sys.argv[2] if len(sys.argv) > 2 else '0.0.0.0'
     srv = ThreadingHTTPServer((host, port), H)
     srv.akey = admin_key()
+    if not os.path.exists(WXF):
+        with open(WXF, 'w', encoding='utf-8') as f:
+            f.write(str(secrets.randbits(31)))
+    with open(WXF, encoding='utf-8') as f:
+        srv.wxseed = int(f.read().strip() or 1)
     srv.vapid = vapid()
     for p in pall():                                      # dựng lại bảng tra thông báo đẩy từ các hồ sơ đã lưu
         for e in p.get('subs', []):

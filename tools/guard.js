@@ -14,8 +14,8 @@
 const fs=require('fs'),path=require('path'),readline=require('readline');
 const ROOT=path.join(__dirname,'..');
 globalThis.localStorage={getItem(){return null},setItem(){},removeItem(){}};
-const src=['js/data.js','js/game.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n;\n')+
-  '\n;globalThis.G={getS:()=>S,setS:v=>{S=v},gachaCore,prng,releaseGift,SP,FURN,ROOM,STAR,TRAITS,ALLCOAT,RARE,GACHA_COST,TICKET_COST,MAX_LV,PITY};';
+const src=['js/data.js','js/wx-data.js','js/game.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n;\n')+
+  '\n;globalThis.G={getS:()=>S,setS:v=>{S=v},gachaCore,prng,releaseGift,SP,FURN,ROOM,STAR,TRAITS,ALLCOAT,RARE,GACHA_COST,TICKET_COST,MAX_LV,PITY,SUP};';
 (0,eval)(src);
 const {SP,FURN,ROOM,TRAITS,ALLCOAT,GACHA_COST,TICKET_COST,MAX_LV,PITY}=G;
 
@@ -33,6 +33,9 @@ function value(sv){
   let v=sv.coins+TICKET_COST*sv.tickets+GACHA_COST*sv.cats.length;
   sv.items.forEach(i=>{v+=FURN[i.fid].price});
   for(const r in sv.rooms)v+=ROOM[r].price||0;
+  const sup=(id,q)=>{const s=G.SUP[id];if(s&&q>0)v+=s.price*q};               // vật phẩm sinh tồn trong túi đồ và đang mang theo trong chuyến đi
+  Object.entries(sv.inv||{}).forEach(([id,q])=>sup(id,+q||0));
+  sv.trips.forEach(p=>{if(p&&p.kit)Object.entries(p.kit).forEach(([id,q])=>sup(id,+q||0))});
   return v;
 }
 // lỗi cấu trúc: trả lý do, hoặc '' nếu ổn
@@ -52,10 +55,12 @@ function bad(sv){
     if(!Array.isArray(c.traits)||c.traits.length>6||c.traits.some(t=>!TRAITS[t]))return 'Thuộc tính không hợp lệ';
     if(c.coat!=null&&!ALLCOAT[c.coat])return 'Màu lông không có trong game';
     if(!num(c.full,0,100.5)||!num(c.en,0,100.5)||!num(c.hp,0,100.5))return 'Chỉ số mèo không hợp lệ';
+    if((c.he!=null&&!num(c.he,0,100.5))||(c.wa!=null&&!num(c.wa,0,100.5))||(c.cf!=null&&!num(c.cf,0,100.5)))return 'Chỉ số sức khỏe, nước, thoải mái không hợp lệ';
   }
   const iid=new Set();
   for(const i of sv.items){if(!i||!FURN[i.fid]||iid.has(i.iid))return 'Nội thất không hợp lệ';iid.add(i.iid)}
   for(const r in sv.rooms)if(!ROOM[r])return 'Phòng không có trong game';
+  if(sv.inv!=null&&(typeof sv.inv!=='object'||Object.entries(sv.inv).some(([id,q])=>!G.SUP[id]||!int(q,0,1e5))))return 'Túi đồ không hợp lệ';
   return '';
 }
 // chạy lại một lượt gacha bằng hạt giống, với bảo hiểm pity: trả mèo và pity sau lượt đó
@@ -109,7 +114,8 @@ function judge(o){
   const dRel=Math.max(0,(N.released|0)-(O.released|0));
   const refund=gone.map(c=>{const g=G.releaseGift(c);return g.coins+TICKET_COST*g.ticket}).sort((a,b)=>a-b).slice(0,dRel).reduce((a,b)=>a+b,0);
   const newRooms=Object.keys(N.rooms).filter(r=>!O.rooms[r]).length;
-  const known=(gift.coins||0)+TICKET_COST*(gift.tickets||0)+GACHA_COST*nfree+refund+newRooms*FURN.bowl.price+(tutOpen?TUT_GIFT:0);
+  const water=FURN.waterbowl?FURN.waterbowl.price:0,wxMig=!O.wxMig&&N.wxMig?Object.keys(N.rooms).length:0; // bát nước tặng mỗi phòng (một lần) và kèm phòng mới
+  const known=(gift.coins||0)+TICKET_COST*(gift.tickets||0)+GACHA_COST*nfree+refund+newRooms*(FURN.bowl.price+water)+wxMig*water+(tutOpen?TUT_GIFT:0);
   const lv=Math.min(O.level,MAX_LV),hr=Math.max(0,o.dt)/3600;
   let bc=Math.min(CAP_C(lv),(o.budget&&o.budget.c!=null?o.budget.c:CAP_C(lv))+RATE_C(lv)*hr);
   const needC=value(N)-value(O)-known;

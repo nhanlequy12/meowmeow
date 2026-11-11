@@ -162,6 +162,7 @@ function happyTarget(c){
   h+=palHappy(c);
   if(ROOM[c.room].water){const w=tE(c,'water');h+=w>0?10:w<0?-10:0}
   if(c.full<20)h-=25;
+  if(typeof wxHappy==='function')h+=wxHappy(c);
   return clamp(h,0,100);
 }
 // "Bạn cùng phòng": thuộc tính có e.pal={ids, happy, both, hunger} chỉ có tác dụng khi trong phòng có mèo thuộc danh sách ids (không tính bé đang viễn chinh)
@@ -179,15 +180,17 @@ function TRAITS_M(c,k){return tM(c,k)}
 /* ---------- thời gian trôi ---------- */
 function tick(dt,sim){
   if(S.adm&&S.adm.inf)S.coins=999999999;
+  const WXON=typeof wxCat==='function'; // thời tiết, khí hậu phòng, sức khỏe, nước uống (js/wx.js); thiếu file thì game chạy như cũ
   S.cats.forEach(c=>{
     const away=onTrip(c.uid),bf=buffOf(c);
     if(c.buff&&c.buff.until<=now())c.buff=null;
-    c.full=clamp(c.full-dt*(100/12000)*tM(c,'hunger')*(bf.hunger||1)*auraHunger(c)*palHunger(c)*roomHunger(c.room),0,100);
+    if(WXON)wxCat(c,dt,sim);
+    c.full=clamp(c.full-dt*(100/12000)*tM(c,'hunger')*(bf.hunger||1)*auraHunger(c)*palHunger(c)*roomHunger(c.room)*(WXON?wxHunger(c):1),0,100);
     const bi=bedItem(c); if(c.bed!=null&&!bi){delete c.bed;delete c.bk;delete c.bm}
     if(!away){
-      const rg=tM(c,'regen')*roomRegen(c.room)*(c.full<=0?.3:1)*(bi?FURN[bi.fid].bed.en:1);
+      const rg=tM(c,'regen')*roomRegen(c.room)*(c.full<=0?.3:1)*(bi?FURN[bi.fid].bed.en:1)*(WXON?wxRegen(c):1);
       c.en=clamp(c.en+dt/60*rg,0,100);
-      if(bi&&c.en>=100){const m=c.bm;delete c.bed;delete c.bk;delete c.bm;if(m)notify('ngủ đủ giấc, năng lượng đã đầy',{icon:'😴',title:c.name,key:'wake',mtitle:'Ngủ dậy'})}
+      if(bi&&c.en>=100){const m=c.bm;delete c.bed;delete c.bk;delete c.bm;if(WXON)wxWake(c);if(m)notify('ngủ đủ giấc, năng lượng đã đầy',{icon:'😴',title:c.name,key:'wake',mtitle:'Ngủ dậy'})}
       const t=happyTarget(c),step=tE(c,'fixedHappy')?100:dt/60;
       c.hp=Math.abs(t-c.hp)<=step?t:c.hp+Math.sign(t-c.hp)*step;
     }
@@ -201,6 +204,7 @@ function tick(dt,sim){
     const st=S.rooms[r.id];
     if(homeCats(r.id).some(c=>c.full<20)&&!bs.some(b=>b.left>0)&&bowlCap(r.id)<homeCats(r.id).length&&now()>=(st.warnAt||0)){st.warnAt=now()+300000;notify('🍽️ Thiếu bát ăn ở '+r.n+': '+homeCats(r.id).length+' bé nhưng chỉ có '+bowlCap(r.id)+' suất. Mua thêm bát ở Cửa hàng.')}
   });
+  if(WXON)wxTick(dt,sim);
   if(!sim)scratchTick();
 }
 // kiểm tra cào sofa 10 phút một lần; sau khi vắng lâu chỉ bù tối đa 3 lần
@@ -247,21 +251,21 @@ function coinCalc(c,d,ctx,rf){
   const coins=d.coin*STAR[c.star].m*Math.max(.3,1+add)*(ctx.hf||1)*mult*(rf||1);
   return {coins,acts};
 }
-function tripInfo(c,did){
+function tripInfo(c,did,kit){
   const d=DEST[did],g=gEff(),bf=buffOf(c);
-  const dur=d.min*60000*clamp(1-(g.speed+tE(c,'speed')+(bf.speed||0)),.4,1.6);
-  const cost=Math.round(d.en*tM(c,'cost'));
-  let why='';
-  if(onTrip(c.uid))why='Đang đi vắng'; else if(c.full<20)why='Đang đói'; else if(c.en<cost)why='Không đủ sức (cần '+cost+'⚡)';
+  const o={dur:d.min*60000*clamp(1-(g.speed+tE(c,'speed')+(bf.speed||0)),.4,1.6),cost:Math.round(d.en*tM(c,'cost')),why:''};
+  if(typeof wxTripInfo==='function')wxTripInfo(c,did,o,kit); // thời tiết ở điểm đến: thời gian, năng lượng, rủi ro, tỉ lệ thành công
+  if(onTrip(c.uid))o.why='Đang đi vắng'; else if(c.full<20)o.why='Đang đói'; else if(!o.why&&c.en<o.cost)o.why='Không đủ sức (cần '+o.cost+'⚡)';
   const ctx={night:isNight(),monday:isMonday(),sleepy:c.en<50,hf:happyF(c),bc:bf.coin||0,ac:auraCoin(c)};
   const cc=coinCalc(c,d,ctx);
-  return {dur,cost,why,ctx,est:Math.round(cc.coins),acts:cc.acts};
+  return {dur:o.dur,cost:o.cost,why:o.why,wx:o.wx,ctx,est:Math.round(cc.coins),acts:cc.acts};
 }
-function startTrip(slot,uid,did){
+function startTrip(slot,uid,did,kit){
   const c=catBy(uid),d=DEST[did]; if(!c||S.trips[slot]||d.lvl>S.level)return false;
-  const inf=tripInfo(c,did); if(inf.why)return false;
+  const inf=tripInfo(c,did,kit); if(inf.why)return false;
   c.en-=inf.cost;
-  S.trips[slot]=Object.assign({uid,dest:did,start:now(),end:now()+inf.dur,dur:inf.dur},inf.ctx);
+  S.trips[slot]=Object.assign({uid,dest:did,start:now(),end:now()+inf.dur,dur:inf.dur,cost:inf.cost},inf.ctx);
+  if(typeof wxTripStart==='function')wxTripStart(S.trips[slot],c,kit,inf); // giữ vật phẩm mang theo, ghi dự báo từng chặng
   save(); return true;
 }
 function claimTrip(slot){
@@ -281,6 +285,7 @@ function claimTrip(slot){
   if(Math.random()<tE(c,'loot')){res.bonus+=15;c.traits.forEach(t=>{if(TRAITS[t].e.loot)res.acts.push({t,txt:'+15 xu chiến lợi phẩm'})})}
   res.coins=Math.round(r.coins*m2);
   if(dbl){res.coins*=2;res.bonus*=2;res.ticket*=2}
+  if(typeof wxTripClaim==='function')wxTripClaim(p,c,res,d); // sự cố do thời tiết, vật phẩm tự kích hoạt, nhật ký viễn chinh
   S.tickets+=res.ticket;
   S.coins+=res.coins+res.bonus;
   res.xp=Math.round(10*Math.pow(d.min/10,.8)*tM(c,'xp'));
@@ -412,7 +417,7 @@ function repairItem(iid){const it=S.items.find(i=>i.iid===iid);if(!it||!it.broke
 const roomsByBuy=()=>ownedRooms().map((r,i)=>[r,S.rooms[r.id].at||0,i]).sort((a,b)=>a[1]-b[1]||a[2]-b[2]).map(x=>x[0]);
 // chuyển mèo ở Phòng chờ (trừ bé đang viễn chinh) vào chỗ trống, lấp phòng mua trước rồi mới tới phòng mua sau; trả về số bé đã chuyển
 function fillWait(){let n=0;catsIn('wait').filter(c=>!onTrip(c.uid)).forEach(c=>{const r=roomsByBuy().find(r=>catsIn(r.id).length<r.cap);if(r){c.room=r.id;n++}});return n}
-function buyRoom(rid){const r=ROOM[rid];if(S.rooms[rid]||locked(r)||S.coins<r.price)return false;S.coins-=r.price;S.rooms[rid]={bowlAt:0,at:now()};giveBowl(rid);addXp(20);const moved=fillWait();save();return {moved}}
+function buyRoom(rid){const r=ROOM[rid];if(S.rooms[rid]||locked(r)||S.coins<r.price)return false;S.coins-=r.price;S.rooms[rid]={bowlAt:0,at:now()};giveBowl(rid);if(typeof giveWater==='function')giveWater(rid);addXp(20);const moved=fillWait();save();return {moved}}
 function clampItem(it){
   const f=FURN[it.fid];
   it.x=clamp(it.x,f.w/2,WORLD_W-f.w/2);

@@ -15,6 +15,7 @@ function netInit(){
   api('ping').then(j=>{
     if(!j||j.app!=='meoxu')return;
     NET.on=true;
+    if(j.wx&&typeof wxReseed==='function')wxReseed(j.wx.seed,j.wx.t); // thời tiết chung của nhóm theo máy chủ
     try{NET.pl=JSON.parse(lsGet(PKEY))}catch(e){NET.pl=null}
     NET.adm=lsGet(AKEY)||'';
     if(NET.adm)api('admin/check',null,1).then(()=>{NET.admOk=true}).catch(()=>{NET.adm='';lsSet(AKEY,null)});

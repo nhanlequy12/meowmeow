@@ -32,7 +32,7 @@ const cvURL=cv=>{try{const b=atob(cv.toDataURL().slice(22)),u=new Uint8Array(b.l
 const catSrc=(sp,k,old)=>{const n=kk(k),key=sp+'|'+n+(old?'|old':'');return CI[key]||(CI[key]=cvURL(catCv(sp,'sit',n,old)))};
 const catTag=(sp,k,old)=>{const n=kk(k),d=DPR();return '<img class="px'+(sp.indexOf('~r_')>0||(COATS[sp.split('~')[1]]||{}).form?' rareglow':'')+'" width="'+36*n/d+'" height="'+40*n/d+'" src="'+catSrc(sp,k,old)+'">'};
 function furnTag(id,v,mw,mh){
-  const d=DPR(),sz=id==='gift'?[28,28]:[FURN[id].w,FURN[id].h],fit=Math.min((mw||48)*d/sz[0],(mh||40)*d/sz[1]),n=2*Math.max(1,Math.floor(fit/2)),sh=Math.min(n,Math.max(1,Math.floor(fit)));
+  const d=DPR(),sz=id==='gift'?[28,28]:FURN[id]?[FURN[id].w,FURN[id].h]:[16,16],fit=Math.min((mw||48)*d/sz[0],(mh||40)*d/sz[1]),n=2*Math.max(1,Math.floor(fit/2)),sh=Math.min(n,Math.max(1,Math.floor(fit)));
   const key=id+'|'+(v||'')+'|'+n,src=FI[key]||(FI[key]=cvURL(furnCv(id,v,n)));
   return '<img class="px" width="'+sz[0]*sh/d+'" height="'+sz[1]*sh/d+'" src="'+src+'">';
 }
@@ -51,7 +51,7 @@ const ageTxt=c=>{const st=ageStage(c),n=Math.floor(ageDays(c));return AGE_IC[st]
 const AGE_TIP=['Mèo con (dưới '+AGE_ADULT+' ngày): hiếu động, chạy nhảy và trèo nhiều hơn.','Trưởng thành: sinh hoạt bình thường. Từ '+AGE_OLD+' ngày tuổi sẽ thành mèo già.','Mèo già (từ '+AGE_OLD+' ngày): đi chậm, hay ngủ, ít trèo và không lên tầng cao.'];
 const coatTags=c=>{const ct=coatOf(c);return isRare(c)?'<span class="tag x" tabindex="0" data-tip="Màu lông hiếm: luôn 4★ và có một trait riêng của màu.">✨ Màu hiếm</span>':ct&&ct.form?'<span class="tag x" tabindex="0" data-tip="Trang phục hiếm: chỉ khoảng 10% số bé '+SP[c.sp].n+' mang dạng này. Sao chuyển bảy màu và có một trait riêng của dạng.">✨ Trang phục hiếm</span>':ct&&ct.jewel?'<span class="tag x" tabindex="0" data-tip="Cặp màu mắt quý hiếm của Khao Manee: mỗi cặp chỉ xuất hiện ở khoảng 8% số bé Khao Manee.">💎 Mắt quý hiếm</span>':ct&&ct.u?'<span class="tag g" tabindex="0" data-tip="Màu ít gặp trong giống này, tỉ lệ ra thấp hơn các màu khác.">✦ Màu ít gặp</span>':''};
 const stat=(ic,v,col)=>'<span class="stat">'+ic+'<span class="bar"><i style="width:'+Math.round(v)+'%;background:'+col+'"></i></span></span>';
-const stats=c=>stat('🍗',c.full,c.full<20?'#ff6b6b':'#ffb347')+stat('⚡',c.en,'#7fb7ff')+stat('😊',c.hp,'#5fd08a');
+const stats=c=>stat('🍗',c.full,c.full<20?'#ff6b6b':'#ffb347')+stat('⚡',c.en,'#7fb7ff')+stat('😊',c.hp,'#5fd08a')+(typeof wxBadges==='function'?wxBadges(c):'');
 /* --- tooltip (data-tip): một khối nổi gắn thẳng vào body nên không bị khung cuộn của thẻ gacha hay hộp thoại cắt mất, không sinh thanh cuộn.
    Tự giãn theo nội dung, mặc định hiện phía trên, không đủ chỗ thì lật xuống dưới, luôn nằm gọn trong màn hình. --- */
 const tipEl=document.createElement('div');tipEl.id='tip';tipEl.setAttribute('role','tooltip');document.body.appendChild(tipEl);
@@ -684,7 +684,7 @@ function drawBg(g,rid){
   const dm=(S.set&&S.set.dim)||0;if(dm>0)F(0,0,W,VH,'rgba(24,14,8,'+dm+')'); // độ tối nền chỉnh trong Cài đặt
 }
 function drawItem(i){
-  const f=FURN[i.fid],B=f.bowl,cv=furnCv(i.fid,i.broken?'broken':(B&&i.left>0?'full':'')),x0=Math.round(i.x-f.w/2),y0=Math.round(i.y-f.h);
+  const f=FURN[i.fid],B=f.bowl,cv=furnCv(i.fid,i.broken?'broken':(B&&i.left>0?'full':(typeof wxVar==='function'?wxVar(i):''))),x0=Math.round(i.x-f.w/2),y0=Math.round(i.y-f.h);
   if(i.flip){RX.save();RX.translate(x0+f.w,y0);RX.scale(-1,1);RX.drawImage(cv,0,0,f.w,f.h);RX.restore()}else RX.drawImage(cv,x0,y0,f.w,f.h);
   if(B){ // số suất còn lại trong bát
     const tx=(i.left||0)+'/'+B.cap;RX.font='bold 4.5px system-ui,sans-serif';const tw=Math.ceil(RX.measureText(tx).width)+3,nx=Math.round(i.x-tw/2),ny=y0-8;
@@ -777,7 +777,7 @@ function ptrEnd(ev){
   const wx=p.x+camX,wy=p.y+camY;
   if(critHit(wx,wy))return; // chạm trúng khách lạ (chuột, bướm, cuộn len)
   const hit=ents.filter(e=>!e.ghost).map(e=>({e,p:entPos(e)})).sort((a,b)=>b.p.sy-a.p.sy).find(o=>wx>=o.p.x-12&&wx<=o.p.x+12&&wy>=o.p.y-35&&wy<=o.p.y+1);
-  if(!hit){const it=hitItem(wx,wy);if(it&&FURN[it.fid].bed){openBed(it.iid);return} // chạm vào ổ ngủ: chọn bé đi ngủ, đuổi bé ra
+  if(!hit){const it=hitItem(wx,wy);if(it&&FURN[it.fid].bed){openBed(it.iid);return}if(it&&typeof wxDevTap==='function'&&wxDevTap(it))return; // chạm máy sưởi, quạt: bật tắt // chạm vào ổ ngủ: chọn bé đi ngủ, đuổi bé ra
     unfollow(true);return} // chạm khoảng trống: thôi theo dõi, camera về chỗ cũ
   if(hit.e.clone){poof(hit.p.x,hit.p.y);hit.e.dead=1;return} // chạm vào phân thân của Naruto: tan thành khói
   // chạm một lần: vuốt ve; chạm hai lần liền trong 0,4 giây vào cùng một bé: quan sát (camera theo dõi bé)
@@ -840,15 +840,16 @@ let pk={slot:0,dest:'alley'};
 function openPicker(slot){pk.slot=slot;if(DEST[pk.dest].lvl>S.level)pk.dest='alley';drawPicker()}
 function drawPicker(){
   const d=DEST[pk.dest],night=isNight();
-  const cats=S.cats.filter(c=>!onTrip(c.uid)).map(c=>({c,inf:tripInfo(c,pk.dest)})).sort((a,b)=>(a.inf.why?1:0)-(b.inf.why?1:0)||b.inf.est-a.inf.est);
+  const cats=S.cats.filter(c=>!onTrip(c.uid)).map(c=>({c,inf:tripInfo(c,pk.dest,pk.kit)})).sort((a,b)=>(a.inf.why?1:0)-(b.inf.why?1:0)||b.inf.est-a.inf.est);
   modal('<h3>Điểm đến</h3><div class="row wrap" style="justify-content:center">'+
     DESTS.map(x=>'<button class="sm '+(x.id===pk.dest?'on':'')+'" '+(x.lvl>S.level?'disabled':'')+' onclick="pk.dest=\''+x.id+'\';drawPicker()">'+x.ic+' '+x.n+(x.lvl>S.level?' 🔒 cấp '+x.lvl:'')+'</button>').join('')+
-    '</div><div class="dim" style="margin-top:6px">'+d.min+' phút · '+d.coin+' xu gốc · tốn '+d.en+'⚡'+(d.tags.length?' · '+d.tags.map(t=>TAGN[t]).join(', '):'')+' · bây giờ là '+(night?'ban đêm 🌙':'ban ngày ☀')+'</div><h3>Chọn mèo</h3>'+
+    '</div><div class="dim" style="margin-top:6px">'+d.min+' phút · '+d.coin+' xu gốc · tốn '+d.en+'⚡'+(d.tags.length?' · '+d.tags.map(t=>TAGN[t]).join(', '):'')+' · bây giờ là '+(night?'ban đêm 🌙':'ban ngày ☀')+'</div>'+(typeof wxPrep==='function'?wxPrep():'')+'<h3>Chọn mèo</h3>'+
     (cats.length?cats.map(o=>{const c=o.c,sp=SP[c.sp];
-      return '<div class="card '+(o.inf.why?'':'tap')+'" style="'+(o.inf.why?'opacity:.5':'')+'" '+(o.inf.why?'':'onclick="doTrip('+c.uid+')"')+'>'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+(o.inf.why||('~'+o.inf.est+' xu · '+fmt(o.inf.dur)+' · −'+o.inf.cost+'⚡'))+'</small><div>'+tripFx(c,o.inf)+'</div>'+stats(c)+'</div></div>'}).join(''):'<div class="dim">Không còn bé nào ở nhà.</div>'));
+      return '<div class="card '+(o.inf.why?'':'tap')+'" style="'+(o.inf.why?'opacity:.5':'')+'" '+(o.inf.why?'':'onclick="doTrip('+c.uid+')"')+'>'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+(o.inf.why||('~'+o.inf.est+' xu · '+fmt(o.inf.dur)+' · −'+o.inf.cost+'⚡'+(typeof wxRiskTag==='function'?wxRiskTag(o.inf):'')))+'</small><div>'+tripFx(c,o.inf)+'</div>'+stats(c)+'</div></div>'}).join(''):'<div class="dim">Không còn bé nào ở nhà.</div>'));
 }
 function doTrip(uid){
-  if(!startTrip(pk.slot,uid,pk.dest))return;
+  if(!startTrip(pk.slot,uid,pk.dest,pk.kit))return;
+  pk.kit={}; // vật phẩm đã giữ cho chuyến này
   closeModal();syncEnts();render();toast('lên đường tới '+DEST[pk.dest].n,{type:'trip',title:catBy(uid).name});
 }
 function doClaim(slot){const r=claimTrip(slot);if(!r)return;syncEnts();render();showPop(r)}
@@ -1486,6 +1487,7 @@ function openCat(uid,back){
     '<div class="cd-sec"><h4>Chỉ số</h4><div class="cd-stats">'+st('🍗','Độ no',c.full,c.full<20?'#ff6b6b':'#ffb347')+st('⚡','Năng lượng',c.en,'#7fb7ff')+st('😊','Độ vui',c.hp,'#5fd08a')+'</div>'+
       (away&&!bf.food?'':'<div class="dim cd-note">'+(away?'':'Độ vui đang hướng tới '+Math.round(happyTarget(c))+'%.')+(bf.food?' Đang có buff '+FOOD[bf.food].n+' (còn '+fmt(bf.until-now())+').':'')+'</div>')+
       (bedItem(c)?'<div class="row" style="margin-top:8px;align-items:center"><span class="g">😴 Đang ngủ ở <b>'+FURN[bedItem(c).fid].n+'</b></span><button class="sm" onclick="kickOut('+uid+');openCat('+uid+',catBack)">Đánh thức</button></div>':'')+'</div>'+
+    (typeof wxCatSec==='function'?wxCatSec(c):'')+
     // thuộc tính
     '<div class="cd-sec"><h4>Thuộc tính ('+c.traits.length+')</h4><div class="cd-tags">'+c.traits.map(t=>tagOf(t)).join('')+'</div></div>'+
     // đổi tên, chuyển phòng

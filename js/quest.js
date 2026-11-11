@@ -138,7 +138,7 @@ function critSpawn(){
 }
 critStep=function(dt){
   if(!qOn()||edit||document.hidden)return;
-  if(!crits.length&&(critNext-=dt)<=0){critNext=rnd(70,150);critSpawn()}
+  if(!crits.length&&(critNext-=dt)<=0){critNext=rnd(70,150);if(!(typeof wxNoCritters==='function'&&wxNoCritters()))critSpawn()} // phòng ngoài trời đang mưa to, bão: khách lạ không ra
   crits.forEach(cr=>{
     const C=CRIT[cr.kind];cr.t+=dt;
     if(!C.air){if(cr.pause>0)cr.pause-=dt;else{cr.x+=cr.dir*cr.v*dt;if(Math.random()<dt*.5)cr.pause=rnd(.3,.9)}}

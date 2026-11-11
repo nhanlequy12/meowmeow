@@ -795,9 +795,11 @@ Object.assign(FART,{
     b.rect(1,70,108,2,[216,210,200]);b.cap(1,70.2,109,70.2,.2,[242,238,232],'x')},
 });
 const FSIZE={bowl:[18,10],gift:[28,28]};
+// mở rộng từ file khác (js/furn/*.js): thêm hàm vẽ nội thất và cỡ của các hình không nằm trong FURN (biểu tượng vật phẩm)
+const addFurn=(defs,sizes)=>{Object.assign(FART,defs);if(sizes)Object.assign(FSIZE,sizes)};
 function furn(id,v){
-  const f=(typeof FURN!=='undefined'&&FURN[id])||{},sz=FSIZE[id]||[f.w,f.h],b=new Buf(sz[0],sz[1]);
-  FART[f.art||id](b,v,f.a||[]);b.pastel(.06);b.shade(.12);b.outline([112,74,52]);return b;
+  const f=(typeof FURN!=='undefined'&&FURN[id])||{},sz=FSIZE[id]||[f.w||16,f.h||16],b=new Buf(sz[0],sz[1]),fa=FART[f.art||id];
+  if(fa)fa(b,v,f.a||[]);else{b.rect(1,1,sz[0]-2,sz[1]-2,[214,200,180]);b.rect(3,3,sz[0]-6,sz[1]-6,[236,226,210],'x')}b.pastel(.06);b.shade(.12);b.outline([112,74,52]);return b; // chưa có hình (đang chờ vẽ): khối giữ chỗ
 }
 /* ---------- mèo nhìn ngang (đầu quay trái): dùng khi đi, chạy, nhảy. Lưới 50x40, chân chạm hàng 38 ---------- */
 // legs: [chân trước xa, chân trước gần, chân sau xa, chân sau gần], mỗi chân [lệch bàn chân, độ dài]
@@ -1182,6 +1184,7 @@ const IC=(()=>{
   };
 })();
 function icon(name){const b=new Buf(12,12);(IC[name]||IC.paw)(b);b.shade(.12);b.outline([96,62,46]);return b}
-return {cat,furn,sheetOf,icon,icons:Object.keys(IC),Buf,hex,
+return {cat,furn,sheetOf,icon,icons:Object.keys(IC),Buf,hex,addFurn,hasFurn:id=>!!FART[id],
+  K:{C,H,mix,dk,lt,hex,WH,EY,RED,NAVY,GOLDC,PINK,PUR,WOOD,WOOD2,CRMF,DWOOD,GRN,GRN2,STEM,TERRA,SAND,GLASS,HOLE,arch,star5}, // màu và hàm phụ cho file vẽ nội thất bên ngoài
   U:{Buf,Q,hex,H,mix,dk,lt,lum,OC,PINK,WH,hsh,vnoise,spotAt,bandC,blob,fleck,marble,nacreC,auraFx,spark}};
 })();

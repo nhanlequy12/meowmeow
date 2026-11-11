@@ -364,6 +364,11 @@ canvas#room{touch-action:none}
 .cd-back{text-align:left;margin:-2px 0 8px}
 /* gacha 10 lượt: thứ tự bé đang diễn trong số các bé từ 4★ */
 .gv-seq{display:inline-block;margin-bottom:6px;padding:2px 10px;border:2px solid var(--line);border-radius:999px;background:var(--panel2);font-size:12.5px;letter-spacing:.3px}
+/* thời tiết (js/wx-ui.js): chip thời tiết trên cùng, dòng khí hậu phòng dưới nút Cho ăn, nhãn trạng thái mèo */
+.wxchip{cursor:pointer}
+.wxline{display:flex;align-items:center;gap:8px;margin:6px 0 8px;padding:6px 10px;border:2px dotted var(--line);border-radius:12px;background:var(--panel)}
+.wxline .g{flex:1;min-width:0;font-size:13.5px;line-height:1.35}
+.wxst .tag{margin:2px 3px 0 0;padding:0 5px;font-size:12px}
 </style>
 <link rel="stylesheet" href="css/tutorial.css">
 </head>
@@ -390,8 +395,16 @@ canvas#room{touch-action:none}
 </div>
 <div id="toast"></div>
 <script src="js/data.js"></script>
+<script src="js/wx-data.js"></script>
 <script src="js/sprites.js"></script>
 <script src="js/art.js"></script>
+<script src="js/furn/wx-01.js"></script>
+<script src="js/furn/wx-02.js"></script>
+<script src="js/furn/wx-03.js"></script>
+<script src="js/furn/wx-04.js"></script>
+<script src="js/furn/wx-05.js"></script>
+<script src="js/furn/wx-06.js"></script>
+<script src="js/furn/wx-07.js"></script>
 <script src="js/catkit.js"></script>
 <!-- cats:begin -->
 <script src="js/cats/core.js"></script>
@@ -472,11 +485,13 @@ canvas#room{touch-action:none}
 <script src="js/cats/v_yani.js"></script>
 <!-- cats:end -->
 <script src="js/game.js"></script>
+<script src="js/wx.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/pack18.js"></script>
 <script src="js/quest.js"></script>
 <script src="js/achieve.js"></script>
 <script src="js/wish.js"></script>
+<script src="js/wx-ui.js"></script>
 <script src="js/net.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/tut-text.js"></script>
