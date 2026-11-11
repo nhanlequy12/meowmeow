@@ -1,4 +1,6 @@
 "use strict";
+// cỡ sprite: màn rộng và cao (máy tính, máy tính bảng) thì gấp đôi cho đỡ trống; CSS vẫn tự co khi thiếu chỗ (người điều phối thêm)
+function tutPickK(k){return innerWidth>=900&&innerHeight>=700?k*2:k}
 /* Giao diện chọn mèo và bảng dáng; chỉ trả lựa chọn cho lõi, không sửa bản lưu. */
 
 function tutPickCSS() {
@@ -133,7 +135,7 @@ function tutPickFacts(tspStarter) {
 }
 
 function tutPickProfile(tspStarter) {
-  return '<div class="tsp-name"><b>' + esc(tspStarter.name) + '</b>' + starsOf(2) + '</div>' +
+  return '<div class="tsp-name"><b>' + esc(tspStarter.name) + '</b>' + starsOf(1) + '</div>' +
     '<div class="tsp-role">' + esc(tspStarter.role) + '</div><div class="tsp-style">' + esc(tspStarter.style) + '</div>';
 }
 
@@ -151,7 +153,7 @@ function tutPickUI(host, done) {
       '<div class="tsp-starters">' + TUT_TEXT.starters.map((tspStarter, tspIndex) =>
         /* Dùng role=button để các nhãn tooltip bên trong vẫn có thể nhận focus độc lập. */
         '<div class="tsp-card" role="button" tabindex="0" data-tut-starter="' + tspIndex + '" aria-label="' + esc(tspStarter.name + ' · ' + tspStarter.style) + '">' +
-        '<div class="tsp-sprite" aria-hidden="true">' + TUT.pose(tspStarter.sp + '~' + tspStarter.coat, 'tail', 2) + '</div>' +
+        '<div class="tsp-sprite" aria-hidden="true">' + TUT.pose(tspStarter.sp + '~' + tspStarter.coat, 'tail', tutPickK(2)) + '</div>' +
         '<div class="tsp-info">' + tutPickProfile(tspStarter) + tutPickFacts(tspStarter) + '</div></div>'
       ).join('') + '</div>';
     emoEl(host);
@@ -165,7 +167,7 @@ function tutPickUI(host, done) {
         const tspNext = tspPointing || tspFocused;
         if (tspWalking === tspNext) return;
         tspWalking = tspNext;
-        tspCard.querySelector('.tsp-sprite').innerHTML = TUT.pose(tspStarter.sp + '~' + tspStarter.coat, tspNext ? 'walk' : 'tail', 2);
+        tspCard.querySelector('.tsp-sprite').innerHTML = TUT.pose(tspStarter.sp + '~' + tspStarter.coat, tspNext ? 'walk' : 'tail', tutPickK(2));
       }
       tspCard.addEventListener('pointerenter', () => {tspPointing = true;tspMotion();});
       tspCard.addEventListener('pointerleave', () => {tspPointing = false;tspMotion();});
@@ -192,7 +194,7 @@ function tutPickUI(host, done) {
     tspSelected = tspIndex;
     const tspStarter = TUT_TEXT.starters[tspIndex];
     host.innerHTML = '<header class="tsp-header"><h3 class="tsp-title">' + esc(TUT.fill(tspText.confirm, {breed:SP[tspStarter.sp].n})) + '</h3><p class="tsp-sub">' + esc(tspText.note) + '</p></header>' +
-      '<div class="tsp-confirm"><div class="tsp-preview"><div class="tsp-sprite" aria-hidden="true">' + TUT.pose(tspStarter.sp + '~' + tspStarter.coat, 'walk', 3) + '</div>' + tutPickProfile(tspStarter) + '</div>' +
+      '<div class="tsp-confirm"><div class="tsp-preview"><div class="tsp-sprite" aria-hidden="true">' + TUT.pose(tspStarter.sp + '~' + tspStarter.coat, 'walk', tutPickK(3)) + '</div>' + tutPickProfile(tspStarter) + '</div>' +
       '<div class="tsp-confirm-body"><div class="tsp-facts">' + tutPickFacts(tspStarter) + '</div>' +
       '<form class="tsp-form" novalidate><label class="tsp-name-label" for="tsp-starter-name">' + esc(tspText.nameL) + '</label>' +
       '<div class="tsp-input-row"><input id="tsp-starter-name" data-tut-name maxlength="16" autocomplete="off" aria-describedby="tsp-starter-error" placeholder="' + esc(tspText.namePh) + '" value="' + esc(tspNames[tspIndex]) + '">' +

@@ -141,6 +141,23 @@ const G=[
  {t:'Đầu Bếp, Bánh Mì, DJ',files:['js/cats/v_chef.js','js/cats/v_bread.js','js/cats/v_dj.js'],kind:'costume',cats:['v_chef','v_bread','v_dj'],
   keys:'v_chef v_bread v_dj',
   notes:`- \`v_chef\`: mèo bò sữa (hoa văn \`cow\` do nhóm khác làm), mũ đầu bếp trắng phồng, tạp dề/áo bếp trắng, khăn cổ đỏ; \`COS.chef\` / \`OLD2.chef\`. \`v_bread\`: lát bánh mì vuông ôm quanh MẶT (vỏ nâu, ruột kem), mặt mèo thò ra giữa; chân ngắn (lõi lo); \`COS.bread\` / \`OLD2.bread\`. \`v_dj\`: tai nghe to chụp hai tai, kính râm, áo hoodie; \`COS.dj\` / \`OLD2.dj\`.`},
+ {t:'Phineas, Ferb, Yani Neko',files:['js/cats/v_phineas.js','js/cats/v_ferb.js','js/cats/v_yani.js'],kind:'costume',cats:['v_phineas','v_ferb','v_yani'],
+  keys:'v_phineas v_ferb v_yani',
+  notes:`- Ba mèo MỚI, không có bản cũ để giữ: hàng dưới của \`peek.png\` chỉ là hình tạm, đừng bắt chước. Thiết kế theo mô tả dưới đây, phải nhận ra nhân vật ở cỡ thật.
+- \`v_phineas\` (Phineas, phim Phineas and Ferb): đầu hình TAM GIÁC nằm ngang đặc trưng (ở khung nhìn ngang mõm kéo nhọn về phía trước như mũi tam giác; nhìn thẳng thì đầu thuôn nhọn một bên), chỏm tóc đỏ cam \`#e8642a\` dựng 3-4 lọn trên đỉnh và sau gáy, mắt to tròn xanh dương, áo thun sọc ngang cam \`#f08a2a\` và trắng (sọc tính theo \`v\` để bám thân), chân sau màu quần xanh \`#3d5fa8\`.
+- \`v_ferb\` (Ferb): đầu DÀI hình chữ nhật đứng (cao hơn Xoài 5-6 hàng), chỏm tóc xanh lá \`#4aa84a\` chải dựng một bên, hai mắt một to một nhỏ, mũi to vuông, áo sơ mi vàng kem \`#f2e6b0\`, quần tím \`#6a4a9a\` cạp cao (phủ nửa dưới thân và chân sau).
+- \`v_yani\` (Yani Neko, "Chainsmoker Cat"): mắt lờ đờ nửa nhắm (mí trên che nửa mắt, quầng thâm nhạt dưới mắt), điếu thuốc trắng ngậm chéo ở khoé miệng dài 6-7 ô có đốm lửa đỏ cam ở đầu, làn khói xám nhạt 3-4 cụm bay lên và trễ 1-2 khung (\`G.lag\`), hình khói đổi theo số khung; áo ba lỗ trắng. Khói là ô màu đặc, không bán trong suốt.`},
+ {t:'Itadori và trang phục hiếm Sukuna chiếm xác',files:['js/cats/v_itadori.js'],kind:'costume',cats:['v_itadori'],
+  keys:'v_itadori~v_itadori_0 v_itadori~itSukuna',
+  notes:`- Mèo MỚI, không có bản cũ để giữ: hàng dưới của \`peek.png\` chỉ là hình tạm. Một module, phân biệt hai dạng bằng \`s.ct\`.
+- Dạng thường (\`v_itadori_0\`, Itadori Yuji, Jujutsu Kaisen): tóc hồng \`#f08aa0\` dựng lởm chởm trên đỉnh, hai bên và gáy cạo màu nâu sẫm \`#5a3a34\`; hai vạch nhỏ sẫm ngay dưới mỗi mắt; đồng phục Cao chuyên xanh đen \`#2a2d44\` có khuy vàng xoáy nhỏ ở ngực, mũ trùm ĐỎ \`#c0392b\` lộ sau gáy và viền cổ.
+- Dạng hiếm (\`itSukuna\`, bị Sukuna chiếm xác). Các chi tiết sau PHẢI vẽ rõ bằng ô đen \`#16121a\`, nhìn ra ở cỡ thật:
+  - Hình xăm mặt: một vạch ngang giữa trán và hai vạch chéo phía trên hai mắt; vạch dọc ngắn trên sống mũi; hai vạch cong song song trên mỗi má chạy xuống quai hàm; một vạch ở cằm.
+  - Đôi mắt thứ hai: hai khe mắt nhỏ hé mở màu đỏ \`#e0283a\` ngay dưới hai mắt chính. Mắt chính đỏ. Miệng cười nhếch, lộ một chiếc nanh trắng.
+  - Tóc vuốt ngược, dựng cao hơn dạng thường 2-3 hàng.
+  - Vòng xăm: HAI vòng đen ở mỗi cổ chân trước, một vòng ở bắp chân trước, vạch trên vai và ngực (áo mở ngực hoặc xắn tay để lộ); móng chân đen.
+  - Khung nhìn ngang phải thấy: vạch má, khe mắt phụ, hai vòng xăm ở cả hai chân trước và vạch trên vai. Vòng xăm trên chân phải bám theo chân ở mọi khung đi, chạy, nhảy (tô bằng \`paint\` theo \`part\` và \`v\`, không vẽ rời).
+  - Hào quang đỏ sẫm do lõi vẽ.`},
 ];
 
 /* ---------------- viết file ---------------- */

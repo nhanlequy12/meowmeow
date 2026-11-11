@@ -23,7 +23,7 @@ Viết module trang phục cho các mèo dưới đây, **mỗi mèo một file*
 ### Mèo của nhóm và đặc điểm riêng phải giữ
 
 - `v_luffy` **Mèo Luffy** (4★): lông `#f6dfb8`, hoa văn `solid`, trắng w=1, mắt `mặc định`; đặc điểm: -; trang phục: haircap, strawhat, scar, suit, belt
-- `v_tanjiro` **Mèo Tanjiro** (4★): lông `#f6dfb8`, hoa văn `solid`, mắt `#b0303a`; đặc điểm: -; trang phục: haircap, scar, earrings, checker
+- `v_tanjiro` **Mèo Tanjiro** (5★): lông `#f6dfb8`, hoa văn `solid`, mắt `#b0303a`; đặc điểm: -; trang phục: sword, haircap, scar, earrings, checker; dạng: `v_tanjiro_0`, `tjKagura` [trang phục: saber, haircap, scar, earrings, checker, aura]
 - `v_nezuko` **Mèo Nezuko** (4★): lông `#fbf7f0`, hoa văn `solid`, mắt `#f59ab5`; đặc điểm: -; trang phục: longhair, haircap, mr, bamboo, suit, belt
 - `v_anya` **Mèo Anya** (4★): lông `#f6dfb8`, hoa văn `solid`, mắt `#6fcf5f`; đặc điểm: -; trang phục: longhair, haircap, horns, suit, collar
 

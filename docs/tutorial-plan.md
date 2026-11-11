@@ -58,15 +58,15 @@ Ký hiệu: **[bấm]** = bước bắt buộc, chỉ bấm được chỗ khoan
 ### B. Chọn mèo khởi đầu
 2. `pick` Màn chọn 1 trong 3: Mướp ta, Mèo vàng, Mèo trắng. Thẻ mỗi bé: sprite đang chuyển động (khung Xoài: ngồi, vẫy đuôi, đi), tính cách, điểm mạnh, hai thuộc tính. Chạm thẻ → khung xác nhận có ô đặt tên (🎲 gợi ý tên) → "Chọn bé này" / "Xem bé khác". Bước này không bỏ qua được.
 
-Ba bé khởi đầu đều là **2★ Không phổ biến**, mèo con, màu lông đặc trưng của giống, có đúng 2 thuộc tính (một thuộc tính khởi đầu riêng + một thuộc tính tốt của giống). Khác nhau về lối chơi, không bé nào trội hẳn:
+Ba bé khởi đầu đều là **1★ Phổ thông** (chủ game chốt 2026-11-11), mèo con, màu lông đặc trưng của giống, có đúng 1 thuộc tính: thuộc tính khởi đầu riêng (độc quyền). Khác nhau về lối chơi, không bé nào trội hẳn:
 
-| Bé | Lối chơi | Thuộc tính khởi đầu (mới, độc quyền) | Thuộc tính thứ hai (có sẵn) | Ước lượng giá trị |
-|---|---|---|---|---|
-| Mướp ta (`muop~brownTabbyW`) | Đi nhiều chuyến | **Chân sáo đầu ngõ**: viễn chinh nhanh hơn 15%, tốn ít hơn 15% năng lượng | Diệt chuột: +6% xu, +15% cơ hội chiến lợi phẩm | ≈ +20% xu mỗi giờ nếu ghé đều tay |
-| Mèo vàng (`vang~redTabbyW`) | Ở nhà, được cưng | **Cục cưng cả xóm**: vuốt ve +2 xu, mèo cùng phòng +6 vui | Được lòng người: +15% xu ở điểm đông người | ≈ +18%: xu vuốt ve gấp 3 lần ở 2★, đàn mèo vui hơn nên xu viễn chinh cao hơn |
-| Mèo trắng (`trang~white`) | Săn vé, chơi đêm | **Bông tuyết may mắn**: +6% cơ hội nhặt vé gacha, +10% xu khi đi ban đêm | Hiền như bụt: mèo cùng phòng +5 vui, không cào đồ | ≈ +16%: 6% vé mỗi chuyến tương đương khoảng 10% xu |
+| Bé | Lối chơi | Thuộc tính khởi đầu (mới, độc quyền) |
+|---|---|---|
+| Mướp ta (`muop~brownTabbyW`) | Đi nhiều chuyến | **Chân sáo đầu ngõ**: viễn chinh nhanh hơn 15%, tốn ít hơn 15% năng lượng |
+| Mèo vàng (`vang~redTabbyW`) | Ở nhà, được cưng | **Cục cưng cả xóm**: vuốt ve +2 xu, mèo cùng phòng +6 vui |
+| Mèo trắng (`trang~white`) | Săn vé, chơi đêm | **Bông tuyết may mắn**: +6% cơ hội nhặt vé gacha, +10% xu khi đi ban đêm |
 
-Con số là đề xuất, chủ game duyệt (xem mục 7).
+Bản đầu đề xuất 2★ kèm thêm một thuộc tính tốt của giống (Diệt chuột, Được lòng người, Hiền như bụt); chủ game chọn 1★ cho giống gacha.
 
 ### C. Làm quen với mèo
 3. `room` [xem] Khoanh khung phòng: "Đây là phòng khách, nhà của <tên>."
@@ -80,7 +80,7 @@ Con số là đề xuất, chủ game duyệt (xem mục 7).
 11. `ticket` [xem] Xoài tặng 1 vé gacha (cờ `got.ticket`).
 12. `gtab` [bấm] Khoanh tab Gacha.
 13. `stars` [xem] Bảng màu sao kèm tỉ lệ (vẽ bằng đúng `starsOf` của game, nên màu và lấp lánh giống thật): 1 trắng, 2 xanh lục, 3 xanh biển, 4 tím, 5 vàng lấp lánh, 7 màu cho màu hiếm. Hai khung thoại: ý nghĩa màu; bảo hiểm 10 lượt.
-14. `pull` [bấm] Khoanh nút "Dùng vé". Lượt này chắc chắn từ 3★ trở lên (rút lại theo đúng tỉ lệ của 3★, 4★, 5★: 70%, 25%, 5%). Lớp phủ ẩn để hoạt ảnh mở hộp chạy trọn.
+14. `pull` [bấm] Khoanh nút "Dùng vé". Lượt này chắc chắn ra 4★ Sử thi (chủ game chốt; vẫn có thể là mèo trang phục hoặc màu hiếm). Lớp phủ ẩn để hoạt ảnh mở hộp chạy trọn.
 15. `reveal` [bấm] Khoanh nút "Đón về nhà" trên thẻ kết quả (đặt tên được ở ô ngay trên).
 
 ### E. Màn chi tiết và Sưu tập
@@ -144,9 +144,9 @@ Chơi lại hướng dẫn: chạy lại luồng chính ở chế độ xem. B�
 
 Hai phiên Codex chỉ sửa file của mình, dùng API `TUT` của lõi, đọc chữ từ `js/tut-text.js` (đề xuất sửa chữ ghi vào `docs/tasks/tut-*-notes.md`).
 
-## 7. Cần chủ game quyết
+## 7. Quyết định của chủ game (2026-11-11)
 
-1. Quà tân thủ: 300 xu, 2 vé, 1 Chuột đồ chơi (cộng với 1 vé ở bước gacha và 300 xu lúc mở game).
-2. Ba mèo khởi đầu: là 2★, mèo con, hai thuộc tính như bảng mục 3B. Có thể đổi thành 1★ đúng như gacha.
-3. Lượt gacha đầu: chắc chắn 3★ trở lên theo tỉ lệ 70/25/5. Có thể đổi thành chắc chắn 4★.
-4. Người chơi cũ: không chạy hướng dẫn, chỉ nhận mẹo theo ngữ cảnh từ lúc này và có Sổ tay.
+1. Quà tân thủ: giữ 300 xu, 2 vé, 1 Chuột đồ chơi (cộng 1 vé ở bước gacha và 300 xu lúc mở game).
+2. Ba mèo khởi đầu: 1★, mèo con, một thuộc tính khởi đầu riêng.
+3. Lượt gacha đầu: chắc chắn 4★.
+4. Người chơi cũ: không chạy hướng dẫn, tắt mẹo theo ngữ cảnh; vẫn có Sổ tay và chơi lại hướng dẫn.

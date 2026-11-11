@@ -112,7 +112,7 @@ const TUT=(()=>{
   /* ---------- tạo mèo khởi đầu ---------- */
   function makeStarter(i,name){
     const t=st();if(t.got&&t.got.starter&&catBy(t.cat))return catBy(t.cat);
-    const o=TX.starters[i],sp=SP[o.sp],c=newCat(sp,2,o.coat);
+    const o=TX.starters[i],sp=SP[o.sp],c=newCat(sp,1,o.coat);
     c.traits=o.traits.filter(x=>TRAITS[x]);c.name=String(name||o.names[0]).trim().slice(0,16)||o.names[0];
     c.room='living';c.born=now();c.full=45;c.hp=60;c.en=100;
     S.cats.push(c);markSeen(c);t.cat=c.uid;t.got=t.got||{};t.got.starter=1;
@@ -396,10 +396,10 @@ const TUT=(()=>{
   }
   ['petCat','openFeed','doFeed','setTab','openPicker','doTrip','gachaDone'].forEach(n=>on(n,(a,r)=>act(n,a,r)));
   on('gReveal',()=>{if(cs&&cs.wait==='gReveal'&&waiting){waiting=false;line=0;scrolled=false;scrollN=0;say()}});
-  // lượt gacha đầu tiên: dùng vé, chắc chắn từ 3★ trở lên
+  // lượt gacha đầu tiên: dùng vé, chắc chắn ra 4★ (vẫn có thể là mèo trang phục hoặc màu hiếm)
   hook('doGacha');
   {const g=window.doGacha;window.doGacha=function(t){
-    if(cs&&cs.id==='pull'&&!rp){const r=gachaRoll(true,{min:3});if(r.err){toast(r.err,{type:'warn'});return}
+    if(cs&&cs.id==='pull'&&!rp){const r=gachaRoll(true,{min:4,max:4});if(r.err){toast(r.err,{type:'warn'});return}
       st().gcat=r.cat.uid;save();render();playGacha(r.cat);go('reveal');return}
     if(cs&&!rp&&isAct())return; // đang ở bước bắt buộc khác thì không cho quay
     return g.apply(this,arguments)}}

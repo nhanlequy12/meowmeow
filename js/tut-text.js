@@ -56,7 +56,7 @@ const TUT_TEXT={
       'Bé màu lông hiếm, mắt quý hiếm hay trang phục hiếm thì sao lấp lánh đủ 7 màu!',
       'Có bảo hiểm: quá 9 lượt chưa ra 4★ thì lượt thứ 10 chắc chắn từ 4★ trở lên.'
     ],
-    pull:['Bấm Dùng vé để mở hộp. Lần đầu tớ ém sẵn rồi: chắc chắn từ 3★ trở lên!'],
+    pull:['Bấm Dùng vé để mở hộp. Lần đầu tớ ém sẵn rồi: chắc chắn ra một bé 4★ Sử thi!'],
     reveal:['Xem ai tới này! Muốn thì đặt tên, rồi bấm Đón về nhà.'],
     dhead:['Đây là màn thông tin của {new}. Viền và hàng sao cho biết bé hiếm cỡ nào.'],
     dprof:['Hồ sơ ghi giống, màu lông, tuổi và món khoái khẩu. Cho ăn đúng món khoái khẩu, bé no hơn và vui hơn.'],
@@ -102,22 +102,22 @@ const TUT_TEXT={
     nameEmpty:'Bé cần một cái tên đã!',
     yes:'Chọn bé này',
     no:'Xem bé khác',
-    note:'Bé về nhà là mèo con 2★, đúng hai thuộc tính như trên.'
+    note:'Bé về nhà là mèo con 1★, mang thuộc tính khởi đầu riêng như trên.'
   },
-  // ba bé khởi đầu: cùng 2★, cùng mèo con, mỗi bé một lối chơi; số liệu thuộc tính nằm ở TRAITS (js/data.js)
+  // ba bé khởi đầu: cùng 1★, cùng mèo con, mỗi bé một thuộc tính khởi đầu riêng, mỗi bé một lối chơi; số liệu thuộc tính nằm ở TRAITS (js/data.js)
   starters:[
     {sp:'muop',coat:'brownTabbyW',name:'Mướp ta',role:'Lữ khách đầu ngõ',style:'Đi nhiều chuyến',
       pers:'Lanh lợi, lì lợm, chuyện gì trong xóm cũng muốn ló mặt vào.',
       strong:'Viễn chinh nhanh và ít tốn sức. Hợp với người hay ghé game.',
-      traits:['s_muop','mouser'],names:['Mướp','Tiêu','Gạo','Sóc']},
+      traits:['s_muop'],names:['Mướp','Tiêu','Gạo','Sóc']},
     {sp:'vang',coat:'redTabbyW',name:'Mèo vàng',role:'Cục cưng cả xóm',style:'Ở nhà, được cưng',
       pers:'Ham ăn, tình cảm, ai đi ngang cũng đòi được gãi cằm.',
-      strong:'Vuốt ve ra nhiều xu, cả phòng vui lây. Giỏi kiếm xu ở chỗ đông người.',
-      traits:['s_vang','charmer'],names:['Vàng','Cam','Bắp','Mít']},
+      strong:'Vuốt ve ra nhiều xu, cả phòng vui lây. Hợp với người thích ở nhà cưng mèo.',
+      traits:['s_vang'],names:['Vàng','Cam','Bắp','Mít']},
     {sp:'trang',coat:'white',name:'Mèo trắng',role:'Bông tuyết may mắn',style:'Săn vé, chơi đêm',
       pers:'Nhẹ nhàng, hơi nhát, nhưng lúc nào cũng gặp may.',
-      strong:'Hay nhặt được vé gacha, đi đêm kiếm thêm xu. Hiền nên không bao giờ cào đồ.',
-      traits:['s_trang','gentle'],names:['Bông','Sữa','Tuyết','Gạo']}
+      strong:'Hay nhặt được vé gacha, đi đêm kiếm thêm xu. Hợp với người hay chơi buổi tối.',
+      traits:['s_trang'],names:['Bông','Sữa','Tuyết','Gạo']}
   ],
 
   /* ---------- bảng dáng của mèo (bước poses) ---------- */
