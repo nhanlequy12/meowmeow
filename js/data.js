@@ -154,6 +154,10 @@ const GROUPS=[['breed','Giống thật'],['anime','Anime'],['film','Phim'],['mem
 /* ============ TRAIT ============ */
 // k: g = có lợi, b = bất lợi, x = độc quyền biến thể
 const TRAITS={
+ // ba thuộc tính của mèo khởi đầu (hướng dẫn tân thủ, js/tut-text.js): độc quyền, mỗi bé một lối chơi
+ s_muop:{n:'Chân sáo đầu ngõ',k:'x',d:'Bé khởi đầu: viễn chinh nhanh hơn 15% và tốn ít hơn 15% năng lượng.',e:{speed:.15,cost:.85}},
+ s_vang:{n:'Cục cưng cả xóm',k:'x',d:'Bé khởi đầu: vuốt ve +2 xu. Mèo khác cùng phòng +6 độ vui.',e:{pet:2,aura:6}},
+ s_trang:{n:'Bông tuyết may mắn',k:'x',d:'Bé khởi đầu: +6% cơ hội nhặt vé gacha, +10% xu nếu xuất phát ban đêm (19h–5h).',e:{ticket:.06,night:.10}},
  hunter:{n:'Thợ săn bẩm sinh',k:'g',d:'+10% xu mọi chuyến viễn chinh.',e:{coin:.10,fav:'chicken'}},
  nightowl:{n:'Mèo đêm',k:'g',d:'+20% xu nếu xuất phát ban đêm (19h–5h theo giờ thật).',e:{night:.20}},
  chatty:{n:'Lắm mồm',k:'g',d:'Các mèo khác cùng phòng +8 độ vui.',e:{aura:8}},

@@ -24,7 +24,7 @@ function netInit(){
   }).catch(()=>{});
 }
 function netAskName(){
-  if($('modal').style.display==='flex'||$('gz').className){setTimeout(netAskName,3000);return} // đang bận hộp thoại khác hoặc đang quay gacha: hỏi sau
+  if($('modal').style.display==='flex'||$('gz').className||(typeof TUT!=='undefined'&&TUT.active())){setTimeout(netAskName,3000);return} // đang bận hộp thoại khác, đang quay gacha hoặc đang hướng dẫn tân thủ: hỏi sau
   modal('<h3>👋 Chào mừng tới Mèo Xu</h3><div class="dim">Game đang chạy trên máy chủ chung. Đặt một cái tên để quản trị viên nhận ra bạn (đổi sau được, nhờ quản trị viên).</div>'+
     '<div class="row" style="margin-top:8px"><input id="npname" maxlength="20" placeholder="Tên của bạn" style="flex:1" onkeydown="if(event.key===\'Enter\')netJoin()"><button class="sm on" onclick="netJoin()">Vào chơi</button></div><div id="nperr" class="dim" style="color:var(--bad)"></div>',true);
   setTimeout(()=>{const i=$('npname');if(i)i.focus()},50);

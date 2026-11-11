@@ -8,19 +8,24 @@ const now=()=>Date.now()+TOFF, rnd=(a,b)=>a+Math.random()*(b-a), pick=a=>a[Math.
 const SP={}; BREEDS.concat(VARIANTS).forEach(s=>SP[s.id]=s);
 const WORLD_W=480, WALL_Y=96, FLOOR_MIN=106, FLOOR_MAX=166;
 
+// Ván mới: chưa có mèo, chưa có vé. Hướng dẫn tân thủ (js/tutorial.js) cho chọn bé khởi đầu, tặng vé và quà; tiến độ lưu ở S.tut.
 function fresh(){
-  S={v:2,coins:300,tickets:1,xp:0,level:1,cats:[],trips:[null],items:[],rooms:{living:{bowlAt:0}},pity:0,seen:{},nid:1,last:now(),scratchAt:now()+600000};
-  const c=newCat(SP.muop,1); c.name='Mướp'; c.room='living'; c.born=now(); S.cats.push(c); markSeen(c);
+  S={v:2,coins:300,tickets:0,xp:0,level:1,cats:[],trips:[null],items:[],rooms:{living:{bowlAt:0}},pity:0,seen:{},nid:1,last:now(),scratchAt:now()+600000,tut:{step:'hi',got:{},hints:{}}};
   S.items.push({iid:S.nid++,fid:'box',room:'living',x:330,y:150,flip:false,broken:false});
   giveBowl('living');S.bowlMig=1;
 }
 function load(){
   let raw=null; try{raw=JSON.parse(localStorage.getItem(KEY))}catch(e){}
-  if(raw&&raw.v===2&&Array.isArray(raw.cats)&&raw.cats.length){S=raw}
+  // bản lưu hợp lệ: đã có mèo, hoặc đang ở giữa hướng dẫn tân thủ (chưa chọn bé khởi đầu)
+  if(raw&&raw.v===2&&Array.isArray(raw.cats)&&(raw.cats.length||(raw.tut&&!raw.tut.done))){S=raw}
   else{
     fresh();
-    try{const o=JSON.parse(localStorage.getItem('meoxu_v1')); if(o&&o.cats){S.coins=(o.coins||0)+100*Object.keys(o.cats).length;S.tickets=o.tickets||1;S.level=o.level||1;S.xp=o.xp||0}}catch(e){}
+    try{const o=JSON.parse(localStorage.getItem('meoxu_v1')); if(o&&o.cats){S.coins=(o.coins||0)+100*Object.keys(o.cats).length;S.tickets=o.tickets||1;S.level=o.level||1;S.xp=o.xp||0;
+      const c=newCat(SP.muop,1);c.name='Mướp';c.room='living';c.born=now();S.cats.push(c);markSeen(c);S.tut={done:1,old:1,hints:{all:1}}}}catch(e){}
   }
+  // người chơi cũ (bản lưu có từ trước khi có hướng dẫn): không bắt chơi lại, không hiện mẹo; xem lại được trong Sổ tay
+  if(!S.tut)S.tut={done:1,old:1,hints:{all:1}};
+  S.tut.hints=S.tut.hints||{};S.tut.got=S.tut.got||{};
   S.cats=S.cats.filter(c=>SP[c.sp]); S.cats.forEach(c=>{c.traits=c.traits.filter(t=>TRAITS[t]); if(!S.rooms[c.room])c.room='wait'});
   S.items=S.items.filter(i=>FURN[i.fid]);
   S.cats.forEach(c=>{if(!c.born)c.born=now()-(5+(c.uid*7)%20)*DAY}); // bản lưu cũ chưa có tuổi: coi như mèo trưởng thành 5–24 ngày
@@ -311,6 +316,8 @@ function gachaRoll(useTicket,opt){
   let r=Math.random()*100,star=1,acc=0;
   for(let s=5;s>=1;s--){acc+=STAR[s].p;if(r<acc){star=s;break}}
   if(S.pity>=PITY&&star<4)star=4;
+  // opt.min (lượt gacha đầu của hướng dẫn tân thủ): dưới mức này thì rút lại trong các bậc từ min trở lên, giữ đúng tỉ lệ giữa các bậc đó
+  if(opt.min&&star<opt.min){let t=0;for(let s=opt.min;s<=5;s++)t+=STAR[s].p;let r2=Math.random()*t;star=opt.min;for(let s=5;s>=opt.min;s--){r2-=STAR[s].p;if(r2<0){star=s;break}}}
   if(opt.star)star=opt.star;
   if(star>=4)S.pity=0;
   let c;

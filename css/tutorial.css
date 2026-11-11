@@ -1,0 +1,97 @@
+/* ============ HƯỚNG DẪN TÂN THỦ (js/tutorial.js) ============
+   z-index 45: trên hộp thoại (20), popup viễn chinh (25), gacha (30); dưới thông báo (50) và tooltip (70). */
+#tut{position:fixed;inset:0;z-index:45;pointer-events:none;font-size:15px}
+#tut>*{display:none}
+#tut.on>.tut-blk,#tut.on>.tut-say,#tut.on>.tut-skip{display:block}
+#tut.on:not(.has)>.tut-dim{display:block}
+#tut.on.has>.tut-hole,#tut.tiphole>.tut-hole{display:block}
+#tut.on.wait>*{display:none!important}
+#tut>.tut-tip.on{display:flex}
+#tut>.tut-card.on{display:block}
+#tut>.tut-paw{display:block}
+#tut:not(.on)>.tut-paw{display:none}
+
+.tut-dim{position:fixed;inset:0;background:rgba(36,22,12,.62);pointer-events:auto}
+.tut-blk{position:fixed;pointer-events:auto;background:transparent}
+.tut-hole{position:fixed;border-radius:14px;box-shadow:0 0 0 200vmax rgba(36,22,12,.62);outline:3px solid #ffd24a;outline-offset:0;pointer-events:none;
+  transition:left .22s,top .22s,width .22s,height .22s}
+.tut-hole::after{content:'';position:absolute;inset:-3px;border-radius:16px;border:3px solid #ffd24a;animation:tutRing 1.4s ease-out infinite}
+@keyframes tutRing{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(1.12)}}
+.tut-hole.nudge{animation:tutNudge .4s}
+@keyframes tutNudge{0%,100%{translate:0}25%{translate:-5px}75%{translate:5px}}
+.tut-hole.soft{box-shadow:0 0 0 4px rgba(255,210,74,.35);outline-color:#ffd24a}
+#tut:not(.on) .tut-hole{transition:none}
+
+.tut-paw{position:fixed;width:40px;height:40px;pointer-events:none;animation:tutPaw .9s ease-in-out infinite;filter:drop-shadow(0 2px 0 rgba(0,0,0,.25))}
+.tut-paw img{width:40px;height:40px;image-rendering:pixelated;display:block}
+.tut-paw.up img{transform:rotate(180deg)}
+@keyframes tutPaw{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.tut-paw.up{animation-name:tutPawUp}
+@keyframes tutPawUp{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+
+/* khung thoại của Xoài */
+.tut-say{position:fixed;left:50%;translate:-50% 0;width:min(560px,calc(100vw - 16px));display:flex!important;align-items:flex-end;gap:10px;
+  background:var(--panel);color:var(--ink);border:4px dotted var(--line);border-radius:18px;padding:10px 12px;pointer-events:auto;cursor:pointer;
+  box-shadow:0 6px 0 rgba(60,36,20,.25);user-select:none;-webkit-user-select:none;transition:top .22s}
+#tut:not(.on)>.tut-say,#tut.on.wait>.tut-say{display:none!important}
+.tut-say[style*="display: none"]{display:none!important}
+.tut-face{flex:none;line-height:0;margin:-18px 0 -4px -4px}
+.tut-face img{image-rendering:pixelated}
+.tut-body{flex:1;min-width:0}
+.tut-who{font-weight:900;color:var(--gold);font-size:13px;letter-spacing:.5px}
+.tut-txt{font-weight:600;line-height:1.45;min-height:2.9em;overflow-wrap:anywhere}
+.tut-txt .ico{height:1.1em;width:auto;vertical-align:-.15em}
+.tut-ghost{visibility:hidden}
+.tut-more{font-size:11.5px;color:var(--dim);text-align:right;min-height:1.2em;animation:tutBlink 1.2s steps(2) infinite}
+@keyframes tutBlink{50%{opacity:.35}}
+#tut.big .tut-face{margin-top:-60px}
+
+.tut-skip{position:fixed;top:8px;left:50%;translate:-50% 0;pointer-events:auto;min-height:36px!important;width:auto!important;padding:4px 12px!important;font-size:13px!important;
+  background:var(--panel)!important;opacity:.95!important;z-index:3}
+#tut:not(.on)>.tut-skip,#tut.on.wait>.tut-skip{display:none!important}
+.tut-skip[style*="display: none"]{display:none!important}
+
+/* thẻ giữa màn */
+.tut-card{position:fixed;left:50%;translate:-50% 0;top:12px;width:min(460px,calc(100vw - 16px));max-height:calc(100vh - 24px);overflow:auto;overscroll-behavior:contain;
+  background:var(--bg);color:var(--ink);border:4px dotted var(--line);border-radius:18px;padding:12px 14px;text-align:center;pointer-events:auto;box-shadow:0 6px 0 rgba(60,36,20,.25);z-index:2}
+.tut-card h3{margin:0 0 8px}
+.tut-card.k-pick{top:8px!important;bottom:8px;max-height:none!important;width:min(980px,calc(100vw - 16px));display:flex!important;flex-direction:column;overflow:auto}
+.tut-card.k-skip{top:50%!important;translate:-50% -50%;width:min(380px,calc(100vw - 32px))}
+.tut-blk,.tut-dim{z-index:1}
+.tut-say{z-index:2}
+
+.tut-stars{display:grid;gap:4px;text-align:left}
+.tut-stars .r{display:grid;grid-template-columns:7.2em 1fr auto;column-gap:8px;align-items:center;padding:4px 8px;border-radius:10px;background:var(--panel)}
+.tut-stars .r .dim{grid-column:2;font-size:12px;line-height:1.2}
+.tut-stars .r b{grid-column:2;grid-row:1;font-size:13.5px}
+.tut-stars .r .s{grid-row:1/3;font-size:15px;white-space:nowrap}
+.tut-stars .r .p{grid-row:1/3;grid-column:3;font-weight:900}
+.tut-stars .rb b{background:linear-gradient(90deg,#e0505e,#e89a2c,#c9a400,#3fa860,#3a86d0,#7a5ad0,#c050a8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tut-pity{margin-top:8px;font-weight:700;font-size:13px}
+.tut-poses{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
+.tut-poses .pz{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;background:var(--panel);border-radius:12px;padding:4px 2px;min-height:88px}
+.tut-poses .pz span{font-size:12px;font-weight:700}
+.tut-poses img,.tut-pk img{image-rendering:pixelated}
+.tut-gift{display:grid;gap:6px;margin:6px 0 10px;text-align:left}
+.tut-gift>div{background:var(--panel);border-radius:12px;padding:6px 10px;display:flex;align-items:center;gap:8px}
+.tut-giftbtn{width:100%;font-size:16px}
+.tut-next{text-align:left;margin:4px 0;padding-left:0;list-style:none;display:grid;gap:5px}
+.tut-next li{background:var(--panel);border-radius:10px;padding:6px 10px;font-size:13.5px;line-height:1.35}
+
+/* chọn mèo dự phòng (khi chưa có js/tut-starter.js) */
+.tut-pk{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.tut-pkc{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:90px}
+
+/* mẹo theo ngữ cảnh */
+.tut-tip{position:fixed;gap:8px;align-items:flex-start;background:var(--panel);color:var(--ink);border:3px solid #e3b94a;border-radius:14px;padding:8px 10px;
+  pointer-events:auto;box-shadow:0 5px 0 rgba(60,36,20,.22);font-size:13.5px;line-height:1.4;z-index:4;animation:tutIn .25s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes tutIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.tut-tip p{margin:0 0 4px}
+.tut-tbody{flex:1;min-width:0;text-align:left}
+.tut-tbody button{float:right;margin-top:2px}
+.tut-tface{flex:none;line-height:0}
+#tut.tiphole>.tut-hole{box-shadow:0 0 0 4px rgba(255,210,74,.35)}
+#tut.tiphole>.tut-hole::after{display:none}
+
+@media (prefers-reduced-motion:reduce){.tut-paw,.tut-hole::after,.tut-more{animation:none}}
+html[data-theme=dark] .tut-hole{outline-color:#f4cc66}
