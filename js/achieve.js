@@ -2,7 +2,7 @@
 /* ============ THÀNH TỰU (2026-11-11) ============
    105 thành tựu chia 5 nhóm, bốn mức Dễ, Vừa, Khó, Rất khó; đạt mỗi cái được ACH_XU xu (tự cộng, có thông báo).
    Số liệu đếm dồn lưu ở S.st (cộng qua onAct mà game.js và quest.js gọi); phần còn lại đọc thẳng từ trạng thái (cấp, số mèo, sưu tập, phòng, đồ...).
-   Thành tựu đã đạt lưu ở S.ach[id] = thời điểm đạt. Trang xem nằm trong tab Sưu tập, mục 🏆 Thành tựu (achPage).
+   Thành tựu đã đạt lưu ở S.ach[id] = thời điểm đạt. Trang xem là tab 🏆 Thành tựu riêng trên thanh điều hướng (PANEL.ach gọi achPage).
    Chỉ xét sau khi xong hướng dẫn tân thủ. */
 const ACH_XU=30;
 const ACH_DIFF=[['Dễ','#5f9e6e'],['Vừa','#4f86c0'],['Khó','#8a64c8'],['Rất khó','#c98a10']];
@@ -58,8 +58,8 @@ function achCheck(){
   if(!got.length)return;
   S.coins+=got.length*ACH_XU;save();
   if(got.length===1){const a=got[0];toast(a.t+' · '+a.d,{type:'level',title:'Thành tựu '+ACH_DIFF[a.diff][0].toLowerCase(),icon:'🏆',coins:ACH_XU})}
-  else toast(got.slice(0,3).map(a=>a.t).join(', ')+(got.length>3?' và '+(got.length-3)+' thành tựu khác':'')+'. Xem ở Sưu tập.',{type:'level',title:'Mở '+got.length+' thành tựu',icon:'🏆',coins:got.length*ACH_XU});
-  if(tab==='album'&&albumG==='ach')renderPanel();
+  else toast(got.slice(0,3).map(a=>a.t).join(', ')+(got.length>3?' và '+(got.length-3)+' thành tựu khác':'')+'. Xem ở tab Thành tựu.',{type:'level',title:'Mở '+got.length+' thành tựu',icon:'🏆',coins:got.length*ACH_XU});
+  if(tab==='ach')renderPanel();
 }
 let achT=0;
 // đếm dồn: mọi lời gọi onAct (quest.js đã gán trước) đều được cộng vào S.st; xét thành tựu sau 0,4 giây để các việc liền nhau gộp thành một thông báo

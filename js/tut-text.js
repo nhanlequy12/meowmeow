@@ -169,7 +169,7 @@ const TUT_TEXT={
     broken:['Ối, đồ bị cào rách nên mất hiệu ứng. Sửa tốn 30% giá.','Đặt trụ cào trong cùng phòng thì bé ít cào hơn.'],
     bowl:['Số suất trong bát ít hơn số mèo, có bé sẽ phải nhịn.','Mua thêm bát ở Cửa hàng, mục Bát ăn nhé.'],
     food:['Món mới đã mở! Mỗi món có tác dụng riêng, như thêm năng lượng hay tăng xu viễn chinh.','Dòng ❤ cho biết món đó là khoái khẩu của bé nào.'],
-    room2:['Giờ bạn có nhiều phòng. Bấm ◀ ▶ hoặc tên phòng để chuyển qua lại.','Mỗi phòng có hiệu ứng riêng, chuyển mèo ở tab Quản lý mèo.'],
+    room2:['Giờ bạn có nhiều phòng. Bấm ◀ ▶ hoặc tên phòng để chuyển qua lại.','Mỗi phòng có hiệu ứng riêng, chuyển mèo ở tab Mèo.'],
     away:['Lúc bạn vắng, bé đói sẽ tự ra ăn suất còn thừa trong bát.','Có Máy cho ăn tự động thì máy còn tự đổ hạt khô giúp bạn.'],
     settings:['Đổi giao diện sáng tối và cỡ hạt cườm ở đây.','Sổ tay hướng dẫn cũng nằm trong này, xem lại lúc nào cũng được.'],
     tags:['Mỗi điểm đến có thẻ riêng như đông người, gần nước, thiên nhiên.','Thuộc tính của bé có thể cộng hoặc trừ xu theo thẻ đó, và theo ngày hay đêm.']
@@ -234,7 +234,7 @@ const TUT_TEXT={
         'Ở tab Phòng, thỉnh thoảng có khách lạ chạy qua: chuột nhắt, bướm, cuộn len vàng, hiếm khi có bướm vàng. Chạm vào để bắt, được xu; cuộn len vàng và bướm vàng còn có vé.']},
       {id:'ach',ic:'🏆',t:'Thành tựu',p:[
         'Có 105 thành tựu, chia bốn mức: Dễ, Vừa, Khó, Rất khó. Mỗi thành tựu đạt được thưởng ngay 30 xu, không cần bấm nhận.',
-        'Xem ở tab Sưu tập, mục 🏆 Thành tựu: mỗi dòng ghi việc cần làm, mức khó và thanh tiến độ.',
+        'Xem ở tab 🏆 Thành tựu trên thanh điều hướng: mỗi dòng ghi việc cần làm, mức khó và thanh tiến độ.',
         'Thành tựu tính theo số lần viễn chinh, cho ăn, vuốt ve, quay gacha, bắt khách lạ, làm nhiệm vụ, và theo những gì bạn đang có: cấp, số mèo, giống đã gặp, phòng, nội thất, xu.']},
       {id:'shop',ic:'🛋',t:'Cửa hàng và nội thất',p:[
         'Có 17 phòng; phòng sau đắt hơn nhưng chứa nhiều mèo hơn và có hiệu ứng riêng như hồi năng lượng, thêm vui, thêm xu.',
@@ -245,7 +245,7 @@ const TUT_TEXT={
         'Chạm một món để xoay, cất kho hoặc xóa (hoàn 25% giá). Đồ trong Kho đặt lại được vào phòng bất kỳ.',
         'Mèo có tật cào có thể làm rách sofa; sửa tốn 30% giá. Trụ cào cùng phòng giảm khả năng bị cào.']},
       {id:'cats',ic:'🐈',t:'Quản lý mèo và phóng sinh',p:[
-        'Tab Quản lý mèo: lọc theo phòng, sắp xếp, đổi phòng bằng ô chọn hoặc kéo thả thẻ vào ô phòng.',
+        'Tab Mèo: lọc theo phòng, sắp xếp, đổi phòng bằng ô chọn hoặc kéo thả thẻ vào ô phòng.',
         'Hết chỗ thì bé mới vào Phòng chờ (không giới hạn nhưng bị trừ 10 vui).',
         'Phóng sinh: nhận xu theo sao (1★ 20 xu tới 5★ 1.000 xu và 1 vé). Bé 4★–5★ được hỏi lại lần hai. Luôn giữ lại ít nhất một bé.']},
       {id:'album',ic:'📖',t:'Sưu tập',p:[

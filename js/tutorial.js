@@ -72,7 +72,7 @@ const TUT=(()=>{
     {id:'view',say:'view',tab:'home',target:['#roomwrap','#zoomb'],pass:1,enter(){if(fol)unfollow(true)}},
     {id:'feed',say:'feed',tab:'home',target:'#panel button[onclick="openFeed()"]',act:'openFeed',done:()=>modalOn(),skip:()=>!bowlReady(cur)||!homeCats(cur).length},
     {id:'food',say:'food',target:'#mbox button[onclick="doFeed(\'kibble\')"]',act:'doFeed',enter(){if(!modalOn())openFeed()},skip:()=>!bowlReady(cur)||!homeCats(cur).length,close:1},
-    {id:'fed',say:'fed',tab:'home',target:'#panel > .row',enter(){if(modalOn())closeModal()}},
+    {id:'fed',say:'fed',tab:'home',target:'#panel > .feedbar',enter(){if(modalOn())closeModal()}},
     {id:'ticket',say:'ticket',replayOff:1,enter(){grant('ticket')}},
     {id:'gtab',say:'gtab',target:tabBtn('gacha'),act:'setTab',done:()=>tab==='gacha',enter(){if(modalOn())closeModal()}},
     {id:'stars',say:'stars',card:'stars',tab:'gacha'},

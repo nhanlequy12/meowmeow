@@ -32,7 +32,7 @@
   const normalHome=()=>home()&&!edit;
   const editTarget=()=>home()&&edit?visible(q('#panel button[onclick="toggleEdit()"]')?.closest('.card')):null;
   const repairTarget=()=>home()?visible(q('#panel button[onclick^="doRepair("]')?.closest('.card')):null;
-  const bowlTarget=target('#panel > .row + .dim',normalHome);
+  const bowlTarget=target('#panel > .feedbar > .fdinfo',normalHome);
   const roomTarget=target('#roomnav',home);
 
   /* Chờ ở đây cho tới khi đúng ngữ cảnh và đích đang lộ ra, rồi mới giao cho TUT.

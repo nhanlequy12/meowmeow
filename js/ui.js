@@ -89,8 +89,12 @@ function toast(msg,o){
   const t=TT[o.type]||TT.info,box=$('toast'),d=document.createElement('div');
   d.className='tst';d.style.setProperty('--ac',t[1]);
   d.innerHTML=emo('<div class="ic">'+(o.icon||t[0])+'</div><div class="bd">'+(o.title?'<b>'+esc(o.title)+'</b>':'')+'<span>'+esc(msg)+'</span></div>'+(o.coins?'<div class="cn">+<span class="num">0</span> 🪙</div>':''));
-  while(box.children.length>=4)box.firstChild.remove();
-  box.style.top=($('pop').classList.contains('on')?Math.round($('pop').getBoundingClientRect().bottom)+14:10)+'px';
+  // điện thoại dọc (đã xong hướng dẫn): thông báo hiện ở dưới, ngay trên thanh tab, tối đa 2 cái để không che xu, cấp và phòng
+  const low=!!(S&&S.tut&&S.tut.done)&&matchMedia('(orientation:portrait) and (max-width:700px)').matches;
+  while(box.children.length>=(low?2:4))box.firstChild.remove();
+  box.classList.toggle('low',low);
+  if(low){box.style.top='auto';box.style.bottom=($('tabs').offsetHeight+10)+'px'}
+  else{box.style.bottom='';box.style.top=($('pop').classList.contains('on')?Math.round($('pop').getBoundingClientRect().bottom)+14:10)+'px'}
   box.appendChild(d);
   requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('on')));
   if(o.coins){const n=d.querySelector('.num'),t0=performance.now(),run=t=>{const k=Math.min(1,(t-t0)/700);n.textContent=Math.round(o.coins*(1-Math.pow(1-k,3)));if(k<1&&d.isConnected)requestAnimationFrame(run)};requestAnimationFrame(run)}
@@ -1449,7 +1453,7 @@ function shopGrid(items,sel){
 // đổi cỡ cửa sổ hay xoay máy: tính lại khung thẻ theo số cột mới
 {let rt=0;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(tab==='shop'&&shopT!=='rooms')renderPanel()},200)})}
 let tab='home',albumG='breed',shopT='rooms',shopSel=null,mg={sort:'star',room:'all',multi:false,sel:{}};
-const TABS=[['home','🏠','Phòng'],['gacha','🥚','Gacha'],['trip','🎒','Viễn chinh'],['shop','🛋','Cửa hàng'],['album','📖','Sưu tập'],['cats','🐱','Quản lý mèo']];
+const TABS=[['home','🏠','Phòng'],['gacha','🥚','Gacha'],['trip','🎒','Viễn chinh'],['shop','🛋','Cửa hàng'],['album','📖','Sưu tập'],['ach','🏆','Thành tựu'],['cats','🐱','Mèo']];
 function setTab(t){tab=t;$('app').dataset.tab=t;if(edit&&t!=='home'){toggleEdit();return}if(t==='home')fitCanvas();render();scrollTo(0,0)}
 function renderTop(){
   const ready=S.trips.filter(p=>p&&now()>=p.end).length,n=S.cats.length||1;
@@ -1495,6 +1499,7 @@ function openSettings(){
    '<div class="card" style="flex-direction:column;align-items:stretch"><b>Công cụ thử nghiệm</b><div class="row wrap"><button class="sm" onclick="closeModal();doSkip()">⏩ Tua nhanh 10 phút</button><button class="sm bad" onclick="closeModal();resetAll()">🗑 Chơi lại từ đầu</button></div></div>');
 }
 const PANEL={
+ ach(){return typeof achPage==='function'?achPage():''},
  home(){
   if(edit){
     const it=S.items.find(i=>i.iid===sel),kho=S.items.filter(i=>!i.room);
@@ -1503,10 +1508,11 @@ const PANEL={
      '<h3>Kho đồ ('+kho.length+')</h3>'+(kho.length?kho.map(i=>'<div class="card">'+furnTag(i.fid)+'<div class="g"><b>'+FURN[i.fid].n+'</b>'+(i.broken?' <span style="color:var(--bad)">(hỏng)</span>':'')+'</div><button class="sm" onclick="doPlace('+i.iid+')">Đặt vào phòng</button></div>').join(''):'<div class="dim">Kho trống. Đồ mua ở Cửa hàng được đặt thẳng vào phòng đang xem.</div>');
   }
   const cats=catsIn(cur),bs=bowlsIn(cur),ready=bowlReady(cur),broken=itemsIn(cur).filter(i=>i.broken),left=bs.reduce((a,b)=>a+(b.left||0),0),cap=bowlCap(cur),hm=homeCats(cur).length;
-  return '<div class="row" style="margin-bottom:8px"><button style="flex:1" class="'+(ready?'go':'')+'" '+(ready||!bs.length?'':'disabled')+' onclick="openFeed()">🍚 '+(!bs.length?'Chưa có bát ăn':ready?'Cho ăn':'Bát đổ lại được sau '+fmt(bowlNext(cur)-now()))+'</button><button onclick="toggleEdit()">✏️ Sắp xếp đồ</button></div>'+
-   '<div class="dim" style="margin-bottom:8px">🍽️ '+bs.length+' bát · còn '+left+'/'+cap+' suất cho '+hm+' bé ở nhà'+(cap<hm?' · <b style="color:var(--bad)">Thiếu bát ăn, mua thêm ở Cửa hàng</b>':'')+'</div>'+
+  // hàng hành động dưới phòng: tình trạng bát (đọc trước) bên trái, nút bên phải; điện thoại dọc thì tình trạng ở trên, hai nút chia đôi ở dưới
+  return '<div class="feedbar"><div class="fdinfo dim">🍽️ '+bs.length+' bát · còn '+left+'/'+cap+' suất cho '+hm+' bé ở nhà'+(cap<hm?' · <b style="color:var(--bad)">Thiếu bát ăn, mua thêm ở Cửa hàng</b>':'')+'</div>'+
+   '<div class="fdbtns"><button class="fdgo '+(ready?'go':'')+'" '+(ready||!bs.length?'':'disabled')+' onclick="openFeed()">🍚 '+(!bs.length?'Chưa có bát ăn':ready?'Cho ăn':'Bát đổ lại được sau '+fmt(bowlNext(cur)-now()))+'</button><button onclick="toggleEdit()">✏️ Sắp xếp đồ</button></div></div>'+
    broken.map(i=>'<div class="card"><div class="g">😾 <b>'+FURN[i.fid].n+'</b> bị cào hỏng, mất hiệu ứng.</div><button class="sm" onclick="doRepair('+i.iid+')">🔧 Sửa '+repairCost(i)+' xu</button></div>').join('')+
-   (cats.length?cats.map(catCard).join(''):'<div class="dim">Phòng này chưa có bé nào. Vào Quản lý mèo để chuyển bé sang.</div>')+
+   (cats.length?cats.map(catCard).join(''):'<div class="dim">Phòng này chưa có bé nào. Vào tab Mèo để chuyển bé sang.</div>')+
    '<div class="dim">Kéo để xem phòng; giữ Ctrl rồi lăn chuột, chụm 2 ngón hoặc bấm ＋ － để phóng to thu nhỏ. Chạm vào mèo để theo dõi và vuốt ve (mỗi bé 10 phút nhận xu một lần, bé càng nhiều sao càng nhiều xu), chạm chỗ trống để thôi theo dõi; chạm vào thẻ bên dưới để xem thông tin và chuyển phòng. 🍗 no · ⚡ năng lượng · 😊 độ vui.</div>';
  },
  trip(){
@@ -1560,8 +1566,7 @@ const PANEL={
  album(){
   const of=g=>g==='breed'?BREEDS:VARIANTS.filter(v=>v.g===g),sc=S.seenCoat||{},sr=S.seenRare||{};
   const nCoat=b=>b.coats.filter(k=>sc[b.id+'~'+k]).length;
-  const tabs='<div class="row wrap" style="margin-bottom:8px">'+GROUPS.map(g=>'<button class="sm '+(albumG===g[0]?'on':'')+'" onclick="albumG=\''+g[0]+'\';renderPanel()">'+g[1]+' '+(g[0]==='rare'?RARES.filter(r=>sr[r.id]).length+'/'+RARES.length:of(g[0]).filter(x=>S.seen[x.id]).length+'/'+of(g[0]).length)+'</button>').join('')+(typeof achPage==='function'?'<button class="sm '+(albumG==='ach'?'on':'')+'" onclick="albumG=\'ach\';renderPanel()">🏆 Thành tựu '+achN()+'/'+ACH.length+'</button>':'')+'</div>';
-  if(albumG==='ach'&&typeof achPage==='function')return tabs+achPage();
+  const tabs='<div class="row wrap" style="margin-bottom:8px">'+GROUPS.map(g=>'<button class="sm '+(albumG===g[0]?'on':'')+'" onclick="albumG=\''+g[0]+'\';renderPanel()">'+g[1]+' '+(g[0]==='rare'?RARES.filter(r=>sr[r.id]).length+'/'+RARES.length:of(g[0]).filter(x=>S.seen[x.id]).length+'/'+of(g[0]).length)+'</button>').join('')+'</div>';
   if(albumG==='rare')return tabs+'<div class="dim" style="margin-bottom:8px">Màu hiếm có thể rơi vào bất kỳ giống nào, khoảng '+Math.round(RARE_P*100)+'% mỗi lượt gacha, luôn là 4★.</div><div class="grid">'+RARES.map(r=>
     sr[r.id]?'<div class="cell">'+catTag(sr[r.id]+'~'+r.id,1.5)+'<br><b style="color:'+scol(4)+'">'+r.n+'</b><br>'+starsOf(4,1)+'<br><span class="dim" style="font-size:11px">gặp lần đầu ở '+SP[sr[r.id]].n+'<br>'+tagOf(r.tr)+'</span></div>'
              :'<div class="cell" style="opacity:.75"><div style="font-size:44px;line-height:80px;color:var(--dim)">?</div><b style="color:'+scol(4)+'">???</b></div>').join('')+'</div>';

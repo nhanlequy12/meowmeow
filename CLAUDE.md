@@ -487,5 +487,21 @@ Người dùng chọn hai gameplay đầu tiên trong danh sách gợi ý để 
 - Mỗi chuỗi khai báo bằng `achSer(nhóm, khóa, hàm đọc giá trị, hàm mô tả, [[mốc, độ khó, tên], ...])`; id là `khóa_mốc`. Đổi mốc thì id đổi, người đã đạt mốc cũ giữ thành tựu cũ trong `S.ach` nhưng không còn hiện.
 - Số đếm dồn ở `S.st`, cộng bằng cách bọc `onAct` (sau khi `quest.js` đã gán): mọi khóa `onAct` gọi đều được đếm. Khóa thêm cho thành tựu: `quest` và `qday` (gọi trong `qClaim`), `gold` (bắt bướm vàng, trong `critHit`). `S.st.catch` được nâng bằng `S.q.n` cho bản lưu cũ. Số đếm chỉ bắt đầu từ khi có tính năng này (bản lưu cũ không có lịch sử viễn chinh, cho ăn, vuốt ve).
 - Thành tựu theo trạng thái (cấp, số mèo, giống và trang phục đã gặp, màu hiếm, 5★, phòng, số loại nội thất, bộ trọn, xu, vé, độ vui, mèo con, mèo già) đọc thẳng từ `S`, xét mỗi 3 giây. Sau `onAct` thì đợi 0,4 giây rồi mới xét để các việc liền nhau gộp thành một thông báo; mở từ 2 thành tựu trở lên thì chỉ hiện một thông báo tổng.
-- Trang xem: tab Sưu tập, nút "🏆 Thành tựu x/105" sau các nhóm giống (không thêm vào `GROUPS` vì `GROUPS` còn dùng cho trang quản trị). Lưới thẻ `.achg/.achc`, thẻ đã đạt viền vàng, chưa đạt có thanh tiến độ. Biểu tượng `trophy` trong `IC` (art.js), `'🏆':'trophy'` trong `EMO_IC`. Sổ tay có mục "Thành tựu".
+- Trang xem: tab 🏆 Thành tựu riêng trên thanh điều hướng (`TABS` có 7 mục, `PANEL.ach` gọi `achPage`). Lưới thẻ `.achg/.achc`, thẻ đã đạt viền vàng, chưa đạt có thanh tiến độ. Biểu tượng `trophy` trong `IC` (art.js), `'🏆':'trophy'` trong `EMO_IC`. Sổ tay có mục "Thành tựu". Thanh tab dưới (điện thoại dọc) chia 7 cột; thanh bên ở điện thoại ngang thu nút còn cao 40px để 7 nút vừa màn cao 375px.
 - Đã thử bằng Playwright ở PC, điện thoại dọc, điện thoại ngang và nền tối: không tràn ngang, không lỗi JS, bướm vàng và nhận nhiệm vụ mở đúng thành tựu, bản lưu có đủ đồ và phòng mở đúng các mốc nhà cửa. Ảnh ở `preview/ach/`.
+
+## 21. Bố cục hàng nút Cho ăn (2026-11-11, chưa commit)
+
+- Trước: nút Cho ăn kéo dài gần hết bề ngang (1180px trên PC) với chữ nhỏ ở giữa, dòng tình trạng bát nằm tách riêng phía dưới nút, trên PC sát đáy màn hình.
+- Sau (`.feedbar` trong `PANEL.home`): màn rộng thì tình trạng bát bên trái (đọc trước), nút Cho ăn (rộng tối thiểu 180px) và Sắp xếp đồ bên phải, cùng một hàng. Màn hẹp hơn 560px thì tình trạng bát ở trên, hai nút ở dưới. Chỉ đổi bố cục, không đổi màu, chữ hay kiểu nút. Nút vẫn giữ `onclick="openFeed()"` trong `#panel` để bước `feed` của hướng dẫn tân thủ tìm được.
+- Hướng dẫn tân thủ: bước `fed` nay trỏ `#panel > .feedbar`; mẹo thiếu bát (`tut-hints.js`, `bowlTarget`) trỏ `#panel > .feedbar > .fdinfo`. Đổi bố cục hàng này thì sửa cả hai.
+
+## 22. Tối ưu bố cục theo góp ý (2026-11-11, chưa commit)
+
+Người dùng chọn gợi ý 1, 3, 4, 5, 6. Chỉ đổi vị trí và kích thước, không đổi màu hay kiểu nút.
+- Điện thoại ngang (`orientation:landscape` và cao tối đa 520px): ẩn chữ MÈO XU, nút Cài đặt nằm cùng dòng chỉ số (`.hdr` đặt tuyệt đối góc phải, `#top` chừa 116px). Tên phòng (`#roomnav`) nổi trên góc trái khung phòng bằng `margin-bottom:-50px`, thẻ theo dõi mèo dời xuống `top:56px`. Ở 844×390 khung phòng cao 248px (trước 170px). Ở 667×375 dòng chỉ số vẫn xuống hai hàng vì không đủ ngang.
+- Thông báo (`toast` trong ui.js): điện thoại dọc (rộng tối đa 700px) và đã xong hướng dẫn thì hiện ở dưới, ngay trên thanh tab, tối đa 2 cái, trượt lên từ dưới (`#toast.low`). Trong lúc hướng dẫn và trên PC, điện thoại ngang giữ như cũ (trên cùng, tối đa 4). Thông báo không nhận chạm nên không chặn nút bên dưới.
+- Tab "Quản lý mèo" đổi nhãn thành "Mèo" (id `cats` giữ nguyên). Đã sửa chữ "Quản lý mèo" trong ui.js và tut-text.js; tiêu đề Sổ tay "Quản lý mèo và phóng sinh" giữ nguyên.
+- PC (rộng từ 1024px): các ô chỉ số trên cùng chia đều phần trống (`flex:1 1 auto`), ô cấp rộng gấp ba, thay vì ô cấp kéo dài một mình.
+- Nút ＋ － phóng to dời lên góc trên phải khung phòng (vùng tường, ít mèo đứng). Thẻ theo dõi mèo hẹp lại (`calc(100% - 76px)`) để không đè nút.
+- Đã cho bot chơi hết hướng dẫn tân thủ ở PC, điện thoại dọc, điện thoại ngang. Ở điện thoại dọc bot đôi khi kẹt ở bước `pet` vì bấm lúc ô sáng còn chạy; bản HEAD cũ cũng vậy, chạm thật vào mèo thì qua ngay.
