@@ -63,7 +63,7 @@ function netApply(c){
 /* ---------- quản trị viên ---------- */
 function netAdminLogin(msg){
   modal('<h3>🔐 Mã quản trị</h3><div class="dim">Game đang chạy trên máy chủ chung nên bảng Admin chỉ mở cho quản trị viên. Mã được in ra ở cửa sổ chạy <b>server.py</b> (và lưu trong <b>data/admin_key.txt</b>).</div>'+
-    '<div class="row" style="margin-top:8px"><input id="nakey" type="password" autocomplete="off" placeholder="Mã quản trị" style="flex:1" onkeydown="if(event.key===\'Enter\')netAdminTry()"><button class="sm on" onclick="netAdminTry()">Mở</button><button class="sm" onclick="closeModal()">Đóng</button></div>'+
+    '<div class="row" style="margin-top:8px"><input id="nakey" type="password" autocomplete="off" placeholder="Mã quản trị" style="flex:1" onkeydown="if(event.key===\'Enter\')netAdminTry()"><button class="sm on" onclick="netAdminTry()">Mở</button></div>'+
     '<div id="naerr" class="dim" style="color:var(--bad)">'+(msg||'')+'</div>');
   setTimeout(()=>{const i=$('nakey');if(i)i.focus()},50);
 }
@@ -101,7 +101,7 @@ function netPlayers(sort){
       '<div class="dim">Tổng cộng: 🪙 '+nfmt(tot('coins'))+' xu · 🐱 '+nfmt(tot('ncat'))+' mèo. ⚠ là số cảnh báo trong nhật ký (xu tăng bất thường, bật xu vô hạn, bản lưu bị lùi).</div>'+
       '<div class="row wrap" style="margin:6px 0">'+sb('last','Mới chơi')+sb('coins','Nhiều xu')+sb('level','Cấp cao')+sb('cats','Nhiều mèo')+sb('name','Theo tên')+'<button class="sm" onclick="netPlayers()">↻ Tải lại</button></div>'+
       (ps.length?ps.map(row).join(''):'<div class="dim">Chưa có người chơi nào vào máy chủ.</div>')+
-      '<div class="row" style="justify-content:center;margin-top:6px"><button class="sm" onclick="netGiftAll()">🎁 Tặng / thông báo cho tất cả</button><button class="sm" onclick="openAdmin()">← Bảng Admin</button><button class="sm" onclick="closeModal()">Đóng</button></div>');
+      '<div class="row" style="justify-content:center;margin-top:6px"><button class="sm" onclick="netGiftAll()">🎁 Tặng / thông báo cho tất cả</button><button class="sm" onclick="openAdmin()">← Bảng Admin</button></div>');
   }).catch(nerr);
 }
 // các ô hành động dùng chung cho một người chơi hoặc cho tất cả (tg là id người chơi hoặc 'all')
@@ -124,7 +124,7 @@ function netCmd(tg,type){
 }
 function netGiftAll(){
   modal('<h3>🎁 Gửi cho tất cả người chơi</h3><div class="dim">Người đang chơi nhận trong vòng 30 giây; người vắng mặt nhận khi mở lại game.</div>'+netActs('all')+
-    '<div class="row" style="justify-content:center"><button class="sm" onclick="netPlayers()">← Danh sách</button><button class="sm" onclick="closeModal()">Đóng</button></div>');
+    '<div class="row" style="justify-content:center"><button class="sm" onclick="netPlayers()">← Danh sách</button></div>');
   admCoats('nsp','nct');
 }
 function netPlayer(id){
@@ -140,7 +140,7 @@ function netPlayer(id){
       box('Hồ sơ','<div class="row"><input id="nname" maxlength="20" value="'+esc(p.name)+'" style="flex:1"><button class="sm" onclick="netRename(\''+id+'\')">Đổi tên</button></div><div class="row wrap">'+(p.pending?'<button class="sm" onclick="netPost(\'uncmd\',\''+id+'\')">Hủy '+p.pending+' lệnh đang chờ</button>':'')+'<button class="sm bad" onclick="netCmd(\''+id+'\',\'reset\')">Đặt lại dữ liệu</button><button class="sm bad" onclick="netDelete(\''+id+'\')">Xóa khỏi máy chủ</button></div>')+
       box('Đàn mèo ('+cats.length+')','<div style="max-height:150px;overflow:auto;line-height:1.7">'+(cats.length?cats.map(cn).join(''):'<span class="dim">Chưa có dữ liệu</span>')+'</div>')+
       box('Nhật ký','<div style="max-height:190px;overflow:auto;font-size:13px">'+(lg||'<span class="dim">Chưa có gì</span>')+'</div>')+
-      '<div class="row" style="justify-content:center"><button class="sm" onclick="netPlayer(\''+id+'\')">↻ Tải lại</button><button class="sm" onclick="netPlayers()">← Danh sách</button><button class="sm" onclick="closeModal()">Đóng</button></div>');
+      '<div class="row" style="justify-content:center"><button class="sm" onclick="netPlayer(\''+id+'\')">↻ Tải lại</button><button class="sm" onclick="netPlayers()">← Danh sách</button></div>');
     admCoats('nsp','nct');
   }).catch(nerr);
 }

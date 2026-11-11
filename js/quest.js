@@ -55,9 +55,9 @@ onAct=(k,v)=>{
 };
 function qClaim(w,i){
   qSync();const q=S.q,x=w==='all'?null:q[w][i];
-  if(w==='all'){if(q.all||!q.d.every(y=>y.got))return;q.all=1;const b=qRewAll();S.coins+=b.coins;S.tickets+=b.tickets;addXp(20);save();toast('Xong cả ba nhiệm vụ hôm nay! +'+b.tickets+' vé',{type:'level',title:'🎉 Thưởng cả ngày',coins:b.coins});openQuests();render();return}
+  if(w==='all'){if(q.all||!q.d.every(y=>y.got))return;q.all=1;const b=qRewAll();S.coins+=b.coins;S.tickets+=b.tickets;addXp(20);onAct('qday',1);save();toast('Xong cả ba nhiệm vụ hôm nay! +'+b.tickets+' vé',{type:'level',title:'🎉 Thưởng cả ngày',coins:b.coins});openQuests();render();return}
   if(!x||x.got||x.p<x.n)return;
-  x.got=1;const c=w==='h'?q.rh:q.rd;S.coins+=c;if(x.tk)S.tickets++;addXp(w==='h'?3:8);save();
+  x.got=1;const c=w==='h'?q.rh:q.rd;S.coins+=c;if(x.tk)S.tickets++;addXp(w==='h'?3:8);onAct('quest',1);save();
   toast(Q_DEF[x.k].t(x.n)+(x.tk?' · +1 vé':''),{type:'coin',title:'Nhận thưởng nhiệm vụ',coins:c});openQuests();render();
 }
 function qLeft(w){const d=qDate(),e=new Date(d);if(w==='h')e.setHours(d.getHours()+1,0,0,0);else e.setHours(24,0,0,0);const m=Math.ceil((e-d)/60000);return m>60?Math.floor(m/60)+' giờ'+(m%60?' '+(m%60)+' phút':''):m+' phút'}
@@ -72,8 +72,7 @@ function openQuests(){
     '<div class="qhd"><b>Trong giờ</b> <small class="dim">· đổi mới sau '+qLeft('h')+'</small></div>'+q.h.map((x,i)=>qRow('h',x,i,q.rh)).join('')+
     '<div class="qhd"><b>Hôm nay</b> <small class="dim">· đổi mới sau '+qLeft('d')+'</small></div>'+q.d.map((x,i)=>qRow('d',x,i,q.rd)).join('')+
     '<div class="card qrow'+(q.all?' qgot':'')+'"><div class="qic">🎁</div><div class="g"><b>Xong cả ba nhiệm vụ hôm nay</b><br><small>thưởng 🪙 '+fmtN(b.coins)+' + '+b.tickets+' 🎟</small></div>'+(q.all?'<span class="dim">✅ Đã nhận</span>':'<button class="sm'+(all?' on':'')+'" '+(all?'':'disabled')+' onclick="qClaim(\'all\')">'+(all?'Nhận':q.d.filter(x=>x.got).length+'/3')+'</button>')+'</div>'+
-    '<div class="dim" style="margin:6px 2px">Khách lạ (chuột, bướm, cuộn len) thỉnh thoảng chạy qua phòng: chạm vào để bắt, được xu và đôi khi có vé. Đã bắt '+(q.n||0)+' vị.</div>'+
-    '<button onclick="closeModal()">Đóng</button>');
+    '<div class="dim" style="margin:6px 2px">Khách lạ (chuột, bướm, cuộn len) thỉnh thoảng chạy qua phòng: chạm vào để bắt, được xu và đôi khi có vé. Đã bắt '+(q.n||0)+' vị.</div>');
 }
 // nút Nhiệm vụ trên thanh trên cùng (thanh này được vẽ lại mỗi giây)
 {const rt=renderTop;renderTop=function(){rt.apply(this,arguments);if(!qSync())return;const n=qReady(),el=document.createElement('div');
@@ -140,7 +139,7 @@ critHit=function(wx,wy){
   S.coins+=coins;S.tickets+=tk;S.q.n=(S.q.n||0)+1;addXp(2);cr.gone=1;crits=crits.filter(c=>c!==cr);
   for(let i=0;i<14;i++)rp(cr.x,cr.y-C.h/2,pick(['#ffe07a','#fff3b0','#ffffff']),{sh:ch(.5)?'star':'coin',vx:rnd(-30,30),vy:rnd(-50,-15),g:90,life:rnd(.5,.9)});
   ents.forEach(e=>{if(e.chase===cr.id){e.chase=0;e.emoT=1.2}});
-  onAct('catch',1);save();
+  onAct('catch',1);if(cr.kind==='gbfly')onAct('gold',1);save();
   toast('Bắt được '+C.n.toLowerCase()+'!'+(tk?' +1 vé 🎟':''),{type:'coin',title:C.air?'🦋 Khách lạ':'🐭 Khách lạ',coins});render();
   return true;
 };

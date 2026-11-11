@@ -169,7 +169,7 @@ const THB_BOOK=(()=>{
     if(i<0){
       show('<h3>'+text(b.title)+'</h3><p class="thb-sub">'+text(b.sub)+'</p><div class="thb-grid">'+list.map(chapterButton).join('')+'</div>'+
         '<div class="thb-actions"><button class="thb-replay" onclick="THB_BOOK.askReplay()">'+text(b.replay)+'</button>'+
-        '<button onclick="THB_BOOK.reset()">'+text(b.hintsReset)+'</button><button onclick="closeModal()">'+text(b.close)+'</button></div>');
+        '<button onclick="THB_BOOK.reset()">'+text(b.hintsReset)+'</button></div>');
       return;
     }
     const p=list[i];

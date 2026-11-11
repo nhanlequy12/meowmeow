@@ -73,7 +73,7 @@ setInterval(()=>{if(tipFor&&!tipFor.isConnected)hideTip()},400);
 
 // lock = hộp thoại bắt buộc trả lời: ẩn nút ✕ và không đóng bằng phím Esc
 /* ---------- icon riêng của game thay cho emoji: vẽ bằng Art.icon, cùng kiểu hạt cườm với mèo ---------- */
-const EMO_IC={'🪙':'coin','🎟':'ticket','🐱':'cat','🐈':'cat','👥':'cat','😾':'grumpy','🍗':'drum','🍖':'drum','⚡':'bolt','😊':'smile','❤':'heart','🏠':'house','🥚':'gacha','🎒':'pack','🛋':'sofa','📖':'book','⚙':'gear','🔒':'lock','🔐':'lock','✨':'sparkle','💎':'gem','🚪':'door','🎁':'gift','🔧':'wrench','🛠':'wrench','🕊':'bird','⚠':'warn','🌙':'moon','🎲':'dice','✏':'pencil','⏩':'ff','❗':'excl','🗑':'trash','🍽':'bowl','🍚':'rice','🥣':'kibble','🥫':'can','🐟':'fish','🍣':'salmon','🍥':'churu','🌿':'leaf','🍱':'bento','🏘':'town','🌳':'tree','🎣':'lake','⚓':'anchor','📍':'pin','✅':'check','📦':'box','🐾':'paw','🤚':'paw','🎉':'party','⭐':'star','👑':'crown','☀':'sun','🌤':'sun','⏳':'hourglass','🍼':'bottle','📜':'scroll','🦋':'bfly','🐭':'mouse'};
+const EMO_IC={'🪙':'coin','🎟':'ticket','🐱':'cat','🐈':'cat','👥':'cat','😾':'grumpy','🍗':'drum','🍖':'drum','⚡':'bolt','😊':'smile','❤':'heart','🏠':'house','🥚':'gacha','🎒':'pack','🛋':'sofa','📖':'book','⚙':'gear','🔒':'lock','🔐':'lock','✨':'sparkle','💎':'gem','🚪':'door','🎁':'gift','🔧':'wrench','🛠':'wrench','🕊':'bird','⚠':'warn','🌙':'moon','🎲':'dice','✏':'pencil','⏩':'ff','❗':'excl','🗑':'trash','🍽':'bowl','🍚':'rice','🥣':'kibble','🥫':'can','🐟':'fish','🍣':'salmon','🍥':'churu','🌿':'leaf','🍱':'bento','🏘':'town','🌳':'tree','🎣':'lake','⚓':'anchor','📍':'pin','✅':'check','📦':'box','🐾':'paw','🤚':'paw','🎉':'party','⭐':'star','👑':'crown','☀':'sun','🌤':'sun','⏳':'hourglass','🍼':'bottle','📜':'scroll','🦋':'bfly','🐭':'mouse','🏆':'trophy'};
 const EMO_RE=new RegExp('('+Object.keys(EMO_IC).join('|')+')\\uFE0F?','gu'),ICO={};
 const icoTag=n=>'<img class="px ico" alt="" src="'+(ICO[n]||(ICO[n]=bufCanvas(Art.icon(n),2).toDataURL()))+'">';
 // đổi emoji trong phần chữ của một đoạn HTML thành icon; không đụng vào bên trong thẻ, thuộc tính hay <option>
@@ -741,8 +741,7 @@ function openFeed(){
   modal('<h3>Cho '+ROOM[cur].n+' ăn gì?</h3><div class="dim">Đổ đầy '+ready.length+' bát ('+sv+' suất) cho '+cats.length+' bé. Mỗi bé ăn một suất rồi cảm ơn bạn vài xu. Bạn chỉ trả cho số suất cần đổ thêm; nếu đổi sang món khác thì phần thừa trong bát bị bỏ. Bát đổ lại được sau 10 phút.'+(sv<cats.length?'<br><b style="color:var(--bad)">Thiếu bát ăn: '+(cats.length-sv)+' bé sẽ không có suất. Mua thêm bát ở Cửa hàng.</b>':'')+'</div><br>'+
     FOODS.slice().sort((a,b)=>locked(a)-locked(b)).map(f=>{const lv=cats.filter(c=>favs(c).includes(f.id)).map(c=>esc(c.name)),pr=price(f),nd=ready.reduce((a,b)=>a+bowlNeed(b,f.id),0);
       if(locked(f))return '<div class="card" style="opacity:.6"><div style="font-size:26px">'+f.ic+'</div><div class="g"><b>'+f.n+'</b><br><small>'+f.d+(lv.length?'<br>❤ Khoái khẩu của: '+lv.join(', '):'')+'</small></div><button class="sm" disabled>🔒 Cấp '+f.ul+'</button></div>';
-      return '<div class="card"><div style="font-size:26px">'+f.ic+'</div><div class="g"><b>'+f.n+'</b><br><small>'+f.d+'<br>Đổ thêm '+nd+' suất'+(nd<sv?' (trong bát còn '+(sv-nd)+')':'')+(lv.length?'<br>❤ Khoái khẩu của: '+lv.join(', '):'')+'</small></div><button class="sm" '+(S.coins<pr?'disabled':'')+' onclick="doFeed(\''+f.id+'\')">🪙 '+pr+'</button></div>'}).join('')+
-    '<button onclick="closeModal()">Đóng</button>');
+      return '<div class="card"><div style="font-size:26px">'+f.ic+'</div><div class="g"><b>'+f.n+'</b><br><small>'+f.d+'<br>Đổ thêm '+nd+' suất'+(nd<sv?' (trong bát còn '+(sv-nd)+')':'')+(lv.length?'<br>❤ Khoái khẩu của: '+lv.join(', '):'')+'</small></div><button class="sm" '+(S.coins<pr?'disabled':'')+' onclick="doFeed(\''+f.id+'\')">🪙 '+pr+'</button></div>'}).join(''));
 }
 function doFeed(fid){
   const r=feedRoom(cur,fid); if(!r)return;
@@ -761,8 +760,7 @@ function drawPicker(){
     DESTS.map(x=>'<button class="sm '+(x.id===pk.dest?'on':'')+'" '+(x.lvl>S.level?'disabled':'')+' onclick="pk.dest=\''+x.id+'\';drawPicker()">'+x.ic+' '+x.n+(x.lvl>S.level?' 🔒 cấp '+x.lvl:'')+'</button>').join('')+
     '</div><div class="dim" style="margin-top:6px">'+d.min+' phút · '+d.coin+' xu gốc · tốn '+d.en+'⚡'+(d.tags.length?' · '+d.tags.map(t=>TAGN[t]).join(', '):'')+' · bây giờ là '+(night?'ban đêm 🌙':'ban ngày ☀')+'</div><h3>Chọn mèo</h3>'+
     (cats.length?cats.map(o=>{const c=o.c,sp=SP[c.sp];
-      return '<div class="card '+(o.inf.why?'':'tap')+'" style="'+(o.inf.why?'opacity:.5':'')+'" '+(o.inf.why?'':'onclick="doTrip('+c.uid+')"')+'>'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+kind(c)+' · '+(o.inf.why||('~'+o.inf.est+' xu · '+fmt(o.inf.dur)+' · −'+o.inf.cost+'⚡'))+'</small><br>'+stats(c)+'</div></div>'}).join(''):'<div class="dim">Không còn bé nào ở nhà.</div>')+
-    '<button onclick="closeModal()">Đóng</button>');
+      return '<div class="card '+(o.inf.why?'':'tap')+'" style="'+(o.inf.why?'opacity:.5':'')+'" '+(o.inf.why?'':'onclick="doTrip('+c.uid+')"')+'>'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+kind(c)+' · '+(o.inf.why||('~'+o.inf.est+' xu · '+fmt(o.inf.dur)+' · −'+o.inf.cost+'⚡'))+'</small><br>'+stats(c)+'</div></div>'}).join(''):'<div class="dim">Không còn bé nào ở nhà.</div>'));
 }
 function doTrip(uid){
   if(!startTrip(pk.slot,uid,pk.dest))return;
@@ -1294,8 +1292,7 @@ function doGacha10(useTicket){
 function showMulti(L){
   const n5=L.filter(c=>c.star===5).length,n4=L.filter(c=>c.star===4).length;
   modal('<h3>Kết quả '+L.length+' lượt</h3><div class="dim">'+(n5?n5+' bé 5★ · ':'')+(n4?n4+' bé 4★ · ':'')+'chạm vào một bé để xem thông tin và đổi tên.</div>'+
-    '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(104px,1fr));margin:8px 0">'+L.slice().sort((a,b)=>b.star-a.star).map(c=>'<div class="cell tap" style="border-color:'+scol(c.star)+(c.star>=4?';border-style:solid':'')+'" onclick="openCat('+c.uid+')">'+catTag(lk(c),1.5)+'<br>'+nm(c)+'<br>'+starsOf(c.star)+(c.isNew?'<br><span class="tag x">MỚI</span>':'')+'<br><span class="dim">'+ROOM[c.room].n+'</span></div>').join('')+'</div>'+
-    '<button onclick="closeModal()">Đóng</button>');
+    '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(104px,1fr));margin:8px 0">'+L.slice().sort((a,b)=>b.star-a.star).map(c=>'<div class="cell tap" style="border-color:'+scol(c.star)+(c.star>=4?';border-style:solid':'')+'" onclick="openCat('+c.uid+')">'+catTag(lk(c),1.5)+'<br>'+nm(c)+'<br>'+starsOf(c.star)+(c.isNew?'<br><span class="tag x">MỚI</span>':'')+'<br><span class="dim">'+ROOM[c.room].n+'</span></div>').join('')+'</div>');
   L.forEach(c=>{delete c.isNew});save();
 }
 function playGacha(c){
@@ -1380,7 +1377,7 @@ function openCat(uid){
     // đổi tên, chuyển phòng
     '<div class="cd-sec"><h4>Đổi tên</h4><div class="row"><input id="cname" maxlength="16" value="'+esc(c.name)+'" style="flex:1"><button class="sm" onclick="$(\'cname\').value=pick(NAMES)">🎲</button><button class="sm on" onclick="doRename('+uid+')">Đổi tên</button></div></div>'+
     (away?'':'<div class="cd-sec"><h4>Chuyển phòng</h4><div class="row wrap">'+ownedRooms().concat([ROOM.wait]).map(r=>'<button class="sm '+(r.id===c.room?'on':'')+'" '+(r.id!==c.room&&catsIn(r.id).length>=r.cap?'disabled':'')+' onclick="doMove('+uid+',\''+r.id+'\')">'+r.n+' '+catsIn(r.id).length+'/'+(r.wait?'∞':r.cap)+'</button>').join('')+'</div></div>')+
-    '<div class="row" style="justify-content:center;margin-top:12px"><button class="sm bad" '+(away||S.cats.length<=1?'disabled':'')+' onclick="doRehome('+uid+')">🕊 Phóng sinh (+'+STAR[c.star].sell+' xu'+(c.star===5?', +1 vé':'')+')</button><button class="sm" onclick="closeModal()">Đóng</button></div>');
+    '<div class="row" style="justify-content:center;margin-top:12px"><button class="sm bad" '+(away||S.cats.length<=1?'disabled':'')+' onclick="doRehome('+uid+')">🕊 Phóng sinh (+'+STAR[c.star].sell+' xu'+(c.star===5?', +1 vé':'')+')</button></div>');
 }
 function doRename(uid){const v=$('cname').value.trim().slice(0,16);if(!v)return;catBy(uid).name=v;save();render();openCat(uid);toast('Đã đổi tên',{icon:'✏️',title:v})}
 function doMove(uid,rid){if(catBy(uid).room===rid)return;if(moveCat(uid,rid)){syncEnts();render();openCat(uid)}}
@@ -1468,7 +1465,7 @@ function renderTop(){
   $('tabs').innerHTML=TABS.map(t=>'<button class="'+(tab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')"><span>'+t[1]+'</span>'+t[2]+(t[0]==='trip'&&ready?' ❗':'')+(t[0]==='cats'&&wt?' ❗':'')+'</button>').join('');['top','roomnav','tabs'].forEach(i=>emoEl($(i)));
 }
 function openRooms(){
-  modal('<h3>Chọn phòng</h3>'+ownedRooms().map(r=>'<div class="card tap" onclick="closeModal();setRoom(\''+r.id+'\')"><div style="font-size:24px">'+(r.id===cur?'📍':'🚪')+'</div><div class="g"><b>'+r.n+'</b> <small>· '+catsIn(r.id).length+'/'+r.cap+' mèo'+(catsIn(r.id).length>=r.cap?' · <span style="color:var(--bad)">đầy</span>':'')+'</small><br><small>'+r.d+'</small></div></div>').join('')+'<button onclick="closeModal()">Đóng</button>');
+  modal('<h3>Chọn phòng</h3>'+ownedRooms().map(r=>'<div class="card tap" onclick="closeModal();setRoom(\''+r.id+'\')"><div style="font-size:24px">'+(r.id===cur?'📍':'🚪')+'</div><div class="g"><b>'+r.n+'</b> <small>· '+catsIn(r.id).length+'/'+r.cap+' mèo'+(catsIn(r.id).length>=r.cap?' · <span style="color:var(--bad)">đầy</span>':'')+'</small><br><small>'+r.d+'</small></div></div>').join(''));
 }
 function renderPanel(){$('panel').innerHTML=emo(PANEL[tab]())}
 function render(){renderTop();renderPanel()}
@@ -1495,8 +1492,7 @@ function openSettings(){
    '<div class="card" style="flex-direction:column;align-items:stretch"><b>Cỡ hạt cườm trong phòng</b><div class="row"><button style="flex:1" class="'+(S.set.bead?'':'on')+'" onclick="setBead(0)">Tự động</button><button style="flex:1" class="'+(S.set.bead?'on':'')+'" onclick="setBead(1)">Hạt to, rõ</button></div><small>'+(ZMIN>=6&&!S.set.bead?'Màn hình này đã đủ nét: mỗi hạt hiện '+ZMIN/2+' điểm ảnh nên thấy rõ dạng hạt.':'Tự động: thấy được nhiều phòng nhất, nhưng trên màn hình thường mỗi hạt chỉ 2 điểm ảnh. Hạt to: mỗi hạt ít nhất 3 điểm ảnh nên thấy rõ dạng hạt cườm, bù lại phải kéo để xem hết phòng.')+'</small></div>'+
    '<div class="card" style="flex-direction:column;align-items:stretch"><b>Độ tối nền phòng</b><input type="range" min="0" max="60" value="'+Math.round(S.set.dim*100)+'" oninput="S.set.dim=this.value/100" onchange="save()"><small>Kéo sang phải để nền phòng tối hơn. Mèo và đồ đạc không bị tối theo.</small></div>'+
    '<div class="card tut-book" style="flex-direction:column;align-items:stretch"><b>📖 Sổ tay hướng dẫn</b><div class="row wrap">'+(typeof openHandbook==='function'?'<button style="flex:1" class="on" onclick="openHandbook()">📖 Mở sổ tay</button>':'')+'<button style="flex:1" onclick="closeModal();TUT.startReplay()">▶ Chơi lại hướng dẫn</button></div><small>Xem lại cách chơi bất cứ lúc nào. Chơi lại hướng dẫn không tốn xu, vé và không phát quà lần nữa.</small></div>'+
-   '<div class="card" style="flex-direction:column;align-items:stretch"><b>Công cụ thử nghiệm</b><div class="row wrap"><button class="sm" onclick="closeModal();doSkip()">⏩ Tua nhanh 10 phút</button><button class="sm bad" onclick="closeModal();resetAll()">🗑 Chơi lại từ đầu</button></div></div>'+
-   '<button onclick="closeModal()">Đóng</button>');
+   '<div class="card" style="flex-direction:column;align-items:stretch"><b>Công cụ thử nghiệm</b><div class="row wrap"><button class="sm" onclick="closeModal();doSkip()">⏩ Tua nhanh 10 phút</button><button class="sm bad" onclick="closeModal();resetAll()">🗑 Chơi lại từ đầu</button></div></div>');
 }
 const PANEL={
  home(){
@@ -1564,7 +1560,8 @@ const PANEL={
  album(){
   const of=g=>g==='breed'?BREEDS:VARIANTS.filter(v=>v.g===g),sc=S.seenCoat||{},sr=S.seenRare||{};
   const nCoat=b=>b.coats.filter(k=>sc[b.id+'~'+k]).length;
-  const tabs='<div class="row wrap" style="margin-bottom:8px">'+GROUPS.map(g=>'<button class="sm '+(albumG===g[0]?'on':'')+'" onclick="albumG=\''+g[0]+'\';renderPanel()">'+g[1]+' '+(g[0]==='rare'?RARES.filter(r=>sr[r.id]).length+'/'+RARES.length:of(g[0]).filter(x=>S.seen[x.id]).length+'/'+of(g[0]).length)+'</button>').join('')+'</div>';
+  const tabs='<div class="row wrap" style="margin-bottom:8px">'+GROUPS.map(g=>'<button class="sm '+(albumG===g[0]?'on':'')+'" onclick="albumG=\''+g[0]+'\';renderPanel()">'+g[1]+' '+(g[0]==='rare'?RARES.filter(r=>sr[r.id]).length+'/'+RARES.length:of(g[0]).filter(x=>S.seen[x.id]).length+'/'+of(g[0]).length)+'</button>').join('')+(typeof achPage==='function'?'<button class="sm '+(albumG==='ach'?'on':'')+'" onclick="albumG=\'ach\';renderPanel()">🏆 Thành tựu '+achN()+'/'+ACH.length+'</button>':'')+'</div>';
+  if(albumG==='ach'&&typeof achPage==='function')return tabs+achPage();
   if(albumG==='rare')return tabs+'<div class="dim" style="margin-bottom:8px">Màu hiếm có thể rơi vào bất kỳ giống nào, khoảng '+Math.round(RARE_P*100)+'% mỗi lượt gacha, luôn là 4★.</div><div class="grid">'+RARES.map(r=>
     sr[r.id]?'<div class="cell">'+catTag(sr[r.id]+'~'+r.id,1.5)+'<br><b style="color:'+scol(4)+'">'+r.n+'</b><br>'+starsOf(4,1)+'<br><span class="dim" style="font-size:11px">gặp lần đầu ở '+SP[sr[r.id]].n+'<br>'+tagOf(r.tr)+'</span></div>'
              :'<div class="cell" style="opacity:.75"><div style="font-size:44px;line-height:80px;color:var(--dim)">?</div><b style="color:'+scol(4)+'">???</b></div>').join('')+'</div>';
@@ -1578,7 +1575,7 @@ function openBreed(id){
   const b=SP[id],sc=S.seenCoat||{};
   modal('<h3>'+b.n+' '+starsOf(b.r)+'</h3><div class="dim">'+b.d+(b.short?' Giống chân ngắn.':'')+'</div><div class="grid" style="grid-template-columns:repeat(2,1fr);margin:10px 0">'+b.coats.map(k=>{const ct=COATS[k];
     return sc[id+'~'+k]?'<div class="cell">'+catTag(id+'~'+k,2)+'<br><b>'+(ct.form?'✨ ':ct.u?'✦ ':'')+ct.n+'</b>'+(ct.f>=.99?'<br><span class="dim">gần như luôn là cái</span>':ct.f<=.25?'<br><span class="dim">đa số là đực</span>':'')+'</div>'
-                       :'<div class="cell unk">'+catTag(id+'~'+k,2)+'<br><b>???</b>'+(ct.form?'<br><span class="dim">trang phục hiếm</span>':ct.u?'<br><span class="dim">màu ít gặp</span>':'')+'</div>'}).join('')+'</div><button onclick="closeModal()">Đóng</button>');
+                       :'<div class="cell unk">'+catTag(id+'~'+k,2)+'<br><b>???</b>'+(ct.form?'<br><span class="dim">trang phục hiếm</span>':ct.u?'<br><span class="dim">màu ít gặp</span>':'')+'</div>'}).join('')+'</div>');
 }
 
 /* ============ ADMIN (chỉ để test): Ctrl+Shift+A, hoặc chạm 7 lần liên tiếp vào tên game ============ */
@@ -1596,7 +1593,7 @@ function openAdmin(){
     box('Gacha miễn phí','<div class="row"><select id="ags" style="'+sel+'"><option value="0">sao ngẫu nhiên</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">ép ra '+n+'★</option>').join('')+'<option value="r">ép ra ✨ màu hiếm bất kỳ</option>'+RARES.map(r=>'<option value="'+r.id+'">ép ra ✨ '+r.n+'</option>').join('')+'</select><button class="sm on" onclick="admGacha()">Quay</button></div>')+
     box('Mở khóa','<div class="row wrap"><button class="sm" onclick="admRooms()">Mở mọi phòng</button><button class="sm" onclick="admFurn()">Nhận đủ nội thất</button><button class="sm" onclick="admBowl()">Bát ăn sẵn sàng ngay</button><button class="sm" onclick="admLevel()">Lên cấp '+MAX_LV+' (mở hết cửa hàng)</button></div><div class="dim">Thức ăn vốn không bị khóa; bật xu vô hạn là mua được mọi món.</div>')+
     box('Mèo và viễn chinh','<div class="row wrap"><button class="sm" onclick="admTrips()">Hoàn tất viễn chinh ngay</button><button class="sm" onclick="admStats()">Hồi đầy no, vui, năng lượng</button></div><div class="row wrap"><button class="sm" onclick="admAge(10)">Cả đàn già thêm 10 ngày</button><button class="sm" onclick="admAge(0)">Cả đàn thành mèo con</button></div>')+
-    '<div class="row" style="justify-content:center"><button class="sm bad" onclick="closeModal();resetAll()">Reset toàn bộ dữ liệu</button><button class="sm" onclick="closeModal()">Đóng</button></div>');
+    '<div class="row" style="justify-content:center"><button class="sm bad" onclick="closeModal();resetAll()">Reset toàn bộ dữ liệu</button></div>');
   admCoats();
 }
 // ô chọn màu trong Admin: liệt kê đúng các màu của giống đang chọn, rồi tới các màu hiếm nếu giống đó nhận được
