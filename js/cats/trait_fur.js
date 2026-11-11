@@ -158,8 +158,9 @@ function flatFront(F,s,FX){
 }
 function flatSide(F,s,FX){
   const A=F.A,H=A.head,A0=K.baseFrame('std','stand',0).A.head;
-  const edge=y=>H[0]+Math.round(14*Math.sqrt(Math.max(0,1-((y-H[1])/16)**2)));
-  // Xoá nét mõm cũ rồi bo liên tục từ trán tới cằm, ngắn hơn 2–3 ô.
+  // Mặt tịt nhìn ngang: mặt tròn như cái bánh bao, không có mõm nhô. Bán kính 16 (trước là 14) để mắt cách mép mặt vài ô, không dính sát mép.
+  const edge=y=>H[0]+Math.round(16*Math.sqrt(Math.max(0,1-((y-H[1])/17)**2)));
+  // Xoá nét mõm cũ rồi bo liên tục từ trán tới cằm.
   for(let i=0;i<F.role.length;i++)if(F.part[i]===P.HEAD&&
       ((F.feat[i]===FT.NOSE&&K.isPink(F.role[i]))||F.feat[i]===FT.MOUTH)){
     F.role[i]=R.F;F.feat[i]=FT.MUZ;
