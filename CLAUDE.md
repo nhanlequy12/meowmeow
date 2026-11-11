@@ -137,7 +137,8 @@ Chủ đề sáng hoặc tối, độ tối nền phòng, và cỡ hạt cườm
 Mỗi phòng có kiểu tường và sàn riêng (`THEMES` trong ui.js). Thế giới của một phòng rộng 480 × 170 ô; tường kết thúc ở hàng 96, mèo đi trên sàn từ hàng 106 đến 166.
 
 ### Nội thất
-- 94 món, chia mục (`FCATS`): Giường & nệm 5, Tháp & trụ cào 5, Đồ chơi 6, Bàn ghế & sofa 5, Cây cảnh 6, Đèn 4, Thảm 4, Tranh 6, Kệ 4, Leo trèo nhiều tầng 9, Bát ăn 5, Cửa sổ 3, Trang trí 2, Theo mùa 11, Bộ chủ đề 19.
+- 148 món, chia mục (`FCATS`): Giường & nệm 9, Tháp & trụ cào 8, Đồ chơi 12, Bàn ghế & sofa 9, Cây cảnh 10, Đèn 7, Thảm 7, Tranh 10, Kệ 7, Leo trèo nhiều tầng 12, Bát ăn 7, Cửa sổ 5, Trang trí 8, Theo mùa 14, Bộ chủ đề 23. 54 món thêm ngày 2026-11-11 nằm trong một khối riêng ở `data.js` (hình vẽ trong khối `Object.assign(FART, …)` của `art.js`), kèm bộ Trung thu (cấp 8) và bộ Biển (cấp 15, đi với Hồ bơi).
+- Cửa hàng xếp món theo cấp mở rồi theo giá; Theo mùa và Bộ chủ đề chia nhóm theo bộ. Lưới `.shopg` (`shopGrid` trong ui.js): cả mục dùng chung một tỉ lệ điểm ảnh, thẻ chiếm 1–2 cột, 1–3 hàng theo kích thước món.
 - Ba kiểu: đặt sàn (`floor`), treo tường (`wall`), thảm (`rug`). Kéo thả trong chế độ Sắp xếp, bám lưới 4 ô; xoay, cất kho, xóa (hoàn 25% giá).
 - Hiệu ứng: độ vui trong phòng (mỗi loại đồ chỉ tính một lần, tổng tối đa +35), hồi năng lượng, đói chậm, và bonus toàn nhà cho viễn chinh (xu, tốc độ, vé, đêm).
 - Sofa có thể bị mèo có trait cào hỏng (kiểm tra 10 phút một lần); trụ cào trong phòng giảm xác suất. Sửa tốn 30% giá.
@@ -407,7 +408,7 @@ Người dùng yêu cầu lên cấp mới mở khóa vật dụng trong cửa h
   - Phòng (`ROOM_LV`): theo thứ tự giá, gần như mỗi cấp một phòng: Phòng ngủ 2, Bếp 3, Ban công 4, Phòng tắm 5, Phòng chơi 6, Phòng ăn 7, Gác mái 8, Sân vườn 9, Thư viện 10, Phòng game 11, Nhà kính 12, Phòng Nhật 13, Tầng hầm 14, Hồ bơi 15, Sân thượng 16, Phòng hoàng gia 18.
   - Món ăn (`FOOD_LV`): Hạt khô và Pate 1, Súp thưởng 2, Cá ngừ 3, Ức gà 4, Cỏ mèo 5, Cá hồi 6, Hộp cao cấp 8.
   - Nội thất: mặc định theo bậc giá `priceLv` (tới 150 xu cấp 1, 260 cấp 2, 400 cấp 3, 600 cấp 4, 900 cấp 5, 1.200 cấp 6, 1.500 cấp 7, 2.200 cấp 8, 3.200 cấp 10, hơn nữa cấp 12). Gán tay (`ITEM_LV`): bát nhựa 1, inox 3, gốm 4, máy cho ăn 7, bát vàng 10; đồ leo trèo lên dần theo độ cao (Tháp mèo 4, Tháp 3 tầng 6, Tủ sách cao 7, Tháp 5 tầng 9, Nhà gỗ trên cao 11, Cây mèo khổng lồ 17); Sofa 3, Bể cá 6.
-  - Theo mùa và bộ chủ đề (`SET_LV`): Tết 5, Halloween 7, Noel 9; bộ chủ đề mở cùng căn phòng hợp với nó: Harry Potter 10 (Thư viện), Gaming 11 (Phòng game), Nhật 13 (Phòng Nhật), Vũ trụ 16 (Sân thượng), Hoàng gia 18 (Phòng hoàng gia).
+  - Theo mùa và bộ chủ đề (`SET_LV`): Tết 5, Halloween 7, Trung thu 8, Noel 9; bộ Biển 15 (Hồ bơi); bộ chủ đề mở cùng căn phòng hợp với nó: Harry Potter 10 (Thư viện), Gaming 11 (Phòng game), Nhật 13 (Phòng Nhật), Vũ trụ 16 (Sân thượng), Hoàng gia 18 (Phòng hoàng gia).
   - Cấp nào từ 2 tới 18 cũng mở ít nhất một thứ. `MAX_LV=18`.
 - Giao diện: cửa hàng có dòng "Lên cấp N sẽ mở: …"; món chưa mở bị mờ, xếp cuối, ghi "🔒 Cấp N"; hộp chọn món ăn cũng vậy; thông báo lên cấp kể tên những thứ vừa mở (`unlocksAt`).
 - Tốc độ lên cấp đã được chỉnh ở mục 16.

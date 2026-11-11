@@ -1416,6 +1416,37 @@ function doSkip(){skipTime();syncEnts();render();toast('Đã tua nhanh 10 phút'
 function resetAll(){if(confirm('Xóa toàn bộ dữ liệu và chơi lại?')){fresh();save();cur='living';camX=0;ents=[];syncEnts();render()}}
 
 /* ============ CÁC TAB ============ */
+/* Lưới nội thất của Cửa hàng. Cả mục dùng chung một tỉ lệ k (điểm ảnh màn hình mỗi ô gốc; chẵn để hạt cườm đều, chỉ khi quá to mới xuống 1)
+   nên món to trông to, món nhỏ trông nhỏ; khung thẻ chiếm 1–2 cột và 1–3 hàng theo kích thước hình. Số đo khớp CSS .shopg:
+   cột tối thiểu 104px, cách nhau 6px, hàng tối thiểu 112px; viền và đệm ngang của thẻ 14px, phần viền, đệm và chữ theo chiều dọc khoảng 60px. */
+const SHOP_RH=112,SHOP_GAP=6,SHOP_TX=60,SHOP_SLACK=20;   // SLACK: hình cao hơn ô một chút thì cho hàng giãn ra, không chiếm thêm hàng
+function shopLay(){
+  const p=document.getElementById('panel'),cs=p&&getComputedStyle(p),W=p?p.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight):innerWidth-20;
+  const cols=Math.max(2,Math.floor((W+SHOP_GAP)/(104+SHOP_GAP))),cw=(W-(cols-1)*SHOP_GAP)/cols-14;
+  return {cols,cw,rows:cols<=4?2:3};   // màn hẹp (điện thoại dọc) thì món to nhất cao tối đa 2 hàng để lưới không dài lê thê
+}
+const shopSpan=(w,h,L)=>[w<=L.cw?1:2,h+SHOP_TX<=SHOP_RH+SHOP_SLACK?1:h+SHOP_TX<=2*SHOP_RH+SHOP_GAP+SHOP_SLACK||L.rows<3?2:3];
+function shopScale(items,L){
+  // ứng viên: k chẵn (hạt cườm đều) cho 1,2–2,4 px CSS mỗi ô gốc, lấy cái to nhất mà món to nhất vẫn vừa khung lớn nhất
+  // và lưới không quá thưa (trung bình mỗi món chiếm không quá cols/2,5 ô); không có thì lấy cái nhỏ nhất vẫn vừa, cuối cùng mới xuống k=1
+  const d=DPR(),ks=[];for(let k=2;k/d<=2.4;k+=2)if(k/d>=1.2)ks.push(k);ks.sort((a,b)=>b-a);
+  const fits=k=>items.every(x=>x.w*k/d<=2*L.cw+SHOP_GAP+14&&x.h*k/d+SHOP_TX<=L.rows*SHOP_RH+(L.rows-1)*SHOP_GAP+SHOP_SLACK);
+  const area=k=>items.reduce((t,x)=>{const sp=shopSpan(x.w*k/d,x.h*k/d,L);return t+Math.min(sp[0],L.cols)*sp[1]},0)/items.length;
+  const ok=ks.filter(fits);
+  return ok.find(k=>area(k)<=L.cols/2.5)||ok[ok.length-1]||(fits(2)?2:1);
+}
+function shopImg(id,k){const d=DPR(),x=FURN[id],n=Math.max(2,k),key=id+'||'+n,src=FI[key]||(FI[key]=furnCv(id,'',n).toDataURL());
+  return '<img class="px" width="'+x.w*k/d+'" height="'+x.h*k/d+'" src="'+src+'">'}
+function shopGrid(items,sel){
+  const d=DPR(),L=shopLay(),k=shopScale(items,L),grp=[];
+  items.forEach(x=>{const g=grp.find(g=>g.set===(x.set||''));g?g.l.push(x):grp.push({set:x.set||'',l:[x]})});   // đồ theo mùa và bộ chủ đề: mỗi bộ một nhóm
+  return grp.map(g=>(g.set?'<div class="shsec"><b>Bộ '+g.set+'</b> <small>· '+(g.l[0].ul>S.level?'🔒 ':'')+'cấp '+g.l[0].ul+'</small></div>':'')+'<div class="shopg">'+g.l.map((x,i,l)=>{
+    const sp=shopSpan(x.w*k/d,x.h*k/d,L);
+    if(l.reduce((t,y)=>t+Math.min(shopSpan(y.w*k/d,y.h*k/d,L)[0],L.cols),0)<=L.cols)sp[1]=1;   // cả nhóm vừa một hàng: chung một hàng cao theo món cao nhất, không để ô trống bên dưới
+    return '<div class="cell tap'+(x.id===sel?' sel':'')+'" style="grid-column:span '+Math.min(sp[0],L.cols)+';grid-row:span '+sp[1]+(locked(x)?';opacity:.55':'')+'" onclick="shopSel=\''+x.id+'\';renderPanel()"><div class="fi">'+shopImg(x.id,k)+'</div><div class="fn"><b>'+x.n+'</b><br>'+(locked(x)?'<span class="dim">🔒 Cấp '+x.ul+'</span>':'<span style="color:var(--gold)">🪙 '+x.price.toLocaleString('vi-VN')+'</span>')+'</div></div>'}).join('')+'</div>').join('');
+}
+// đổi cỡ cửa sổ hay xoay máy: tính lại khung thẻ theo số cột mới
+{let rt=0;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(tab==='shop'&&shopT!=='rooms')renderPanel()},200)})}
 let tab='home',albumG='breed',shopT='rooms',shopSel=null,mg={sort:'star',room:'all',multi:false,sel:{}};
 const TABS=[['home','🏠','Phòng'],['gacha','🥚','Gacha'],['trip','🎒','Viễn chinh'],['shop','🛋','Cửa hàng'],['album','📖','Sưu tập'],['cats','🐱','Quản lý mèo']];
 function setTab(t){tab=t;$('app').dataset.tab=t;if(edit&&t!=='home'){toggleEdit();return}if(t==='home')fitCanvas();render();scrollTo(0,0)}
@@ -1506,11 +1537,11 @@ const PANEL={
   const nu=nx<=MAX_LV?unlocksAt(nx):[],hint='<div class="dim" style="margin-bottom:8px">⭐ Bạn đang ở cấp '+S.level+'. '+(nu.length?'Lên cấp '+nx+' sẽ mở: <b>'+nu.slice(0,5).map(esc).join(', ')+'</b>'+(nu.length>5?' và '+(nu.length-5)+' món khác':'')+'.':'Bạn đã mở khóa toàn bộ cửa hàng.')+' Kinh nghiệm đến từ viễn chinh, cho ăn, vuốt ve, gacha và mua sắm.</div>';
   const lockBtn=x=>'<button class="sm" disabled>🔒 Cấp '+x.ul+'</button>';
   if(shopT==='rooms')return tabs+hint+ROOMS.filter(r=>r.price).map(r=>'<div class="card"'+(locked(r)&&!S.rooms[r.id]?' style="opacity:.6"':'')+'><div style="font-size:26px">'+(S.rooms[r.id]?'✅':locked(r)?'🔒':'🚪')+'</div><div class="g"><b>'+r.n+'</b> <small>· chứa '+r.cap+' mèo</small><br><small>'+r.d+'</small></div>'+(S.rooms[r.id]?'<button class="sm" onclick="setRoom(\''+r.id+'\');setTab(\'home\')">Vào xem</button>':locked(r)?lockBtn(r):'<button class="sm" '+(S.coins<r.price?'disabled':'')+' onclick="doBuyRoom(\''+r.id+'\')">🪙 '+r.price.toLocaleString('vi-VN')+'</button>')+'</div>').join('');
-  const items=FURNS.filter(f=>f.cat===shopT).sort((a,b)=>a.ul-b.ul),f=FURN[shopSel]&&FURN[shopSel].cat===shopT?FURN[shopSel]:items[0],own=S.items.filter(i=>i.fid===f.id).length;
+  const items=FURNS.filter(f=>f.cat===shopT).sort((a,b)=>a.ul-b.ul||a.price-b.price),f=FURN[shopSel]&&FURN[shopSel].cat===shopT?FURN[shopSel]:items[0],own=S.items.filter(i=>i.fid===f.id).length;
   const KIND={floor:'Đặt sàn',wall:'Treo tường',rug:'Thảm trải sàn'};
   return tabs+hint+'<div class="card prev"><div class="pv">'+furnTag(f.id,'',150,110)+'</div><div class="g"><b style="font-size:16px">'+f.n+'</b>'+(f.set?' <span class="tag x">Bộ '+f.set+'</span>':'')+'<br><small>'+KIND[f.kind]+(f.use?' · mèo tương tác được':'')+(own?' · đang có '+own:'')+'</small><br>'+f.d+
     '<div style="margin-top:8px">'+(locked(f)?'<button disabled>🔒 Mở khóa ở cấp '+f.ul+' · 🪙 '+f.price.toLocaleString('vi-VN')+'</button></div><small>Bạn đang ở cấp '+S.level+'</small>':'<button class="on" '+(S.coins<f.price?'disabled':'')+' onclick="doBuy(\''+f.id+'\')">Mua · 🪙 '+f.price.toLocaleString('vi-VN')+'</button></div><small>Sẽ đặt vào '+ROOM[cur].n+'</small>')+'</div></div>'+
-   '<div class="grid">'+items.map(x=>'<div class="cell tap'+(x.id===f.id?' sel':'')+'" onclick="shopSel=\''+x.id+'\';renderPanel()"'+(locked(x)?' style="opacity:.55"':'')+'><div class="ic">'+furnTag(x.id,'',64,44)+'</div><b>'+x.n+'</b><br>'+(locked(x)?'<span class="dim">🔒 Cấp '+x.ul+'</span>':'<span style="color:var(--gold)">🪙 '+x.price.toLocaleString('vi-VN')+'</span>')+'</div>').join('')+'</div>'+
+   shopGrid(items,f.id)+
    '<div class="dim" style="margin-top:8px">Mỗi loại đồ chỉ tính hiệu ứng một lần. Độ vui từ nội thất trong một phòng tối đa +'+HAPPY_CAP+'; xu và tốc độ tính cho cả nhà.</div>';
  },
  cats(){
