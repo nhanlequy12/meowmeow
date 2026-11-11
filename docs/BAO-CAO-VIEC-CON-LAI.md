@@ -8,7 +8,7 @@ Gửi cho Claude Code câu sau:
 
 > Đọc `docs/BAO-CAO-VIEC-CON-LAI.md` và làm tiếp toàn bộ phần còn lại theo đúng thứ tự trong đó.
 
-Hoặc tự chạy phần Codex trước (khoảng 1 giờ, 12 phiên, mỗi đợt 5 phiên song song):
+Hoặc tự chạy phần Codex trước (khoảng 1 giờ, 13 phiên, mỗi đợt 5 phiên song song):
 
 ```bash
 tools/run_remaining.sh
@@ -31,6 +31,25 @@ Script tự tạo worktree `../wt/agent-XX`, tự cập nhật nhánh từ `main
 | A1 | Mèo lông trắng (Ba Tư, Hoàng Gia, Mèo trắng, Angora, Khao Manee...) miệng bị xấu | Nét miệng và viền mắt của Xoài vẽ bằng ô lông tối; trên lông trắng chúng chìm mất, chỉ còn vài chấm xám rời rạc. Mắt cũng mất viền nên trông như chấm nhỏ | Lõi (`js/catkit.js`) | **ĐÃ SỬA** (hai lượt) và đã soát lại 1.038 ngoại hình. Lượt 1: miệng chữ "w" và mắt tròn rõ trên mọi màu lông. Lượt 2 (chủ game báo còn viền xám quanh miệng): các ô chuyển màu ở mép mõm không còn tô thành bóng xám, vệt trắng trên mặt tô phẳng. Chủ game cần xem lại bằng mắt |
 | A2 | Mèo lông nhiều (Himalayan...) khi đi, chạy, nhảy: mặt ở khung nhìn ngang hơi xấu | Trait `flat` cắt phẳng mõm thành vách đứng (mất mũi, miệng, mắt sát mép); trait `fur` tạo vết khía giữa đầu và lưng | Codex nhóm 07, `docs/tasks/agent-07-rerun.md` | Chưa chạy |
 | A3 | Tóc Naruto ở khung nhìn thẳng (ngồi, ngủ, liếm lông) xấu; khung nhìn ngang đẹp rồi, giữ nguyên | Tóc là một tam giác to cộng vài gai mảnh rời, hở nền, trông như vương miện giấy | Codex nhóm 09, `docs/tasks/agent-09-rerun.md` (chỉ sửa tóc nhìn thẳng) | Chưa chạy |
+| A4 | Các giống tai dài / tai to (Xiêm, Oriental, Abyssinian, Sphynx...): tai bị lệch, xấu so với đầu | Mép ngoài của tai dựng đứng và mọc từ bên trong đường bao đầu nên trông như cắm lệch trên đỉnh đầu; lòng tai hồng quá to; nhìn ngang hai tai chụm hình chữ W | Codex nhóm 05, `docs/tasks/agent-05-rerun.md` | Chưa chạy |
+| A5 | Băng bịt mắt của Gojo dạng thường phải quấn quanh mắt, không phải một đoạn | Băng là một hình chữ nhật đen lơ lửng trước mặt, không chạm mép đầu | Codex nhóm 10, đã thêm vào `docs/tasks/agent-10-rerun.md` | Chưa chạy |
+| A6 | Tanjiro lên 5★ (chi tiết ở mục A6 bên dưới) | Tính năng mới | Người điều phối (đụng `js/data.js`, `js/ui.js`, `js/game.js`) + module `js/cats/v_tanjiro.js` | Chưa làm |
+
+A1 cũng đã áp cho Snowshoe, Ragamuffin, Rừng Na Uy và mọi giống có vệt trắng trên mặt (lượt 3: mép vùng trắng tô trắng hẳn, không còn chấm màu be).
+
+### A6. Tanjiro lên 5★ (yêu cầu của chủ game, 11:40)
+
+Chủ game giao: "tanjiro lên 5 sao, intro là thực hiện thức số X của Hơi thở của Nước, còn lại bạn tự lên mạng rồi làm, có skin đặc biệt là Điệu múa Hỏa Thần, kiếm cũng đổi luôn, thuộc tính: nếu phòng có Nezuko hay Zenitsu thì + độ vui, độ no gì đó".
+
+Việc phải làm, theo đúng cách 10 mèo trang phục 5★ hiện có đang được khai báo:
+
+1. **Tra cứu trên mạng trước** (WebSearch): danh sách 11 thức của Hơi thở của Nước và hình ảnh đặc trưng từng thức để chọn "thức số X" cho intro (gợi ý: Thức thứ mười, Sinh Sinh Lưu Chuyển, rồng nước cuộn quanh, hợp với intro nhất); Điệu múa Hỏa Thần (Hinokami Kagura): màu lửa, hình lưỡi kiếm, vết bớt trên trán; kiếm Nichirin đen của Tanjiro và chuôi kiếm.
+2. `js/data.js`: đổi `v_tanjiro` thành 5★ (`V('v_tanjiro',...,5,'anime',...)`), thêm thanh kiếm vào trang phục thường; thêm `v_tanjiro:'tjKagura'` vào `FORM0`; khai báo `COATS.tjKagura` (tên "Điệu múa Hỏa Thần", `form:1`, `aura` màu lửa, `cos` có kiếm lửa, `tr:'f_kagura'`); viết lại trait `v_tanjiro` và thêm trait `f_kagura`.
+3. **Thuộc tính mới**: "phòng có Mèo Nezuko hoặc Mèo Zenitsu thì cộng độ vui và đói chậm hơn". Hệ thống trait hiện chưa có loại hiệu ứng "có mèo X cùng phòng": phải thêm một khoá hiệu ứng mới trong `js/game.js` (cạnh `auraCoin`, `tE`) và mô tả trong `TRAITS`. Con số đề xuất: +15 độ vui và đói chậm hơn 20% khi có Nezuko hoặc Zenitsu; có cả hai thì +25 độ vui. Chủ game duyệt con số.
+4. `js/ui.js`: thêm cảnh intro gacha cho Tanjiro trong `INTRO` (thực hiện thức đã chọn của Hơi thở của Nước: vệt nước xanh, sóng, chữ lớn tên thức), thêm hành động đặc trưng trong phòng vào `S5` (vung kiếm tạo vòng nước; ở dạng Hỏa Thần là vòng lửa). Đây là THÊM intro mới theo yêu cầu, không sửa intro của mèo khác.
+5. `js/cats/v_tanjiro.js`: thêm kiếm Nichirin đen đeo bên hông (trễ 1 khung) cho dạng thường; dạng `tjKagura`: lưỡi kiếm rực lửa đỏ cam, tóc và hoa tai giữ nguyên, vết bớt trán lớn hơn, haori ca-rô giữ nguyên. Giao cho Codex nhóm 15 sau khi bước 2 xong (viết thêm vào `docs/tasks/agent-15-rerun.md`), hoặc người điều phối tự làm nếu hết hạn mức.
+6. Vì gacha đang vẽ kiểu cũ: cảnh intro mới của Tanjiro cần hình kiểu cũ của kiếm (thêm bộ phận `sword` đã có sẵn trong `js/art.js` vào `cos`; kiếm lửa cần một bộ phận cũ mới) HOẶC cho riêng intro này dùng hình CatKit. Người điều phối chọn cách ít đụng `js/art.js` nhất và ghi lại.
+7. Soát: tỉ lệ gacha 5★ (thêm một mèo vào nhóm 5★), bộ sưu tập, mô tả; `node tools/catcheck.js`; chạy thử intro trên Chrome.
 
 Còn lại sau A1, nên xem bằng mắt: Sphynx và Lykoi gần như không thấy nét miệng (da và lông sẫm, hoa văn tự tô vùng mặt).
 
@@ -60,7 +79,7 @@ Các nhóm này đã gộp và đạt soát tự động; chạy lại để nâ
 | 15 | Luffy, Tanjiro, Nezuko, Anya | Phiên trước bị ngắt giữa chừng: chưa tự soát xong, chưa có báo cáo | `agent-15-rerun.md` |
 | 17 | Pikachu, Totoro, Doraemon, Garfield | Như trên | `agent-17-rerun.md` |
 
-Thứ tự ưu tiên nếu hạn mức lại hết: B (18-22) → A2, A3 (07, 09) → 16 → 13 → 10 → 15 → 17.
+Thứ tự ưu tiên nếu hạn mức lại hết: B (18-22) → A2, A3, A4, A5 (07, 09, 05, 10) → 16 → 13 → 15 → 17. A6 (Tanjiro 5★) người điều phối làm song song trong lúc Codex chạy.
 
 ## D. Việc của người điều phối sau khi Codex chạy xong
 

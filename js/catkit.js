@@ -325,7 +325,7 @@ function painter(s,F,hooks){
       else if(li&&(f===FT.MUZ||f===FT.CHEST)){b=lt(b,soft);ctx.lv-=2}
       else if(li&&(f===FT.TIP||f===FT.PAW))ctx.lv-=2;
       // ô E trong vùng sáng là bậc chuyển giữa lông và vùng sáng (như ở Xoài), không phải bóng: pha hai màu, nên trên lông trắng không còn viền xám quanh mõm
-      if(li&&r===R.E&&f)return mix(b,b0,.18)}
+      if(li&&r===R.E&&f)return b===WHITE?WHITE:mix(b,b0,.18)}
     return shade(b,ctx.lv)}}
 
 /* ================= 6. Vải vẽ phụ kiện (sau khi tô màu) ================= */
