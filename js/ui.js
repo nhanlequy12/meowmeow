@@ -265,6 +265,9 @@ function spawnClones(e){
   e.cd=60+rnd(60,150);
 }
 const orbit=(p,r,n,cols,sp)=>{const t=performance.now()/1000;for(let i=0;i<n;i++){const a=t*sp+i*6.283/n;rp(p.x+Math.cos(a)*r,p.y-18+Math.sin(a)*r*.6,pick(cols),{life:.25})}};
+// RKEY: ngoại hình dùng riêng trong phòng (khóa ngoại hình -> khóa khác); LOOKFX: phần vẽ lúc chạy gắn với một ngoại hình, vẽ phía sau bé.
+// js/pack18.js dùng cặp này cho chín đuôi của Faker Ahri: hình trong phòng bỏ đuôi, đuôi được vẽ mỗi khung để phấp phới liên tục.
+const RKEY={},LOOKFX={};
 // hành động đang diễn của một bé: S5[sp], hoặc hành động phụ S5[sp].alt khi e.sga bật (js/pack18.js khai báo alt cho 10 bé thêm ngày 2026-11-11)
 const sigOf=(e,c)=>{const s=S5[c.sp];return s&&e.sga&&s.alt?s.alt:s};
 // S5: hành động đặc trưng của mèo 5★, thỉnh thoảng tự diễn. pose: tư thế, hover: độ lơ lửng theo tiến độ k (0..1), fx: hạt mỗi khung hình
@@ -692,7 +695,8 @@ function drawItem(i){
 function drawEnt(e,p){
   const c=entCat(e); if(!c)return;
   // sprite ngồi rộng 36 ô (tâm 18); sprite nhìn ngang rộng 50 ô, đầu quay trái (tâm 22). Đổi hướng bằng cách lật, không xoay.
-  const key=p.look||(e.fm&&e.fm.key)||lk(c),cv=catCv(key,p.pose),w=cv.lw,ax=w===36?18:20;
+  const k0=lk(c),key=p.look||(e.fm&&e.fm.key)||RKEY[k0]||k0,cv=catCv(key,p.pose),w=cv.lw,ax=w===36?18:20;
+  if(LOOKFX[k0]&&key===RKEY[k0])LOOKFX[k0].under(RX,e,p,c);
   if(p.sg&&p.sg.draw)p.sg.draw(RX,e,p,p.k);
   const md=e.fm&&e.fm.md;if(md&&md.under)md.under(RX,e,p,c);
   RX.fillStyle='rgba(70,42,28,.24)';RX.beginPath();RX.ellipse(p.x,(p.gy||p.y)-1,p.gy?9:(w===36?11:15),p.gy?2.2:3,0,0,6.283);RX.fill(); // bóng đổ dưới chân

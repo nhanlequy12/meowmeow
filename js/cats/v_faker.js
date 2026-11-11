@@ -9,19 +9,30 @@ function frame(L,x,y,w,h){
   L.line(x,y+1,x,y+h-2,BLACK,1).line(x+w-1,y+1,x+w-1,y+h-2,BLACK,1);
 }
 function tails(G){
-  const B=G.lag(2),b=G.side?B.hip:B.body,rx=b[0]+(G.side?3:0),ry=b[1]+(G.side?6:-2);
-  for(let j=0;j<9;j++){
-    let tx,ty;
-    if(G.side){const a=(-110-j*17.5)*Math.PI/180;tx=rx+32*Math.cos(a);ty=ry+29*Math.sin(a)}
-    else {const a=(-174+j*21.75)*Math.PI/180;tx=rx+34*Math.cos(a);ty=ry+54*Math.sin(a)}
-    tx=Math.max(4,Math.min(G.W-5,tx));ty=Math.max(5,Math.min(72,ty));
-    const dx=tx-rx,dy=ty-ry,d=Math.hypot(dx,dy),nx=-dy/d,ny=dx/d;
-    const mx=rx+dx*.65+nx*2,my=ry+dy*.65+ny*2,L=G.layer();
-    L.poly([[rx-nx,ry-ny],[mx-nx*3,my-ny*3],[tx-dx*.12-nx*2,ty-dy*.12-ny*2],[tx,ty],[tx-dx*.12+nx*2,ty-dy*.12+ny*2],[mx+nx*3,my+ny*3],[rx+nx,ry+ny]],IVORY);
+  // Chín đuôi linh lực dựng lên sau lưng như chùm lông vũ: gốc thon, giữa phồng, ngọn nhọn; mỗi khung hơi nghiêng khác đi.
+  // Nhìn thẳng: xòe nửa vòng phía trên, đuôi giữa dài để nhô khỏi đỉnh đầu. Nhìn ngang: mọc từ mông, dựng lên và ngả về sau.
+  const B=G.lag(2),side=G.side,b=side?B.hip:B.body,rx=b[0]+(side?2:0),ry=b[1]+(side?2:-4),ph=G.F.i*.9;
+  for(const j of [4,3,5,2,6,1,7,0,8]){
+    const m=(j-4)/4,a=(side?-172+j*11:-90+m*62)*Math.PI/180+Math.sin(ph+j*.8)*.08,len=side?28+3*Math.sin(j):Math.min(52,30/Math.max(.05,Math.abs(Math.cos(a)))),curl=(m<0?-1:1)*2.5+Math.sin(ph+j)*1.5,L=G.layer();
+    for(let i=1;i<=12;i++){
+      const t=i/12,r=3.9*Math.pow(Math.sin(Math.PI*Math.min(1,t*1.06)),.7),w=Math.sin(Math.PI*t);
+      const x=rx+Math.cos(a)*len*t-Math.sin(a)*curl*w,y=ry+Math.sin(a)*len*t+Math.cos(a)*curl*w;
+      if(r>.5)L.ell(Math.max(3,Math.min(G.W-4,x)),Math.max(3,Math.min(72,y)),r,r,j%2?IVORY:FUR);
+    }
     L.stamp({behind:true,outline:TRIM,clip:(x,y)=>y<=74});
   }
 }
 K.costume('v_faker',{
+  shape(F,s,FX){
+    // Faker Ahri: chín đuôi linh lực thay cho đuôi mèo, nên bỏ hẳn đuôi gốc của khung rồi vá lại viền thân.
+    if(s.ct!=='fkAhriHall')return;
+    const b=K.bbox(F,i=>F.role[i]&&F.part[i]===P.TAIL);if(!b.n)return;
+    const near=(x,y)=>x>=b.x0-5&&x<=b.x1+5&&y>=b.y0-5&&y<=Math.min(75,b.y1+5);
+    FX.erase(F,i=>F.part[i]===P.TAIL);
+    FX.seal(F,(i,x,y)=>near(x,y)&&F.part[i]===P.BODY);
+    const role=F.role.slice(),part=F.part.slice();FX.prune(F);
+    for(let i=0;i<role.length;i++)if(role[i]&&!F.role[i]&&!near(i%F.W,(i/F.W)|0)){F.role[i]=role[i];F.part[i]=part[i]}
+  },
   paint(c,s){
     const A=c.A0,ahri=s.ct==='fkAhriHall',white=s.ct==='fkWhite2026';
     if(ahri&&c.part===P.EAR&&c.kind!=='line'){c.zone=false;c.lv=0;return c.feat===FT.EARIN?IVORY:CRIMSON}
@@ -49,15 +60,16 @@ K.costume('v_faker',{
   draw(G,s){
     const A=G.A,ahri=s.ct==='fkAhriHall';
     if(ahri){
-      tails(G);
-      // Tà áo choàng cùng nhịp trễ, nằm sau thân và đuôi mèo gốc.
+      if(!s.rt)tails(G);   // s.rt: hình dùng trong phòng, chín đuôi do game vẽ lúc chạy (LOOKFX trong js/pack18.js) để phấp phới liên tục
+      // Tà áo choàng cùng nhịp trễ, nằm sau thân.
       const B=G.lag(1),n=B.neck,b=G.side?B.hip:B.body,C=G.layer();
       C.poly(G.side?[[n[0],n[1]],[b[0]-5,b[1]+2],[b[0]-8,Math.min(72,b[1]+19)],[n[0]-8,n[1]+15]]:[[n[0]-10,n[1]],[n[0]+10,n[1]],[b[0]+20,Math.min(72,b[1]+6)],[b[0]-20,Math.min(72,b[1]+6)]],CRIMSON).stamp({behind:true,outline:TRIM,clip:(x,y)=>y<=74});
     }
     const L=G.layer();
     if(G.side){
-      const e=A.eye;frame(L,e[0]-6,e[1]-5,13,10);frame(L,e[0]-17,e[1]-5,8,9);
-      L.line(e[0]-10,e[1]-2,e[0]-6,e[1]-2,BLACK,1).line(e[0]-19,e[1]-3,e[0]-23,e[1]-4,BLACK,1);
+      // nhìn ngang chỉ thấy một tròng kính trên mắt, càng kính chạy về phía tai
+      const e=A.eye;frame(L,e[0]-6,e[1]-5,13,10);
+      L.line(e[0]-7,e[1]-2,e[0]-17,e[1]-3,BLACK,1);
     }else{
       frame(L,A.eyeL[0]-7,A.eyeL[1]-5,15,10);frame(L,A.eyeR[0]-7,A.eyeR[1]-5,15,10);
       L.line(A.eyeL[0]+7,A.eyeL[1]-2,A.eyeR[0]-7,A.eyeR[1]-2,BLACK,1);

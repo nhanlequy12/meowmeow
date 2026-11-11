@@ -1,7 +1,7 @@
 "use strict";
 (()=>{
 const K=CatKit,{P,FT}=K,{hex}=K.U;
-const HAIR=hex('#171923'),SUIT=hex('#202936'),CURSED=hex('#16161d'),RED=hex('#87182e'),GOLD=hex('#d7ad5b'),INK=hex('#11121a');
+const HAIR=hex('#171923'),SUIT=hex('#202936'),CURSED=hex('#16161d'),RED=hex('#b4233c'),GOLD=hex('#d7ad5b'),INK=hex('#11121a'),EYE2=hex('#ff4a5e');
 K.costume('v_fushiguro',{
   paint(c,s){
     if(c.kind!=='fur')return;
@@ -11,8 +11,19 @@ K.costume('v_fushiguro',{
     if(collar||c.part===P.BODY||(K.isLeg(c.part)&&c.v<71)){
       c.zone=false;if(c.mark)c.lv=0;
       if(s.ct==='fgSukuna'){
-        const b=c.side?A.belly:A.body,d=Math.abs(c.u-b[0]),h=b[1]+6-c.v;
-        if(h>=0&&h<17&&Math.abs(d-(4+Math.floor(h/4)*2))<=1){c.lv=0;return RED}
+        // Kimono đen của Sukuna: ve áo đỏ chữ V, đai đỏ, gấu áo bốc lửa đỏ. Ít nét để nhìn nhỏ vẫn rõ.
+        if(c.part!==P.BODY)return CURSED;
+        if(c.side){
+          const dx=c.u-A.chest[0];
+          if(dx>=-5&&dx<=-3)return RED;                                   // ve áo
+          if(Math.abs(c.u-A.belly[0])<=1)return RED;                      // đai lưng
+          if(c.v>=A.belly[1]-2+Math.round(Math.sin(c.u*.9)*1.5))return RED; // gấu áo lửa
+          return CURSED;
+        }
+        const dx=Math.abs(c.u-A.chest[0]),dy=c.v-A.neck[1];
+        if(dy>=1&&dy<11&&Math.abs(dx-(4.5-dy*.4))<1.3)return RED;         // hai ve áo chụm xuống ngực
+        if(c.v>=A.body[1]+1&&c.v<=A.body[1]+3)return RED;                 // đai lưng
+        if(c.v>=A.pawL[1]-3+Math.round(Math.sin(c.u*.9)*1.5))return RED;  // gấu áo lửa
         return CURSED;
       }
       return SUIT;
@@ -25,24 +36,26 @@ K.costume('v_fushiguro',{
     for(const p of pts)p[1]=Math.max(2,p[1]);
     L.poly(pts,HAIR).stamp({behind:true});
     const B=G.layer(),t=A.chest;
+    if(s.ct!=='fgSukuna'){
     if(G.side)B.ell(t[0]-3,t[1]-5,1.5,1.5,GOLD).ell(t[0]-8,t[1]+1,1.5,1.5,GOLD);
     else B.ell(t[0]+2,t[1]-3,1.5,1.5,GOLD).ell(t[0]+2,t[1]+4,1.5,1.5,GOLD);
-    B.stamp({outline:false});
-    if(s.ct!=='fgSukuna')return;
+    B.stamp({outline:false});return}
     const M=G.layer(),h=A.head,e=G.side?A.eye:A.eyeL;
-    // Ấn trán, dưới mắt và hai má, bám theo mặt từng dáng.
-    M.line(h[0]-4,e[1]-5,h[0]+4,e[1]-5,INK,2).line(h[0]-3,e[1]-2,h[0]+3,e[1]-2,INK,2);
+    // Dấu Sukuna thật nhỏ, nét một ô mịn để mặt không rối: ấn trán, khe mắt phụ đỏ dưới mắt, vạch má, hai chấm cằm (nhìn ngang chỉ còn ấn trán và khe mắt phụ).
     if(G.side){
-      M.line(e[0]-2,e[1]+5,e[0]+3,e[1]+5,INK,2);
-      M.line(A.cheek[0]-3,A.cheek[1]+6,A.cheek[0]+1,A.cheek[1]+10,INK,2);
+      M.rect(e[0]-1,e[1]-5,4,1,INK);
+      M.rect(e[0]-1,e[1]+5,4,1,INK).rect(e[0],e[1]+5,2,1,EYE2);
     }else{
+      const y=e[1]-5;
+      M.rect(h[0],y-1,1,3,INK).rect(h[0]-4,y,2,1,INK).rect(h[0]+3,y,2,1,INK);
       for(const eye of [A.eyeL,A.eyeR]){
         const d=eye[0]<h[0]?-1:1;
-        M.line(eye[0]-2,eye[1]+5,eye[0]+2,eye[1]+5,INK,2);
-        M.line(eye[0]+d*5,eye[1]+8,eye[0]+d*3,eye[1]+11,INK,2);
+        M.rect(eye[0]-2,eye[1]+5,5,1,INK).rect(eye[0]-1,eye[1]+5,3,1,EYE2);
+        M.rect(eye[0]+d*7,eye[1]+4,1,3,INK);
       }
+      M.rect(h[0]-1,A.chin[1]-4,1,2,INK).rect(h[0]+1,A.chin[1]-4,1,2,INK);
     }
-    M.stamp({outline:false});
+    M.stamp({outline:false,clip:(x,y)=>!!G.get(x,y)&&G.F.part[y*G.W+x]===P.HEAD});
   }
 });
 })();

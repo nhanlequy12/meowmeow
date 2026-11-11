@@ -7,12 +7,16 @@ const base=VARIANTS.find(v=>v.id==='v_pusheen');
 if(base&&Array.isArray(base.cos)&&!base.cos.length)base.cos.push(['collar','#a9a39f']);
 K.costume('v_pusheen',{
   paint(c,s){
-    if(c.kind==='eye'||c.feat===FT.RIM)return FUR;
+    if(c.kind==='eye'||c.feat===FT.RIM||c.feat===FT.EYEL||c.feat===FT.EYER){c.lv=0;return FUR}   // xoá sạch mắt gốc và nét viền mắt, mắt chấm vẽ lại ở draw
     if(c.kind!=='fur'&&c.feat!==FT.MOUTH)return;
     const A=c.A0,uni=s.ct==='psUnicorn';c.zone=false;if(c.mark)c.lv=0;
     if(c.feat===FT.MOUTH)return FUR;
     if(uni&&c.part===P.TAIL)return RAIN[((Math.floor((c.u-A.tailTip[0]+30)/2)%6)+6)%6];
-    if(uni&&(c.part===P.BODY||c.part===P.EAR||K.isLeg(c.part)||(c.part===P.HEAD&&c.v<A.crown[1]+7)))return CREAM;
+    if(uni){
+      // mũ kỳ lân trùm cả đầu, chỉ hở khuôn mặt hình bầu dục
+      const cx=c.side?A.eye[0]-3:A.head[0],cy=(c.side?A.eye[1]:A.eyeL[1])+4,rx=c.side?12:16,face=c.part===P.HEAD&&((c.u-cx)/rx)**2+((c.v-cy)/12)**2<=1;
+      if(c.part===P.BODY||c.part===P.EAR||K.isLeg(c.part)||(c.part===P.HEAD&&!face))return CREAM;
+    }
     if(c.part===P.HEAD&&c.v>=A.crown[1]+1&&c.v<=A.crown[1]+9){
       const dx=c.u-A.crown[0];if(Math.abs(dx)<=9&&Math.abs((dx+10)%7-3)<=1)return STRIPE;
     }
@@ -43,7 +47,7 @@ K.costume('v_pusheen',{
       const D=G.layer();D.line(cx-2,cy-1,cx+2,cy+1,hex('#d1ae72'),1).stamp({outline:false});
     }
     const E=G.layer(),eyes=G.side?[A.eye]:[A.eyeL,A.eyeR];
-    for(const e of eyes){if(G.F.anim==='sleep'||G.F.anim==='groom'||(G.F.anim==='sit'&&G.F.i===2))E.line(e[0]-2,e[1],e[0]+2,e[1],INK,1);else E.ell(e[0],e[1],1.5,1.5,INK)}
+    for(const e of eyes){if(G.F.anim==='sleep'||G.F.anim==='groom'||(G.F.anim==='sit'&&G.F.i===2))E.line(e[0]-2,e[1],e[0]+2,e[1],INK,1);else E.rect(e[0]-1,e[1]-2,3,5,INK).rect(e[0]-2,e[1]-1,5,3,INK)}   // mắt chấm tròn
     const n=A.nose,mx=G.side?n[0]-5:n[0],my=n[1]+4;
     E.line(mx-4,my,mx-2,my+2,INK,1).line(mx-2,my+2,mx,my,INK,1).line(mx,my,mx+2,my+2,INK,1).line(mx+2,my+2,mx+4,my,INK,1);
     if(G.side)E.ell(A.cheek[0]+1,A.cheek[1]+5,3,1,BLUSH);else for(const e of eyes)E.ell(e[0],e[1]+6,3,1,BLUSH);

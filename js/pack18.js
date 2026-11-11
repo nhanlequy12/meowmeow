@@ -108,6 +108,26 @@ Object.assign(TRAIL,{
   v_berlioz:[['glyph',{c:['#e9e9ef'],g:'note',r:2}],['sparkle',{c:['#d6d9e6'],r:3}]],
 });
 
+/* ---------- chín đuôi linh lực của Faker Ahri trong phòng ----------
+   Hình trong phòng dùng ngoại hình riêng không có đuôi (s.rt); chín đuôi được vẽ mỗi khung hình bằng các ô nửa đơn vị (bằng một ô mịn của sprite)
+   nên luôn phấp phới, kể cả lúc bé ngồi yên. Đuôi dựng lên, không rủ xuống dưới gốc. Ảnh ở thẻ gacha, màn chi tiết và intro vẫn có đuôi vẽ sẵn trong sprite. */
+function plume(g,bx,by,ux,uy,len,curl,fill,edge){
+  for(let pass=0;pass<2;pass++){g.fillStyle=pass?fill:edge;
+    for(let i=1;i<=10;i++){const t=i/10,w=Math.sin(Math.PI*t),r=(pass?0:.6)+2.5*Math.pow(Math.sin(Math.PI*Math.min(1,t*1.06)),.7);if(r<.5)continue;
+      const cx=bx+ux*len*t-uy*curl*w,cy=by+uy*len*t+ux*curl*w;
+      for(let dy=-r;dy<=r;dy+=.5){const hw=Math.sqrt(Math.max(0,r*r-dy*dy));if(hw>=.25)g.fillRect(Math.round((cx-hw)*2)/2,Math.round((cy+dy)*2)/2,Math.max(.5,Math.round(hw*4)/2),.5)}}}
+}
+const AHRI='v_faker~fkAhriHall';
+LOOKS[AHRI+'!rt']=Object.assign({},look(AHRI),{rt:1});RKEY[AHRI]=AHRI+'!rt';
+LOOKFX[AHRI]={under(g,e,p){
+  const t=NOW(),front=!/^(stand|walk|run|crouch|leap|land)/.test(p.pose||'sit'),d=e.flip?1:-1,act=e.state==='sig'?1.25:1,bx=front?p.x:p.x-d*12,by=front?p.y-9:p.y-15;
+  for(const j of [0,8,1,7,2,6,3,5,4]){
+    const m=(j-4)/4,th=(front?m*1.08*act:-.14+j*.19)+Math.sin(t*2.4+j*.8)*.1;        // góc lệch khỏi phương thẳng đứng
+    const ux=front?Math.sin(th):-d*Math.sin(th),uy=-Math.cos(th),len=(front?24+10*(1-Math.abs(m)):19+1.5*Math.sin(j))*act;   // trong phòng không bị khung sprite giới hạn nên đuôi dài hơn, nhô hẳn khỏi đầu
+    plume(g,bx,by,ux,uy,len,Math.sin(t*1.8+j)*1.6,j%2?'#fffaf0':'#f3e6d6','#dfb768');
+  }
+}};
+
 /* ---------- hành động riêng trong phòng ---------- */
 const heartUp=(p,col)=>{if(on(5))rp(p.x+rnd(-8,8),p.y-rnd(30,38),col||'#ff8fa3',{sh:'heart',vy:-8,life:.7})};
 Object.assign(S5,{
@@ -120,8 +140,7 @@ Object.assign(S5,{
   // Faker: chỉnh kính, đưa chân lên miệng "Shhh", sáu sao sáng sau lưng (Ahri: chín đuôi linh lực và quả cầu)
   v_faker:{n:'ra dấu Shhh',dur:3.5,pose:k=>k>.28&&k<.72?'groom1':'sit',
     draw(g,e,p,k){const c=ctOf(e),a=fade(k,.5,.78);if(a<=0)return;
-      if(c==='fkAhriHall'){for(let i=0;i<9;i++){const t=-1.25+i*2.5/8;g.globalAlpha=.8*a;g.strokeStyle=i%2?'#f6efe7':'#dfb768';g.lineWidth=2.2;g.lineCap='round';g.beginPath();g.moveTo(p.x,p.y-8);g.quadraticCurveTo(p.x+Math.sin(t)*12,p.y-22,p.x+Math.sin(t)*27*a,p.y-12-Math.cos(t)*25*a);g.stroke()}
-        g.globalAlpha=1;glowAt(g,p.x+d5(e)*14,p.y-13,3.2,3.2,'#b92137',.9*a);glowAt(g,p.x+d5(e)*14,p.y-13,1.6,1.6,'#ffd98a',a)}
+      if(c==='fkAhriHall'){glowAt(g,p.x,p.y-18,24,22,'#b92137',.16*a);glowAt(g,p.x+d5(e)*14,p.y-13,3.2,3.2,'#b92137',.9*a);glowAt(g,p.x+d5(e)*14,p.y-13,1.6,1.6,'#ffd98a',a)}   // chín đuôi do LOOKFX vẽ, lúc này xòe rộng hơn
       else for(let i=0;i<6;i++){const t=-1+i*.4;propAt(g,'star',p.x+Math.sin(t)*21,p.y-24-Math.cos(t)*15,{a,s:c==='fkWhite2026'?.9:.7})}},
     fx(e,p,k){if(k>.5&&k<.78&&on(6))rp(p.x+rnd(-18,18),p.y-rnd(20,44),pick(['#f6d987','#ffffff']),{sh:'star',life:.5})},end:end5,
     alt:{n:'ngồi bên cúp vô địch',dur:4,pose:'sit',draw(g,e,p,k){const a=fade(k,.04,.96);if(ctOf(e)==='fkAhriHall')glowAt(g,p.x,p.y-16,21,19,'#7d1228',.22*a);propAt(g,'cupW',p.x-d5(e)*18,p.y+1,{a})},
@@ -209,8 +228,10 @@ Object.assign(INTRO,{
       if(R){flash();fxTint('radial-gradient(circle,#3a0c18 0,#070308 78%)');me.firstChild.src=sprSrc(key,'sit',k)}});
     T(2800,()=>{flash();for(let i=0;i<4;i++)T(i*90,()=>bolt(innerWidth*(.14+.24*i),BOLT))});
     every(T,2300,4000,50,()=>part({x:rnd(0,innerWidth),y:rnd(0,innerHeight),vy:-rnd(.5,2),life:rnd(20,40),col:pick([BOLT,'#2a2740','#ffffff']),sz:pick([4,6])}));
-    T(3300,()=>{if(t1)t1.remove();big('BỒN ÁM ẢNH ĐÌNH',20,R?'#ffb0bc':'#d9ccff','0 0 18px '+BOLT+',4px 4px 0 #120a24',8,'skewIn 1.2s ease-out both');
+    T(3300,()=>{if(t1)t1.remove();big(R?'PHỤC MA NGỰ TRÙ TỬ':'BỒN ÁM ẢNH ĐÌNH',20,R?'#ffffff':'#d9ccff','0 0 18px '+BOLT+',4px 4px 0 #120a24',8,'skewIn 1.2s ease-out both');
       fxEl('left:50%;top:62%;width:20vmin;height:20vmin;margin:-10vmin 0 0 -10vmin;border-radius:50%;background:'+(R?'radial-gradient(#000 50%,#5a0c1c)':'#000')+';animation:grow .7s ease-out both');glide(300,90,.6,'sawtooth',.05)});
+    // trang phục hiếm: lãnh địa của Sukuna (tên tiếng Việt quen thuộc), các nhát chém trắng quét khắp màn hình
+    if(R)every(T,3350,4000,70,()=>fxEl('left:-10%;top:'+rnd(8,92)+'%;width:120%;height:0;transform:rotate('+rnd(-38,38)+'deg)','<div style="height:4px;background:#fff;box-shadow:0 0 14px 4px #ffb0b0;transform-origin:'+pick(['left','right'])+';animation:slash .32s ease-out forwards"></div>'));
     T(4000,()=>{if(me)me.remove();if(nue)nue.remove();ring.style.animation='ghost .4s ease-in forwards'});
     T(4500,()=>{flash();fxProp('nue',k,50,38,'animation:pop .4s ease-out both',{s:2.2});fxSpr('sit',k,50,62,'animation:pop .4s ease-out both');fount([BOLT,'#ffffff'],10)});
   }},
