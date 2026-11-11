@@ -345,7 +345,7 @@ const TUT=(()=>{
     if(tipOn||!tipQ.length)return;build();
     const i=tipQ.findIndex(x=>!cs&&!$('gz').className&&(x.o.modal||!modalOn()));if(i<0)return;
     const x=tipQ.splice(i,1)[0];if(seen(x.id)&&!x.o.force)return pump();
-    tipOn=x;const L=(x.o.lines||TX.hints[x.id]||[]).map(s=>fill(s));
+    tipOn=x;x.shown=performance.now();const L=(x.o.lines||TX.hints[x.id]||[]).map(s=>fill(s));
     E.tip.innerHTML=emo('<div class="tut-tface">'+pose(TX.guide.key,'sit',1)+'</div><div class="tut-tbody">'+L.map(s=>'<p>'+esc(s)+'</p>').join('')+'<button class="sm go">'+TX.ui.ok+'</button></div>');
     E.tip.querySelector('button').onclick=closeTip;
     E.tip.classList.add('on');E.root.classList.add('tipon');
@@ -353,11 +353,13 @@ const TUT=(()=>{
   }
   function closeTip(){
     if(!tipOn)return;const t=st();t.hints=t.hints||{};t.hints[tipOn.id]=1;save();
-    tipOn=null;E.tip.classList.remove('on');E.root.classList.remove('tipon');E.hole.classList.remove('soft');setTimeout(pump,400);
+    tipOn=null;E.tip.classList.remove('on');E.root.classList.remove('tipon','tiphole');E.hole.classList.remove('soft');setTimeout(pump,400);
   }
   function tipFrame(){
     const W=vw(),H=vh(),m=8,el=E.tip;
-    if(tipOn.o.modal?false:modalOn()){/* hộp thoại khác vừa mở đè lên: tạm cất mẹo */tipQ.unshift(tipOn);tipOn=null;el.classList.remove('on');E.root.classList.remove('tipon');return}
+    if((tipOn.o.modal?false:modalOn())||$('gz').className||cs){/* hộp thoại khác, gacha hay hướng dẫn vừa mở đè lên: tạm cất mẹo */tipQ.unshift(tipOn);tipOn=null;el.classList.remove('on');E.root.classList.remove('tipon','tiphole');E.hole.classList.remove('soft');return}
+    // mẹo gắn với một hộp thoại mà hộp thoại đã đóng: bỏ, chưa tính là đã xem (lần sau gặp lại vẫn hiện)
+    if(tipOn.o.modal&&!modalOn()&&tipOn.shown&&performance.now()-tipOn.shown>300){tipOn=null;el.classList.remove('on');E.root.classList.remove('tipon','tiphole');E.hole.classList.remove('soft');return}
     let r=null;const t=tipOn.o.target;
     if(t){const s=scrolled;scrolled=true;r=rectOf(t);scrolled=s}
     E.root.classList.toggle('tiphole',!!r&&!cs);
