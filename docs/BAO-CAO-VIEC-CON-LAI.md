@@ -34,6 +34,7 @@ Script tự tạo worktree `../wt/agent-XX`, tự cập nhật nhánh từ `main
 | A4 | Các giống tai dài / tai to (Xiêm, Oriental, Abyssinian, Sphynx...): tai bị lệch, xấu so với đầu | Mép ngoài của tai dựng đứng và mọc từ bên trong đường bao đầu nên trông như cắm lệch trên đỉnh đầu; lòng tai hồng quá to; nhìn ngang hai tai chụm hình chữ W | Codex nhóm 05, `docs/tasks/agent-05-rerun.md` | Chưa chạy |
 | A5 | Băng bịt mắt của Gojo dạng thường phải quấn quanh mắt, không phải một đoạn | Băng là một hình chữ nhật đen lơ lửng trước mặt, không chạm mép đầu | Codex nhóm 10, đã thêm vào `docs/tasks/agent-10-rerun.md` | Chưa chạy |
 | A6 | Tanjiro lên 5★ (chi tiết ở mục A6 bên dưới) | Tính năng mới | Người điều phối (đụng `js/data.js`, `js/ui.js`, `js/game.js`) + module `js/cats/v_tanjiro.js` | Chưa làm |
+| A7 | Thêm 4 mèo mới: Phineas, Ferb, Yani Neko (mèo hút thuốc), Itadori 5★ có trang phục hiếm Sukuna chiếm xác (chi tiết ở mục A7 bên dưới) | Tính năng mới | Người điều phối (dữ liệu, intro, thuộc tính) + Codex nhóm 23, 24 (hình) | Chưa làm |
 
 A1 cũng đã áp cho Snowshoe, Ragamuffin, Rừng Na Uy và mọi giống có vệt trắng trên mặt (lượt 3: mép vùng trắng tô trắng hẳn, không còn chấm màu be).
 
@@ -50,6 +51,41 @@ Việc phải làm, theo đúng cách 10 mèo trang phục 5★ hiện có đang
 5. `js/cats/v_tanjiro.js`: thêm kiếm Nichirin đen đeo bên hông (trễ 1 khung) cho dạng thường; dạng `tjKagura`: lưỡi kiếm rực lửa đỏ cam, tóc và hoa tai giữ nguyên, vết bớt trán lớn hơn, haori ca-rô giữ nguyên. Giao cho Codex nhóm 15 sau khi bước 2 xong (viết thêm vào `docs/tasks/agent-15-rerun.md`), hoặc người điều phối tự làm nếu hết hạn mức.
 6. Vì gacha đang vẽ kiểu cũ: cảnh intro mới của Tanjiro cần hình kiểu cũ của kiếm (thêm bộ phận `sword` đã có sẵn trong `js/art.js` vào `cos`; kiếm lửa cần một bộ phận cũ mới) HOẶC cho riêng intro này dùng hình CatKit. Người điều phối chọn cách ít đụng `js/art.js` nhất và ghi lại.
 7. Soát: tỉ lệ gacha 5★ (thêm một mèo vào nhóm 5★), bộ sưu tập, mô tả; `node tools/catcheck.js`; chạy thử intro trên Chrome.
+
+### A7. Bốn mèo mới (yêu cầu của chủ game, 11:50)
+
+Chủ game giao: "thêm mèo Phineas và mèo Ferb, Yani Neko (mèo hút thuốc), mèo Itadori 5 sao; intro thì tự nghĩ cho phù hợp với bộ Jujutsu Kaisen; trang phục hiếm là Itadori bị Sukuna chiếm xác, có mấy hình xăm, nhớ vẽ rõ các chi tiết đó".
+
+| Mèo | id đề xuất | Sao | Nhóm | Ghi chú tạo hình (tra mạng để lấy đúng trước khi vẽ) |
+|---|---|---|---|---|
+| Mèo Phineas | `v_phineas` | 4★ (chủ game chưa nói, chờ duyệt) | film | Đầu hình tam giác đặc trưng, tóc đỏ cam dựng, áo sọc cam-trắng, quần xanh |
+| Mèo Ferb | `v_ferb` | 4★ (chờ duyệt) | film | Tóc xanh lá, đầu dài, mắt một to một nhỏ, áo sơ mi vàng kem, quần tím cạp cao; ít nói |
+| Yani Neko (mèo hút thuốc) | `v_yani` | 4★ (chờ duyệt) | meme | Nhân vật mèo nghiện thuốc lá của bộ truyện "Yani Neko": điếu thuốc ngậm ở miệng có đốm lửa đỏ và làn khói bay lên (khói trễ 1-2 khung), mắt lờ đờ, áo ba lỗ |
+| Mèo Itadori | `v_itadori` | 5★ | anime | Tóc hồng dựng, hai bên và gáy cạo sẫm màu; hai vạch nhỏ dưới mắt; đồng phục Cao chuyên Chú thuật xanh đen có mũ trùm đỏ |
+
+**Trang phục hiếm của Itadori: bị Sukuna chiếm xác** (`COATS.itSukuna`, `form:1`, có `aura` đỏ sẫm). Các chi tiết PHẢI vẽ rõ, nhìn ra ở cỡ thật:
+- Hình xăm đen trên mặt: một vạch ngang giữa trán và hai vạch chéo phía trên chân mày; vạch dọc sống mũi; hai vạch cong trên mỗi má chạy xuống quai hàm; vạch ở cằm.
+- Đôi mắt thứ hai: hai khe mắt nhỏ ngay dưới hai mắt chính (hé mở, đỏ).
+- Mắt đỏ, nụ cười nhếch nhe nanh; tóc vuốt ngược dựng cao hơn dạng thường.
+- Vòng xăm đen: hai vòng ở mỗi cổ chân trước, vòng ở bắp chân, vạch trên vai và ngực; móng đen.
+- Ở khung nhìn ngang phải thấy: vạch má, khe mắt phụ, vòng xăm ở hai chân trước và vạch trên vai.
+
+**Intro gacha của Itadori** (người điều phối tự thiết kế, đúng chất Jujutsu Kaisen), đề xuất:
+1. Màn hình tối, hiện ngón tay Sukuna (vật bị nguyền) lơ lửng với khí đen tím.
+2. Mèo Itadori nhảy lên nuốt ngón tay; chớp đỏ đen.
+3. Tung "Hắc Thiểm" (Black Flash): cú đấm với tia sét đen viền đỏ toả ra, màn hình giật, chữ lớn "HẮC THIỂM".
+4. Với dạng hiếm: các hình xăm hiện dần trên mặt, mở "Phục Ma Ngự Trù Tử" (lãnh địa của Sukuna): nền đỏ sẫm, các vệt chém trắng cắt ngang màn hình.
+
+Hành động đặc trưng trong phòng (`S5`): đấm Hắc Thiểm tại chỗ với tia sét đen đỏ; ở dạng Sukuna là các vệt chém quanh thân.
+Thuộc tính đề xuất (chờ duyệt): Itadori "Thể lực phi thường": viễn chinh nhanh hơn 20%, +10% xu; có Mèo Gojo cùng phòng thì +10 độ vui. Dạng Sukuna "Vua Nguyền Rủa": +25% xu ban đêm, nhưng mèo khác cùng phòng −5 độ vui.
+
+Việc phải làm:
+1. Tra mạng tạo hình bốn nhân vật và hình xăm của Sukuna (WebSearch), lưu ghi chú vào `docs/tasks/`.
+2. `js/data.js`: thêm 4 dòng `V(...)` vào `VARIANTS`, `FORM0.v_itadori='itSukuna'`, `COATS.itSukuna`, trait cho từng mèo, mô tả, món ăn ưa thích; kiểm tra tỉ lệ gacha và bộ sưu tập.
+3. `js/ui.js`: `INTRO.v_itadori`, `S5.v_itadori`, hiệu ứng nền thẻ (`BGFX`) cho 4 mèo. Chỉ THÊM, không sửa intro của mèo khác.
+4. Module hình: `js/cats/v_phineas.js`, `v_ferb.js`, `v_yani.js`, `v_itadori.js`. Sau bước 2, thêm hai nhóm vào `tools/mktasks.js` rồi chạy lại để sinh `docs/tasks/agent-23.md` (Phineas, Ferb, Yani Neko) và `agent-24.md` (Itadori và dạng Sukuna), giao Codex bằng `tools/run_codex.sh 23` và `24`.
+5. **Vướng mắc phải quyết**: bốn mèo này KHÔNG có hình kiểu cũ trong `js/art.js`, mà gacha đang vẽ kiểu cũ. Cách đề xuất: mèo nào không có trang phục kiểu cũ thì gacha (intro và ảnh mở trứng) dùng hình CatKit; mèo cũ giữ nguyên. Cần thêm đúng một điều kiện vào `catCv` trong `js/ui.js`.
+6. Soát: `node tools/catcheck.js` (lúc đó là 133 mèo), chạy thử intro Itadori trên Chrome.
 
 Còn lại sau A1, nên xem bằng mắt: Sphynx và Lykoi gần như không thấy nét miệng (da và lông sẫm, hoa văn tự tô vùng mặt).
 
@@ -79,7 +115,7 @@ Các nhóm này đã gộp và đạt soát tự động; chạy lại để nâ
 | 15 | Luffy, Tanjiro, Nezuko, Anya | Phiên trước bị ngắt giữa chừng: chưa tự soát xong, chưa có báo cáo | `agent-15-rerun.md` |
 | 17 | Pikachu, Totoro, Doraemon, Garfield | Như trên | `agent-17-rerun.md` |
 
-Thứ tự ưu tiên nếu hạn mức lại hết: B (18-22) → A2, A3, A4, A5 (07, 09, 05, 10) → 16 → 13 → 15 → 17. A6 (Tanjiro 5★) người điều phối làm song song trong lúc Codex chạy.
+Thứ tự ưu tiên nếu hạn mức lại hết: B (18-22) → A2, A3, A4, A5 (07, 09, 05, 10) → 16 → 13 → 15 → 17. A6 (Tanjiro 5★) và phần dữ liệu của A7 (4 mèo mới) người điều phối làm song song trong lúc Codex chạy; nhóm 23, 24 chạy sau cùng, khi dữ liệu đã có.
 
 ## D. Việc của người điều phối sau khi Codex chạy xong
 
@@ -97,6 +133,8 @@ Thứ tự ưu tiên nếu hạn mức lại hết: B (18-22) → A2, A3, A4, A5
 ## E. Quyết định đang chờ chủ game
 
 - **Gacha**: đang giữ kiểu vẽ cũ hoàn toàn (intro và ảnh lúc mở trứng), nên mèo lúc mở gacha trông kiểu cũ, vào phòng trông kiểu Xoài. Muốn ảnh mở trứng dùng hình mới thì bỏ cờ `old` ở một dòng trong `js/ui.js` (`gv-pic`).
+- **Số sao của Phineas, Ferb, Yani Neko**: chủ game chưa nói; đang đề xuất 4★. Thuộc tính và con số của Tanjiro, Itadori cũng chờ duyệt.
+- **Gacha của mèo mới**: mèo không có hình kiểu cũ thì gacha dùng hình CatKit (xem A7 bước 5). Đồng ý không?
 - **Angora trắng**: màu mặc định mất màu mắt thứ hai do cách `look()` trong `js/data.js` ghép màu lông (có từ trước, không phải lỗi sprite). Có sửa không?
 
 ## F. Đã xong, để đối chiếu
