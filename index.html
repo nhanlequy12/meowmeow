@@ -165,6 +165,10 @@ a{color:var(--blue)}
 .tst,#pop,#gbox,#grev,#gfly .fl,#gz .rays,#gz .pillar{will-change:transform,opacity;backface-visibility:hidden}
 .tst{transition:transform .55s cubic-bezier(.22,1.4,.36,1),opacity .28s ease-out,margin-bottom .32s cubic-bezier(.4,0,.2,1)}
 #modal .box{animation:mIn .22s cubic-bezier(.2,.9,.3,1.15)}
+/* nút đóng ghim ở góc hộp thoại, không cuộn theo nội dung */
+#modal .mwrap{position:relative;max-width:420px;width:100%}
+#mx{position:absolute;top:-10px;right:-6px;z-index:2;width:44px;min-height:44px;padding:0;border-radius:50%;font-size:18px;background:var(--pink);color:#3a1020;border-color:#b85a70;box-shadow:0 3px 8px rgba(40,24,12,.3)}
+#modal.lock #mx{display:none}
 @keyframes mIn{from{transform:translateY(14px) scale(.96);opacity:0}to{transform:none;opacity:1}}
 @keyframes shS{0%,100%{transform:rotate(0)}12%{transform:rotate(-4deg)}25%{transform:rotate(-7deg)}38%{transform:rotate(-4deg)}50%{transform:rotate(0)}62%{transform:rotate(4deg)}75%{transform:rotate(7deg)}88%{transform:rotate(4deg)}}
 @keyframes shH{0%,100%{transform:translate(-5px,2px) rotate(-9deg)}25%{transform:translate(0,-2px) rotate(-2deg)}50%{transform:translate(5px,-3px) rotate(9deg)}75%{transform:translate(0,1px) rotate(2deg)}}
@@ -309,7 +313,7 @@ canvas#room{touch-action:none}
   <div class="tabs" id="tabs"></div>
   <div id="panel"></div>
 </div>
-<div id="modal"><div class="box" id="mbox"></div></div>
+<div id="modal"><div class="mwrap"><button id="mx" class="sm" aria-label="Đóng" onclick="closeModal()">✕</button><div class="box" id="mbox"></div></div></div>
 <div id="pop"></div>
 <div id="gz">
   <div class="dimmer"></div><div class="rays"></div><div class="pillar"></div>

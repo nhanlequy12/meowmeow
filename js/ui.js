@@ -69,7 +69,8 @@ document.addEventListener('click',e=>{const t=tipOf(e);if(t)showTip(t);else hide
 document.addEventListener('scroll',hideTip,true);addEventListener('resize',hideTip);
 setInterval(()=>{if(tipFor&&!tipFor.isConnected)hideTip()},400);
 
-function modal(html){$('mbox').innerHTML=html;$('modal').style.display='flex'}
+// lock = hộp thoại bắt buộc trả lời: ẩn nút ✕ và không đóng bằng phím Esc
+function modal(html,lock){$('mbox').innerHTML=html;$('mbox').scrollTop=0;$('modal').classList.toggle('lock',!!lock);$('modal').style.display='flex'}
 function closeModal(){$('modal').style.display='none'}
 /* thông báo nhỏ: trượt từ trên xuống, mỗi loại một icon và màu nhấn, số xu đếm chạy lên */
 const TT={pet:['🤚','#e88aa2'],feed:['🍖','#e39a4a'],coin:['🪙','#d1a02a'],shop:['🛋','#5fb3a1'],room:['🚪','#6fa3d6'],level:['🎉','#9a78d8'],trip:['🎒','#6fb486'],cat:['🐱','#e88aa2'],warn:['⚠️','#d97070'],fix:['🔧','#5fb3a1'],info:['🐾','#a07654']};
@@ -1504,6 +1505,7 @@ function admTrips(){let n=0;S.trips.forEach(p=>{if(p&&p.end>now()){p.end=now();n
 function admAge(n){S.cats.forEach(c=>{c.born=n?c.born-n*DAY:now()});const k=[0,1,2].map(i=>S.cats.filter(c=>ageStage(c)===i).length);admDone('Tuổi: '+k[0]+' mèo con, '+k[1]+' trưởng thành, '+k[2]+' mèo già',1)}
 function admStats(){S.cats.forEach(c=>{c.full=100;c.en=100;c.hp=100});admDone('Cả '+S.cats.length+' bé đã no, vui và đầy năng lượng',1)}
 addEventListener('keydown',ev=>{if(ev.ctrlKey&&ev.shiftKey&&ev.code==='KeyA'){ev.preventDefault();openAdmin()}});
+addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('modal').style.display==='flex'&&!$('modal').classList.contains('lock'))closeModal()});
 {let n=0,t0=0;document.querySelector('h1').addEventListener('click',()=>{const t=Date.now();n=t-t0<600?n+1:1;t0=t;if(n>=7){n=0;openAdmin()}})}
 
 /* ============ VÒNG LẶP ============ */
