@@ -63,6 +63,7 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Đã push: `CLAUDE.md` mục 26, 27 và mục 28 thứ hai (thanh cuộn, gacha 10 lượt, mua vé, ổ ngủ, chạm hai lần, chống gian lận).
 - Lúc ghi checkpoint, thư mục làm việc có các thay đổi chưa commit không phải của phiên A: `js/art.js`, `js/wx-data.js`, `tools/wxprev.js`, `tools/mkwxtasks.js`, `tools/run_codex_wx.sh`, `docs/tasks/wx-01.md` tới `wx-06.md`. Phiên A không đụng tới và không commit các file này.
 - Đã push `631958f`: hệ thống thời tiết (`CLAUDE.md` mục 29 và 29b): 11 kiểu thời tiết đổi mỗi 5 giờ, khí hậu phòng, cửa sổ, thiết bị (có loại chạy pin), vật phẩm sinh tồn, viễn chinh theo thời tiết, mục thời tiết trong Admin. Kiểm tra: `node tools/wxtest.js`.
+- Đã push `f734965`: Sổ tay thêm hai chương giải thích chỉ số khí hậu, độ thoải mái và cách xử lý.
 
 ## Quyết định kỹ thuật quan trọng
 
