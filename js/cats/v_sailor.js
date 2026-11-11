@@ -16,14 +16,21 @@ K.costume('v_sailor',{
   },
   draw(G){
     const A=G.A,B=G.lag(2),side=G.side,T=G.layer();
-    // Hai bím vàng dài; ngọn gập nhẹ khi ngủ để không xuyên nền.
-    (side?[-1]:[-1,1]).forEach(k=>{
-      const x=side?A.crown[0]-17:A.head[0]+k*24,y=A.crown[1]+6;
-      const ex=side?B.crown[0]-23:B.head[0]+k*25,ey=Math.min(71,B.chin[1]+14);
-      T.poly([[x-4,y],[x+4,y],[ex+4,ey-5],[ex,ey],[ex-4,ey-5]],HAIR);
-      T.line(x-2,y+5,ex-2,ey-6,SHADE,1);
-    });
-    T.stamp({behind:true});
+    // Bím mọc dưới búi; ngọn thon bay sau gáy, trễ hai khung.
+    if(side){
+      const x=A.crown[0]-14,y=A.crown[1]+2,ex=B.back[0]-17,ey=Math.min(70,B.back[1]+15);
+      T.poly([[x-2,y],[x+2,y],[A.head[0]-17,A.head[1]+4],[B.neck[0]-7,B.neck[1]+8],[ex+4,ey-1],[ex,ey+2],[ex+1,ey-3],[B.neck[0]-12,B.neck[1]+5],[A.head[0]-23,A.head[1]+2]],HAIR);
+      T.line(A.head[0]-22,A.head[1]+5,B.neck[0]-10,B.neck[1]+7,SHADE,1).line(B.neck[0]-10,B.neck[1]+7,ex+3,ey-1,SHADE,1);
+      T.stamp({edge:false,clip:(x,y)=>!G.F.part[y*G.W+x]||G.F.part[y*G.W+x]===P.BODY});
+    }else{
+      [-1,1].forEach(k=>{
+        const e=k<0?A.earL:A.earR,x=e[0]+(k<0?-2:3),y=e[1]+5,m=A.head[0]+k*22,ex=B.head[0]+k*21,ey=Math.min(72,B.chin[1]+17);
+        T.poly([[x-k*2,y],[x+k*2,y],[m+k*2,A.head[1]+3],[ex+k*2,ey-6],[ex-k,ey],[ex-k*2,ey-6],[m-k*2,A.head[1]+3]],HAIR);
+        T.line(m+k,A.head[1]+5,ex+k,ey-6,SHADE,1);
+      });
+      // Giữ bím trái thấy được cả khi đuôi dựng trước vai.
+      T.stamp({edge:false,clip:(x,y)=>{const p=G.F.part[y*G.W+x];return p!==P.HEAD&&p!==P.EAR&&!K.isLeg(p)&&y<74}});
+    }
     const H=G.layer();
     if(side){H.ell(A.crown[0]-14,A.crown[1]-1,5,5,HAIR).ell(A.crown[0]+8,A.crown[1]-6,4,4,HAIR)}
     else{H.ell(A.earL[0]-2,A.earL[1]+2,5,5,HAIR).ell(A.earR[0]+3,A.earR[1]+2,5,5,HAIR)}
