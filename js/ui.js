@@ -485,13 +485,13 @@ function choose(e){
   a+=(k>0?.26:k<0?.03:.1)+(ag===0?.08:ag===2?-.02:0); if(r<a){e.state='run';e.pre=.2;e.left=1+Math.floor(rnd(1,4));runTarget(e);return}
   const ck=climbK(c);
   a+=.28+(ck>=3?.16:0); if(r<a){
-    const cand=itemsIn(cur).filter(i=>{const f=FURN[i.fid];return f.lv?lvFree(e,i).length:f.use&&!(f.bed&&bedCats(i.iid).length)&&(f.use.floor||!ents.some(o=>o!==e&&o.goal&&o.goal.iid===i.iid))});  // ổ đang có bé ngủ thì bé khác không tới nằm chen
+    const cand=itemsIn(cur).filter(i=>{const f=FURN[i.fid];return f.lv?lvFree(e,i).length:f.use&&(f.bed?!e.clone&&c.en<100&&bedCats(i.iid).length<f.bed.at.length:(f.use.floor||!ents.some(o=>o!==e&&o.goal&&o.goal.iid===i.iid)))}); // ổ ngủ: còn chỗ và bé chưa đầy năng lượng thì bé tự vào ổ ngủ
     const w=cand.map(i=>FURN[i.fid].lv?ck:1);let q=Math.random()*w.reduce((x,y)=>x+y,0),n=0;
     while(n<cand.length-1&&q>w[n]){q-=w[n];n++}
     const it=cand[n];
     if(it){
       const lv=FURN[it.fid].lv;
-      if(!lv){goItem(e,it);return}
+      if(!lv){if(!FURN[it.fid].bed){goItem(e,it);return}if(putBed(c.uid,it.iid).ok)return} // tự vào ổ: ghi là đang ngủ ở ổ đó, khung hình sau bé tự đi tới ổ
       const top=ck<.5?0:ag===2?Math.floor((lv.length-1)/2):lv.length-1,want=ck>=1.6?Math.max(Math.floor(Math.random()*(top+1)),Math.floor(Math.random()*(top+1))):Math.floor(Math.random()*(top+1));
       const ok=lvFree(e,it).filter(k=>k<=top).sort((x,y)=>Math.abs(x-want)-Math.abs(y-want));
       if(ok.length){goItem(e,it,ok[0]);return}
@@ -538,7 +538,9 @@ function stepEnt(e,dt){
     const bs=bedSpot(c);
     if(e.state==='bed'){
       if(bs){e.bx=bs.x;e.by=bs.y;e.bsy=bs.sy;e.bfy=bs.fy;return}   // ổ có thể vừa bị kéo đi trong chế độ Sắp xếp
-      e.j={fx:e.bx,fy:e.by,tx:clamp(e.bx+rnd(-8,8),14,WORLD_W-14),ty:e.bfy,sy:e.bsy,next:'idle'};e.jt=0;e.jd=.4;e.state='jump';e.emo=null;e.goal=null;return; // thôi ngủ: nhảy xuống sàn
+      const k=e.kick,dir=Math.random()<.5?-1:1,far=k&&Math.random()<.5;e.kick=0;
+      e.j={fx:e.bx,fy:e.by,tx:clamp(e.bx+(k?dir*(far?rnd(26,40):rnd(6,12)):rnd(-8,8)),14,WORLD_W-14),ty:clamp(e.bfy+(far?rnd(-3,5):0),FLOOR_MIN,FLOOR_MAX),sy:e.bsy,next:k?'flee':'idle'};
+      e.jt=0;e.jd=far?.62:.4;if(k)e.flip=dir>0;e.state='jump';e.emo=k?'excl':null;e.emoT=k?1.2:0;e.goal=null;return; // thôi ngủ: bị đuổi thì nhảy xa hoặc nhảy xuống rồi chạy đi, tự dậy thì nhảy xuống nhẹ nhàng
     }
     if(bs&&e.state!=='jump'&&e.state!=='sig'&&e.state!=='bye'&&!(e.goal&&e.goal.bed===bs.it.iid)){
       e.goal={bed:bs.it.iid};e.tx=clamp(bs.x,14,WORLD_W-14);e.ty=bs.fy;e.state='walk';e.pre=.2;e.left=0;e.emo=null;
@@ -568,6 +570,7 @@ function stepEnt(e,dt){
         else if(g.at<g.lv)climbJump(e,it,1);
         else{e.state='use';e.t=rnd(7,15);g.sleep=FURN[it.fid].lvs||ch(.4);e.emo=g.sleep?'z':'note';c.hp=clamp(c.hp+1+g.at,0,100)} // ở trên cao thì vui hơn, càng cao càng vui
       }
+      else if(e.j.next==='flee'){e.x=e.j.tx;e.y=e.j.ty;e.goal=null;e.emo=null;e.state='run';e.pre=0;e.acc=.6;e.left=1;runTarget(e)}
       else if(e.j.next==='bed'){const bs=bedSpot(c);if(bs)bedIn(e,bs);else{e.x=e.j.fx;e.y=e.j.fy;e.state='idle';e.t=rnd(.5,1.5)}}
       else if(e.j.next==='use'){const it=S.items.find(i=>i.iid===e.goal.iid);e.state='use';e.t=rnd(5,10);e.emo=it?FURN[it.fid].use.emo:null}
       else{e.x=e.j.tx;e.y=e.j.ty;e.goal=null;e.state='idle';e.t=rnd(.5,1.5)}
@@ -1478,7 +1481,7 @@ function openCat(uid,back){
     // chỉ số
     '<div class="cd-sec"><h4>Chỉ số</h4><div class="cd-stats">'+st('🍗','Độ no',c.full,c.full<20?'#ff6b6b':'#ffb347')+st('⚡','Năng lượng',c.en,'#7fb7ff')+st('😊','Độ vui',c.hp,'#5fd08a')+'</div>'+
       (away&&!bf.food?'':'<div class="dim cd-note">'+(away?'':'Độ vui đang hướng tới '+Math.round(happyTarget(c))+'%.')+(bf.food?' Đang có buff '+FOOD[bf.food].n+' (còn '+fmt(bf.until-now())+').':'')+'</div>')+
-      (bedItem(c)?'<div class="row" style="margin-top:8px;align-items:center"><span class="g">😴 Đang ngủ ở <b>'+FURN[bedItem(c).fid].n+'</b></span><button class="sm" onclick="kickBed('+uid+');openCat('+uid+',catBack)">Đánh thức</button></div>':'')+'</div>'+
+      (bedItem(c)?'<div class="row" style="margin-top:8px;align-items:center"><span class="g">😴 Đang ngủ ở <b>'+FURN[bedItem(c).fid].n+'</b></span><button class="sm" onclick="kickOut('+uid+');openCat('+uid+',catBack)">Đánh thức</button></div>':'')+'</div>'+
     // thuộc tính
     '<div class="cd-sec"><h4>Thuộc tính ('+c.traits.length+')</h4><div class="cd-tags">'+c.traits.map(t=>tagOf(t)).join('')+'</div></div>'+
     // đổi tên, chuyển phòng
@@ -1500,9 +1503,11 @@ function openBed(iid){
     h4('Cho bé đi ngủ'+(full?' · ổ đã đủ chỗ':''))+(others.length?others.map(c=>{const b2=bedItem(c),mx=c.en>=100;
       return card(c,b2?'đang ngủ ở '+FURN[b2.fid].n:'','<button class="sm on" '+(mx||full?'disabled':'')+' onclick="doBed('+c.uid+','+iid+')">'+(mx?'Đầy sức':b2?'Chuyển sang':'Cho ngủ')+'</button>')}).join(''):'<div class="dim">Không còn bé nào khác ở nhà trong phòng này.</div>'));
 }
-function doBed(uid,iid){const r=putBed(uid,iid);if(r.err)toast(r.err,{type:'warn'});openBed(iid)}
-function doKick(uid,iid){kickBed(uid);openBed(iid)}
-function doKickAll(iid){bedCats(iid).forEach(c=>kickBed(c.uid));openBed(iid)}
+function doBed(uid,iid){const r=putBed(uid,iid,1);if(r.err)toast(r.err,{type:'warn'});openBed(iid)}
+// đuổi ra: đánh dấu bé trong phòng để bé nhảy ra hoặc chạy ra thay vì bước xuống từ từ
+const kickOut=uid=>{ents.forEach(e=>{if(e.uid===uid&&e.state==='bed')e.kick=1});kickBed(uid)};
+function doKick(uid,iid){kickOut(uid);openBed(iid)}
+function doKickAll(iid){bedCats(iid).forEach(c=>kickOut(c.uid));openBed(iid)}
 function doMove(uid,rid){if(catBy(uid).room===rid)return;if(moveCat(uid,rid)){syncEnts();render();openCat(uid,catBack)}}
 let relQ=[];
 function doRehome(uid){askRelease([uid])}

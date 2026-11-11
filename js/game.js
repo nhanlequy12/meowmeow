@@ -133,16 +133,16 @@ const itemsIn=rid=>S.items.filter(i=>i.room===rid);
    Ổ bị cất, bán, hỏng, bé đổi phòng hay đi viễn chinh thì bé tự thôi ngủ (bedItem trả null, tick xóa c.bed). */
 const bedItem=c=>{if(c.bed==null)return null;const it=S.items.find(i=>i.iid===c.bed);return it&&it.room===c.room&&!it.broken&&FURN[it.fid].bed&&!onTrip(c.uid)?it:null};
 const bedCats=iid=>S.cats.filter(c=>c.bed===iid&&bedItem(c));
-function putBed(uid,iid){
+function putBed(uid,iid,man){ // man: người chơi tự cho đi ngủ (có thông báo lúc dậy); không có là bé tự vào ổ nằm
   const c=catBy(uid),it=S.items.find(i=>i.iid===iid),f=it&&FURN[it.fid];
   if(!c||!f||!f.bed)return {err:'Không tìm thấy ổ.'};
   if(it.room!==c.room||onTrip(uid))return {err:c.name+' không ở phòng này.'};
   if(c.en>=100)return {err:c.name+' đang đầy năng lượng, chưa buồn ngủ.'};
   const used=bedCats(iid).filter(o=>o!==c).map(o=>o.bk),k=f.bed.at.findIndex((_,i)=>!used.includes(i));
   if(k<0)return {err:f.n+' đã hết chỗ.'};
-  c.bed=iid;c.bk=k;save();return {ok:1};
+  c.bed=iid;c.bk=k;if(man)c.bm=1;else delete c.bm;save();return {ok:1};
 }
-function kickBed(uid){const c=catBy(uid);if(!c||c.bed==null)return false;delete c.bed;delete c.bk;save();return true}
+function kickBed(uid){const c=catBy(uid);if(!c||c.bed==null)return false;delete c.bed;delete c.bk;delete c.bm;save();return true}
 const roomHas=(rid,fid)=>S.items.some(i=>i.room===rid&&i.fid===fid&&!i.broken);
 function gEff(){
   const e={coin:0,speed:0,ticket:0,pet:0,night:0},seen={};
@@ -183,11 +183,11 @@ function tick(dt,sim){
     const away=onTrip(c.uid),bf=buffOf(c);
     if(c.buff&&c.buff.until<=now())c.buff=null;
     c.full=clamp(c.full-dt*(100/12000)*tM(c,'hunger')*(bf.hunger||1)*auraHunger(c)*palHunger(c)*roomHunger(c.room),0,100);
-    const bi=bedItem(c); if(c.bed!=null&&!bi){delete c.bed;delete c.bk}
+    const bi=bedItem(c); if(c.bed!=null&&!bi){delete c.bed;delete c.bk;delete c.bm}
     if(!away){
       const rg=tM(c,'regen')*roomRegen(c.room)*(c.full<=0?.3:1)*(bi?FURN[bi.fid].bed.en:1);
       c.en=clamp(c.en+dt/60*rg,0,100);
-      if(bi&&c.en>=100){delete c.bed;delete c.bk;notify('ngủ đủ giấc, năng lượng đã đầy',{icon:'😴',title:c.name,key:'wake',mtitle:'Ngủ dậy'})}
+      if(bi&&c.en>=100){const m=c.bm;delete c.bed;delete c.bk;delete c.bm;if(m)notify('ngủ đủ giấc, năng lượng đã đầy',{icon:'😴',title:c.name,key:'wake',mtitle:'Ngủ dậy'})}
       const t=happyTarget(c),step=tE(c,'fixedHappy')?100:dt/60;
       c.hp=Math.abs(t-c.hp)<=step?t:c.hp+Math.sign(t-c.hp)*step;
     }
