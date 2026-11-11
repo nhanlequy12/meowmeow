@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mèo Xu</title>
+<meta name="theme-color" content="#c4b39a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mèo Xu">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
 :root{--bg:#e6dac8;--panel:#f4ecdf;--panel2:#e8d8c2;--ink:#523828;--dim:#725b4a;--pink:#f2a3b3;--blue:#86b2dc;--gold:#855a05;--line:#a07654;--soft:#d6c5ad;--rc:#ffd24a}
 *{box-sizing:border-box}
@@ -237,6 +244,7 @@ canvas#room{touch-action:none}
   #app[data-tab=home] #roomnav{position:relative;z-index:4;width:fit-content;max-width:calc(100% - 80px);margin:0 0 -50px;padding:8px}
   #roomnav .nm{flex:none;min-height:36px;padding:3px 10px;font-size:13px}#roomnav button{min-height:36px;padding:3px 9px}
   #folcard{top:56px}
+  .qchip b{display:none}  /* nút Nhiệm vụ chỉ còn biểu tượng và số đỏ, để dòng chỉ số không xuống hai hàng làm khung phòng thấp lại */
 }
 @media(max-width:420px){.prev{flex-direction:column;align-items:stretch}.prev .pv{width:100%}.tabs button{font-size:11px}}
 /* ===== intro riêng của từng mèo 5★ ===== */
@@ -430,6 +438,7 @@ canvas#room{touch-action:none}
 <script src="js/wish.js"></script>
 <script src="js/breed.js"></script>
 <script src="js/net.js"></script>
+<script src="js/pwa.js"></script>
 <script src="js/tut-text.js"></script>
 <script src="js/tutorial.js"></script>
 <script src="js/tut-starter.js"></script>

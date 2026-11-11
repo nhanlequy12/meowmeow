@@ -7,16 +7,22 @@ Chạy:   python server.py            (cổng 8765, mọi máy trong mạng LAN 
 Dữ liệu nằm trong thư mục data/ cạnh file này (không commit):
     data/admin_key.txt      mã quản trị, tự sinh lần đầu, in ra màn hình khi khởi động
     data/players/<id>.json  hồ sơ, bản lưu, hàng lệnh chờ và nhật ký của từng người chơi
+    data/vapid.json         cặp khóa của máy chủ để gửi thông báo đẩy (Web Push), tự sinh lần đầu
+Đặt biến môi trường MEOXU_DATA để dùng thư mục dữ liệu khác (tiện khi thử).
+Thông báo đẩy: game (js/pwa.js) gửi lên "kế hoạch" các việc sắp xong (viễn chinh về, bát đổ lại được, mèo con chào đời);
+tới giờ mà người chơi đã tắt game thì máy chủ gửi một thông báo đẩy không kèm nội dung, service worker (sw.js) nhận được sẽ hỏi lại
+nội dung ở /api/push/pull. Trình duyệt chỉ cho đăng ký nhận đẩy khi game được mở bằng localhost hoặc HTTPS, và máy chủ phải ra được Internet.
 Chỉ dùng thư viện chuẩn của Python 3.8+.
 """
-import hmac, json, os, re, secrets, sys, threading, time
+import base64, hashlib, hmac, http.client, json, os, re, secrets, sys, threading, time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(ROOT, 'data')
+DATA = os.environ.get('MEOXU_DATA') or os.path.join(ROOT, 'data')
 PDIR = os.path.join(DATA, 'players')
 KEYF = os.path.join(DATA, 'admin_key.txt')
+VAPF = os.path.join(DATA, 'vapid.json')
 LOCK = threading.Lock()
 ID_RE = re.compile(r'^[0-9a-f]{12}$')
 MAX_BODY = 4 * 1024 * 1024
@@ -24,6 +30,12 @@ LOG_MAX = 300
 ONLINE = 90            # giây: đồng bộ gần hơn mức này thì coi là đang chơi
 JUMP = 20000           # xu tăng quá mức này giữa hai lần đồng bộ mà không phải quà thì ghi cảnh báo
 CMD_TYPES = {'coins', 'tickets', 'cat', 'msg', 'reset'}
+PUSH_IDLE = 100        # giây: không đồng bộ lâu hơn mức này thì coi là đã tắt game, lúc đó mới gửi thông báo đẩy (game còn mở thì tự báo)
+PUSH_LATE = 1800       # giây: việc quá hạn lâu hơn mức này (máy chủ vừa bật lại) thì bỏ, không báo muộn
+PUSH_HOSTS = ('fcm.googleapis.com', 'push.services.mozilla.com', 'notify.windows.com', 'push.apple.com')   # chỉ gửi tới dịch vụ đẩy của các trình duyệt
+PUSH_SUB = 'mailto:meoxu@example.com'   # địa chỉ liên hệ ghi trong khóa VAPID; đổi ở trường "sub" của data/vapid.json nếu muốn
+PLAN_AT = {}           # id người chơi -> thời điểm của việc sớm nhất trong kế hoạch thông báo (để vòng lặp không phải đọc mọi hồ sơ)
+EP_OF = {}             # địa chỉ đăng ký đẩy -> id người chơi
 
 
 def now():
@@ -68,6 +80,159 @@ def pall():
             if p:
                 out.append(p)
     return out
+
+
+# ---- Web Push (VAPID) chỉ bằng thư viện chuẩn: chữ ký ECDSA trên đường cong P-256 ----
+P256_P = 0xffffffff00000001000000000000000000000000ffffffffffffffffffffffff
+P256_N = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551
+P256_G = (0x6b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296, 0x4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5)
+
+
+def ec_add(p, q):
+    if p is None:
+        return q
+    if q is None:
+        return p
+    (x1, y1), (x2, y2) = p, q
+    if x1 == x2:
+        if (y1 + y2) % P256_P == 0:
+            return None
+        lam = (3 * x1 * x1 - 3) * pow(2 * y1, -1, P256_P) % P256_P
+    else:
+        lam = (y2 - y1) * pow(x2 - x1, -1, P256_P) % P256_P
+    x3 = (lam * lam - x1 - x2) % P256_P
+    return x3, (lam * (x1 - x3) - y1) % P256_P
+
+
+def ec_mul(k, p):
+    r = None
+    while k:
+        if k & 1:
+            r = ec_add(r, p)
+        p = ec_add(p, p)
+        k >>= 1
+    return r
+
+
+def ec_sign(d, msg):
+    """Chữ ký ES256 dạng r||s (64 byte) của msg bằng khóa riêng d."""
+    z = int.from_bytes(hashlib.sha256(msg).digest(), 'big')
+    while True:
+        k = secrets.randbelow(P256_N - 1) + 1
+        r = ec_mul(k, P256_G)[0] % P256_N
+        s = pow(k, -1, P256_N) * (z + r * d) % P256_N
+        if r and s:
+            return r.to_bytes(32, 'big') + s.to_bytes(32, 'big')
+
+
+def b64u(b):
+    return base64.urlsafe_b64encode(b).rstrip(b'=').decode()
+
+
+def vapid():
+    os.makedirs(DATA, exist_ok=True)
+    if not os.path.exists(VAPF):
+        d = secrets.randbelow(P256_N - 1) + 1
+        x, y = ec_mul(d, P256_G)
+        with open(VAPF, 'w', encoding='utf-8') as f:
+            json.dump({'d': '%064x' % d, 'pub': b64u(b'\x04' + x.to_bytes(32, 'big') + y.to_bytes(32, 'big')), 'sub': PUSH_SUB}, f)
+    with open(VAPF, encoding='utf-8') as f:
+        v = json.load(f)
+    v['d'] = int(v['d'], 16)
+    return v
+
+
+JWT = {}
+
+
+def vapid_auth(v, aud):
+    t = now()
+    c = JWT.get(aud)
+    if not c or c[0] < t + 3600:               # khóa ký dùng lại trong nhiều giờ, khỏi ký lại mỗi lần gửi
+        head = b64u(json.dumps({'typ': 'JWT', 'alg': 'ES256'}, separators=(',', ':')).encode())
+        body = b64u(json.dumps({'aud': aud, 'exp': t + 12 * 3600, 'sub': v.get('sub') or PUSH_SUB}, separators=(',', ':')).encode())
+        c = JWT[aud] = (t + 12 * 3600, head + '.' + body + '.' + b64u(ec_sign(v['d'], (head + '.' + body).encode())))
+    return 'vapid t=%s, k=%s' % (c[1], v['pub'])
+
+
+def push_host_ok(ep):
+    try:
+        u = urlparse(ep)
+        host = (u.hostname or '').lower()
+    except ValueError:
+        return False
+    return u.scheme == 'https' and len(ep) <= 1000 and any(host == x or host.endswith('.' + x) for x in PUSH_HOSTS)
+
+
+def push_send(v, ep):
+    """Gửi một thông báo đẩy không kèm nội dung tới địa chỉ đăng ký ep; trả về mã HTTP (0 nếu không kết nối được)."""
+    u = urlparse(ep)
+    conn = http.client.HTTPSConnection(u.hostname, u.port or 443, timeout=10)
+    try:
+        conn.request('POST', (u.path or '/') + ('?' + u.query if u.query else ''), body=b'',
+                     headers={'Authorization': vapid_auth(v, 'https://' + u.netloc), 'TTL': '1800', 'Urgency': 'high', 'Topic': 'meoxu', 'Content-Length': '0'})
+        r = conn.getresponse()
+        r.read()
+        return r.status
+    except (OSError, http.client.HTTPException):
+        return 0
+    finally:
+        conn.close()
+
+
+def set_plan(p, raw):
+    """Thay kế hoạch thông báo của người chơi bằng danh sách game vừa gửi: [{d: mili giây nữa, body: nội dung}]."""
+    t = now()
+    out = [e for e in (p.get('plan') or []) if e.get('force')]      # thông báo thử đang chờ thì giữ lại
+    if isinstance(raw, list):
+        for e in raw[:12]:
+            if isinstance(e, dict) and isinstance(e.get('d'), (int, float)) and 0 <= e['d'] <= 7 * 86400 * 1000 and isinstance(e.get('body'), str) and e['body'].strip():
+                out.append({'t': t + int(e['d'] / 1000), 'body': re.sub(r'[\x00-\x09\x0b-\x1f]', ' ', e['body']).strip()[:300]})
+    p['plan'] = out
+    if out:
+        PLAN_AT[p['id']] = min(e['t'] for e in out)
+    else:
+        PLAN_AT.pop(p['id'], None)
+
+
+def push_loop(v):
+    """Chạy nền: tới giờ của một việc trong kế hoạch mà người chơi đã tắt game thì gửi thông báo đẩy."""
+    while True:
+        time.sleep(5)
+        try:
+            t = now()
+            jobs = []
+            with LOCK:
+                for pid in [k for k, at in list(PLAN_AT.items()) if at <= t]:
+                    p = pload(pid)
+                    if not p:
+                        PLAN_AT.pop(pid, None)
+                        continue
+                    plan = p.get('plan') or []
+                    due = [e for e in plan if t - PUSH_LATE <= e['t'] <= t]
+                    p['plan'] = [e for e in plan if e['t'] > t]
+                    if p['plan']:
+                        PLAN_AT[pid] = min(e['t'] for e in p['plan'])
+                    else:
+                        PLAN_AT.pop(pid, None)
+                    if due and p.get('subs') and (any(e.get('force') for e in due) or t - p.get('last', 0) > PUSH_IDLE):
+                        p['pmsg'] = {'title': 'Mèo Xu', 'body': due[-1]['body'], 't': t}
+                        jobs.append((pid, list(p['subs'])))
+                    psave(p)
+            for pid, eps in jobs:
+                for ep in eps:
+                    st = push_send(v, ep)
+                    if st in (404, 410):                      # trình duyệt đã hủy đăng ký này
+                        with LOCK:
+                            p = pload(pid)
+                            if p:
+                                p['subs'] = [x for x in p.get('subs', []) if x != ep]
+                                psave(p)
+                            EP_OF.pop(ep, None)
+                    elif st not in (200, 201, 202):
+                        sys.stderr.write('%s Thông báo đẩy cho %s không gửi được (mã %d)\n' % (time.strftime('%H:%M:%S'), pid, st))
+        except Exception as e:                                # vòng lặp nền không được chết vì một hồ sơ lỗi
+            sys.stderr.write('push_loop: %r\n' % (e,))
 
 
 def clean_name(s):
@@ -210,6 +375,8 @@ class H(SimpleHTTPRequestHandler):
     def api_get(self, ep, q):
         if ep == 'ping':
             return self.send_json({'ok': 1, 'app': 'meoxu'})
+        if ep == 'push/key':                # khóa công khai để trình duyệt đăng ký nhận thông báo đẩy
+            return self.send_json({'ok': 1, 'key': self.server.vapid['pub']})
         if not ep.startswith('admin/'):
             return self.send_json({'err': 'Không có'}, 404)
         if not self.is_admin():
@@ -233,6 +400,8 @@ class H(SimpleHTTPRequestHandler):
                 return self.send_json({'ok': 1, 'id': p['id'], 'tok': p['tok'], 'name': p['name']})
             if ep == 'sync':
                 return self.sync(b)
+            if ep.startswith('push/'):
+                return self.push_api(ep[5:], b)
             if not ep.startswith('admin/'):
                 return self.send_json({'err': 'Không có'}, 404)
             if not self.is_admin():
@@ -289,8 +458,39 @@ class H(SimpleHTTPRequestHandler):
                     p['save'] = raw
             except ValueError:
                 pass
+        if 'plan' in b:
+            set_plan(p, b.get('plan'))
         psave(p)
         self.send_json({'ok': 1, 'name': p['name'], 'cmds': p['cmds']})
+
+    def push_api(self, ep, b):
+        if ep == 'pull':                    # service worker vừa nhận một thông báo đẩy, hỏi nội dung cần hiện
+            p = pload(EP_OF.get(str(b.get('endpoint') or ''), ''))
+            m = (p or {}).get('pmsg')
+            return self.send_json({'ok': 1, 'title': m['title'], 'body': m['body']} if m else {'ok': 0})
+        p = pload(str(b.get('id') or ''))
+        if not p or not hmac.compare_digest(str(b.get('tok') or '').encode(), p['tok'].encode()):
+            return self.send_json({'err': 'Sai khóa người chơi'}, 403)
+        e = str(b.get('endpoint') or '')
+        if ep == 'sub':                     # trình duyệt của người chơi đăng ký nhận đẩy (giữ 3 đăng ký gần nhất)
+            if not push_host_ok(e):
+                return self.send_json({'err': 'Địa chỉ nhận đẩy không hợp lệ'}, 400)
+            p['subs'] = ([x for x in p.get('subs', []) if x != e] + [e])[-3:]
+            EP_OF[e] = p['id']
+        elif ep == 'unsub':
+            p['subs'] = [x for x in p.get('subs', []) if x != e]
+            EP_OF.pop(e, None)
+        elif ep == 'plan':                  # gói nhỏ game gửi lúc rời trang
+            set_plan(p, b.get('plan'))
+        elif ep == 'test':                  # gửi thử sau 15 giây, kể cả khi game đang mở
+            if not p.get('subs'):
+                return self.send_json({'err': 'Trình duyệt này chưa đăng ký nhận đẩy'}, 400)
+            p['plan'] = [x for x in (p.get('plan') or []) if not x.get('force')] + [{'t': now() + 15, 'force': 1, 'body': 'Thông báo đẩy đang hoạt động: tắt hẳn game vẫn nhận được.'}]
+            PLAN_AT[p['id']] = min(x['t'] for x in p['plan'])
+        else:
+            return self.send_json({'err': 'Không có'}, 404)
+        psave(p)
+        self.send_json({'ok': 1})
 
     def admin_cmd(self, b):
         cmd = b.get('cmd')
@@ -340,9 +540,17 @@ def main():
     host = sys.argv[2] if len(sys.argv) > 2 else '0.0.0.0'
     srv = ThreadingHTTPServer((host, port), H)
     srv.akey = admin_key()
+    srv.vapid = vapid()
+    for p in pall():                                      # dựng lại bảng tra thông báo đẩy từ các hồ sơ đã lưu
+        for e in p.get('subs', []):
+            EP_OF[e] = p['id']
+        if p.get('plan'):
+            PLAN_AT[p['id']] = min(e['t'] for e in p['plan'])
+    threading.Thread(target=push_loop, args=(srv.vapid,), daemon=True).start()
     print('Mèo Xu đang chạy ở cổng %d. Máy này vào: http://localhost:%d' % (port, port))
     print('Máy khác trong mạng vào bằng http://<địa chỉ IP máy này>:%d' % port)
     print('Mã quản trị (nhập khi mở bảng Admin): %s   (lưu ở data/admin_key.txt)' % srv.akey)
+    print('Cài ứng dụng và thông báo đẩy chỉ chạy khi mở game bằng localhost hoặc HTTPS (địa chỉ http://<IP> thì trình duyệt không cho).')
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

@@ -112,27 +112,27 @@ Chạm vào mèo: mỗi bé 10 phút nhận xu một lần (`PET_CD`), số xu b
 Chủ đề sáng hoặc tối, độ tối nền phòng, và cỡ hạt cườm (`S.set.bead`): "Tự động" hoặc "Hạt to, rõ" (ép mức zoom nhỏ nhất lên 6, tức mỗi hạt ít nhất 3 điểm ảnh thật).
 
 ### Phòng
-17 phòng mua được, cộng Phòng chờ. Sức chứa và bonus (giá đã nhân hệ số cày lâu, xem mục 18):
+17 phòng mua được, cộng Phòng chờ. Sức chứa và bonus (giá đã nhân hệ số cày lâu, xem mục 18 và mục 25):
 
 | Phòng | Giá | Chứa | Bonus |
 |---|---|---|---|
 | Phòng khách | 0 | 8 | Không |
 | Phòng ngủ | 900 | 8 | Hồi năng lượng +25% |
-| Bếp | 1.400 | 6 | Đói chậm hơn 20% |
-| Ban công | 2.200 | 6 | +8 vui, ngoài trời |
-| Phòng tắm | 3.400 | 5 | +4 vui, hồi năng lượng +10% |
-| Phòng chơi | 5.200 | 10 | +6 vui |
-| Phòng ăn | 7.700 | 8 | +2 xu cảm ơn mỗi bé mỗi bữa |
-| Gác mái | 11.500 | 6 | Hồi năng lượng +20%, +3 vui |
-| Sân vườn | 17.500 | 12 | +10 vui, ngoài trời |
-| Thư viện | 25.500 | 8 | +6% xu viễn chinh |
-| Phòng game | 37.500 | 10 | +9 vui |
-| Nhà kính | 55.500 | 8 | +7 vui, đói chậm hơn 10%, ngoài trời |
-| Phòng Nhật | 81.500 | 8 | Hồi năng lượng +25%, +5 vui |
-| Tầng hầm | 119.000 | 10 | +10% xu khi đi ban đêm |
-| Hồ bơi | 176.000 | 10 | +8 vui, mèo thích nước +10, sợ nước −10 |
-| Sân thượng | 257.000 | 12 | +6 vui, +3% cơ hội nhặt vé, ngoài trời |
-| Phòng hoàng gia | 360.000 | 12 | +8 vui, +10% xu viễn chinh |
+| Bếp | 1.550 | 6 | Đói chậm hơn 20% |
+| Ban công | 2.500 | 6 | +8 vui, ngoài trời |
+| Phòng tắm | 4.100 | 5 | +4 vui, hồi năng lượng +10% |
+| Phòng chơi | 6.500 | 10 | +6 vui |
+| Phòng ăn | 9.900 | 8 | +2 xu cảm ơn mỗi bé mỗi bữa |
+| Gác mái | 15.000 | 6 | Hồi năng lượng +20%, +3 vui |
+| Sân vườn | 23.500 | 12 | +10 vui, ngoài trời |
+| Thư viện | 35.000 | 8 | +6% xu viễn chinh |
+| Phòng game | 52.500 | 10 | +9 vui |
+| Nhà kính | 79.000 | 8 | +7 vui, đói chậm hơn 10%, ngoài trời |
+| Phòng Nhật | 118.000 | 8 | Hồi năng lượng +25%, +5 vui |
+| Tầng hầm | 173.000 | 10 | +10% xu khi đi ban đêm |
+| Hồ bơi | 259.000 | 10 | +8 vui, mèo thích nước +10, sợ nước −10 |
+| Sân thượng | 382.000 | 12 | +6 vui, +3% cơ hội nhặt vé, ngoài trời |
+| Phòng hoàng gia | 540.000 | 12 | +8 vui, +10% xu viễn chinh |
 
 Mỗi phòng có kiểu tường và sàn riêng (`THEMES` trong ui.js). Thế giới của một phòng rộng 480 × 170 ô; tường kết thúc ở hàng 96, mèo đi trên sàn từ hàng 106 đến 166.
 
@@ -436,7 +436,7 @@ Chưa đụng tới, cần người dùng quyết: gacha 100 xu cố định và
 
 Từ đợt này mèo trong phòng và trong giao diện không còn vẽ bằng `Art.cat` kiểu cũ mà dựng lúc chạy trên bộ khung hoạt ảnh của mèo Xoài. Các mục 4 (art.js) ở trên chỉ còn đúng cho hình kiểu cũ, nay chỉ dùng trong gacha.
 
-- Thứ tự nạp script: `js/data.js`, `js/sprites.js` (khung Xoài), `js/art.js`, `js/catkit.js`, `js/cats/*.js`, `js/game.js`, `js/ui.js`, `js/quest.js` (nhiệm vụ và khách lạ, mục 19), `js/achieve.js` (thành tựu, mục 20), `js/net.js`, rồi các file hướng dẫn tân thủ. Khối thẻ `<script>` của `js/cats` nằm giữa `<!-- cats:begin -->` và `<!-- cats:end -->` trong `index.html` và `preview/index.html`, do `node tools/mkmods.js` ghi. Thêm module mới thì chạy lại lệnh này.
+- Thứ tự nạp script: `js/data.js`, `js/sprites.js` (khung Xoài), `js/art.js`, `js/catkit.js`, `js/cats/*.js`, `js/game.js`, `js/ui.js`, `js/quest.js` (nhiệm vụ và khách lạ, mục 19), `js/achieve.js` (thành tựu, mục 20), `js/wish.js`, `js/breed.js` (mục 24), `js/net.js`, `js/pwa.js` (mục 25), rồi các file hướng dẫn tân thủ. Khối thẻ `<script>` của `js/cats` nằm giữa `<!-- cats:begin -->` và `<!-- cats:end -->` trong `index.html` và `preview/index.html`, do `node tools/mkmods.js` ghi. Thêm module mới thì chạy lại lệnh này.
 - `js/catkit.js`: gắn nhãn từng ô của khung Xoài (bộ phận, chi tiết mặt, toạ độ nghỉ `u, v`, mỏ neo), bộ khớp đi, chạy, nhảy (bản JS trùng từng ô với 24 khung của `tools/xoai_rig.py`), dáng chân ngắn, bộ tô màu, vải vẽ phụ kiện. `Art.cat(s, pose)` gọi `CatKit.render`; nếu ngoại hình còn thiếu module thì trả `null` và game vẽ kiểu cũ.
 - Ba loại module trong `js/cats/`: `CatKit.pattern` (hoa văn lông), `CatKit.trait` (tai, đuôi, lông dài, mặt tịt, không lông, mắt kim cương), `CatKit.costume` (mỗi mèo trang phục một file `v_<id>.js`; năm giống 5★ có `b_<id>.js` cho trang phục hiếm). Tra nhanh API: `docs/catkit-card.md`; đặc tả đầy đủ: `docs/cat-sprite-spec.md`.
 - Gacha (intro, ảnh mở hộp) cố ý giữ hình kiểu cũ: `catCv(sp, pose, k, old)` với `old=1`. Người dùng dặn KHÔNG sửa hoạt ảnh gacha. Ngoại lệ đã duyệt: mèo thêm sau đợt này không có hình kiểu cũ (cờ `kit:1` trong `VARIANTS`: Itadori, Phineas, Ferb, Yani Neko) nên gacha của chúng dùng hình CatKit (`KITONLY` trong ui.js).
@@ -449,8 +449,8 @@ Từ đợt này mèo trong phòng và trong giao diện không còn vẽ bằng
 
 Người dùng muốn nội thất và phòng đắt hơn để người chơi cày lâu, chơi liên tục. Giá gốc trong `data.js` giữ nguyên; khối "GIÁ CÀY LÂU" ở cuối `data.js` nhân giá SAU khi đã gán cấp mở khóa (cấp vẫn tính theo giá gốc):
 
-- Phòng: hệ số tăng dần theo thứ tự giá, ×1,5 (Phòng ngủ 900) tới ×4 (Phòng hoàng gia 360.000). Tổng 1.161.800 xu (trước 323.650).
-- Nội thất: ×1,5 ở cấp 1, cộng 0,15 mỗi cấp mở (cấp 18 là ×4,05). Bát ăn chỉ ×1,5. 141 món không phải bát tổng 298.890 xu.
+- Phòng: hệ số tăng dần theo thứ tự giá, ×1,5 (Phòng ngủ 900) tới ×4 (Phòng hoàng gia 360.000). Tổng 1.161.800 xu (trước 323.650). Từ tối 2026-11-11 hệ số cuối là ×6 (Phòng hoàng gia 540.000, tổng 1.702.450), xem mục 25.
+- Nội thất: ×1,5 ở cấp 1, cộng 0,15 mỗi cấp mở (cấp 18 là ×4,05). Bát ăn chỉ ×1,5. 141 món không phải bát tổng 298.890 xu. Từ tối 2026-11-11 cộng 0,2 mỗi cấp (cấp 18 là ×4,9, tổng 347.490), xem mục 25.
 - Làm tròn đẹp (`nicePrice`). Đổi nhịp chỉ cần sửa năm hằng số `ROOM_K0, ROOM_K1, FURN_K0, FURN_KS, BOWL_K`.
 - Hoàn 25% khi bán và sửa 30% tính theo giá mới, nên đồ mua từ trước khi tăng giá bán lại được nhiều xu hơn.
 
@@ -512,7 +512,7 @@ Người dùng chọn gợi ý 1, 3, 4, 5, 6. Chỉ đổi vị trí và kích t
 - `buyRoom` ghi lúc mua vào `S.rooms[id].at` và gọi `fillWait()`, rồi trả về `{moved}` (số bé đã chuyển) thay cho `true`. `doBuyRoom` báo số bé đã chuyển trong thông báo mở phòng.
 - `fillWait()` (game.js): lấy mèo ở Phòng chờ theo thứ tự trong `S.cats` (bé vào chờ trước đi trước), bỏ qua bé đang viễn chinh, đưa vào phòng còn chỗ theo `roomsByBuy()`: phòng mua trước được lấp trước. Phòng chưa có `at` (Phòng khách, phòng của bản lưu cũ, phòng mở bằng trang quản trị) đứng trước, giữa chúng theo thứ tự `ROOMS`.
 - `claimTrip`: bé ở Phòng chờ đi viễn chinh về thì cũng gọi `fillWait()`.
-- Mèo mới từ gacha vẫn dùng `freeRoom()` (thứ tự `ROOMS`, không theo thứ tự mua).
+- Từ tối 2026-11-11 `freeRoom()` cũng theo `roomsByBuy()` (mục 25), nên mèo mới từ gacha, quà quản trị và mèo con vào phòng mua trước.
 
 ## 24. Ước muốn, điểm danh, ghép đôi và 3 tối ưu (2026-11-11)
 
@@ -523,3 +523,42 @@ Người dùng chọn gợi ý 1, 3, 4, 5, 6. Chỉ đổi vị trí và kích t
 - Thành tựu thêm 9 (ước muốn, mèo con, điểm danh), tổng 114. Sổ tay thêm 3 mục.
 - Tối ưu: gộp thông báo cùng loại (`toast` có `key`, `mtitle`; `tstMerge`); ❗ tab Phòng khi bát đầy lại mà có bé no dưới 50 (`feedDue`); tab Mèo: ảnh từ canvas dùng blob URL (`cvURL`) và ô chọn phòng chỉ dựng đủ danh sách khi chạm (`mgOpts`), 150 bé vẽ lại 28 ms (trước 69 ms).
 - Đã thử bằng Playwright ở 3 cỡ màn, không lỗi JS. Chưa cho bot chơi lại hướng dẫn tân thủ sau đợt này (xem `VIEC-CAN-LAM.md`). Kế hoạch mục 4–6 ở `docs/KE-HOACH.md`.
+- Kiểm tra thêm tối 2026-11-11 (chi tiết ở `VIEC-CAN-LAM.md`): bot chơi hết hướng dẫn ở PC, điện thoại dọc, điện thoại ngang đều qua, không lỗi JS, bảng điểm danh chỉ tự mở sau khi hướng dẫn xong; thành tựu ước muốn (1, 50, 300) và điểm danh (7, 30, 100) mở đúng; ở điện thoại ngang nút Nhiệm vụ thu còn biểu tượng và số đỏ (`.qchip b{display:none}`). Phần ghép đôi chưa kiểm tra theo lời người dùng.
+- Lưu ý khi thử trong trình duyệt của Claude: khung trình duyệt bị ẩn thì `requestAnimationFrame` không chạy (vòng lặp game và khung khoanh sáng của hướng dẫn đứng yên, bot kẹt ở bước vuốt mèo). Gọi công cụ hiện khung trình duyệt trước khi thử thứ gì cần hoạt ảnh, và chờ bằng `await` trong công cụ chạy JavaScript.
+
+## 25. Kế hoạch mục 4, 5, 6: thứ tự phòng, bot cân bằng, ứng dụng cài được và thông báo (2026-11-11)
+
+Người dùng bảo "làm hết 4 5 6" trong `docs/KE-HOACH.md`.
+
+### Mục 4
+- `freeRoom()` dùng `roomsByBuy()` thay cho `ownedRooms()`. Phòng chưa có `at` (Phòng khách, bản lưu cũ) vẫn đứng trước theo thứ tự `ROOMS`.
+
+### Mục 5: `tools/ecobot.js`
+- Chạy bằng đúng mã game trong Node: `data.js`, `game.js`, và khi `--new=1` thì cả `quest.js`, `achieve.js`, `wish.js` (các hàm giao diện được thay bằng hàm rỗng; hẹn giờ không chạy, bot tự gọi `qSync`, `qClaim`, `ciClaim`, `achCheck`, `critHit`, `wishDone`). Nếu mã game đổi làm chuỗi cần thay không còn khớp thì bot báo lỗi ngay.
+- Tham số: `--h` số giờ tối đa, `--runs` số lượt (lấy trung vị), `--new=0|1`, `--watch` phần thời gian để tab Phòng mở (mặc định 0,3), `--day` số giờ chơi mỗi ngày (mặc định 4; cứ bấy nhiêu giờ chơi là sang ngày mới), `--catch`, `--wish`, `--k1`, `--ks`, `--k0`, `--f0` (thử hệ số giá mà không sửa `data.js`), `--json`.
+- Không mô phỏng: ghép đôi (tốn xu, không sinh xu), thời gian vắng mặt giữa các ngày, món ăn có buff.
+- Số đo (trung vị 11 lượt, giờ chơi liên tục). Bot không tính nguồn xu mới ra gần đúng bảng ở mục 18, nên so sánh được:
+
+| Mốc | Không tính nguồn mới | Có nguồn mới, giá hiện tại | Có nguồn mới, `ROOM_K1=6`, `FURN_KS=.2` |
+|---|---|---|---|
+| Cấp 18 | 42,2 giờ | 36,5 giờ | 38,3 giờ |
+| Phòng thứ 5 (Phòng chơi) | 6,8 giờ | 4,5 giờ | 4,8 giờ |
+| Phòng thứ 9 (Thư viện) | 20 giờ | 13,8 giờ | 17 giờ |
+| Phòng hoàng gia | 154,5 giờ | 113,8 giờ (sớm hơn 26%) | 161,5 giờ |
+| Đủ mọi món nội thất | 174,5 giờ | 132,8 giờ (sớm hơn 24%) | 184 giờ |
+
+- Tỉ trọng xu khi có nguồn mới (4 giờ chơi mỗi ngày): viễn chinh 45%, vuốt ve 18%, cảm ơn bữa ăn 17%, nhiệm vụ ngày 11%, điểm danh 3,5%, nhiệm vụ trong giờ 2,6%, khách lạ 1,6%, ước muốn 0,8%, thành tựu 0,2%. Vé nhận thêm trong cả lượt chơi: khoảng 74 từ nhiệm vụ ngày, 66 từ khách lạ, 24 từ điểm danh.
+- Độ nhạy với giá hiện tại (Phòng hoàng gia, đủ nội thất): chơi 2 giờ mỗi ngày 99,7 và 116,7 giờ; 8 giờ mỗi ngày 125,2 và 145,5 giờ; nhìn tab Phòng suốt (4 giờ mỗi ngày) 103,5 và 121,3 giờ. Người chơi ít giờ mỗi ngày được lợi nhiều nhất vì thưởng theo ngày chia cho ít giờ chơi hơn.
+- ĐÃ đổi giá sau khi người dùng xem số đo và bảo "Tăng giá": `ROOM_K1` 4 → 6, `FURN_KS` .15 → .2 trong `js/data.js` (tổng giá phòng 1.161.800 → 1.702.450 xu, Phòng hoàng gia 360.000 → 540.000; tổng nội thất không kể bát 298.890 → 347.490; bát ăn và Phòng ngủ 900 xu giữ nguyên). Chạy lại bot với giá mới (11 lượt): cấp 18 sau 38,3 giờ, Phòng chơi 4,8 giờ, Thư viện 16,3 giờ, Phòng hoàng gia 162,2 giờ, đủ nội thất 183,8 giờ, tức cuối game về lại nhịp của mục 18 (163 và 188 giờ). Đầu game vẫn nhanh hơn trước (Phòng chơi 4,8 giờ thay vì 6,8 giờ) vì hai hệ số này chủ yếu tác động cuối game. Phòng và đồ người chơi đã mua không bị ảnh hưởng; tiền hoàn khi bán (25%) và tiền sửa (30%) tính theo giá mới.
+
+### Mục 6: ứng dụng cài được và thông báo
+- `manifest.json`, `icons/` (vẽ bằng `node tools/mkicons.js [khoá mèo]` từ hình mèo của game; mặc định mèo mướp), thẻ `<link rel="manifest">`, `theme-color`, `apple-touch-icon` trong `index.html`.
+- `sw.js` (service worker, phạm vi là cả thư mục game): file game luôn hỏi mạng trước, mất mạng hoặc mạng chậm quá 4 giây thì dùng bản đã lưu. Danh sách file cần lưu được đọc từ chính `index.html` lúc cài, nên thêm script mới không phải sửa `sw.js`. Không lưu `/api/` và `preview/`. Muốn xóa sạch bộ lưu cũ ở máy người chơi thì đổi tên `CACHE`.
+- `js/pwa.js` (nạp sau `net.js`): đăng ký service worker; `pwaCard()` là mục "Ứng dụng và thông báo" trong Cài đặt (đặt SAU thẻ Sổ tay, vì mẹo lần đầu mở Cài đặt trỏ vào `.tut-book`); `S.set.ntf` là công tắc thông báo; `S.nf4` là cờ đã hiện lời giới thiệu.
+- Kế hoạch thông báo `ntfPlan()`: danh sách `{t, body}` gồm viễn chinh về (`S.trips[i].end`), bát đổ lại được (`b.at` của bát không tự động, ở phòng có mèo), mèo con chào đời (`S.nest[i].end`). Mỗi mốc ghi sẵn nội dung cộng dồn; các việc cách nhau dưới 90 giây gộp một mốc. Mọi thông báo dùng nhãn `meoxu` nên cái sau thay cái trước.
+- Hai đường báo: (1) game còn mở nhưng người chơi không nhìn (`document.hidden` hoặc cửa sổ mất tiêu điểm): trang tự gọi `showNotification` theo kế hoạch chốt lúc rời đi; (2) game đã tắt: `netSync` gửi kèm `plan`, lúc ẩn trang gửi thêm gói nhỏ `api/push/plan` có `keepalive`; `server.py` có luồng nền `push_loop` 5 giây một lần, tới giờ mà người chơi không đồng bộ quá `PUSH_IDLE` (100 giây) thì gửi Web Push không kèm nội dung, `sw.js` nhận rồi hỏi nội dung ở `api/push/pull`.
+- `server.py`: VAPID viết bằng thư viện chuẩn (ECDSA P-256 thuần Python: `ec_add`, `ec_mul`, `ec_sign`, `vapid_auth`), khóa ở `data/vapid.json`; API `push/key`, `push/sub`, `push/unsub`, `push/plan`, `push/test`, `push/pull`; chỉ gửi tới máy chủ đẩy của Chrome, Firefox, Edge, Safari (`PUSH_HOSTS`); đăng ký bị trả 404 hoặc 410 thì tự gỡ. Biến môi trường `MEOXU_DATA` đổi thư mục dữ liệu (dùng khi thử).
+- Giới hạn: service worker và thông báo chỉ chạy ở `localhost` hoặc HTTPS. Bạn bè vào bằng `http://<IP>:8765` không cài được và không có thông báo (mục Cài đặt nói rõ điều này). Muốn dùng trên điện thoại phải có địa chỉ HTTPS (ví dụ một đường hầm như cloudflared); iPhone còn phải thêm game vào màn hình chính trước. Thông báo đẩy cần máy chạy `server.py` ra được Internet.
+- Đã thử trong trình duyệt của Claude (máy chủ thử ở cổng 8766, thư mục dữ liệu riêng): service worker cài và điều khiển trang, lưu đủ 82 mục (mọi script, CSS, biểu tượng), tắt máy chủ rồi tải lại vẫn chơi được; kế hoạch đúng ở các tình huống một chuyến, nhiều chuyến, có ổ, không có việc; báo tại chỗ hiện đúng một thông báo (bằng hàm giả); đăng ký đẩy, gửi kế hoạch, lệnh thử chạy tới bước máy chủ gọi dịch vụ đẩy của Google (địa chỉ giả nên bị trả 410 và đăng ký được gỡ, đúng thiết kế); địa chỉ đẩy lạ và sai khóa người chơi bị từ chối. Chữ ký VAPID được kiểm bằng `crypto.verify` của Node: đúng.
+- CHƯA thử được: thông báo thật hiện trên màn hình (trình duyệt của Claude chặn quyền thông báo), một lần đẩy thật tới Chrome, Edge, Firefox hay Safari, nút "Cài ứng dụng" thật, iPhone, Android.
+- Lưu ý khi thử qua `server.py`: lúc tải lại trang, `netSync` gọi `save()` khi trang ẩn, nên xóa `meoxu_v2` rồi `location.reload()` không đặt lại được ván; gán `save=function(){}` trước khi xóa.

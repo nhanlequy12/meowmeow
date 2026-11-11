@@ -102,7 +102,7 @@ function openQuests(){
 {const rt=renderTop;renderTop=function(){rt.apply(this,arguments);if(!qSync())return;const n=qReady(),el=document.createElement('div');
   // ngày mới, chưa điểm danh: tự mở bảng một lần khi không có hộp thoại, hoạt ảnh gacha hay hướng dẫn nào đang chạy
   if(ciReady()&&ciS().ask!==qDay()&&$('modal').style.display!=='flex'&&!$('gz').classList.contains('on')&&!(typeof TUT!=='undefined'&&TUT.active())){S.ci.ask=qDay();setTimeout(()=>{if($('modal').style.display!=='flex')openQuests()},600)}
-  el.className='chip qchip'+(n?' ready':'');el.setAttribute('onclick','openQuests()');el.innerHTML=emo('📜 <b>Nhiệm vụ</b>'+(n?' <span class="qbadge">'+n+'</span>':''));$('top').appendChild(el)}}
+  el.className='chip qchip'+(n?' ready':'');el.setAttribute('onclick','openQuests()');el.setAttribute('role','button');el.setAttribute('aria-label','Nhiệm vụ'+(n?' ('+n+' phần thưởng chờ nhận)':''));el.innerHTML=emo('📜 <b>Nhiệm vụ</b>'+(n?' <span class="qbadge">'+n+'</span>':''));$('top').appendChild(el)}}
 
 /* ---------- khách lạ trong phòng ---------- */
 const CRIT={ // w,h: kích thước sprite theo ô gốc; air: bay trên không; sp: tốc độ (ô/giây); coin: hệ số xu; tk: xác suất được vé; wt: trọng số xuất hiện

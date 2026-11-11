@@ -37,7 +37,7 @@ function netJoin(){
 function netSync(){
   if(!NET.on||!NET.pl||NET.busy)return;
   NET.busy=true;save();
-  api('sync',{id:NET.pl.id,tok:NET.pl.tok,cn:S.cn||0,save:JSON.stringify(S)}).then(j=>{
+  api('sync',{id:NET.pl.id,tok:NET.pl.tok,cn:S.cn||0,save:JSON.stringify(S),plan:typeof ntfSyncPlan==='function'?ntfSyncPlan():[]}).then(j=>{
     NET.busy=false;NET.okAt=Date.now();
     if(j.name&&j.name!==NET.pl.name){NET.pl.name=j.name;lsSet(PKEY,JSON.stringify(NET.pl))}
     const todo=(j.cmds||[]).filter(c=>c.n>(S.cn||0)).sort((a,b)=>a.n-b.n);

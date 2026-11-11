@@ -123,7 +123,7 @@ const ownedRooms=()=>ROOMS.filter(r=>S.rooms[r.id]);
 const catsIn=rid=>S.cats.filter(c=>c.room===rid);
 const homeCats=rid=>S.cats.filter(c=>c.room===rid&&!onTrip(c.uid));
 const totalCap=()=>ownedRooms().reduce((a,r)=>a+r.cap,0);
-const freeRoom=()=>{const r=ownedRooms().find(r=>catsIn(r.id).length<r.cap);return r?r.id:'wait'}; // hết chỗ thì vào Phòng chờ
+const freeRoom=()=>{const r=roomsByBuy().find(r=>catsIn(r.id).length<r.cap);return r?r.id:'wait'}; // phòng mua trước được lấp trước (cùng thứ tự với fillWait); hết chỗ thì vào Phòng chờ
 const roomHunger=rid=>{let m=ROOM[rid].hunger||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].hunger;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.max(.5,m)};
 const roomRegen=rid=>{let m=ROOM[rid].regen||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].regen;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.min(2,m)};
 const itemsIn=rid=>S.items.filter(i=>i.room===rid);

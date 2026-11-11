@@ -23,16 +23,19 @@ Ghi ngày 2026-11-11. Đây là các mục người dùng muốn để sau, chư
 
 ## Tối ưu
 
-### 4. Mèo mới từ gacha vào phòng theo thứ tự mua
+Mục 4, 5, 6 đã làm tối 2026-11-11 (chi tiết ở mục 25 của `CLAUDE.md`). Mục 5: đã đo và đã tăng giá theo lời người dùng.
+
+### 4. Mèo mới từ gacha vào phòng theo thứ tự mua (đã làm)
 - Hiện `freeRoom()` theo thứ tự `ROOMS` (thứ tự cửa hàng). Phòng Chờ đã theo thứ tự mua (`roomsByBuy`, mục 23 CLAUDE.md).
 - Đổi `freeRoom` sang `roomsByBuy()` cho thống nhất; kiểm tra lại hướng dẫn tân thủ (bé khởi đầu vào Phòng khách).
 
-### 5. Chạy lại bot cân bằng xu
+### 5. Chạy lại bot cân bằng xu (đã đo, đã tăng giá)
+- Kết quả: bot là `tools/ecobot.js`. Tính thêm nguồn xu mới thì Phòng hoàng gia tới sớm hơn 26%, đủ nội thất sớm hơn 24%, tức vượt ngưỡng 20%. Đã đổi `ROOM_K1=6`, `FURN_KS=.2`; bot chạy lại cho Phòng hoàng gia 162 giờ, đủ nội thất 184 giờ, về lại nhịp của mục 18.
 - Bot cũ (mục 18 CLAUDE.md) chưa tính nhiệm vụ, khách lạ, thành tựu, ước muốn, điểm danh, ghép đôi.
 - Thêm vào bot: nhận nhiệm vụ trong giờ và trong ngày, bắt khách lạ theo tần suất trung bình, làm ước muốn, điểm danh mỗi ngày.
 - Đo lại các mốc: cấp 18, phòng cuối, đủ nội thất. Nếu nhanh hơn trên 20% so với mục 18 thì tăng `ROOM_K1`, `FURN_KS`.
 
-### 6. Ứng dụng cài được và thông báo khi tắt game
+### 6. Ứng dụng cài được và thông báo khi tắt game (đã làm, thông báo đẩy chưa thử được trên máy thật)
 - Thêm `manifest.json` và service worker để cài lên màn hình chính, chơi được khi mất mạng.
 - Thông báo đẩy khi viễn chinh xong, mèo con chào đời, bát đầy lại: cần Notification API, xin quyền, hẹn giờ trong service worker (hoặc máy chủ gửi push).
 - Lưu ý: iOS chỉ cho thông báo đẩy khi đã cài ứng dụng vào màn hình chính.

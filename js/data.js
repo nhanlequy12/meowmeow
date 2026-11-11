@@ -688,8 +688,10 @@ FOODS.forEach(f=>{f.ul=FOOD_LV[f.id]||1});
    Người dùng muốn chơi liên tục và cày lâu hơn, nên giá phòng và nội thất được nhân lên SAU khi đã gán cấp mở khóa (cấp vẫn tính theo giá gốc ở trên).
    Phòng: hệ số tăng dần theo thứ tự giá, từ ROOM_K0 (phòng rẻ nhất) tới ROOM_K1 (Phòng hoàng gia).
    Nội thất: hệ số theo cấp mở, từ FURN_K0 ở cấp 1, cộng FURN_KS mỗi cấp. Bát ăn chỉ nhân BOWL_K vì là đồ thiết yếu.
-   Đo bằng bot chơi liên tục (ghé 10 phút một lần), xem mục 18 của CLAUDE.md. */
-const ROOM_K0=1.5,ROOM_K1=4,FURN_K0=1.5,FURN_KS=.15,BOWL_K=1.5;
+   Đo bằng bot chơi liên tục (ghé 10 phút một lần), xem mục 18 của CLAUDE.md.
+   Tối 2026-11-11: ROOM_K1 4 → 6 và FURN_KS .15 → .2, để bù các nguồn xu thêm sau (nhiệm vụ, điểm danh, thành tựu, khách lạ, ước muốn);
+   đo bằng tools/ecobot.js, xem mục 25 của CLAUDE.md. */
+const ROOM_K0=1.5,ROOM_K1=6,FURN_K0=1.5,FURN_KS=.2,BOWL_K=1.5;
 const nicePrice=p=>{const s=p<1000?10:p<10000?50:p<100000?500:1000;return Math.round(p/s)*s};
 ROOMS.filter(r=>r.price).sort((a,b)=>a.price-b.price).forEach((r,i,a)=>{r.price=nicePrice(r.price*(ROOM_K0+(ROOM_K1-ROOM_K0)*i/(a.length-1)))});
 FURNS.forEach(f=>{f.price=nicePrice(f.price*(f.bowl?BOWL_K:FURN_K0+FURN_KS*(f.ul-1)))});
