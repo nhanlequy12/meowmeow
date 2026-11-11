@@ -13,7 +13,7 @@ cd "$REPO"; mkdir -p logs ../wt
 if [ "$MODE" = rerun ]; then F=docs/tasks/agent-$N-rerun.md; LOG=logs/agent-$N.rerun.log; MSG="agent-$N: sửa theo nhận xét của người điều phối"
 else F=docs/tasks/agent-$N.md; LOG=logs/agent-$N.log; MSG="agent-$N: $(head -1 $F | sed 's/^# agent-[0-9]*: //')"; fi
 START=$(date +%s)
-"${CODEX:-$HOME/.npm-global/bin/codex}" exec -s workspace-write -c model_reasoning_effort=${EFFORT:-high} -C "$WT" -o logs/agent-$N.last.md "$(cat "$WT/$F")" < /dev/null > $LOG 2>&1
+"${CODEX:-$(command -v codex || echo "$HOME/.npm-global/bin/codex")}" exec -s workspace-write -c model_reasoning_effort=${EFFORT:-high} -C "$WT" -o logs/agent-$N.last.md "$(cat "$WT/$F")" < /dev/null > $LOG 2>&1
 RC=$?
 cd "$WT" && git add -A js/cats docs/tasks 2>/dev/null && git commit -q -m "$MSG" 2>/dev/null
 echo "agent-$N${MODE:+ ($MODE)}: mã thoát $RC, $(( ($(date +%s)-START)/60 )) phút, $(git log --oneline -1 | cut -c1-70); file ngoài phạm vi bị sửa: $(git status --short | grep -v '^??' | wc -l); $(grep -c 'usage limit' "$REPO/$LOG") lần báo hết hạn mức"
