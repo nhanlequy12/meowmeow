@@ -1339,6 +1339,9 @@ function playGacha(c){
     else T(2400,()=>{flash();gReveal()});
   }
 }
+// dòng cho biết bé là giống mèo thật hay mèo trang phục thuộc chủ đề nào (thẻ gacha và màn chi tiết dùng chung);
+// mèo trang phục có nhóm sp.g (Anime, Phim, Meme & Đặc biệt), giống thật thì không có trường g
+function kindRow(sp,row){const g=GROUPS.find(g=>g[0]===sp.g);return g?row('Chủ đề','<b>'+g[1]+'</b>'):row('Loại','<b>Giống mèo thật</b>')}
 function gReveal(skipped){
   if(gz.done)return; gz.done=true;
   gz.timers.forEach(clearTimeout);gz.timers=[];
@@ -1354,7 +1357,7 @@ function gReveal(skipped){
   stars=isRb(c)?'<div class="pop" style="font-size:26px">'+starsC(c)+'</div>':'<div class="stars s'+st+'" style="font-size:26px;--d:-'+(Date.now()%6000)+'ms">'+stars+'</div>';
   // bố cục thẻ: ảnh, hàng sao riêng một dòng, bậc hiếm, tên, câu thoại; rồi khung thông tin và khung thuộc tính; cuối cùng là đặt tên
   const ct=coatOf(c),row=(k,v)=>'<div class="k">'+k+'</div><div>'+v+'</div>',
-    info=(ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+(c.replay?'':row('Tuổi',ageTxt(c)));
+    info=kindRow(sp,row)+(ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+(c.replay?'':row('Tuổi',ageTxt(c)));
   rev.innerHTML='<div class="pop gv">'+(st===5?'<div class="legend">HUYỀN THOẠI</div>'+(ct&&ct.form?'<div class="legend" style="font-size:17px;letter-spacing:3px;color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">✨ TRANG PHỤC HIẾM ✨</div>':''):isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
     '<div class="gv-pic">'+catTag(big(c),innerHeight<860&&innerWidth<520?3:4,1)+'</div><div class="gv-stars">'+stars+'</div>'+
     '<div class="gv-rank" style="color:'+col+'">'+STAR[st].n+(c.isNew?' · <span style="color:var(--good)">MỚI!</span>':'')+'</div>'+
@@ -1385,10 +1388,11 @@ function openCat(uid){
   modal(
     // đầu trang: ảnh, tên, sao, bậc hiếm
     '<div class="cd-head r'+c.star+(rb?' rb':'')+'">'+catTag(big(c),3)+'<h2>'+esc(c.name)+' '+sexIc(c)+'</h2>'+
-      '<div class="cd-star">'+starsC(c)+'</div><div class="cd-rank" style="color:'+scol(c.star)+'">'+STAR[c.star].n+(rb?' · '+(isRare(c)?'✨ Màu hiếm':'💎 Mắt quý hiếm'):'')+'</div></div>'+
+      '<div class="cd-star">'+starsC(c)+'</div><div class="cd-rank" style="color:'+scol(c.star)+'">'+STAR[c.star].n+(rb?' · '+(isRare(c)?'✨ Màu hiếm':formOf(c)?'✨ Trang phục hiếm':'💎 Mắt quý hiếm'):'')+'</div></div>'+
     // hồ sơ
     '<div class="cd-sec"><h4>Hồ sơ</h4><div class="cd-grid">'+
       row('Giống','<b>'+sp.n+'</b>'+(sp.base?' <span class="dim">· gốc '+SP[sp.base].n+(sp.short?' (chân ngắn)':'')+'</span>':''))+
+      kindRow(sp,row)+
       (ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+
       row('Tuổi','<span class="tag g" tabindex="0" data-tip="'+esc(AGE_TIP[ageStage(c)])+'">'+ageTxt(c)+'</span>')+
       row('Nơi ở',away?'Đang đi viễn chinh':ROOM[c.room].n)+
