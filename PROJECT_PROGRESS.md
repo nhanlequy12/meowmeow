@@ -98,7 +98,7 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 
 ## Đợt 2026-11-12: nước uống, bệnh tật, Nhà thuốc & Bệnh viện thú y
 
-- Commit `HASH` (chi tiết ở `CLAUDE.md` mục 34): nước uống phải mua (6 loại, mở từ cấp 1), 16 bệnh và chấn thương, thuốc giảm triệu chứng và thuốc điều trị 30/50/70/90% (tối đa 2 lần thử), bệnh viện 60 phút thật, tai nạn viễn chinh và đồ bảo hộ, địa điểm Nhà thuốc & Bệnh viện thú y (ô 🏥, mở ở cấp 3), hướng dẫn một lần, Sổ tay, Admin. File mới: `js/med-data.js`, `js/med.js`, `js/water-ui.js`, `js/med-ui.js`, `js/tut-med.js`, `css/med.css`, `tools/medtest.js`.
+- Commit `0aa3dd7` (chi tiết ở `CLAUDE.md` mục 34): nước uống phải mua (6 loại, mở từ cấp 1), 16 bệnh và chấn thương, thuốc giảm triệu chứng và thuốc điều trị 30/50/70/90% (tối đa 2 lần thử), bệnh viện 60 phút thật, tai nạn viễn chinh và đồ bảo hộ, địa điểm Nhà thuốc & Bệnh viện thú y (ô 🏥, mở ở cấp 3), hướng dẫn một lần, Sổ tay, Admin. File mới: `js/med-data.js`, `js/med.js`, `js/water-ui.js`, `js/med-ui.js`, `js/tut-med.js`, `css/med.css`, `tools/medtest.js`.
 - Kiểm tra đã chạy: `node tools/medtest.js` (70 phần), `tools/wxtest.js`, `tools/pwtest.js`, `tools/pitytest.js`, `tools/lvtest.js`, `tools/catcheck.js`, `node --check` mọi file JS; Playwright ở PC, điện thoại dọc, điện thoại ngang (hướng dẫn tân thủ từ ván mới, nước, gãy chân khi viễn chinh, nhập viện, ra viện, hướng dẫn Nhà thuốc): không lỗi JS.
 - Chưa kiểm tra: người chơi thật, cân bằng xu dài ngày, `server.py` thật, điện thoại thật.
 
