@@ -24,18 +24,29 @@ const spark=(g,x,y,r,c)=>{R(g,x-r,y-.5,2*r,1,c);R(g,x-.5,y-r,1,2*r,c);R(g,x-1,y-
 const burst=(x,y,cols,n,s0,s1,o)=>{for(let i=0;i<n;i++){const a=rnd(0,TAU),s=rnd(s0,s1);rp(x,y,pick(cols),Object.assign({vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rnd(.3,.55),sz:ch(.4)?2:1},o))}};
 const ring=(x,y,c,vr,life)=>rp(x,y,c,{sh:'ring',r:4,vr:vr||60,life:life||.5});
 
+/* Bé đứng sát tường thì hình cao (tên lửa, pháo hoa, trăng, kim tự tháp) sẽ đè lên cửa sổ. Cách xử lý: phần hình cao hơn 30 ô tính từ chân bé
+   bị ép thấp lại theo chiều dọc sao cho đỉnh (60 ô) dừng dưới bậu cửa sổ (hàng WIN_Y); phần dưới 30 ô (quanh thân bé) giữ nguyên nên vẫn khớp với bé.
+   Bé đứng cách tường từ 20 ô trở lên thì không ép gì. Vẽ hai lượt có cắt vùng (dưới mốc: nguyên; trên mốc: ép), hạt thì đổi toạ độ lúc sinh. */
+const WIN_Y=66,LOWH=30,sq=p=>clamp((p.y-WIN_Y-LOWH)/30,.25,1);
+const lowDraw=fn=>fn&&function(g,e,p,k){const c=sq(p);if(c>=1)return fn(g,e,p,k);const y0=p.y-LOWH;
+  g.save();g.beginPath();g.rect(p.x-240,y0,480,240);g.clip();fn(g,e,p,k);g.restore();
+  g.save();g.beginPath();g.rect(p.x-240,y0-240,480,240);g.clip();g.translate(0,y0);g.scale(1,c);g.translate(0,-y0);fn(g,e,p,k);g.restore()};
+const lowFx=fn=>fn&&function(e,p,k){const c=sq(p);if(c>=1)return fn(e,p,k);const y0=p.y-LOWH,n0=rparts.length,r=fn(e,p,k);
+  for(let i=n0;i<rparts.length;i++){const q=rparts[i];if(q.y<y0)q.y=y0-(y0-q.y)*c}return r};   // hạt vừa sinh nằm cuối mảng rparts
 // đăng ký form cho một bé: bọc save/restore để độ mờ không lọt ra sprite, nối start/end/md/look của bản gốc
 function reg(sp,def){
   const base=S5[sp];if(!base)return;
   const f=Object.assign({pose:'sit'},def),wrap=fn=>fn&&function(g,e,p,k){g.save();try{fn(g,e,p,k,k*f.dur)}finally{g.restore()}};
-  f.draw=wrap(def.draw);f.over=wrap(def.over);
-  if(def.fx)f.fx=(e,p,k)=>def.fx(e,p,k,k*f.dur);
+  f.draw=lowDraw(wrap(def.draw));f.over=lowDraw(wrap(def.over));
+  if(def.fx)f.fx=lowFx((e,p,k)=>def.fx(e,p,k,k*f.dur));
   f.start=e=>{e.rr={};const b=S5[sp].start;if(b)b(e);if(def.start)def.start(e)};
   f.end=e=>{e.rr=null;if(def.end)def.end(e);const b=S5[sp].end;if(b)b(e)};
   Object.defineProperty(f,'md',{get:()=>S5[sp].md,enumerable:true});
   if(!def.look&&base.look)f.look=base.look;
   base.form=f;
 }
+
+{const s=S5.v_itadori&&S5.v_itadori.form;if(s&&!s.low){s.low=1;s.draw=lowDraw(s.draw);s.over=lowDraw(s.over);s.fx=lowFx(s.fx)}}   // đền của Itadori dạng Sukuna cũng ép thấp khi bé sát tường
 
 /* ---------- Khao Manee · Mão vàng hoàng cung: hào quang vàng hình ngọn lửa, hai viên ngọc lớn mang màu mắt xoay quanh rồi lóe tia ---------- */
 function kmGems(g,e,p,k,t,front){
@@ -72,9 +83,14 @@ reg('lykoi',{n:'gọi bóng sói hú dưới trăng máu',dur:4.6,
     A(g,.8*v);C(g,mx-5,my-4,2.6,'#e0403a');C(g,mx+4,my+3,3.2,'#e0403a');C(g,mx+2,my-7,1.5,'#e0403a');C(g,mx-4,my+6,1.4,'#e0403a');
     g.restore();
     const w=fd(k,.24,.94,.1);if(w>0){const hy=-Math.sin(t*5)*.8*(k>.4&&k<.85?1:0);   // bóng sói: thân, cổ vươn, mõm ngửa lên trời
-      A(g,.86*w);P(g,[X(-18),y,X(-19),y-13,X(-15),y-25,X(-9),y-32,X(-8),y-40+hy,X(-11),y-49+hy,X(-5),y-45+hy,X(-2),y-52+hy,X(2),y-46+hy,X(9),y-52+hy,X(15),y-58+hy,X(18),y-56+hy,X(13),y-48+hy,X(18),y-48+hy,X(17),y-45+hy,X(10),y-41+hy,X(11),y-32,X(16),y-22,X(18),y-8,X(18),y],'#24101c');
-      A(g,w);R(g,X(4)-1,y-47+hy,2,1.6,'#ff5a50');A(g,.5*w);C(g,X(4),y-46.2+hy,2.6,'#ff5a50');
-      A(g,.55*w);for(let i=0;i<5;i++)R(g,X(-17+i*2),y-12-i*4-(i%2)*2,1.4,3,'#24101c')}},
+      // dáng sói ngồi hú: đuôi cong sau lưng, lưng, gáy, hai tai nhọn, mõm dài ngửa lên, hàm há có nanh, bờm ngực răng cưa
+      const W=[-17,0,-24,-3,-26,-11,-22,-16,-20,-10,-18,-17,-14,-28,-8,-35,-7,-42,-10,-51,-5,-46,-2,-54,2,-47,8,-52,13,-57,17,-61,19,-58,14,-52,18,-51,17,-48,11,-46,8,-42,11,-38,8,-34,12,-30,9,-25,13,-20,10,-14,15,-9,13,-4,17,0];
+      const pts=[];for(let i=0;i<W.length;i+=2)pts.push(X(W[i]),y+W[i+1]+(W[i+1]<-34?hy:0));
+      A(g,.9*w);P(g,pts,'#1c0c16');
+      g.globalAlpha=.75*w;g.strokeStyle='#8a2438';g.lineWidth=1;g.lineJoin='round';g.beginPath();for(let i=0;i<pts.length;i+=2)i?g.lineTo(pts[i],pts[i+1]):g.moveTo(pts[i],pts[i+1]);g.stroke();   // viền đỏ sẫm cho rõ dáng
+      A(g,.5*w);for(let i=0;i<4;i++)L(g,X(-13+i*5),y-9-i*5,X(-10+i*5),y-15-i*5,'#3a1626',1.2);                                                                // vài nét lông
+      A(g,w);P(g,[X(3.5),y-48.5+hy,X(7.5),y-50+hy,X(6.5),y-47.5+hy],'#ff5a50');A(g,.45*w);C(g,X(5.5),y-48.6+hy,3,'#ff5a50');                                  // mắt xếch đỏ
+      A(g,w);P(g,[X(13.5),y-52.5+hy,X(15.5),y-51.8+hy,X(14.6),y-49.6+hy],'#fff0e8');P(g,[X(15),y-50.6+hy,X(16.6),y-50.4+hy,X(15.8),y-52+hy],'#fff0e8')}},        // nanh
   fx(e,p,k){const d=dir(e);
     if(on(11))rp(p.x+rnd(-30,30),p.y-rnd(40,57),pick(['#c8323c','#e0283a','#ff8a8a','#8a1020']),{vx:-d*rnd(4,16),vy:rnd(12,26),life:rnd(.9,1.4),sz:2});
     if(k>.38&&k<.86&&on(4))rp(p.x+d*rnd(8,16),p.y-rnd(46,54),'#ff8a8a',{sh:'note',vy:-10,vx:d*8,life:.8});
@@ -179,9 +195,11 @@ const KUR={
     if(k>.86&&once(e,'b')){ring(p.x,p.y-52,'#b98bff',90,.5);burst(p.x,p.y-52,['#b98bff','#ffffff','#140c20'],12,20,60)}
     if(on(16))rp(p.x+rnd(-20,20),p.y-rnd(0,34),pick(['#ffd83a','#fff2a6','#f07a1a']),{vy:-rnd(22,46),life:rnd(.3,.55),sz:ch(.4)?2:1})}};
 /* ---------- Naruto · Hokage Đệ Thất: biểu tượng làng Lá sáng dần sau lưng, áo choàng trắng viền lửa phất, lá xoáy ---------- */
-const LEAF=(()=>{const q=[];for(let a=0;a<=3.5*PI+.01;a+=.28){const r=.62*a;q.push([Math.cos(a)*r,Math.sin(a)*r])}   // xoáy ốc từ tâm ra, kết thúc ở đỉnh
-  for(let a=3.5*PI;a<=5*PI+.01;a+=.22){const r=6.8+2.4*seg(a,3.5*PI,4*PI);q.push([Math.cos(a)*r,Math.sin(a)*r])}       // vòng ngoài chạy phải, đáy, sang trái
-  q.push([-14.5,-3.5],[-8.6,-5.4]);return q})();
+// biểu tượng làng Lá: xoáy ốc ở giữa, nét vòng ra ngoài chạy qua phải và đáy, kéo thành mũi lá nhọn chĩa sang trái rồi khép lại ở đỉnh; cuống tam giác nhỏ dưới mũi lá
+const LEAF=(()=>{const q=[];for(let a=0;a<=3.5*PI+.01;a+=.28){const r=.52*a;q.push([Math.cos(a)*r,Math.sin(a)*r])}   // xoáy ốc từ tâm ra, kết thúc ở đỉnh
+  for(let a=3.5*PI;a<=4.86*PI+.01;a+=.2){const r=5.7+3.3*seg(a,3.5*PI,4*PI);q.push([Math.cos(a)*r,Math.sin(a)*r])}      // vòng ngoài: phải, đáy, tới góc dưới trái
+  q.push([-16,-.5]);                                                                                                    // mũi lá
+  for(let a=5.16*PI;a<=5.5*PI+.01;a+=.2)q.push([Math.cos(a)*9,Math.sin(a)*9]);return q})();                             // về lại đỉnh
 const HOK={
   draw(g,e,p,k,t){const d=dir(e),v=fd(k,.02,.98,.08),cx0=p.x+d*26,cy0=p.y-41,cx=0,cy=0,q=seg(k,.14,.5),pk=fd(k,.5,.94,.08),n=Math.max(2,Math.ceil(LEAF.length*q));
     g.save();g.translate(cx0,cy0);g.scale(1.2,1.2);
@@ -189,7 +207,7 @@ const HOK={
     if(pk>0){A(g,.3*pk);rays(g,cx,cy,12,t*.6,17,13.5,.1,'#d8ffd0',.95)}
     [[2.6,'#2f8a48',.9],[1.2,'#eaffe0',1]].forEach(s=>{A(g,s[2]*v);g.strokeStyle=s[1];g.lineWidth=s[0];g.lineJoin='round';g.lineCap='round';g.beginPath();
       for(let i=0;i<n;i++)i?g.lineTo(cx+LEAF[i][0],cy+LEAF[i][1]):g.moveTo(cx+LEAF[i][0],cy+LEAF[i][1]);g.stroke();
-      if(q>=1){g.beginPath();g.moveTo(cx-9.4,cy+3.2);g.lineTo(cx-12.6,cy+8.6);g.lineTo(cx-6,cy+7.4);g.closePath();g.stroke()}});
+      if(q>=1){g.beginPath();g.moveTo(cx-10.4,cy+5.6);g.lineTo(cx-13.6,cy+10.4);g.lineTo(cx-7.4,cy+9.4);g.closePath();g.fillStyle=s[1];g.fill();g.stroke()}});
     g.restore();
     // áo choàng phất về phía sau lưng
     const u=ease(seg(k,.04,.3))*sat((.99-k)/.07);if(u>.02){const N=8,bx=p.x-d*5,T=[],B=[];

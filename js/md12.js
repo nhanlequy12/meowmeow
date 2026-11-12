@@ -76,6 +76,13 @@ function flame(g,x,y,ph,C,a){
   g.fillStyle=C[2];g.fillRect(x-1,y,2,2);g.fillRect(x-.5,y-2,1,2);g.globalAlpha=1;
 }
 const FLW=[5,7,7,6,5,4,3,2,1];
+// ngọn lửa chú lực lớn của Itadori: ba lớp đen, đỏ, hồng lồng nhau, cao khoảng 15 ô, ngọn lắc lư và có hai lưỡi lửa phụ tách ra hai bên
+function bigFlame(g,x,y,ph){
+  const f=Math.floor(ph*10),sw=(hs(f)-.5)*3,sw2=(hs(f+5)-.5)*2,h=14+Math.round(hs(f+2)*3);x=Math.round(x);y=Math.round(y);
+  const lay=(c,w0,hh,dx)=>{g.fillStyle=c;for(let r=0;r<hh;r++){const u=r/hh,w=Math.max(1,Math.round(w0*(u<.25?.7+1.2*u:1-(u-.25)/.75*.92)));g.fillRect(Math.round(x+dx+sw*u*u+sw2*Math.sin(u*5)-w/2),y-r,w,1)}};
+  g.globalAlpha=.95;lay('#16080c',9,h,0);lay('#16080c',4,Math.round(h*.6),-4.5);lay('#16080c',4,Math.round(h*.5),4.5);
+  lay('#e0283a',6,Math.round(h*.74),0);lay('#ff7a86',3,Math.round(h*.42),0);g.fillStyle='#ffe0e4';g.fillRect(x-1,y-2,2,2);g.globalAlpha=1;
+}
 // dải nước / dải lửa của Tanjiro: đứng yên thì cuộn xoắn quanh thân, di chuyển thì uốn sóng kéo dài phía sau. C = [viền, thân, bọt/lưỡi lửa]
 function ribbon(g,e,p,C,front,fire){
   const t=e.wt,d=dir(e),mv=mov(e),N=30,ft=Math.floor(t*10);
@@ -127,7 +134,7 @@ const MD12={
           g.globalAlpha=f;g.strokeStyle='#ffffff';g.lineWidth=.7;g.beginPath();g.moveTo(x0,y0);g.lineTo(x0+dx*L,y0+dy*L);g.stroke()}
         g.globalAlpha=1;
       }else{const F=side(p)?[[d*12,-5+Math.sin(t*9)],[d*5,-4-Math.sin(t*9)]]:[[-6,-5],[6,-5]];
-        F.forEach((q,i)=>{glowAt(g,p.x+q[0],p.y+q[1]-2,6,6,'#e0283a',.28+.08*Math.sin(t*8+i));flame(g,p.x+q[0],p.y+q[1],t+i*.37,ITC,.95)})}},
+        F.forEach((q,i)=>{glowAt(g,p.x+q[0],p.y+q[1]-5,9,10,'#e0283a',.3+.08*Math.sin(t*8+i));bigFlame(g,p.x+q[0],p.y+q[1]+1,t+i*.37)})}},
     fx(e,p,c){const d=dir(e);
       if(formOf(c)){if(on(3))rp(p.x+rnd(-16,16),p.y-rnd(2,30),pick(['#e0283a','#ffb0b0','#3a0308']),{vx:rnd(-14,14),vy:-rnd(4,16),life:rnd(.25,.45)})}
       else{if(on(2.2))rp(p.x+(side(p)?d*10:rnd(-6,6)),p.y-rnd(4,10),pick(['#0a0a0a','#e0283a']),{sh:'bolt',pts:zig(ch(.5)?1:-1,rnd(7,11),3,5),life:.1});
