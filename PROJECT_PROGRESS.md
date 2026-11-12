@@ -84,6 +84,12 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Kiểm tra đã chạy: Playwright với `server.py` thật ở điện thoại dọc, PC, điện thoại ngang (30 bước); `node tools/wxtest.js`, `tools/pwtest.js`, `tools/pitytest.js`, `node --check` mọi file JS.
 - Chưa kiểm tra: hai máy thật qua LAN hoặc đường hầm HTTPS, điện thoại thật, mã hết hạn sau đúng 10 phút.
 
+## Đợt 2026-11-12: lật trang sách khí hậu và sách điện
+
+- Commit `063cda3`: hàm `bookFlip` (`js/wx-ui.js`, dùng chung cho `js/pw-ui.js`) lật một tờ giấy hai mặt quanh gáy sách bằng Web Animations, có bóng tờ giấy và bóng đổ. Vào chi tiết phòng hoặc ▶ thì tờ cũ lật sang trái; "‹ Danh sách phòng" hoặc ◀ thì tờ mới từ trang trái lật sang phải (trước đây xoay quanh mép ngoài nên bị ngược). Điện thoại dọc lật lên xuống. Bỏ keyframes `wbFlipL`, `wbFlipR`.
+- Kiểm tra đã chạy: Playwright ở PC, điện thoại dọc, điện thoại ngang, dừng animation ở 6 mốc để chụp (cả hai chiều, sách điện, bấm liên tục); `node tools/wxtest.js`, `tools/pwtest.js`, `tools/pitytest.js`.
+- Chưa kiểm tra: điện thoại thật (độ mượt trên máy yếu).
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
