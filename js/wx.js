@@ -123,7 +123,7 @@ function wxCat(c,dt,sim){ // sim: đang bù thời gian vắng mặt (load() g�
   }
   if(feel<W.freezeAt)c.he-=W.extremeHealth*(W.freezeAt-feel)*m;if(feel>W.scorchAt)c.he-=W.extremeHealth*(feel-W.scorchAt)*m;
   if(c.wa<=0)c.he-=W.water.zeroHealth*m;
-  if(!x.sk&&c.wa>W.water.low&&rc.comfort>=40)c.he+=(W.health.regen*(F.bi?W.health.bedX:1)+rc.health)*m;
+  if(!x.sk&&!(c.ill&&c.ill.length)&&c.wa>W.water.low&&rc.comfort>=40)c.he+=(W.health.regen*(F.bi?W.health.bedX:1)+rc.health)*m;
   if(c.wa<W.water.low)dHp-=W.water.lowHappy*m;
   c.he=clamp(c.he,away?Math.min(c.he,W.away.health):0,100);
   // độ thoải mái của bé tiến dần về mức của phòng, trừ khi bé ướt, lạnh, nóng, ốm, khát

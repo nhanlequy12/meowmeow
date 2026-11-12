@@ -81,7 +81,8 @@ const rollAge=()=>{const r=Math.random();return r<.5?rnd(0,2):r<.92?rnd(AGE_ADUL
 const ageDays=c=>Math.max(0,(now()-(c.born||now()))/DAY);
 const ageStage=c=>{const d=ageDays(c);return d<AGE_ADULT?0:d<AGE_OLD?1:2};
 const catBy=uid=>S.cats.find(c=>c.uid===uid);
-const onTrip=uid=>S.trips.some(p=>p&&p.uid===uid);
+const onTrip=uid=>S.trips.some(p=>p&&p.uid===uid)||!!(S.hosp&&S.hosp[uid]); // đi viễn chinh, hoặc đang nằm viện (js/med.js): đều không có mặt ở nhà
+const awayTxt=c=>S.hosp&&S.hosp[c.uid]?'đang nằm viện':'đang viễn chinh';
 const has=(c,t)=>c.traits.includes(t);
 const tE=(c,k)=>c.traits.reduce((a,t)=>a+(TRAITS[t].e[k]||0),0);
 const tM=(c,k)=>c.traits.reduce((a,t)=>a*(TRAITS[t].e[k]||1),1);
@@ -167,6 +168,7 @@ function happyTarget(c){
   if(ROOM[c.room].water){const w=tE(c,'water');h+=w>0?10:w<0?-10:0}
   if(c.full<20)h-=25;
   if(typeof wxHappy==='function'&&wxOpen())h+=wxHappy(c);
+  if(typeof medHappy==='function')h+=medHappy(c); // khát nước (trước khi có thời tiết), bệnh tật
   return clamp(h,0,100);
 }
 // "Bạn cùng phòng": thuộc tính có e.pal={ids, happy, both, hunger} chỉ có tác dụng khi trong phòng có mèo thuộc danh sách ids (không tính bé đang viễn chinh)
@@ -185,14 +187,17 @@ function TRAITS_M(c,k){return tM(c,k)}
 function tick(dt,sim){
   if(S.adm&&S.adm.inf)S.coins=999999999;
   const WXON=typeof wxCat==='function'&&wxOpen(); // thời tiết, khí hậu phòng, sức khỏe, nước uống (js/wx.js); thiếu file thì game chạy như cũ
+  const MEDON=typeof medCat==='function'; // nước uống, bệnh tật, bệnh viện (js/med.js)
   S.cats.forEach(c=>{
+    if(MEDON&&inHosp(c.uid)){medHospCat(c);return} // đang nằm viện: bệnh viện lo ăn uống, chỉ số không tụt
     const away=onTrip(c.uid),bf=buffOf(c);
     if(c.buff&&c.buff.until<=now())c.buff=null;
     if(WXON)wxCat(c,dt,sim);
+    if(MEDON)medCat(c,dt,sim);
     c.full=clamp(c.full-dt*(100/12000)*tM(c,'hunger')*(bf.hunger||1)*auraHunger(c)*palHunger(c)*roomHunger(c.room)*(WXON?wxHunger(c):1),0,100);
     const bi=bedItem(c); if(c.bed!=null&&!bi){delete c.bed;delete c.bk;delete c.bm}
     if(!away){
-      const rg=tM(c,'regen')*roomRegen(c.room)*(c.full<=0?.3:1)*(bi?FURN[bi.fid].bed.en:1)*(WXON?wxRegen(c):1);
+      const rg=tM(c,'regen')*roomRegen(c.room)*(c.full<=0?.3:1)*(bi?FURN[bi.fid].bed.en:1)*(WXON?wxRegen(c):1)*(MEDON?medRegen(c):1);
       c.en=clamp(c.en+dt/60*rg,0,100);
       if(bi&&c.en>=100){const m=c.bm;delete c.bed;delete c.bk;delete c.bm;if(WXON)wxWake(c);if(m)notify('ngủ đủ giấc, năng lượng đã đầy',{icon:'😴',title:c.name,key:'wake',mtitle:'Ngủ dậy'})}
       const t=happyTarget(c),step=tE(c,'fixedHappy')?100:dt/60;
@@ -209,6 +214,7 @@ function tick(dt,sim){
     if(homeCats(r.id).some(c=>c.full<20)&&!bs.some(b=>b.left>0)&&bowlCap(r.id)<homeCats(r.id).length&&now()>=(st.warnAt||0)){st.warnAt=now()+300000;notify('🍽️ Thiếu bát ăn ở '+r.n+': '+homeCats(r.id).length+' bé nhưng chỉ có '+bowlCap(r.id)+' suất. Mua thêm bát ở Cửa hàng.')}
   });
   if(WXON)wxTick(dt,sim);
+  if(MEDON)medTick(dt,sim);
   if(!sim)scratchTick();
 }
 // kiểm tra cào sofa 10 phút một lần; sau khi vắng lâu chỉ bù tối đa 3 lần
@@ -259,7 +265,9 @@ function tripInfo(c,did,kit){
   const d=DEST[did],g=gEff(),bf=buffOf(c);
   const o={dur:d.min*60000*clamp(1-(g.speed+tE(c,'speed')+(bf.speed||0)),.4,1.6),cost:Math.round(d.en*tM(c,'cost')),why:''};
   if(typeof wxTripInfo==='function'&&wxOpen())wxTripInfo(c,did,o,kit); // thời tiết ở điểm đến: thời gian, năng lượng, rủi ro, tỉ lệ thành công
-  if(onTrip(c.uid))o.why='Đang đi vắng'; else if(c.full<20)o.why='Đang đói'; else if(!o.why&&c.en<o.cost)o.why='Không đủ sức (cần '+o.cost+'⚡)';
+  if(typeof medTripSlow==='function')o.dur*=medTripSlow(c); // bong gân: đi chậm hơn
+  const mw=typeof medTripWhy==='function'?medTripWhy(c):'';
+  if(mw)o.why=mw; else if(onTrip(c.uid))o.why='Đang đi vắng'; else if(c.full<20)o.why='Đang đói'; else if(!o.why&&c.en<o.cost)o.why='Không đủ sức (cần '+o.cost+'⚡)';
   const ctx={night:isNight(),monday:isMonday(),sleepy:c.en<50,hf:happyF(c),bc:bf.coin||0,ac:auraCoin(c)};
   const cc=coinCalc(c,d,ctx);
   return {dur:o.dur,cost:o.cost,why:o.why,wx:o.wx,ctx,est:Math.round(cc.coins),acts:cc.acts};
@@ -290,6 +298,7 @@ function claimTrip(slot){
   res.coins=Math.round(r.coins*m2);
   if(dbl){res.coins*=2;res.bonus*=2;res.ticket*=2}
   if(typeof wxTripClaim==='function'&&wxOpen())wxTripClaim(p,c,res,d); // sự cố do thời tiết, vật phẩm tự kích hoạt, nhật ký viễn chinh
+  if(typeof medTripClaim==='function')medTripClaim(p,c,res,d); // tai nạn, chấn thương khi viễn chinh
   S.tickets+=res.ticket;
   S.coins+=res.coins+res.bonus;
   res.xp=Math.round(10*Math.pow(d.min/10,.8)*tM(c,'xp'));

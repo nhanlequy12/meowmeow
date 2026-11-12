@@ -1465,6 +1465,7 @@ function gachaDone(){
 /* --- mèo --- */
 // back=1: mở từ bảng kết quả gacha 10 lượt, có nút quay lại bảng (giữ qua đổi tên, chuyển phòng nhờ catBack)
 let catBack=0;
+const inHospX=c=>!!(S.hosp&&S.hosp[c.uid]);
 function openCat(uid,back){
   const c=catBy(uid); if(!c)return; const sp=SP[c.sp],away=onTrip(uid),bf=buffOf(c),ct=coatOf(c),rb=isRb(c);
   catBack=back&&MULTI?1:0;
@@ -1480,7 +1481,7 @@ function openCat(uid,back){
       kindRow(sp,row)+
       (ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+
       row('Tuổi','<span class="tag g" tabindex="0" data-tip="'+esc(AGE_TIP[ageStage(c)])+'">'+ageTxt(c)+'</span>')+
-      row('Nơi ở',away?'Đang đi viễn chinh':ROOM[c.room].n)+
+      row('Nơi ở',away?(inHospX(c)?'🏥 Đang nằm viện':'Đang đi viễn chinh'):ROOM[c.room].n)+
       row('Khoái khẩu',favs(c).map(f=>FOOD[f].ic+' '+FOOD[f].n).join(', '))+
     '</div><div class="cd-desc">'+sp.d+'</div></div>'+
     // chỉ số
@@ -1606,7 +1607,7 @@ function openRooms(){
 function renderPanel(){$('panel').innerHTML=emo(PANEL[tab]())}
 function render(){renderTop();renderPanel()}
 const nm=c=>c.star===5?'<b class="n5">'+esc(c.name)+'</b>':'<b>'+esc(c.name)+'</b>'; // mèo 5★ có khung tên vàng kim
-const catCard=c=>'<div class="card tap" onclick="openCat('+c.uid+')">'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+' <small>'+kind(c)+(onTrip(c.uid)?' · đang viễn chinh':'')+'</small><br>'+stats(c)+'</div><div class="dim" style="font-size:20px">›</div></div>';
+const catCard=c=>'<div class="card tap" onclick="openCat('+c.uid+')">'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+' <small>'+kind(c)+(onTrip(c.uid)?' · '+awayTxt(c):'')+'</small><br>'+stats(c)+'</div><div class="dim" style="font-size:20px">›</div></div>';
 function list_all(){S.cats.filter(c=>(mg.room==='all'||c.room===mg.room)&&!onTrip(c.uid)).forEach(c=>mg.sel[c.uid]=1);renderPanel()}
 function mgCount(){const N={};S.cats.forEach(c=>N[c.room]=(N[c.room]||0)+1);return N}
 function mgOpt(r,on,N){const n=N[r.id]||0,f=n>=r.cap;return '<option value="'+r.id+'"'+(on?' selected':'')+(!on&&f?' disabled':'')+'>'+r.n+' · '+n+'/'+(r.wait?'∞':r.cap)+(f?' (đầy)':'')+'</option>'}
@@ -1614,7 +1615,7 @@ function mgOpts(sel){if(sel.dataset.full)return;sel.dataset.full=1;const N=mgCou
 function mgMove(uid,rid){
   const c=catBy(uid); if(!c||c.room===rid){renderPanel();return}
   if(moveCat(uid,rid)){syncEnts();render();toast('đã chuyển sang '+ROOM[rid].n,{type:'room',title:c.name})}
-  else{toast(onTrip(uid)?'Bé đang đi viễn chinh, chưa chuyển phòng được.':ROOM[rid].n+' đã đầy ('+catsIn(rid).length+'/'+ROOM[rid].cap+').',{type:'warn'});renderPanel()}
+  else{toast(onTrip(uid)?'Bé '+awayTxt(catBy(uid))+', chưa chuyển phòng được.':ROOM[rid].n+' đã đầy ('+catsIn(rid).length+'/'+ROOM[rid].cap+').',{type:'warn'});renderPanel()}
 }
 function doDelete(){
   const it=S.items.find(i=>i.iid===sel); if(!it||!confirm('Xóa hẳn '+FURN[it.fid].n+'? Bạn được hoàn 25% giá mua.'))return;
@@ -1702,7 +1703,7 @@ const PANEL={
    '<div class="row wrap" style="margin:8px 0"><b>Sắp xếp:</b>'+Object.keys(SORT).map(k=>'<button class="sm '+(mg.sort===k?'on':'')+'" onclick="mg.sort=\''+k+'\';renderPanel()">'+SORT[k][0]+'</button>').join('')+'</div>'+
    (list.length?list.map(c=>{const away=onTrip(c.uid);
      return '<div class="card'+(mg.multi&&mg.sel[c.uid]?' sel':'')+'" '+(mg.multi&&!away?'onclick="mgSel('+c.uid+')" ':'')+'draggable="'+(!away&&!mg.multi)+'" ondragstart="event.dataTransfer.setData(\'text\',\''+c.uid+'\')">'+(mg.multi?'<div style="font-size:24px">'+(away?'🎒':mg.sel[c.uid]?'☑':'☐')+'</div>':'')+'<div class="tap" onclick="'+(mg.multi?'':'openCat('+c.uid+')')+'">'+catTag(lk(c),1.5)+'</div><div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+kind(c)+'</small><br>'+stats(c)+'<div>'+coatTags(c)+c.traits.map(t=>tagOf(t)).join('')+'</div>'+
-       '<div class="row" style="margin-top:6px" onclick="event.stopPropagation()"><select style="flex:1" aria-label="Phòng của '+esc(c.name)+'" '+(away?'disabled':'')+' onpointerdown="mgOpts(this)" onfocus="mgOpts(this)" onchange="mgMove('+c.uid+',this.value)">'+opt(ROOM[c.room],true)+'</select>'+(away?'<small>đang viễn chinh</small>':'')+'</div></div></div>'}).join('')
+       '<div class="row" style="margin-top:6px" onclick="event.stopPropagation()"><select style="flex:1" aria-label="Phòng của '+esc(c.name)+'" '+(away?'disabled':'')+' onpointerdown="mgOpts(this)" onfocus="mgOpts(this)" onchange="mgMove('+c.uid+',this.value)">'+opt(ROOM[c.room],true)+'</select>'+(away?'<small>'+awayTxt(c)+'</small>':'')+'</div></div></div>'}).join('')
      :'<div class="dim">Không có bé nào ở '+ROOM[mg.room].n+'.</div>');
  },
  album(){

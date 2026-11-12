@@ -271,7 +271,7 @@ const TUT_TEXT={
         'Phòng nóng (trên 26°C): tắt máy sưởi; đặt quạt (Quạt tích điện −2°C, Quạt đứng −5°C, Điều hòa tới −10°C); rèm chống nắng; thảm hoặc giường làm mát; nhớ đổ nước vì bé khát nhanh. Bé đang Nóng quá: Gel làm mát hoặc Bình nước điện giải.',
         'Mưa tạt, bé bị ướt: ở phòng ngoài trời lắp mái che ban công, rèm chắn mưa, lều trú mưa; trong nhà mưa tạt thường không đủ làm ướt. Máy sấy lông làm khô ngay, máy hút ẩm và máy nước nóng (phòng tắm) làm khô nhanh hơn.',
         'Gió lùa: cửa chống gió, cửa kính cách nhiệt, rèm chắn mưa. Sấm: Máy tạo tiếng ồn trắng. Phòng ẩm quá: máy hút ẩm; khô quá: máy tạo độ ẩm.',
-        'Bé ốm: dùng Thuốc chống cảm trong màn chi tiết của bé, hoặc để bé ở phòng ấm (19–28°C cảm thấy), khô, thoải mái từ 60; nằm ổ thì khỏi nhanh gấp đôi. Bé khát: bấm Đổ nước (miễn phí), hoặc đặt Máy lọc nước tự đổ.',
+        'Bé ốm: chữa ở Nhà thuốc & Bệnh viện thú y, hoặc để bé ở phòng ấm (19–28°C cảm thấy), khô, thoải mái từ 60; nằm ổ thì khỏi nhanh gấp đôi. Bé khát: mua nước ở Cửa hàng rồi bấm Đổ nước, hoặc đặt Máy lọc nước tự rót nước trong kho.',
         'Mẹo: Bộ cảm biến nhiệt độ báo cho bạn khi phòng khó chịu; Bộ điều chỉnh nhiệt độ biến máy sưởi, quạt trong phòng thành tự động; Trạm dự báo cho xem trước 6 đợt thời tiết để chuẩn bị. Lúc bạn vắng, thời tiết không làm mèo tụt quá sâu và không làm mèo bị ốm mới.']},
       {id:'power',ic:'🔌',t:'Điện năng: pin và sạc tay',p:[
         'Mọi thiết bị điện (quạt, máy sưởi, đèn sưởi, điều hòa, máy lọc không khí, máy hút ẩm, máy tạo độ ẩm, máy nước nóng, máy sấy lông, máy cho ăn tự động, máy lọc nước, cảm biến, trạm dự báo…) đều có pin tích hợp. Pin tụt khi máy chạy; máy tự động (điều hòa, máy sưởi cao cấp) chỉ tốn pin lúc đang thật sự sưởi hoặc làm mát; chăn điện, giường sưởi chỉ tốn pin khi có bé nằm. Hết pin thì máy ngừng chạy và mất tác dụng. Chăn, rèm, giường gỗ, mái che không dùng điện.',
@@ -293,7 +293,7 @@ const TUT_TEXT={
         'Máy có thanh năng lượng riêng; bạn tự sạc bằng xu khi đang có điện (bấm vào máy hoặc trong Sách điện). Máy không bao giờ tự sạc, kể cả lúc bạn vắng.',
         'Khi mất điện, máy đã sạc tự chuyển sang nguồn dự phòng: đèn sáng lại, ổ điện sạc tiếp được, các bé hết sợ nhanh hơn. Có điện lại thì máy đã chạy về 0% và chuyển sang trạng thái cần sạc; game không tự trừ xu.']},
       {id:'health',ic:'❤️',t:'Sức khỏe, nước uống và trạng thái',p:[
-        'Mèo có thêm Sức khỏe ❤️, Nước uống 💧 và Độ thoải mái. Mỗi phòng được tặng một bát nước; bấm Đổ nước (miễn phí) để đổ đầy, mèo khát tự ra uống. Máy lọc nước tự đổ đầy.',
+        'Mèo có thêm Sức khỏe ❤️, Nước uống 💧 và Độ thoải mái. Mỗi phòng được tặng một bát nước; mua nước ở Cửa hàng, mục 🥤 Nước uống, rồi bấm Đổ nước; mèo khát tự ra uống. Máy lọc nước tự rót nước đang có trong kho.',
         'Trạng thái tạm thời: Lạnh 🥶, Nóng quá 🥵, Ướt 💦, Kiệt sức 😵, Ốm 🤒, Khát 💧, Thoải mái 😌, Ngủ ngon 🌙. Màn chi tiết của bé ghi rõ lý do, cách chữa và thời gian còn lại; vật phẩm như thuốc chống cảm, súp nóng dùng được ngay ở đó.',
         'Lúc bạn vắng, thời tiết không làm mèo tụt quá sâu và không làm mèo bị ốm mới.']},
       {id:'supply',ic:'🎒',t:'Viễn chinh và vật phẩm sinh tồn',p:[

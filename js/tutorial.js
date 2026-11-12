@@ -104,7 +104,7 @@ const TUT=(()=>{
   function addFlow(id,f){FLOWS[id]=f;f.six=Object.fromEntries(f.steps.map((s,i)=>[s.id,i]));
     f.steps.forEach(s=>{if(s.act&&!subs['@'+s.act]){subs['@'+s.act]=1;on(s.act,(a,r)=>act(s.act,a,r))}})}
   function run(id,step){const f=FLOWS[id];if(!f||cs)return;build();fl=id;ST=f.steps;SX=f.six;go(step&&SX[step]!=null?step:ST[0].id)}
-  const quiet=()=>!cs&&!rp&&!modalOn()&&!$('gz').className&&!(typeof bookOn==='function'&&bookOn())&&!(typeof pwBookOn==='function'&&pwBookOn())&&!document.hidden;
+  const quiet=()=>!cs&&!rp&&!modalOn()&&!$('gz').className&&!(typeof bookOn==='function'&&bookOn())&&!(typeof pwBookOn==='function'&&pwBookOn())&&!(typeof medOn==='function'&&medOn())&&!document.hidden;
   function auto(){
     const t=S.tut;if(!t||!t.done||!S.cats.length||!quiet())return;
     if(t.fl&&FLOWS[t.fl.id]){run(t.fl.id,t.fl.step);return}
