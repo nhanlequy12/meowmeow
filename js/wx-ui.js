@@ -121,7 +121,7 @@ function bookRight(){
       '<div class="ln">'+(W.length?W.map(w=>'<span class="wb-tag '+w[0]+'">'+w[1]+'</span>').join(' '):'<span class="wb-tag ok">✓ Phù hợp với mèo</span>')+'</div></div>'+
       '<div class="dv">'+(on.length?on.slice(0,3).map(d=>furnTag(d.f.id,'',24,20)).join('')+(on.length>3?'+'+(on.length-3):''):'<span class="dim">chưa có<br>thiết bị</span>')+'</div></button>'};
   return '<div class="wb-sheet"><h3>Khí hậu các phòng</h3><div class="wb-list">'+rooms.slice(WB.pg*WB.per,(WB.pg+1)*WB.per).map(row).join('')+'</div>'+
-    '<div class="wb-nav"><button class="sm" '+(WB.pg<=0?'disabled':'')+' onclick="bookPage(-1)" aria-label="Trang trước">◀</button><span class="pg">Trang '+(WB.pg+1)+' / '+n+'</span><button class="sm" '+(WB.pg>=n-1?'disabled':'')+' onclick="bookPage(1)" aria-label="Trang sau">▶</button>'+(typeof bookGuide==='function'?'<button class="sm wb-help" onclick="bookGuide()" aria-label="Giải thích nhanh">📖 Giải thích</button>':'')+'</div></div>';
+    '<div class="wb-nav"><button class="sm" '+(WB.pg<=0?'disabled':'')+' onclick="bookPage(-1)" aria-label="Trang trước">◀</button><span class="pg">Trang '+(WB.pg+1)+' / '+n+'</span><button class="sm" '+(WB.pg>=n-1?'disabled':'')+' onclick="bookPage(1)" aria-label="Trang sau">▶</button>'+(typeof bookGuide==='function'?'<button class="sm wb-help" onclick="bookGuide()" aria-label="Giải thích nhanh">📖<span> Giải thích</span></button>':'')+'</div></div>';
 }
 // vẽ lại: part = 'l' (trang trái), 'r' (trang phải) hoặc bỏ trống (cả hai). Sau khi vẽ danh sách phòng thì đo chỗ trống để biết mỗi trang nhỏ chứa được mấy phòng.
 function bookDraw(part){
@@ -139,7 +139,7 @@ function bookDraw(part){
 function bookFlip(r,old,d){
   const B=r&&r.parentElement;if(!B||!d||!old||!r.animate||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
   B.querySelectorAll('.wb-flip').forEach(x=>x.remove());
-  const v=matchMedia('(max-width:760px)').matches,fw=d==='fl',nw=r.innerHTML,ax=v?'rotateX(':'rotateY(',A=v?180:-180,T=a=>ax+a+'deg)';
+  const v=matchMedia('(max-width:760px) and (orientation:portrait)').matches,fw=d==='fl',nw=r.innerHTML,ax=v?'rotateX(':'rotateY(',A=v?180:-180,T=a=>ax+a+'deg)';
   const face=(c,h)=>'<div class="wb-page wb-face '+c+'">'+(h||'')+'<i class="wb-shade"></i></div>';
   const w=document.createElement('div');w.className='wb-flip'+(v?' v':'');w.setAttribute('aria-hidden','true');
   w.style.cssText='left:'+r.offsetLeft+'px;top:'+r.offsetTop+'px;width:'+r.offsetWidth+'px;height:'+r.offsetHeight+'px';

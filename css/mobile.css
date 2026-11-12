@@ -1,0 +1,75 @@
+/* ============ ĐIỆN THOẠI NGANG VÀ THÍCH ỨNG CHUNG (2026-11-12) ============
+   Nạp sau mọi file CSS khác. Đi cùng js/orient.js (màn nhắc xoay ngang, biến --vvh = chiều cao nhìn thấy thật).
+   - Safari iOS tự phóng chữ khi xoay ngang làm chip, nút rộng ra và tràn ngang: tắt text-size-adjust.
+   - viewport-fit=cover (index.html) để game phủ cả vùng tai thỏ; các cạnh chừa đúng env(safe-area-inset-*).
+   - Chiều cao: dùng --vvh (visualViewport) thay 100vh để thanh địa chỉ và bàn phím không che nút xác nhận. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+:root{--sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
+
+/* màn nhắc xoay ngang (js/orient.js) */
+#rotate{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:24px max(24px,var(--sr)) 24px max(24px,var(--sl));background:var(--bg);background-image:radial-gradient(color-mix(in srgb,var(--line) 24%,transparent) 1.2px,transparent 1.3px);background-size:22px 22px;text-align:center}
+#rotate .rt-in{display:flex;flex-direction:column;align-items:center;gap:12px;max-width:340px}
+#rotate b{font-size:20px;line-height:1.35;color:var(--ink)}
+#rotate small{font-size:14px;line-height:1.45;color:var(--dim)}
+#rotate button{min-height:48px;padding:8px 16px;margin-top:6px}
+#rotate .rt-ph{width:66px;height:110px;border:5px solid var(--ink);border-radius:14px;position:relative;background:var(--panel);animation:rtTurn 2.4s ease-in-out infinite}
+#rotate .rt-ph i{position:absolute;left:50%;bottom:6px;width:16px;height:4px;margin-left:-8px;border-radius:3px;background:var(--ink)}
+#rotate .rt-ph:after{content:"";position:absolute;inset:10px 6px 16px;border-radius:5px;background:linear-gradient(#ffd7e2,#fbe7c8)}
+@keyframes rtTurn{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+html.need-land,html.need-land body{overflow:hidden}
+html.need-land #app,html.need-land .tabs,html.need-land #toast,html.need-land #tip{visibility:hidden}
+@media (prefers-reduced-motion:reduce){#rotate .rt-ph{animation:none;transform:rotate(-90deg)}}
+
+/* chiều cao thật cho hộp thoại, thẻ gacha, thẻ hướng dẫn */
+#modal .box{max-height:88vh;max-height:calc(var(--vvh,100dvh)*.88)}
+#grev{max-height:92vh;max-height:calc(var(--vvh,100dvh) - 20px)}
+.tut-card{max-height:calc(100vh - 24px);max-height:calc(var(--vvh,100dvh) - 24px)}
+
+/* các lớp phủ toàn màn hình chừa vùng tai thỏ, bo góc */
+#modal{padding:max(14px,var(--st)) max(14px,var(--sr)) max(14px,var(--sb)) max(14px,var(--sl))}
+#wxbook,#pwbook,#medbook{padding:max(10px,var(--st)) max(10px,var(--sr)) max(10px,var(--sb)) max(10px,var(--sl))}
+#toast{left:var(--sl);right:var(--sr);top:calc(10px + var(--st))}
+
+/* điện thoại ngang (cùng điều kiện bố cục ngang trong index.html): thanh menu bên trái rộng thêm phần tai thỏ */
+@media (orientation:landscape) and (max-height:520px) and (max-width:1023px){
+  .tabs{width:calc(76px + var(--sl));padding-left:max(6px,var(--sl));padding-bottom:max(6px,var(--sb))}
+  #app{margin-left:calc(76px + var(--sl));padding-right:max(10px,var(--sr))}
+  .hdr{right:max(10px,var(--sr))}
+  #wxbook,#pwbook,#medbook{padding:max(5px,var(--st)) max(6px,var(--sr)) max(5px,var(--sb)) max(6px,var(--sl))}
+  #modal{padding:max(6px,var(--st)) max(10px,var(--sr)) max(6px,var(--sb)) max(10px,var(--sl))}
+  #modal .box{max-height:calc(var(--vvh,100dvh) - 14px);padding:10px 12px}
+  #mx{top:-4px;right:-2px}
+}
+/* máy tính (thanh menu cạnh trái 150px) */
+@media (min-width:1024px){
+  .tabs{width:calc(150px + var(--sl));padding-left:max(10px,var(--sl))}
+  #app{margin-left:calc(150px + var(--sl))}
+}
+
+/* thẻ kết quả gacha trên màn ngang thấp: hai cột (ảnh, sao, tên | thông tin, thuộc tính, đặt tên, nút) để thấy đủ mà không phải cuộn */
+@media (orientation:landscape) and (max-height:560px){
+  #grev{width:min(calc(100vw - 24px - var(--sl) - var(--sr)),760px);padding:10px 12px}
+  .gv{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:0 14px;align-items:center}
+  .gv-hd{min-width:0}.gv-bd{min-width:0}
+  .gv .legend{font-size:22px;margin-bottom:2px}
+  .gv-stars{margin-top:4px}.gv-name{margin-top:4px;font-size:20px}.gv .quote{margin-top:4px;font-size:13.5px}
+  .gv .cd-sec{margin-top:0;padding:6px 9px}.gv .cd-sec+.cd-sec{margin-top:6px}
+  .gv-row{margin:8px 0 6px}.gv-btn{min-width:80%}
+}
+
+/* sách khí hậu, sách điện trên điện thoại ngang: nút "⚡ Sách điện" dời xuống góc dưới trái (trang trái tự cuộn nên không che chữ),
+   nhường góc dưới phải cho nút chuyển trang; nút Giải thích chỉ còn biểu tượng */
+@media (orientation:landscape) and (max-height:520px){
+  .pw-tab{bottom:-9px;right:auto;left:18px;min-height:30px;padding:2px 10px;font-size:12.5px}
+  .wb-book .wb-l{padding-bottom:26px}
+  .wb-help span{display:none}
+  .wb-nav{gap:6px}.wb-nav .pg{min-width:0}
+}
+/* thẻ gacha hai cột: ô đặt tên và nút Đón về nằm chung một hàng */
+@media (orientation:landscape) and (max-height:560px){
+  .gv-bd{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 8px;align-items:center}
+  .gv-bd>.cd-sec{grid-column:1/-1}
+  .gv-bd>.gv-row{margin:8px 0 0}.gv-bd>.gv-btn{min-width:0;margin-top:8px;white-space:nowrap}
+  .gv-bd>.cd-sec+.gv-btn{grid-column:1/-1}  /* xem lại intro: chỉ có nút Đóng */
+  .gv .cd-desc{font-size:13px}
+}

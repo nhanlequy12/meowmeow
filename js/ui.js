@@ -1437,15 +1437,15 @@ function gReveal(skipped){
   const ct=coatOf(c),row=(k,v)=>'<div class="k">'+k+'</div><div>'+v+'</div>',
     info=kindRow(sp,row)+(ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+(c.replay?'':row('Tuổi',ageTxt(c)));
   const sq=gz.multi&&gz.seqN>1&&!c.replay,more=sq&&gz.seq.length;
-  rev.innerHTML='<div class="pop gv">'+(sq?'<div class="gv-seq">Bé '+(gz.seqN-gz.seq.length)+'/'+gz.seqN+' từ 4★ trở lên</div>':'')+(st===5?'<div class="legend">HUYỀN THOẠI</div>'+(ct&&ct.form?'<div class="legend" style="font-size:17px;letter-spacing:3px;color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">✨ TRANG PHỤC HIẾM ✨</div>':''):isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
-    '<div class="gv-pic">'+catTag(big(c),innerHeight<860&&innerWidth<520?3:4,1)+'</div><div class="gv-stars">'+stars+'</div>'+
+  rev.innerHTML='<div class="pop gv"><div class="gv-hd">'+(sq?'<div class="gv-seq">Bé '+(gz.seqN-gz.seq.length)+'/'+gz.seqN+' từ 4★ trở lên</div>':'')+(st===5?'<div class="legend">HUYỀN THOẠI</div>'+(ct&&ct.form?'<div class="legend" style="font-size:17px;letter-spacing:3px;color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">✨ TRANG PHỤC HIẾM ✨</div>':''):isRare(c)?'<div class="legend" style="color:#8a5ad0;text-shadow:0 2px 0 #fff,0 0 16px #c9a6ff">MÀU HIẾM!</div>':'')+
+    '<div class="gv-pic">'+catTag(big(c),innerHeight<400?2:(innerHeight<860&&innerWidth<520)||innerHeight<560?3:4,1)+'</div><div class="gv-stars">'+stars+'</div>'+
     '<div class="gv-rank" style="color:'+col+'">'+STAR[st].n+(c.isNew?' · <span style="color:var(--good)">MỚI!</span>':'')+'</div>'+
-    '<h2 class="gv-name">'+sp.n+' '+sexIc(c)+'</h2>'+(sp.q&&st===5?'<div class="quote">“'+sp.q+'”</div>':'')+
+    '<h2 class="gv-name">'+sp.n+' '+sexIc(c)+'</h2>'+(sp.q&&st===5?'<div class="quote">“'+sp.q+'”</div>':'')+'</div><div class="gv-bd">'+ // gv-hd | gv-bd: hai cột trên màn ngang thấp (css/mobile.css)
     '<div class="cd-sec">'+(info?'<div class="cd-grid">'+info+'</div>':'')+'<div class="cd-desc'+(info?'':' solo')+'">'+sp.d+'</div></div>'+
     '<div class="cd-sec"><h4>Thuộc tính ('+c.traits.length+')</h4><div class="cd-tags">'+c.traits.map(t=>tagOf(t)).join('')+'</div></div>'+
-    (c.replay?'<button class="on gv-btn" onclick="endReplay()">Đóng</button></div>':
+    (c.replay?'<button class="on gv-btn" onclick="endReplay()">Đóng</button></div></div>':
     '<div class="row gv-row"><input id="gname" maxlength="16" value="'+esc(c.name)+'" placeholder="Đặt tên cho bé" style="flex:1"><button class="sm" onclick="$(\'gname\').value=pick(NAMES)">🎲</button></div>'+
-    '<button class="on gv-btn" onclick="gachaDone()">'+(more?'Đón về · bé tiếp theo ▸':'Đón về nhà')+'</button></div>');
+    '<button class="on gv-btn" onclick="gachaDone()">'+(more?'Đón về · bé tiếp theo ▸':'Đón về nhà')+'</button></div></div>');
   emoEl(rev);rev.style.display='block';
 }
 function endReplay(){gz.timers.forEach(clearTimeout);gz.timers=[];$('gz').className=''}
