@@ -72,6 +72,12 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Chưa kiểm tra: người chơi thật, âm thanh, số khung/giây của intro Sukuna trên máy có GPU (không GPU: PC 26–35 khung/giây), `prefers-reduced-motion`.
 - Chờ người dùng quyết: dạng Sukuna của Fushiguro (`js/pack18.js`) vẫn dùng cảnh cũ; người chơi cũ bấm "Để sau" ở lời mời hướng dẫn thời tiết vẫn nhận quà ngay.
 
+## Đợt 2026-11-12: hệ thống điện năng
+
+- Commit `66cb24e`: ổ điện (đơn, đôi, 4 cổng, thông minh, chống nước, cao cấp), mọi thiết bị điện chạy pin và chỉ sạc tay có tính phí (không bao giờ tự sạc, kể cả lúc vắng), cảnh báo dưới 20%, điện mặt trời (ban công, sân thượng; giảm 50% phí khi đủ điện dự trữ), sét đánh mất điện hiếm (5% mỗi đợt giông, 15 phút thật, giữ qua tải lại), mèo hoảng sợ, máy phát dự phòng ở tầng hầm, sách điện hai trang, hướng dẫn (cấp 2, lần đầu mất điện, máy phát đầu tiên), Admin, chuyển đổi bản lưu cũ (`i.bat`, `i.chg`). File mới: `js/pw-data.js`, `js/pw.js`, `js/pw-ui.js`, `js/tut-pw.js`, `js/furn/pw-01.js`, `css/pwbook.css`, `tools/pwtest.js`.
+- Kiểm tra đã chạy: `node tools/pwtest.js`, `node tools/wxtest.js`, `node --check`; Playwright ở PC, điện thoại dọc, điện thoại ngang (hướng dẫn điện, sách điện nhiều trang, sạc qua ổ, điện mặt trời, sét đánh, máy phát, bản lưu cũ): không lỗi JS, không tràn khung.
+- Chưa kiểm tra: người chơi thật, âm thanh sấm, chạy liền mạch nhiều giờ, `server.py` thật với phí sạc.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
