@@ -49,3 +49,6 @@ FCATS.push(['garden','🌱 Vườn nhỏ']);
     G('gpond','Hồ cá cảnh',    2400,48,18,8,   {pond:1,happy:8,d:'Có sẵn 2 chú cá. Cho cá ăn thì cá đẻ thêm (tối đa 6), bán bớt được xu. Mèo thích ngồi ngắm: +8 vui. Rét dưới 0°C thì mặt hồ đóng băng.'}),
   ].forEach(f=>{if(FURN[f.id])throw new Error('trùng id nội thất '+f.id);FURNS.push(f);FURN[f.id]=f});
 }
+// Mục cửa hàng xếp theo bảng chữ cái tiếng Việt (bỏ biểu tượng đầu tên); món bên trong mỗi mục giữ nguyên thứ tự.
+// File này là file dữ liệu cuối cùng thêm mục vào FCATS: thêm mục mới ở file nạp sau thì chuyển dòng này xuống sau đó.
+{const key=c=>c[1].replace(/^[^\p{L}]+/u,''),col=new Intl.Collator('vi',{sensitivity:'base'});FCATS.sort((a,b)=>col.compare(key(a),key(b)))}
