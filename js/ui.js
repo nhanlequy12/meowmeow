@@ -1776,6 +1776,11 @@ function admAge(n){S.cats.forEach(c=>{c.born=n?c.born-n*DAY:now()});const k=[0,1
 function admStats(){S.cats.forEach(c=>{c.full=100;c.en=100;c.hp=100});admDone('Cả '+S.cats.length+' bé đã no, vui và đầy năng lượng',1)}
 addEventListener('keydown',ev=>{if(ev.ctrlKey&&ev.shiftKey&&ev.code==='KeyA'){ev.preventDefault();openAdmin()}});
 addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('modal').style.display==='flex'&&!$('modal').classList.contains('lock'))closeModal()});
+// chạm ra ngoài khung (vùng nền tối) để đóng cửa sổ; hộp thoại bắt buộc (lock) thì không. Phải nhấn và thả đều ở nền,
+// để kéo chọn chữ hay kéo thanh cuộn từ trong khung ra ngoài không vô tình đóng cửa sổ
+{let downBg=false;const M=$('modal');
+  M.addEventListener('pointerdown',ev=>{downBg=ev.target===M});
+  M.addEventListener('click',ev=>{if(downBg&&ev.target===M&&!M.classList.contains('lock'))closeModal();downBg=false})}
 {let n=0,t0=0;document.querySelector('h1').addEventListener('click',()=>{const t=Date.now();n=t-t0<600?n+1:1;t0=t;if(n>=7){n=0;openAdmin()}})}
 
 /* ============ VÒNG LẶP ============ */
