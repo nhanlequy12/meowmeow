@@ -124,6 +124,13 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 ## Đợt 2026-11-12: intro Faker Hồ Ly bỏ quạt đuôi lớn
 - Commit `f420cbb`: `INTRO.v_faker` trong `js/pack18.js` không còn vẽ hai quạt chín đuôi trắng cỡ lớn (hàm `tailsFan` đã xóa) ở dạng Ahri; chín đuôi vẽ sẵn trong hình của bé giữ nguyên. Đã chạy intro cả ba trang phục của Faker trong trình duyệt ở 1280×800: không lỗi JS, không còn quạt đuôi. Chưa xem điện thoại ngang.
 
+## Đợt 2026-11-12: quét sai sót toàn bộ game
+- Commit `947687f`: sửa `log_message` trong `server.py` (kết nối treo hết 20 giây làm in cả trang lỗi `AttributeError: 'H' object has no attribute 'path'` ra cửa sổ lệnh; không ảnh hưởng người chơi). Đây là lỗi mã duy nhất tìm được.
+- Đã quét, không thấy lỗi: cú pháp 157 file JS và `server.py`; 8 bộ kiểm thử và `catcheck` 150/150; mọi file `index.html` nạp đều có, không file thừa; dữ liệu (id trùng, thuộc tính, món khoái khẩu, màu lông, trang phục hiếm, câu thoại, tên bộ gốc, 220 món nội thất đều có hình và vẽ được mọi biến thể, cấp nào cũng mở ít nhất một thứ). Trong trình duyệt: 56 intro (27 bé 5★ × mọi trang phục), mọi hành động chính, phụ, trang phục hiếm và 60 giây trong 11 phòng, 11 kiểu thời tiết × 9 phòng, 18 chuyến viễn chinh, mua và vẽ 220 món, 1.500 phút đồng hồ game, 300 lượt gacha, mọi tab, 23 mục cửa hàng, 23 hộp thoại, 34 chương Sổ tay, 150 bảng Sưu tập, 98 màn chi tiết mèo ở 1280×800 và 844×390: không lỗi JS, không tràn ngang. Bot chơi hết hướng dẫn tân thủ rồi hướng dẫn thời tiết, điện, Nhà thuốc (68 bước) ở 844×390, cả trên máy tĩnh lẫn qua `server.py` thật: trọng tài nhận mọi lần đồng bộ hợp lệ (quà hướng dẫn, mua thức ăn, nước, thuốc, vé, gacha) và từ chối khi tự cộng 100.000 xu.
+- Chờ người dùng quyết (thiết kế, chưa sửa): bé bỏ nhà đi. Luật "mỗi lần chỉ một bé" trong `js/stray.js` là một bé mỗi nhịp `tick`, nên khi cả đàn cùng bị bỏ bê thì gần như cả đàn đi: mô phỏng 20 bé, game mở mà không cho ăn uống thì bé đầu đi sau 6,8 giờ và trong 2 giờ sau đó 19/20 bé đi; vắng 3 đêm bát trống thì lần mở game đó 19/20 bé đi cùng lúc. Sổ tay ghi "mỗi lần chỉ một bé bỏ đi".
+- Chỉ người dùng sửa được: `CLAUDE.md` dòng 23 thừa một dấu `- `, và có hai mục cùng số 28.
+- Chưa kiểm tra trong đợt này: hướng dẫn tân thủ ở cỡ PC, điện thoại thật, âm thanh, nhiều người chơi cùng lúc, cân bằng xu dài ngày.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
