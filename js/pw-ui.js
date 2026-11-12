@@ -284,17 +284,18 @@ function pwRight(){
     return '<div class="wb-room pw-row '+(p<PWC.low?'hot':p<.5?'meh':'ok')+'" onclick="openPw('+i.iid+')" role="button" tabindex="0"><div class="pw-ic">'+furnTag(f.id,'',30,26)+'</div><div class="g"><div class="nm">'+f.n+' <small>· '+ROOM[i.room].n+'</small></div>'+
       '<div class="ln">🔋 <b style="color:'+(p<PWC.low?'#c0503a':'inherit')+'">'+Math.round(p*100)+'%</b> · '+(i.charge?(powerOn()?'⚡ sạc, còn '+fmtL(pwChargeLeft(i)):'⏸ tạm dừng')+' · '+FURN[ol.fid].n:pwDead(i)?'hết pin':'còn '+fmtL(pwRunLeft(i)))+'</div>'+pwBar(p)+'</div>'+
       (i.charge?'<span class="pw-plug">🔌</span>':'<button class="sm" '+(q.need?'':'disabled')+' onclick="event.stopPropagation();pwPick('+i.iid+')">'+(q.need?'Sạc '+q.cost+' xu':'Đầy')+'</button>')+'</div>'};
-  return '<div class="wb-sheet '+PWU.dir+'"><h3>Thiết bị điện</h3><div class="dim pw-sum">🔌 '+outs.length+' ổ điện · '+used+'/'+ports+' cổng đang sạc · '+L.length+' thiết bị</div>'+
+  return '<div class="wb-sheet"><h3>Thiết bị điện</h3><div class="dim pw-sum">🔌 '+outs.length+' ổ điện · '+used+'/'+ports+' cổng đang sạc · '+L.length+' thiết bị</div>'+
     '<div class="wb-list">'+(L.length?L.slice(PWU.pg*PWU.per,(PWU.pg+1)*PWU.per).map(row).join(''):'<div class="dim" style="padding:10px">Chưa đặt thiết bị điện nào. Quạt, máy sưởi, điều hòa, máy lọc không khí… đều chạy pin và phải sạc tay ở ổ điện.</div>')+'</div>'+
     '<div class="wb-nav"><button class="sm" '+(PWU.pg<=0?'disabled':'')+' onclick="pwPage(-1)" aria-label="Trang trước">◀</button><span class="pg">Trang '+(PWU.pg+1)+' / '+n+'</span><button class="sm" '+(PWU.pg>=n-1?'disabled':'')+' onclick="pwPage(1)" aria-label="Trang sau">▶</button></div></div>';
 }
 function pwBookDraw(part){
   const e=$('pwbook');if(!e||!pwBookOn())return;
   if(part!=='r')e.querySelector('.wb-l').innerHTML=emo(pwLeft());
-  if(part!=='l'){const r=e.querySelector('.wb-r');r.innerHTML=emo(pwRight());PWU.dir='';
+  if(part!=='l'){const r=e.querySelector('.wb-r'),old=r.innerHTML,d=PWU.dir;r.innerHTML=emo(pwRight());PWU.dir='';
     const L=r.querySelector('.wb-list');
     if(L&&!PWU.fit&&L.firstElementChild&&L.firstElementChild.classList.contains('pw-row')){PWU.fit=1;const rh=Math.max(48,...[...L.children].map(c=>c.offsetHeight)),per=Math.max(1,Math.floor((L.clientHeight+6)/(rh+6)));
-      if(per!==PWU.per){const first=PWU.pg*PWU.per;PWU.per=per;PWU.pg=Math.floor(first/per);r.innerHTML=emo(pwRight())}}}
+      if(per!==PWU.per){const first=PWU.pg*PWU.per;PWU.per=per;PWU.pg=Math.floor(first/per);r.innerHTML=emo(pwRight())}}
+    bookFlip(r,old,d)}
 }
 function openPower(){
   if(!pwOpen()){toast('Điện năng mở khóa ở cấp '+WX_LV+'.',{icon:'🔒',title:'Chưa mở khóa',key:'pwlock'});return}

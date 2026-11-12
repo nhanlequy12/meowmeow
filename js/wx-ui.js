@@ -136,7 +136,7 @@ function bookLeft(){
 }
 function bookRight(){
   const rooms=ownedRooms();
-  if(WB.rid&&S.rooms[WB.rid])return '<div class="wb-sheet '+WB.dir+'"><div class="wb-bar"><button class="sm wb-back" onclick="bookRoom(null)">‹ Danh sách phòng</button><button class="sm on wb-go" onclick="bookGo(\''+WB.rid+'\')">'+(WB.rid===cur&&tab==='home'?'🏠 Xem phòng này':'🚪 Đến '+ROOM[WB.rid].n)+' ▸</button></div><div class="wb-det">'+climHtml(WB.rid)+'</div></div>';
+  if(WB.rid&&S.rooms[WB.rid])return '<div class="wb-sheet"><div class="wb-bar"><button class="sm wb-back" onclick="bookRoom(null)">‹ Danh sách phòng</button><button class="sm on wb-go" onclick="bookGo(\''+WB.rid+'\')">'+(WB.rid===cur&&tab==='home'?'🏠 Xem phòng này':'🚪 Đến '+ROOM[WB.rid].n)+' ▸</button></div><div class="wb-det">'+climHtml(WB.rid)+'</div></div>';
   WB.rid=null;
   const n=Math.max(1,Math.ceil(rooms.length/WB.per));WB.pg=clamp(WB.pg,0,n-1);
   const row=r=>{const rc=roomClimate(r.id),W=roomWarn(rc),on=rc.D.on,cls=rc.T<WXC.ideal[0]?'cold':rc.T>WXC.ideal[1]?'hot':rc.comfort>=60?'ok':'meh';
@@ -145,17 +145,43 @@ function bookRight(){
       '<div class="bar"><i style="width:'+Math.round(clamp(rc.comfort,0,100))+'%;background:'+comfCol(rc.comfort)+'"></i></div>'+
       '<div class="ln">'+(W.length?W.map(w=>'<span class="wb-tag '+w[0]+'">'+w[1]+'</span>').join(' '):'<span class="wb-tag ok">✓ Phù hợp với mèo</span>')+'</div></div>'+
       '<div class="dv">'+(on.length?on.slice(0,3).map(d=>furnTag(d.f.id,'',24,20)).join('')+(on.length>3?'+'+(on.length-3):''):'<span class="dim">chưa có<br>thiết bị</span>')+'</div></button>'};
-  return '<div class="wb-sheet '+WB.dir+'"><h3>Khí hậu các phòng</h3><div class="wb-list">'+rooms.slice(WB.pg*WB.per,(WB.pg+1)*WB.per).map(row).join('')+'</div>'+
+  return '<div class="wb-sheet"><h3>Khí hậu các phòng</h3><div class="wb-list">'+rooms.slice(WB.pg*WB.per,(WB.pg+1)*WB.per).map(row).join('')+'</div>'+
     '<div class="wb-nav"><button class="sm" '+(WB.pg<=0?'disabled':'')+' onclick="bookPage(-1)" aria-label="Trang trước">◀</button><span class="pg">Trang '+(WB.pg+1)+' / '+n+'</span><button class="sm" '+(WB.pg>=n-1?'disabled':'')+' onclick="bookPage(1)" aria-label="Trang sau">▶</button></div></div>';
 }
 // vẽ lại: part = 'l' (trang trái), 'r' (trang phải) hoặc bỏ trống (cả hai). Sau khi vẽ danh sách phòng thì đo chỗ trống để biết mỗi trang nhỏ chứa được mấy phòng.
 function bookDraw(part){
   const e=$('wxbook');if(!e||!bookOn())return;
   if(part!=='r'){const l=e.querySelector('.wb-l');l.innerHTML=emo(bookLeft())}
-  if(part!=='l'){const r=e.querySelector('.wb-r');r.innerHTML=emo(bookRight());WB.dir='';
+  if(part!=='l'){const r=e.querySelector('.wb-r'),old=r.innerHTML,d=WB.dir;r.innerHTML=emo(bookRight());WB.dir='';
     const L=r.querySelector('.wb-list');
     if(L&&!WB.fit){WB.fit=1;const it=L.firstElementChild,rh=it?Math.max(50,...[...L.children].map(c=>c.offsetHeight)):62,per=Math.max(1,Math.floor((L.clientHeight+6)/(rh+6)));
-      if(per!==WB.per){const first=WB.pg*WB.per;WB.per=per;WB.pg=Math.floor(first/per);r.innerHTML=emo(bookRight())}}}
+      if(per!==WB.per){const first=WB.pg*WB.per;WB.per=per;WB.pg=Math.floor(first/per);r.innerHTML=emo(bookRight())}}
+    bookFlip(r,old,d)}
+}
+// lật một tờ giấy quanh gáy sách (giữa hai trang). d='fl' lật tới: tờ cũ nhấc lên, lật sang trái, để lộ trang mới bên dưới.
+// d='fr' lật lại: tờ mới từ trang trái lật sang phải, đè lên trang cũ. Điện thoại dọc: gáy nằm ngang, lật lên và xuống.
+// Dùng chung cho sách điện (js/pw-ui.js). CSS: .wb-flip trong css/wxbook.css
+function bookFlip(r,old,d){
+  const B=r&&r.parentElement;if(!B||!d||!old||!r.animate||matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  B.querySelectorAll('.wb-flip').forEach(x=>x.remove());
+  const v=matchMedia('(max-width:760px)').matches,fw=d==='fl',nw=r.innerHTML,ax=v?'rotateX(':'rotateY(',A=v?180:-180,T=a=>ax+a+'deg)';
+  const face=(c,h)=>'<div class="wb-page wb-face '+c+'">'+(h||'')+'<i class="wb-shade"></i></div>';
+  const w=document.createElement('div');w.className='wb-flip'+(v?' v':'');w.setAttribute('aria-hidden','true');
+  w.style.cssText='left:'+r.offsetLeft+'px;top:'+r.offsetTop+'px;width:'+r.offsetWidth+'px;height:'+r.offsetHeight+'px';
+  // mặt sau của tờ giấy chính là trang trái (lật lại thì nhấc trang trái lên, lật tới thì tờ cũ nằm xuống thành trang trái)
+  const l=B.querySelector('.wb-l'),lx=l.offsetLeft-r.offsetLeft,ly=l.offsetTop-r.offsetTop,lw=l.offsetWidth,lh=l.offsetHeight,px=n=>Math.round(n)+'px';
+  w.innerHTML=(fw?'':face('wb-r wb-under',old))+'<i class="wb-cast"></i><i class="wb-cast o"></i><div class="wb-leaf">'+face('wb-r wb-recto',fw?old:nw)+face('wb-l wb-verso',l.innerHTML)+'</div>';
+  B.appendChild(w);
+  Object.assign(w.querySelector('.wb-cast.o').style,{left:px(lx),top:px(ly),width:px(lw),height:px(lh)});
+  Object.assign(w.querySelector('.wb-verso').style,v?{left:px(lx),top:px(-ly-lh),width:px(lw),height:px(lh)}:{left:px(-lx-lw),top:px(ly),width:px(lw),height:px(lh)});
+  const o={duration:v?600:680,easing:'cubic-bezier(.45,.05,.3,1)',fill:'both'},q=w.querySelector.bind(w),sh=.42,
+    first=[{opacity:0},{opacity:sh,offset:.5},{opacity:sh}],second=[{opacity:sh},{opacity:sh,offset:.5},{opacity:0}],
+    near=[{opacity:0},{opacity:.55,offset:.22},{opacity:0,offset:.5},{opacity:0}],far=[{opacity:0},{opacity:0,offset:.5},{opacity:.55,offset:.8},{opacity:0}];
+  const an=q('.wb-leaf').animate([{transform:T(fw?0:A)},{transform:T(fw?A:0)}],o);
+  q('.wb-recto .wb-shade').animate(fw?first:second,o);q('.wb-verso .wb-shade').animate(fw?second:first,o);
+  // bóng của tờ giấy đổ xuống trang phải (lúc tờ còn bên phải) và trang trái (lúc tờ đã sang trái)
+  q('.wb-cast').animate(fw?near:far,o);q('.wb-cast.o').animate(fw?far:near,o);
+  const end=()=>{if(w.isConnected)w.remove()};an.finished.then(end,end);setTimeout(end,o.duration+400);
 }
 function openBook(rid){
   if(!wxOpen()){toast('Thời tiết và khí hậu phòng mở khóa ở cấp '+WX_LV+'.',{icon:'🔒',title:'Chưa mở khóa',key:'wxlock'});return}
