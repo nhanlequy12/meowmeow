@@ -118,6 +118,9 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Commit `295ba59`: chậu cây, luống rau, hồ cá (cấp 4) chỉ đặt ở phòng ngoài trời và Nhà kính; cỏ mèo, cà rốt, bí đỏ lớn theo khí hậu thật của phòng (nắng ban ngày, mưa tự tưới, nóng gió làm khô đất, rét dập lá, giông quật cây); thu hoạch nấu thành suất trong kho thức ăn hoặc làm bát mồi miễn phí cho bé đi lạc; cá đẻ khi được cho ăn, bán được xu, đóng băng khi rét. Hình do 3 phiên Codex vẽ song song. Chi tiết ở CLAUDE.md mục 38.
 - Kiểm thử: `node tools/gardentest.js` 47 phần (có trọng tài máy chủ) và các bộ cũ đều đạt; Playwright PC 1280×800, ngang 844×390, 667×375 không lỗi, không tràn ngang. Chưa thử người chơi thật, cân bằng xu lâu dài, điện thoại thật.
 
+## Đợt 2026-11-12: mục cửa hàng theo bảng chữ cái
+- Commit `3cdb29f`: các mục cửa hàng (`FCATS`) xếp theo bảng chữ cái tiếng Việt, bỏ biểu tượng đầu tên; 🚪 Phòng vẫn đứng đầu; món trong từng mục giữ nguyên thứ tự. Đã xem trên PC 1280×800 và điện thoại ngang 844×390; gardentest, lvtest, wxtest đạt.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
