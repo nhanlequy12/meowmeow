@@ -65,6 +65,13 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Đã push `631958f`: hệ thống thời tiết (`CLAUDE.md` mục 29 và 29b): 11 kiểu thời tiết đổi mỗi 5 giờ, khí hậu phòng, cửa sổ, thiết bị (có loại chạy pin), vật phẩm sinh tồn, viễn chinh theo thời tiết, mục thời tiết trong Admin. Kiểm tra: `node tools/wxtest.js`.
 - Đã push `f734965`: Sổ tay thêm hai chương giải thích chỉ số khí hậu, độ thoải mái và cách xử lý.
 
+## Đợt 2026-11-12: sách khí hậu, mở khóa cấp 2, bảo hiểm 5★, Phục Ma Ngự Trù Tử
+
+- Commit `c04867b` (chi tiết ở `CLAUDE.md` mục 30): sách khí hậu hai trang; thời tiết mở ở cấp 2 kèm hướng dẫn 13 bước chạy một lần (`js/tut-wx.js`); lộ trình mở khóa (`js/unlock.js`); bảo hiểm 5★ sau 40 lượt (`PITY5`); hoạt ảnh Phục Ma Ngự Trù Tử của Mèo Itadori dạng Sukuna (`js/shrine.js`).
+- Kiểm tra đã chạy: `node tools/pitytest.js`, `node tools/lvtest.js`, `node tools/wxtest.js`, `node tools/catcheck.js`, `node --check` mọi file JS; Playwright ở PC, điện thoại dọc, điện thoại ngang (sách 1 và 17 phòng, hướng dẫn tân thủ từ ván mới, hướng dẫn thời tiết cho người mới và người cũ, bỏ qua, xem lại, khung bảo hiểm, lộ trình, intro Sukuna); một lượt chơi qua `server.py` thật (bảo hiểm đồng bộ đúng, tự sửa bộ đếm thì bị từ chối).
+- Chưa kiểm tra: người chơi thật, âm thanh, số khung/giây của intro Sukuna trên máy có GPU (không GPU: PC 26–35 khung/giây), `prefers-reduced-motion`.
+- Chờ người dùng quyết: dạng Sukuna của Fushiguro (`js/pack18.js`) vẫn dùng cảnh cũ; người chơi cũ bấm "Để sau" ở lời mời hướng dẫn thời tiết vẫn nhận quà ngay.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
