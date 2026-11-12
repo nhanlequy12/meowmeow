@@ -223,8 +223,6 @@ Object.assign(MEOW,{
 });
 
 /* ---------- cảnh mở gacha ---------- */
-const tailsFan=(x,y,sz,css)=>{let h='';for(let i=0;i<9;i++)h+='<div style="position:absolute;left:0;bottom:0;width:'+sz*.17+'vmin;height:'+sz+'vmin;margin-left:'+(-sz*.085)+'vmin;border-radius:50% 50% 35% 35%;background:linear-gradient(#fffaf0,#f1dfc0);border:2px solid #dfb768;box-sizing:border-box;transform-origin:50% 100%;transform:rotate('+(-80+i*20)+'deg)"></div>';
-  return fxEl('left:'+x+'%;top:'+y+'%;width:0;height:0;'+(css||''),h)};
 const hearts=(n,cols)=>{for(let i=0;i<n;i++)chr('♥',rnd(14,86),rnd(18,62),8,pick(cols),'animation:pop .3s ease-out '+(i*.05)+'s both, ghost .5s ease-in '+(.55+i*.05)+'s forwards')};
 Object.assign(INTRO,{
   // Fushiguro: vòng bóng đen, chập chân, hai Ngọc Khuyển chạy vòng, đàn thỏ, Nue xòe cánh, điện tím quét màn hình, bóng tối thu lại
@@ -248,25 +246,25 @@ Object.assign(INTRO,{
     T(4000,()=>{if(me)me.remove();if(nue)nue.remove();ring.style.animation='ghost .4s ease-in forwards'});
     T(4500,()=>{flash();fxProp(NU,k,50,R?36:38,'animation:pop .4s ease-out both',{s:R?2.6:2.2});fxSpr('sit',k,50,62,'animation:pop .4s ease-out both');fount([BOLT,'#ffffff'],10)});
   }},
-  // Faker: đại sảnh tối, 6 cúp CKTG, 2 cúp MSI, 10 cúp LCK (đúng ba mẫu cúp), cận mặt, Shhh trong im lặng, sáu sao vàng
+  // Faker: đại sảnh tối, 6 cúp CKTG, 2 cúp MSI, 10 cúp LCK (đúng ba mẫu cúp), cận mặt, Shhh trong im lặng, sáu sao vàng.
+  // Dạng Ahri không vẽ quạt chín đuôi trắng cỡ lớn phía sau (người dùng bảo bỏ): bé đã có chín đuôi trong hình.
   v_faker:{dur:6500,run(T){
     const ct=gz.cat.coat,W=ct==='fkWhite2026',A=ct==='fkAhriHall',k=K5(),key=lk(gz.cat),cups=[];
     fxTint(W?'radial-gradient(circle,#fff6dc 0,#c9ae72 85%)':'radial-gradient(circle,#3a0a14 0,#070205 78%)');
     if(!W)[-1,1].forEach(s=>fxEl('left:50%;top:0;width:26vw;height:100vh;margin-left:-13vw;background:linear-gradient(rgba(220,40,60,.34),rgba(220,40,60,0) 80%);transform-origin:50% 0;transform:rotate('+s*24+'deg)'));
-    let me,tt,fan;
+    let me,tt;
     T(400,()=>{me=fxSpr('sit',k,50,80,'animation:pop .4s ease-out both;transition:transform .5s ease-out;z-index:2',{key:A?'v_faker~v_faker_0':key})});
     T(900,()=>{tt=big('THE UNKILLABLE DEMON KING',7,W?'#792936':'#f6d987','0 0 14px '+(W?'#fff':'#c92438')+',2px 2px 0 '+(W?'#fff':'#3a0a14'),4.4);seq([196,247,294,392],.14,.4,'triangle',.05)});
     const cup=(name,x,y,t)=>T(t,()=>cups.push(fxProp(name,k,x,y,'animation:pop .3s ease-out both;transition:opacity .4s,filter .4s;z-index:1',{s:.85})));
-    if(A)T(1300,()=>{fan=tailsFan(50,46,40,'opacity:.4;animation:pop .5s ease-out both')});
     for(let i=0;i<6;i++)cup('cupW',20+i*12,19,1300+i*70);
     for(let i=0;i<2;i++)cup('cupM',44+i*12,32,2000+i*140);
     for(let i=0;i<10;i++)cup('cupL',26+(i%5)*12,45+Math.floor(i/5)*10,2700+i*50);
     T(1300,()=>seq([523,587,659,698,784,880],.07,.2,'square',.035));T(2000,()=>seq([659,784],.14,.25,'square',.035));T(2700,()=>seq([392,440,494,523,587,659,698,784,880,988],.05,.15,'square',.03));
     T(3300,()=>{cups.forEach(c=>c.style.filter='drop-shadow(0 0 8px #ffd24a) brightness(1.15)');for(let i=0;i<4;i++)fount(['#ffd24a','#fff3b0'],8);seq([523,659,784,1047],.08,.3,'square',.04)});
-    T(3900,()=>{cups.forEach(c=>c.style.opacity=.2);if(fan)fan.remove();if(tt)tt.remove();me.style.animation='none';me.style.transform='translateY(-20vh) scale(1.6)';if(A){flash();me.firstChild.src=sprSrc(key,'sit',k)}});
+    T(3900,()=>{cups.forEach(c=>c.style.opacity=.2);if(tt)tt.remove();me.style.animation='none';me.style.transform='translateY(-20vh) scale(1.6)';if(A){flash();me.firstChild.src=sprSrc(key,'sit',k)}});
     T(4500,()=>{me.firstChild.src=sprSrc(key,'groom1',k);
       if(A){const o=fxEl('left:58%;top:58%;width:7vmin;height:7vmin;margin:-3.5vmin;border-radius:50%;background:radial-gradient(#ffe9a0,#b92137);box-shadow:0 0 18px #b92137;z-index:3;animation:pop .25s ease-out both, burst .4s ease-in .25s forwards');T(380,()=>fxProp('cupW',k,62,56,'animation:pop .3s ease-out both;z-index:3',{s:.9}))}});
-    T(4900,()=>{big('SHHH…',24,W?'#792936':'#ffffff','0 0 16px '+(W?'#f6d987':'#c92438'),11,'fadeIn .5s ease-out both');if(A){tailsFan(50,74,46,'z-index:1;animation:pop .5s ease-out both');fxTint('radial-gradient(circle,#4a0a1a 0,#0a0204 78%)')}});
+    T(4900,()=>{big('SHHH…',24,W?'#792936':'#ffffff','0 0 16px '+(W?'#f6d987':'#c92438'),11,'fadeIn .5s ease-out both');if(A)fxTint('radial-gradient(circle,#4a0a1a 0,#0a0204 78%)')});
     T(5500,()=>{for(let i=0;i<6;i++){const a=-1+i*.4;chr('★',50+Math.sin(a)*30,40-Math.cos(a)*14,W?10:8,'#f6d987','text-shadow:0 0 '+(W?22:12)+'px #ffd24a;animation:pop .3s ease-out '+i*.06+'s both')}seq([784,988,1175,1319,1568,2093],.06,.25,'triangle',.04);
       if(A)chr('◆',50,31,9,'#b92137','text-shadow:0 0 16px #dfb768,0 0 4px #dfb768;animation:pop .4s ease-out .4s both')});
   }},
