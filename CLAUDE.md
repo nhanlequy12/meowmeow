@@ -20,6 +20,8 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 - Style: hạt cườm (perler bead), pastel, viền nâu đậm. Khi sửa tỉ lệ thì chỉ sửa tỉ lệ, không đổi cách vẽ, bảng màu hay nét viền.
 - Admin chỉ để thử, không hiện với người chơi thường.
 - Việc nào tự làm được thì tự làm, không giao cho Codex. Chỉ dùng Codex khi việc thật sự cần chạy song song quy mô lớn mà một mình không kịp, hoặc khi người dùng bảo dùng Codex.
+- Người dùng muốn việc xong nhanh: phần nào làm song song được (không phụ thuộc kết quả của nhau, không sửa chung file) thì cứ chia cho nhiều agent Claude chạy cùng lúc (subagent, hoặc phiên riêng trong worktree riêng), không cần hỏi trước. Claude giữ phần lõi, rồi soát, gộp và chơi thử lại toàn bộ. Việc nhỏ vài bước thì tự làm luôn, không chia.
+- Khi gọi Codex để tạo hình (sprite, ảnh, module `js/cats/`), luôn chia thành nhiều phiên Codex chạy song song, mỗi phiên một worktree và một nhóm hình riêng (cách chạy: `tools/run_codex.sh`, xem mục 17), để có hình nhanh hơn. Lưu ý gói ChatGPT hết hạn mức sau khoảng 13 phiên mức cao.
 - - Sau mỗi giai đoạn quan trọng: soát file đã đổi, chạy kiểm tra, commit, `git push` thành lệnh riêng, ghi mã commit vào `PROJECT_PROGRESS.md`. Chỉ `git add` file của phiên mình, không force push. Commit message tiếng Việt. KHÔNG thêm dòng `Co-Authored-By` hay bất kỳ dòng ghi công Claude nào (người dùng đã cho gỡ khỏi toàn bộ lịch sử ngày 2026-11-11).
 
 ### Git
