@@ -458,7 +458,8 @@ class H(SimpleHTTPRequestHandler):
         super().__init__(*a, directory=ROOT, **k)
 
     def log_message(self, fmt, *args):
-        if '/api/' not in (self.path or ''):
+        # kết nối bị đóng vì quá 20 giây không gửi gì thì chưa có self.path: trước đây dòng này ném AttributeError và in cả một trang lỗi ra cửa sổ lệnh
+        if '/api/' not in (getattr(self, 'path', '') or ''):
             return
         sys.stderr.write('%s %s\n' % (time.strftime('%H:%M:%S'), fmt % args))
 
