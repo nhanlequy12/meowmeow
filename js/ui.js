@@ -1737,18 +1737,61 @@ const MAXC=999999999;
 function openAdmin(){
   if(typeof NET!=='undefined'&&NET.on&&!NET.admOk){netAdminLogin();return} // chạy qua máy chủ chung: chỉ quản trị viên (có mã) mới mở được bảng Admin
   S.adm=S.adm||{};
-  const og=g=>'<optgroup label="'+g[1]+'">'+(g[0]==='breed'?BREEDS:VARIANTS.filter(v=>v.g===g[0])).slice().sort((a,b)=>b.r-a.r).map(x=>'<option value="'+x.id+'">'+x.r+'★ '+esc(x.n)+'</option>').join('')+'</optgroup>';
   const stars='<option value="0">theo mặc định</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">'+n+'★</option>').join('');
   const sel='font:inherit;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:6px;min-width:0;flex:1';
   const box=(t,h)=>'<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>'+t+'</b>'+h+'</div>';
   modal('<h3>🛠 Bảng Admin <span class="dim">· chỉ để test</span></h3>'+(typeof netAdminBox==='function'?netAdminBox():'')+
     box('Xu (đang có '+S.coins.toLocaleString('vi-VN')+')','<div class="row"><input id="axu" type="number" min="0" value="'+S.coins+'"><button class="sm on" onclick="admCoins(\'set\')">Đặt</button></div><div class="row wrap"><button class="sm" onclick="admCoins(1000)">+1.000</button><button class="sm" onclick="admCoins(100000)">+100.000</button><button class="sm" onclick="admCoins(\'max\')">Max xu</button><button class="sm '+(S.adm.inf?'go':'')+'" onclick="admInf()">Xu vô hạn: '+(S.adm.inf?'BẬT':'tắt')+'</button></div>')+
-    box('Nhận mèo bất kỳ','<div class="row"><select id="asp" onchange="admCoats()" style="'+sel+'">'+GROUPS.map(og).join('')+'</select></div><div class="row"><select id="ast" style="'+sel+'">'+stars+'</select><select id="act" style="'+sel+'"></select></div><div class="row"><label class="dim" style="white-space:nowrap"><input id="aintro" type="checkbox" checked style="flex:none"> xem hoạt ảnh</label><button class="sm on" onclick="admCat()">Nhận</button></div><div class="dim">Muốn test intro 5★ thì chọn một bé 5★ và để số sao mặc định. Ô màu đổi theo giống đang chọn: màu thường của giống, 💎 mắt quý hiếm, ⚡ trang phục hiếm, ✨ màu hiếm (luôn 4★; không có ở giống trụi lông, Lykoi và mèo trang phục).</div>')+
-    box('Gacha miễn phí','<div class="row"><select id="ags" style="'+sel+'"><option value="0">sao ngẫu nhiên</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">ép ra '+n+'★</option>').join('')+'<option value="r">ép ra ✨ màu hiếm bất kỳ</option>'+RARES.map(r=>'<option value="'+r.id+'">ép ra ✨ '+r.n+'</option>').join('')+'</select><button class="sm on" onclick="admGacha()">Quay</button></div>')+
+    box('Nhận mèo bất kỳ','<div class="row"><input id="aq" type="search" autocomplete="off" placeholder="Tìm theo tên, gõ không dấu cũng được" oninput="admFind()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();admCat()}" style="'+sel+'"><span id="aqn" class="dim" style="white-space:nowrap"></span></div>'+
+      '<div class="row"><button class="sm" title="Bé trước" onclick="admStep(-1)">◀</button><select id="asp" onchange="admPick(1)" style="'+sel+'"></select><button class="sm" title="Bé sau" onclick="admStep(1)">▶</button></div>'+
+      '<div class="row"><select id="ast" onchange="admPick()" style="'+sel+'">'+stars+'</select><select id="act" onchange="admPick()" style="'+sel+'"></select></div>'+
+      '<div class="row" style="align-items:center"><span id="aprev" style="flex:none;line-height:0"></span><span id="ainfo" class="dim" style="flex:1;min-width:0"></span></div>'+
+      '<div class="row"><label class="dim" style="white-space:nowrap"><input id="aintro" type="checkbox" checked onchange="admPick()" style="flex:none"> xem hoạt ảnh</label><button class="sm on" onclick="admCat()">Nhận</button></div><div id="arec" class="row wrap"></div><div class="dim">Muốn test intro 5★ thì chọn một bé 5★ và để số sao mặc định. Ô màu đổi theo giống đang chọn: màu thường của giống, 💎 mắt quý hiếm, ⚡ trang phục hiếm, ✨ màu hiếm (luôn 4★; không có ở giống trụi lông, Lykoi và mèo trang phục).</div>')+
+    box('Gacha miễn phí','<div class="row"><select id="ags" onchange="admPick()" style="'+sel+'"><option value="0">sao ngẫu nhiên</option>'+[1,2,3,4,5].map(n=>'<option value="'+n+'">ép ra '+n+'★</option>').join('')+'<option value="r">ép ra ✨ màu hiếm bất kỳ</option>'+RARES.map(r=>'<option value="'+r.id+'">ép ra ✨ '+r.n+'</option>').join('')+'</select><button class="sm on" onclick="admGacha()">Quay</button></div>')+
     box('Mở khóa','<div class="row wrap"><button class="sm" onclick="admRooms()">Mở mọi phòng</button><button class="sm" onclick="admFurn()">Nhận đủ nội thất</button><button class="sm" onclick="admBowl()">Bát ăn sẵn sàng ngay</button><button class="sm" onclick="admLevel()">Lên cấp '+MAX_LV+' (mở hết cửa hàng)</button></div><div class="dim">Thức ăn vốn không bị khóa; bật xu vô hạn là mua được mọi món.</div>')+
     box('Mèo và viễn chinh','<div class="row wrap"><button class="sm" onclick="admTrips()">Hoàn tất viễn chinh ngay</button><button class="sm" onclick="admStats()">Hồi đầy no, vui, năng lượng</button></div><div class="row wrap"><button class="sm" onclick="admAge(10)">Cả đàn già thêm 10 ngày</button><button class="sm" onclick="admAge(0)">Cả đàn thành mèo con</button></div>')+
     '<div class="row" style="justify-content:center"><button class="sm bad" onclick="closeModal();resetAll()">Reset toàn bộ dữ liệu</button></div>');
-  admCoats();
+  admRestore();
+}
+/* Ô Nhận mèo: lựa chọn được nhớ trong S.adm.pick (lưu cùng bản lưu), nên mở lại bảng Admin là thấy ngay bé vừa chọn, mở danh sách thì nằm đúng hàng bé đó.
+   Có ô tìm theo tên (không dấu cũng được), nút ◀ ▶ để lướt từng bé, ảnh xem trước và hàng "vừa nhận" (8 lựa chọn gần nhất) để nhận lại bằng một chạm. */
+const admFold=s=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[đĐ]/g,'d').toLowerCase();
+function admSpOpts(q){
+  q=admFold(q||'').trim();let n=0;
+  const h=GROUPS.map(g=>{const L=(g[0]==='breed'?BREEDS:VARIANTS.filter(v=>v.g===g[0])).filter(x=>!q||admFold(x.n+' '+x.id+' '+g[1]).includes(q)).sort((a,b)=>b.r-a.r);n+=L.length;
+    return L.length?'<optgroup label="'+g[1]+'">'+L.map(x=>'<option value="'+x.id+'">'+x.r+'★ '+esc(x.n)+'</option>').join('')+'</optgroup>':''}).join('');
+  return {h,n};
+}
+function admRestore(){
+  const p=S.adm.pick||{},set=(id,v)=>{const el=$(id);if(el&&v!=null&&[...el.options].some(o=>o.value===String(v)))el.value=String(v)};
+  $('asp').innerHTML=admSpOpts().h;set('asp',p.sp);admCoats();set('ast',p.st);set('act',p.ct);set('ags',p.gs);
+  if(p.intro!=null)$('aintro').checked=!!p.intro;admShow();admRecent();
+}
+function admPick(newSp){
+  if(newSp)admCoats();
+  S.adm.pick={sp:$('asp').value,st:$('ast').value,ct:$('act').value,gs:$('ags').value,intro:$('aintro').checked?1:0};save();admShow();
+}
+function admFind(){
+  const s=$('asp'),v=s.value,r=admSpOpts($('aq').value);s.innerHTML=r.h;
+  $('aqn').textContent=$('aq').value.trim()?r.n?r.n+' bé':'không thấy':'';
+  if(!r.n){$('aprev').innerHTML='';$('ainfo').textContent='Không có bé nào khớp tên này.';return}
+  if([...s.options].some(o=>o.value===v))s.value=v;else{s.selectedIndex=0;admPick(1)}
+}
+function admStep(d){const s=$('asp'),n=s.options.length;if(!n)return;s.selectedIndex=(s.selectedIndex+d+n)%n;admPick(1)}
+// khóa hình của lựa chọn: màu đã chọn, hoặc màu đầu tiên của giống khi để ngẫu nhiên
+const admKey=(id,ct)=>{const sp=SP[id];return sp.coats?id+'~'+(ct&&(sp.coats.includes(ct)||RARE[ct])?ct:sp.coats[0]):id};
+function admShow(){
+  const sp=SP[$('asp').value];if(!sp)return;const ct=$('act').value,st=+$('ast').value,have=S.cats.filter(c=>c.sp===sp.id).length;
+  $('aprev').innerHTML=catTag(admKey(sp.id,ct),1);
+  $('ainfo').innerHTML='<b style="color:var(--ink)">'+esc(sp.n)+'</b> · '+(st||(RARE[ct]?4:sp.r))+'★'+(st?' (ép)':'')+'<br>'+(ct?esc((COATS[ct]||RARE[ct]).n):sp.coats?'màu ngẫu nhiên':'không có màu')+' · '+(have?'đang có '+have+' bé':'chưa có bé nào');
+}
+function admRecent(){
+  const R=(S.adm.recent||[]).filter(r=>SP[r.sp]),el=$('arec');if(!el)return;
+  el.innerHTML=R.length?'<span class="dim" style="width:100%">Vừa nhận (chạm để chọn lại):</span>'+R.map((r,i)=>'<button class="sm" title="'+esc(SP[r.sp].n)+'" onclick="admUse('+i+')" style="display:flex;align-items:center;gap:4px"><img class="px" src="'+catSrc(admKey(r.sp,r.ct),1)+'" style="width:27px;height:30px">'+esc(SP[r.sp].n)+(+r.st?' '+r.st+'★':'')+'</button>').join(''):'';
+}
+function admUse(i){
+  const r=(S.adm.recent||[]).filter(r=>SP[r.sp])[i];if(!r)return;$('aq').value='';admFind();
+  S.adm.pick=Object.assign(S.adm.pick||{},{sp:r.sp,st:r.st,ct:r.ct});admRestore();save();
 }
 // ô chọn màu trong Admin: liệt kê đúng các màu của giống đang chọn, rồi tới các màu hiếm nếu giống đó nhận được
 function admCoats(a,b){
@@ -1757,7 +1800,8 @@ function admCoats(a,b){
   el.innerHTML='<option value="">'+(sp.coats?'ngẫu nhiên theo tỉ lệ':'không có màu để chọn')+'</option>'+(own?'<optgroup label="'+(sp.xt?'Trang phục':'Màu')+' của '+esc(sp.n)+'">'+own+'</optgroup>':'')+
     (sp.coats&&!sp.noRare?'<optgroup label="✨ Màu hiếm (luôn 4★)">'+RARES.map(r=>'<option value="'+r.id+'">✨ '+esc(r.n)+'</option>').join('')+'</optgroup>':'');
 }
-const admDone=(msg,keep)=>{save();render();if(keep)openAdmin();toast(msg,{icon:'🛠',title:'Admin'})};
+// keep: mở lại bảng Admin cho số liệu mới, giữ nguyên chỗ đang cuộn tới thay vì nhảy về đầu bảng
+const admDone=(msg,keep)=>{save();render();if(keep){const y=$('mbox').scrollTop;openAdmin();$('mbox').scrollTop=y}toast(msg,{icon:'🛠',title:'Admin'})};
 function admCoins(v){
   if(v==='max')S.coins=MAXC;else if(v==='set')S.coins=clamp(Math.floor(+$('axu').value||0),0,MAXC);else S.coins=Math.min(MAXC,S.coins+v);
   admDone('Xu hiện có: '+S.coins.toLocaleString('vi-VN'),1);
@@ -1765,8 +1809,9 @@ function admCoins(v){
 function admInf(){S.adm.inf=!S.adm.inf;if(S.adm.inf)S.coins=MAXC;admDone('Xu vô hạn: '+(S.adm.inf?'bật':'tắt'),1)}
 function admCat(){
   const sp=SP[$('asp').value],av=$('act').value,rc=sp.coats&&(sp.coats.includes(av)||(RARE[av]&&!sp.noRare))?av:'',star=+$('ast').value||(RARE[rc]?4:sp.r),show=$('aintro').checked;
-  const c=newCat(sp,star,rc||undefined);c.room=freeRoom();c.isNew=!S.seen[sp.id]||!!(sp.coats&&!RARE[rc]&&!(S.seenCoat||{})[lk(c)]);S.cats.push(c);markSeen(c);save();closeModal();
-  if(show){render();playGacha(c)}else{delete c.isNew;syncEnts();admDone('Đã nhận '+sp.n+' '+star+'★')}
+  const c=newCat(sp,star,rc||undefined);c.room=freeRoom();c.isNew=!S.seen[sp.id]||!!(sp.coats&&!RARE[rc]&&!(S.seenCoat||{})[lk(c)]);S.cats.push(c);markSeen(c);
+  const st=$('ast').value,R=(S.adm.recent||[]).filter(r=>!(r.sp===sp.id&&r.ct===av&&r.st===st));R.unshift({sp:sp.id,ct:av,st});S.adm.recent=R.slice(0,8);save();
+  if(show){closeModal();render();playGacha(c)}else{delete c.isNew;syncEnts();admDone('Đã nhận '+sp.n+' '+star+'★',1)} // không xem hoạt ảnh thì bảng vẫn mở để nhận tiếp
 }
 function admGacha(){const v=$('ags').value,r=gachaRoll(false,RARE[v]||v==='r'?{free:1,rare:RARE[v]?v:true}:{free:1,star:+v});closeModal();render();playGacha(r.cat)}
 function admRooms(){ROOMS.forEach(r=>{if(!S.rooms[r.id]){S.rooms[r.id]={bowlAt:0};giveBowl(r.id)}});admDone('Đã mở cả '+ROOMS.length+' phòng',1)}
