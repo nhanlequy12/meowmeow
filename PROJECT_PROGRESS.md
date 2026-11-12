@@ -131,6 +131,9 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Chỉ người dùng sửa được: `CLAUDE.md` dòng 23 thừa một dấu `- `, và có hai mục cùng số 28.
 - Chưa kiểm tra trong đợt này: hướng dẫn tân thủ ở cỡ PC, điện thoại thật, âm thanh, nhiều người chơi cùng lúc, cân bằng xu dài ngày.
 
+## Đợt 2026-11-12: thông báo hiện nguyên thẻ HTML
+- Commit `9babc08`: người dùng chụp thông báo cho ăn hiện nguyên chữ `<b>1</b>`. `toast()` tự `esc()` nội dung nên không được chèn thẻ HTML hay `esc()` trước. Sửa `js/meal-ui.js` (bỏ `<b>`, tên bé trong câu "Món khoái khẩu của…" không còn bị mã hóa hai lần) và `js/pw-ui.js` (thông báo "Điện năng lúc bạn vắng" ghép bằng ` · ` thay cho `<br>`). Đã rà mọi lời gọi `toast`, `notify` khác: không còn chỗ nào chèn thẻ. Đã xem trong trình duyệt (đổ bát cho bé tên `Tí & <Bơ>`): chữ hiện đúng; mealtest, pwtest đạt.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
