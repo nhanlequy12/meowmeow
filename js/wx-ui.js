@@ -19,22 +19,15 @@ const wxBar=(v,col)=>'<div class="bar" style="margin:3px 0 0"><i style="width:'+
 
 /* ---------- thanh thời tiết và dự báo ---------- */
 {const R0=renderTop;renderTop=function(){R0.apply(this,arguments);
-  const o=wxNow(),dg=wxNextDanger(),el=document.createElement('div');el.className='chip tap wxchip';el.setAttribute('onclick','openWeather()');
-  el.innerHTML=o.w.ic+' <b>'+Math.round(o.temp)+'°</b> <span class="dim">'+o.season.ic+' '+o.season.n+'</span>'+(dg?' <b style="color:var(--bad)">⚠</b>':'');
+  const o=wxNow(),dg=wxOpen()&&wxNextDanger(),el=document.createElement('div');el.className='chip tap wxchip';el.setAttribute('onclick','openWeather()');
+  if(!wxOpen()){el.className='chip wxchip lock';el.setAttribute('data-tip','Thời tiết và khí hậu phòng mở khóa ở cấp '+WX_LV+'.');el.innerHTML='🔒 Thời tiết <span class="dim">· cấp '+WX_LV+'</span>'}
+  else el.innerHTML=o.w.ic+' <b>'+Math.round(o.temp)+'°</b> <span class="dim">'+o.season.ic+' '+o.season.n+'</span>'+(dg?' <b style="color:var(--bad)">⚠</b>':'');
   emoEl(el);const top=$('top'),xp=top.querySelector('.xp');top.insertBefore(el,xp||null);
 }}
-function openWeather(){
-  const o=wxNow(),st=wxHasStation(),fc=wxForecast(st?6:3),se=o.season,t=wxClock(),nd=(wxDay(t)+1)*DAYMS-WXC.tz*3600000,ns=SEASONS[(SEASONS.indexOf(se)+1)%4];
-  const row=x=>'<div class="card" style="padding:6px 10px"><div style="font-size:22px">'+x.w.ic+'</div><div class="g"><b>'+hhmm(x.s)+'–'+hhmm(x.e)+'</b> · '+x.w.n+' · '+fmtT(x.temp)+(wxDanger(x)?' <b style="color:var(--bad)">⚠ nguy hiểm</b>':'')+'<br><small>'+x.w.d+'</small></div></div>';
-  const rooms=ownedRooms().map(r=>{const rc=roomClimate(r.id);return '<div class="card" style="padding:6px 10px"><div class="g"><b>'+r.n+'</b> <small>· '+fmtT(rc.T)+' · 💧 '+rc.hum+'% · 😌 '+rc.comfort+(rc.rain>.2?' · ☔ mưa tạt':'')+(rc.wind>.3?' · 🌬 gió lùa':'')+'</small>'+wxBar(rc.comfort,rc.comfort>=60?'#5fd08a':rc.comfort>=35?'#ffb347':'#ff6b6b')+'</div></div>'}).join('');
-  modal('<h3>'+o.w.ic+' '+o.w.n+' · '+fmtT(o.temp)+'</h3><div class="dim">'+o.w.d+'<br>💧 Độ ẩm '+o.hum+'% · 🌬 Gió '+(o.wind>=.7?'mạnh':o.wind>=.3?'vừa':'nhẹ')+' · Đợt này còn '+fmtL(o.e-t)+' (tới '+hhmm(o.e)+')<br>'+se.ic+' Mùa '+se.n+' · còn '+fmtL(nd-t)+' tới mùa '+ns.ic+' '+ns.n+'. Mỗi mùa kéo dài một ngày, thời tiết đổi mỗi 5 giờ và giống nhau với mọi người chơi. Nhìn ra cửa sổ trong phòng để thấy trời ngoài.</div>'+
-    '<h4 style="text-align:left;margin:12px 0 6px">Dự báo '+fc.length+' đợt tới</h4>'+fc.map(row).join('')+
-    (st?'':'<div class="dim">📡 Lắp Trạm dự báo thời tiết (Cửa hàng, mục Chống thời tiết) để xem 6 đợt tới và được báo trước sớm hơn.</div>')+
-    '<h4 style="text-align:left;margin:12px 0 6px">Khí hậu các phòng</h4>'+rooms);
-}
+// openWeather, openClimate: nay mở cuốn sách khí hậu (xem mục CUỐN SÁCH KHÍ HẬU bên dưới)
 // cảnh báo sớm thời tiết nguy hiểm, báo khi trời chuyển xấu, cảm biến báo phòng khó chịu
 setInterval(()=>{
-  if(!S||!S.tut||!S.tut.done)return;
+  if(!S||!S.tut||!S.tut.done||!wxOpen())return;
   const o=wxNow(),dg=wxNextDanger();
   if(dg&&dg.s>wxClock()&&!WXU.warned[dg.s]){WXU.warned[dg.s]=1;const out=ownedRooms().filter(r=>(ROOM_CLIMATE[r.id]||{}).out&&homeCats(r.id).length).map(r=>r.n);
     toast(dg.w.ic+' '+dg.w.n+' lúc '+hhmm(dg.s)+' (còn '+fmtL(dg.s-wxClock())+'). '+(out.length?'Đưa các bé ở '+out.join(', ')+' vào trong nhà hoặc lắp mái che.':'Chuẩn bị máy sưởi, quạt hoặc vật phẩm sinh tồn nếu sắp đi viễn chinh.'),{icon:'⚠️',title:'Cảnh báo thời tiết',key:'wxwarn',ms:10000})}
@@ -45,7 +38,7 @@ setInterval(()=>{
 },5000);
 
 /* ---------- khí hậu phòng ---------- */
-const wxLine=rid=>{const rc=roomClimate(rid),wb=wbowls(rid),wl=wb.reduce((a,b)=>a+(b.w||0),0),wc=wb.reduce((a,b)=>a+FURN[b.fid].water.cap,0),n=rc.D.on.length;
+const wxLine=rid=>{if(!wxOpen())return '';const rc=roomClimate(rid),wb=wbowls(rid),wl=wb.reduce((a,b)=>a+(b.w||0),0),wc=wb.reduce((a,b)=>a+FURN[b.fid].water.cap,0),n=rc.D.on.length;
   return '<div class="wxline"><div class="g tap" onclick="openClimate()">🌡 <b>'+fmtT(rc.T)+'</b> <span class="dim">(ngoài '+fmtT(rc.o.temp)+' '+rc.o.w.ic+')</span> · 💧 '+rc.hum+'% · 😌 <b style="color:'+(rc.comfort>=60?'var(--good)':rc.comfort>=35?'var(--gold)':'var(--bad)')+'">'+rc.comfort+'</b>'+(rc.rain>.2?' · ☔':'')+(rc.wind>.3?' · 🌬':'')+(rc.noise?' · ⚡':'')+' · '+(n?n+' thiết bị':'chưa có thiết bị')+' <span class="dim">›</span></div>'+
     (wb.length?'<button class="sm" onclick="doWater()">💧 Đổ nước '+wl+'/'+wc+'</button>':'')+'</div>'};
 {const H0=PANEL.home;PANEL.home=function(){const h=H0.apply(this,arguments);if(edit)return h;const k='Sắp xếp đồ</button></div></div>',i=h.indexOf(k);return i<0?wxLine(cur)+h:h.slice(0,i+k.length)+wxLine(cur)+h.slice(i+k.length)}}
@@ -65,23 +58,23 @@ function openDev(iid){
     (f.bat?'<div class="k">🔋 Pin</div><div>'+batTxt(i)+wxBar(pct,i.chg?'#ffb347':'#5fd08a')+'</div>':'')+
     '<div class="k">Phòng</div><div>'+ROOM[i.room].n+' · '+fmtT(rc.T)+'</div></div></div>'+
     '<div class="dim" style="margin-top:6px">'+f.d+'</div>'+
-    '<div class="row" style="justify-content:center;margin-top:8px">'+(i.broken||i.chg?'':'<button class="sm '+(i.off?'on':'')+'" onclick="wxToggle('+iid+',1)">'+(i.off?'▶ Bật':'⏸ Tắt')+'</button>')+'<button class="sm" onclick="openClimate()">🌡 Khí hậu phòng</button></div>');
+    '<div class="row" style="justify-content:center;margin-top:8px">'+(i.broken||i.chg?'':'<button class="sm '+(i.off?'on':'')+'" onclick="wxToggle('+iid+',1)">'+(i.off?'▶ Bật':'⏸ Tắt')+'</button>')+'<button class="sm" onclick="openClimate(\''+i.room+'\')">🌡 Khí hậu phòng</button></div>');
 }
 
-function openClimate(){
-  const rc=roomClimate(cur),R=ROOM_CLIMATE[cur]||{},o=rc.o,th=rc.D.on.some(d=>d.f.wx.thermo);
+function climHtml(rid){
+  const rc=roomClimate(rid),R=ROOM_CLIMATE[rid]||{},o=rc.o,th=rc.D.on.some(d=>d.f.wx.thermo);
   const dv=d=>{const w=d.f.wx,man=d.f.bat||(w.heat||w.cool)&&!w.auto&&!th,fx=[];
     if(w.heat)fx.push('🔥 +'+w.heat+'°'+(w.auto||th?' (tự động)':''));if(w.cool)fx.push('❄️ −'+w.cool+'°'+(w.auto||th?' (tự động)':''));if(w.ins)fx.push('🧱 cách nhiệt '+Math.round(w.ins*100)+'%');if(w.sun)fx.push('🌤 chống nắng');if(w.shelter)fx.push('☂️ che mưa '+Math.round(w.shelter*100)+'%');
     if(w.wind)fx.push('🌬 chắn gió '+Math.round(w.wind*100)+'%');if(w.hum)fx.push('💧 '+(w.hum>0?'+':'')+w.hum+'% ẩm');if(w.comfort)fx.push('😌 +'+w.comfort);if(w.dry)fx.push('💨 sấy khô');if(w.quiet)fx.push('🎧 át tiếng sấm');if(w.lheat||w.lcool||w.lauto)fx.push('🛏 chỉnh nhiệt cho bé nằm trên');
     return '<div class="card" style="padding:6px 10px">'+furnTag(d.f.id,'',40,30)+'<div class="g"><b>'+d.f.n+'</b>'+(d.why?' <span class="dim">· '+d.why+'</span>':'')+'<br><small>'+(fx.join(' · ')||d.f.d)+(d.f.bat?' · 🔋 '+batTxt(d.i):'')+'</small></div>'+(man&&!d.i.broken&&!d.i.chg?'<button class="sm'+(d.i.off?'':' on')+'" onclick="wxToggle('+d.i.iid+')">'+(d.i.off?'Bật':'Đang bật')+'</button>':'')+'</div>'};
-  const cats=homeCats(cur),tips=[];
+  const cats=homeCats(rid),tips=[];
   if(rc.T<WXC.ideal[0])tips.push('Phòng đang lạnh: đặt máy sưởi, rèm giữ nhiệt, chăn ấm, hoặc chuyển các bé sang phòng kín hơn.');
   if(rc.T>WXC.ideal[1])tips.push('Phòng đang nóng: đặt quạt, điều hòa, rèm chống nắng, thảm làm mát; nhớ đổ nước.');
   if(rc.rain>.2)tips.push('Mưa tạt vào phòng: lắp mái che, rèm chắn mưa hoặc lều trú mưa để các bé không bị ướt.');
   if(rc.wind>.3)tips.push('Gió lùa: cửa chống gió, cửa kính hoặc rèm chắn mưa giúp chắn gió.');
   if(rc.noise)tips.push('Sấm sét làm các bé kém vui: máy tạo tiếng ồn trắng át được tiếng sấm.');
   if(rc.hum<WXC.comfyHum[0]||rc.hum>WXC.comfyHum[1])tips.push(rc.hum>WXC.comfyHum[1]?'Phòng ẩm quá: máy hút ẩm giúp dễ chịu hơn.':'Phòng khô quá: máy tạo độ ẩm giúp dễ chịu hơn.');
-  modal('<h3>🌡 Khí hậu '+ROOM[cur].n+'</h3>'+
+  return '<h3>🌡 '+ROOM[rid].n+'</h3>'+
     '<div class="cd-sec"><div class="cd-grid"><div class="k">Ngoài trời</div><div>'+o.w.ic+' '+o.w.n+' · '+fmtT(o.temp)+' · 💧 '+o.hum+'%</div>'+
     '<div class="k">Trong phòng</div><div><b>'+fmtT(rc.T)+'</b> · 💧 '+rc.hum+'%</div>'+
     '<div class="k">Độ thoải mái</div><div><b>'+rc.comfort+'</b>/100'+wxBar(rc.comfort,rc.comfort>=60?'#5fd08a':rc.comfort>=35?'#ffb347':'#ff6b6b')+'</div>'+
@@ -92,8 +85,97 @@ function openClimate(){
     (typeof openHandbook==='function'?'<div class="row wrap" style="justify-content:center;margin-top:8px"><button class="sm" onclick="openHandbook(\'climstat\')">📖 Giải thích các chỉ số</button><button class="sm" onclick="openHandbook(\'climfix\')">🛠 Cách xử lý</button></div>':'')+
     '<h4 style="text-align:left;margin:12px 0 6px">Thiết bị có tác dụng ('+rc.D.on.length+')</h4>'+(rc.D.on.length?rc.D.on.map(dv).join(''):'<div class="dim">Chưa có. Mua ở Cửa hàng, các mục Giữ ấm, Làm mát, Chống thời tiết, Tiện nghi.</div>')+
     (rc.D.off.length?'<h4 style="text-align:left;margin:12px 0 6px">Không có tác dụng ('+rc.D.off.length+')</h4>'+rc.D.off.map(dv).join(''):'')+
-    (cats.length?'<h4 style="text-align:left;margin:12px 0 6px">Các bé trong phòng</h4>'+cats.map(c=>'<div class="card tap" style="padding:6px 10px" onclick="openCat('+c.uid+')">'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' <small>· cảm thấy '+fmtT(wxFeel(c).feel)+'</small><br>'+wxBadges(c,1)+'</div></div>').join(''):''));
+    (cats.length?'<h4 style="text-align:left;margin:12px 0 6px">Các bé trong phòng</h4>'+cats.map(c=>'<div class="card tap" style="padding:6px 10px" onclick="openCat('+c.uid+')">'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' <small>· cảm thấy '+fmtT(wxFeel(c).feel)+'</small><br>'+wxBadges(c,1)+'</div></div>').join(''):'');
 }
+
+/* ---------- CUỐN SÁCH KHÍ HẬU: trang trái dự báo thời tiết, trang phải khí hậu các phòng (chia trang nhỏ, lật giấy). CSS: css/wxbook.css ---------- */
+const WXK={sunny:'sun',ideal:'bow',hot:'hot',heatwave:'hot',drizzle:'rain',storm:'storm',cold:'frost',snow:'snow',blizzard:'bliz',wind:'wind',fog:'fog'};
+// biểu tượng thời tiết chuyển động (SVG 36×36): nắng, nắng nóng, cầu vồng, mưa, giông, lạnh, tuyết, bão tuyết, gió, sương mù
+function wxIcon(type,sz){
+  const k=WXK[type]||'sun',cloud=f=>'<path class="ol cl" fill="'+f+'" d="M5 21h3v-5h4v-4h10v3h6v4h4v6h-3v2H8v-2H5z"/>';
+  const rays=c=>'<g class="rays">'+[0,45,90,135,180,225,270,315].map(a=>'<rect x="17" y="1.5" width="2" height="5" rx="1" fill="'+c+'" transform="rotate('+a+' 18 18)"/>').join('')+'</g>';
+  const drops=(n,c)=>['a','b','c'].slice(0,n).map((q,i)=>'<rect class="drop '+q+'" x="'+(11+i*6)+'" y="27" width="2" height="4" rx="1" fill="'+c+'"/>').join('');
+  const flakes='abc'.split('').map((q,i)=>'<rect class="flake '+q+'" x="'+(10+i*7)+'" y="27" width="2.6" height="2.6" fill="#7ab8ec"/>').join('');
+  const gusts=y=>'abc'.split('').map((q,i)=>'<path class="gust '+q+'" d="M'+(7+i*2)+' '+(y+i*6)+'h'+(18-i*3)+'" stroke="#6f93b4" stroke-width="2.4" stroke-linecap="round" fill="none"/>').join('');
+  let h='';
+  if(k==='sun')h=rays('#f2a830')+'<circle class="ol sun" cx="18" cy="18" r="8" fill="#ffd24a"/>';
+  else if(k==='hot')h=rays('#e8503a')+'<circle class="ol sun" cx="18" cy="16" r="8" fill="#ff8a3a"/><path class="hotw" d="M8 31q3-3 6 0t6 0t6 0" stroke="#e8503a" stroke-width="2" fill="none" stroke-linecap="round"/>';
+  else if(k==='bow')h='<g class="bow">'+[['#e8504a',13],['#f2b030',10.5],['#5fbf7a',8],['#5a9ae0',5.5]].map(a=>'<path d="M'+(18-a[1])+' 24a'+a[1]+' '+a[1]+' 0 0 1 '+2*a[1]+' 0" stroke="'+a[0]+'" stroke-width="2.6" fill="none"/>').join('')+'</g><g transform="translate(0 7) scale(.82)" style="transform-origin:18px 18px">'+cloud('#ffffff')+'</g>';
+  else if(k==='rain')h=cloud('#dbe4ee')+drops(3,'#4a9ae0');
+  else if(k==='storm')h=cloud('#8a90a4')+drops(2,'#4a9ae0')+'<path class="ol bolt" fill="#ffd83a" d="M21 20l-6 8h4l-2 7 8-10h-4l3-5z"/>';
+  else if(k==='frost')h='<g class="frost" stroke="#5aa6e6" stroke-width="2.4" stroke-linecap="round">'+[0,60,120].map(a=>'<path d="M18 5v26M18 9l-3-3M18 9l3-3M18 27l-3 3M18 27l3 3" transform="rotate('+a+' 18 18)" fill="none"/>').join('')+'</g>';
+  else if(k==='snow')h=cloud('#ffffff')+flakes;
+  else if(k==='bliz')h=cloud('#e6ecf4')+flakes+gusts(24);
+  else if(k==='wind')h=gusts(10)+'<path class="gust b" d="M24 26q4-5 6 0q-3 2-6 0z" fill="#7fbf6a" stroke="#4e3026" stroke-width="1"/>';
+  else h=[9,15,21,27].map((y,i)=>'<rect class="fog '+(i%2?'b':'')+'" x="'+(i%2?7:4)+'" y="'+y+'" width="'+(i%2?22:26)+'" height="3.4" rx="1.7" fill="#aab0c0"/>').join('');
+  return '<svg class="wi'+(k==='bliz'?' fast':'')+'" width="'+(sz||36)+'" height="'+(sz||36)+'" viewBox="0 0 36 36" aria-hidden="true">'+h+'</svg>';
+}
+const WB={pg:0,rid:null,per:4,dir:''};
+const bookOn=()=>{const e=$('wxbook');return !!(e&&e.classList.contains('on'))};
+const comfCol=v=>v>=60?'#5fbf7a':v>=35?'#e8a83a':'#e0584a',comfTxt=v=>v>=60?'Dễ chịu':v>=35?'Tạm được':'Khó chịu';
+// cảnh báo của một phòng: quá lạnh, quá nóng, mưa tạt, gió lùa, không hợp với mèo
+function roomWarn(rc){
+  const L=[];
+  if(rc.T<WXC.coldAt)L.push(['c','❄️ Quá lạnh']);else if(rc.T<WXC.ideal[0])L.push(['w','Hơi lạnh']);
+  if(rc.T>WXC.hotAt)L.push(['','🔥 Quá nóng']);else if(rc.T>WXC.ideal[1])L.push(['w','Hơi nóng']);
+  if(rc.rain>.2)L.push(['c','☔ Mưa tạt']);if(rc.wind>.3)L.push(['w','🌬 Gió lùa']);
+  if(rc.comfort<35)L.push(['','⚠ Không hợp với mèo']);
+  return L;
+}
+function bookLeft(){
+  const o=wxNow(),st=wxHasStation(),fc=wxForecast(st?6:3),se=o.season,t=wxClock(),nd=(wxDay(t)+1)*DAYMS-WXC.tz*3600000,ns=SEASONS[(SEASONS.indexOf(se)+1)%4];
+  const dg=wxDanger(o)?o:fc.find(wxDanger),x2=v=>'×'+String(v).replace('.',',');
+  const row=x=>'<div class="wb-fr'+(wxDanger(x)?' bad':'')+'">'+wxIcon(x.type,26)+'<div class="g"><b>'+hhmm(x.s)+'–'+hhmm(x.e)+'</b> · '+x.w.n+(wxDanger(x)?' <span class="wb-tag">⚠ nguy hiểm</span>':'')+'</div><b>'+fmtT(x.temp)+'</b></div>';
+  return '<h3>Dự báo thời tiết</h3>'+
+    '<div class="wb-now">'+wxIcon(o.type,68)+'<div><div class="t">'+fmtT(o.temp)+'</div><div class="n">'+o.w.n+'</div><small>còn '+fmtL(o.e-t)+' (tới '+hhmm(o.e)+')</small></div></div>'+
+    '<div class="wb-chips"><span class="wb-chip">'+se.ic+' Mùa '+se.n+'</span><span class="wb-chip">💧 Ẩm '+o.hum+'%</span><span class="wb-chip">🌬 Gió '+(o.wind>=.7?'mạnh':o.wind>=.3?'vừa':'nhẹ')+'</span><span class="wb-chip" data-tip="Mỗi mùa kéo dài một ngày; thời tiết đổi mỗi 5 giờ và giống nhau với mọi người chơi.">'+ns.ic+' '+ns.n+' sau '+fmtL(nd-t)+'</span></div>'+
+    (dg?'<div class="wb-warn">⚠ '+(dg===o?'Đang có '+o.w.n.toLowerCase()+'!':dg.w.n+' lúc '+hhmm(dg.s)+' (còn '+fmtL(dg.s-t)+').')+' Đưa các bé ở phòng ngoài trời vào nhà, bật sưởi hoặc quạt, hoãn viễn chinh nếu chưa có vật phẩm.</div>':'')+
+    '<h4>'+fc.length+' đợt tới'+(st?'':' <span class="dim" style="text-transform:none;letter-spacing:0" data-tip="Lắp Trạm dự báo thời tiết (Cửa hàng, mục Chống thời tiết) để xem 6 đợt tới và được báo trước sớm hơn.">· 📡 thêm trạm để xem xa hơn</span>')+'</h4>'+
+    '<div class="wb-fc">'+fc.map(row).join('')+'</div>'+
+    '<div class="wb-fx"><b>🐱 Với mèo:</b> '+o.w.d+'<br><b>🎒 Viễn chinh:</b> thời gian '+x2(o.w.dur)+', năng lượng '+x2(o.w.cost)+(o.w.risk?', dễ gặp sự cố (+'+Math.round(o.w.risk*100)+'%)':', ít rủi ro')+(o.w.coin>1?', thưởng thêm xu':'')+'.</div>';
+}
+function bookRight(){
+  const rooms=ownedRooms();
+  if(WB.rid&&S.rooms[WB.rid])return '<div class="wb-sheet '+WB.dir+'"><button class="sm wb-back" onclick="bookRoom(null)">‹ Danh sách phòng</button><div class="wb-det">'+climHtml(WB.rid)+'</div></div>';
+  WB.rid=null;
+  const n=Math.max(1,Math.ceil(rooms.length/WB.per));WB.pg=clamp(WB.pg,0,n-1);
+  const row=r=>{const rc=roomClimate(r.id),W=roomWarn(rc),on=rc.D.on,cls=rc.T<WXC.ideal[0]?'cold':rc.T>WXC.ideal[1]?'hot':rc.comfort>=60?'ok':'meh';
+    return '<button class="wb-room '+cls+'" onclick="bookRoom(\''+r.id+'\')" aria-label="Khí hậu '+r.n+'"><div class="g"><div class="nm">'+(r.id===cur?'📍 ':'')+r.n+' <small>· '+homeCats(r.id).length+' bé</small></div>'+
+      '<div class="ln">🌡 <b>'+fmtT(rc.T)+'</b> · 💧 '+rc.hum+'% · 😌 <b style="color:'+comfCol(rc.comfort)+'">'+rc.comfort+'</b> '+comfTxt(rc.comfort)+'</div>'+
+      '<div class="bar"><i style="width:'+Math.round(clamp(rc.comfort,0,100))+'%;background:'+comfCol(rc.comfort)+'"></i></div>'+
+      '<div class="ln">'+(W.length?W.map(w=>'<span class="wb-tag '+w[0]+'">'+w[1]+'</span>').join(' '):'<span class="wb-tag ok">✓ Phù hợp với mèo</span>')+'</div></div>'+
+      '<div class="dv">'+(on.length?on.slice(0,3).map(d=>furnTag(d.f.id,'',24,20)).join('')+(on.length>3?'+'+(on.length-3):''):'<span class="dim">chưa có<br>thiết bị</span>')+'</div></button>'};
+  return '<div class="wb-sheet '+WB.dir+'"><h3>Khí hậu các phòng</h3><div class="wb-list">'+rooms.slice(WB.pg*WB.per,(WB.pg+1)*WB.per).map(row).join('')+'</div>'+
+    '<div class="wb-nav"><button class="sm" '+(WB.pg<=0?'disabled':'')+' onclick="bookPage(-1)" aria-label="Trang trước">◀</button><span class="pg">Trang '+(WB.pg+1)+' / '+n+'</span><button class="sm" '+(WB.pg>=n-1?'disabled':'')+' onclick="bookPage(1)" aria-label="Trang sau">▶</button></div></div>';
+}
+// vẽ lại: part = 'l' (trang trái), 'r' (trang phải) hoặc bỏ trống (cả hai). Sau khi vẽ danh sách phòng thì đo chỗ trống để biết mỗi trang nhỏ chứa được mấy phòng.
+function bookDraw(part){
+  const e=$('wxbook');if(!e||!bookOn())return;
+  if(part!=='r'){const l=e.querySelector('.wb-l');l.innerHTML=emo(bookLeft())}
+  if(part!=='l'){const r=e.querySelector('.wb-r');r.innerHTML=emo(bookRight());WB.dir='';
+    const L=r.querySelector('.wb-list');
+    if(L&&!WB.fit){WB.fit=1;const it=L.firstElementChild,rh=it?Math.max(50,...[...L.children].map(c=>c.offsetHeight)):62,per=Math.max(1,Math.floor((L.clientHeight+6)/(rh+6)));
+      if(per!==WB.per){const first=WB.pg*WB.per;WB.per=per;WB.pg=Math.floor(first/per);r.innerHTML=emo(bookRight())}}}
+}
+function openBook(rid){
+  if(!wxOpen()){toast('Thời tiết và khí hậu phòng mở khóa ở cấp '+WX_LV+'.',{icon:'🔒',title:'Chưa mở khóa',key:'wxlock'});return}
+  if($('modal').style.display==='flex'&&!$('modal').classList.contains('lock'))closeModal();
+  let e=$('wxbook');
+  if(!e){e=document.createElement('div');e.id='wxbook';e.addEventListener('click',ev=>{if(ev.target===e)closeBook()});document.body.appendChild(e)}
+  WB.rid=rid&&S.rooms[rid]?rid:null;
+  if(!WB.rid){const i=ownedRooms().findIndex(r=>r.id===cur);if(i>=0)WB.pg=Math.floor(i/WB.per)}
+  if(bookOn()){bookDraw('r');return}
+  e.innerHTML='<div class="wb-book" role="dialog" aria-label="Sách khí hậu"><div class="wb-mark"></div><button class="wb-x sm" aria-label="Đóng" onclick="closeBook()">✕</button><div class="wb-page wb-l"></div><div class="wb-spine"></div><div class="wb-page wb-r"></div></div>';
+  e.classList.add('on');WB.fit=0;bookDraw();
+}
+function closeBook(){const e=$('wxbook');if(e)e.classList.remove('on')}
+function bookPage(d){WB.pg+=d;WB.dir=d>0?'fl':'fr';bookDraw('r')}
+function bookRoom(rid){WB.dir=rid?'fl':'fr';if(!rid)WB.fit=0;if(!rid){const i=ownedRooms().findIndex(r=>r.id===WB.rid);if(i>=0)WB.pg=Math.floor(i/WB.per)}WB.rid=rid;bookDraw('r')}
+function openWeather(){openBook()}
+function openClimate(rid){openBook(rid||WB.rid||cur)}
+addEventListener('keydown',ev=>{if(ev.key==='Escape'&&bookOn()&&$('modal').style.display!=='flex')closeBook()});
+addEventListener('resize',()=>{if(bookOn()){WB.fit=0;bookDraw('r')}});
+setInterval(()=>{if(bookOn()&&$('modal').style.display!=='flex'){bookDraw('l');if(!WB.rid)bookDraw('r')}},5000);
 
 /* ---------- trạng thái mèo ---------- */
 const wxStatusLeft=(c,k)=>{const x=wxs(c),F=wxFeel(c);
@@ -122,9 +204,12 @@ function doUseSupply(id,uid){const r=useSupply(id,uid);if(r.err){toast(r.err,{ty
 
 /* ---------- cửa hàng: vật phẩm sinh tồn ---------- */
 {const P0=PANEL.shop;PANEL.shop=function(){
-  if(shopT!=='supply')return P0.apply(this,arguments);
+  // trước cấp WX_LV: các mục thời tiết hiện ổ khóa; món bên trong hiện "🔒 Cấp 2" (trường ul), mục Sinh tồn hiện thông báo khóa
+  const lk=!wxOpen(),lab=h=>lk?['warm','cool','shield','care','supply'].reduce((x,c)=>{const n=FCATS.find(q=>q[0]===c)[1];return x.replace('>'+n+'</button>','>🔒 '+n+'</button>')},h):h;
+  if(shopT!=='supply')return lab(P0.apply(this,arguments));
   const tabs='<div class="row wrap" style="margin-bottom:8px"><button class="sm" onclick="shopT=\'rooms\';renderPanel()">🚪 Phòng</button>'+FCATS.map(c=>'<button class="sm '+(shopT===c[0]?'on':'')+'" onclick="shopT=\''+c[0]+'\';shopSel=null;renderPanel()">'+c[1]+'</button>').join('')+'</div>';
   const card=s=>'<div class="card">'+furnTag('sp_'+s.id,'',40,40)+'<div class="g"><b>'+s.ic+' '+s.n+'</b> <span class="tag '+(s.rare>=3?'x':s.rare>=2?'g':'')+'">'+RARE_N[s.rare]+'</span><br><small>'+s.d+'<br>'+(s.on==='start'?'Dùng khi xuất phát':'Tự dùng khi cần, không dùng thì trả lại túi')+' · mang tối đa '+s.max+(s.home?' · dùng được ở nhà':'')+' · đang có <b>'+invN(s.id)+'</b></small></div><div class="row" style="flex-direction:column;gap:4px"><button class="sm on" '+(S.coins<s.price?'disabled':'')+' onclick="doBuySupply(\''+s.id+'\',1)">🪙 '+s.price+'</button><button class="sm" '+(S.coins<s.price*5?'disabled':'')+' onclick="doBuySupply(\''+s.id+'\',5)">×5 · '+(s.price*5).toLocaleString('vi-VN')+'</button></div></div>';
+  if(lk)return lab(tabs)+'<div class="card" style="opacity:.75"><div style="font-size:26px">🔒</div><div class="g"><b>Vật phẩm sinh tồn</b><br><small>Mở khóa ở cấp '+WX_LV+' cùng hệ thống thời tiết. Bạn đang ở cấp '+S.level+'.</small></div><button class="sm" disabled>🔒 Cấp '+WX_LV+'</button></div>';
   return tabs+'<div class="dim" style="margin-bottom:8px">🎒 Vật phẩm sinh tồn dùng một lần cho viễn chinh: chọn mang theo ở màn chọn mèo trước khi đi (tối đa '+WXC.kitSlots+' loại). Vật phẩm "dùng khi xuất phát" bị trừ lúc đi; vật phẩm "tự dùng khi cần" chỉ bị trừ khi thật sự dùng. Kháng cùng loại cộng tối đa '+Math.round(WXC.resCap*100)+'%. Không bắt buộc phải mua: thời tiết tốt thì không cần.</div>'+SUPPLY.map(card).join('');
 }}
 function doBuySupply(id,n){const r=buySupply(id,n);if(r.err){toast(r.err,{type:'warn'});return}toast('Đã mua '+r.n+' '+SUP[id].n+' · −'+r.cost.toLocaleString('vi-VN')+' xu',{icon:SUP[id].ic,title:'Sinh tồn',key:'buysup'});render()}
@@ -133,6 +218,7 @@ function doBuySupply(id,n){const r=buySupply(id,n);if(r.err){toast(r.err,{type:'
 pk.kit=pk.kit||{};
 const DANGER_N=['Thấp','Vừa','Cao','Rất cao'];
 function wxPrep(){
+  if(!wxOpen())return '';
   const did=pk.dest,t0=wxClock(),d=DEST[did],D=DEST_CLIMATE[did]||{},n=Math.max(1,Math.round(d.min/10)),cps=[];for(let i=0;i<n;i++)cps.push(destWx(did,t0+i*10*MIN+5*MIN));
   const st=cps[0],dg=Math.min(3,Math.max(...cps.map(c=>c.w.bad))+(D.danger>=.05?1:0)),kinds={};cps.forEach(cp=>{if(cp.w.res)kinds[cp.w.res]=1});
   const rec=SUPPLY.filter(s=>(s.res&&Object.keys(s.res).some(k=>kinds[k]||(k==='rain'&&kinds.storm)))||(s.id==='compass'&&kinds.fog)||(s.id==='rescuekit'&&dg>=2));

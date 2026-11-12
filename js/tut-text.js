@@ -57,7 +57,7 @@ const TUT_TEXT={
     stars:[
       'Số sao là độ hiếm, mỗi bậc một màu. Sao càng nhiều, bé càng kiếm được nhiều xu.',
       'Bé màu lông hiếm, mắt quý hiếm hay trang phục hiếm thì sao lấp lánh đủ 7 màu!',
-      'Có bảo hiểm: quá 9 lượt chưa ra 4★ thì lượt thứ 10 chắc chắn từ 4★ trở lên.'
+      'Có bảo hiểm: quá 9 lượt chưa ra 4★ thì lượt thứ 10 chắc chắn từ 4★ trở lên; quá 39 lượt chưa ra 5★ thì lượt thứ 40 chắc chắn 5★.'
     ],
     pull:['Bấm Dùng vé để mở hộp. Lần đầu tớ ém sẵn rồi: chắc chắn ra một bé 4★ Sử thi!'],
     reveal:['Xem ai tới này! Muốn thì đặt tên, rồi bấm Đón về nhà.'],
@@ -135,7 +135,8 @@ const TUT_TEXT={
     colors:['trắng','xanh lục','xanh biển','tím','vàng lấp lánh'],
     rainbow:'Màu lông hiếm · mắt quý hiếm · trang phục hiếm',
     rainbowP:'7 màu lấp lánh',
-    pity:'Bảo hiểm 10 lượt'
+    pity:'Chắc chắn 4★ trở lên sau 10 lượt',
+    pity5:'chắc chắn 5★ sau 40 lượt'
   },
 
   /* ---------- quà và kết thúc ---------- */
@@ -212,6 +213,7 @@ const TUT_TEXT={
         'Tỉ lệ: 1★ Phổ thông 50%, 2★ Không phổ biến 30%, 3★ Hiếm 14%, 4★ Sử thi 5%, 5★ Huyền thoại 1%.',
         'Màu sao: 1 trắng, 2 xanh lục, 3 xanh biển, 4 tím, 5 vàng lấp lánh. Màu lông hiếm, mắt quý hiếm và trang phục hiếm có sao 7 màu.',
         'Bảo hiểm: quá 9 lượt liên tiếp chưa ra 4★ thì lượt thứ 10 chắc chắn từ 4★ trở lên.',
+        'Bảo hiểm 5★: tối đa 40 lượt liền nhau chưa ra 5★ thì lượt thứ 40 chắc chắn 5★. Ra 5★ thì đếm lại từ 0. Tab Gacha luôn ghi còn bao nhiêu lượt; bộ đếm được lưu.',
         'Ở 4★ và 5★, khoảng 45% là mèo trang phục (anime, phim, meme). Sao càng nhiều, xu viễn chinh càng cao: 5★ gấp 3,2 lần 1★.']},
       {id:'trait',ic:'✨',t:'Thuộc tính',p:[
         'Mỗi bé có số thuộc tính bằng số sao. Sao càng cao, càng dễ ra thuộc tính tốt.',
@@ -227,7 +229,8 @@ const TUT_TEXT={
         'Hết giờ bấm Nhận quà: xu, kinh nghiệm, món đồ ngậm về, đôi khi có vé. Ô viễn chinh mở thêm ở cấp 3, 5, 7, 9.']},
       {id:'level',ic:'⭐',t:'Cấp và mở khóa',p:[
         'Viễn chinh, cho ăn, vuốt ve, gacha và mua sắm đều cho kinh nghiệm. Cấp cao nhất là 18.',
-        'Lên cấp mở thêm ô viễn chinh, điểm đến, phòng, món ăn và nội thất. Cửa hàng luôn ghi cấp kế tiếp sẽ mở gì.']},
+        'Lên cấp mở thêm ô viễn chinh, điểm đến, phòng, món ăn và nội thất. Cửa hàng luôn ghi cấp kế tiếp sẽ mở gì.',
+        'Bấm vào ô Cấp trên cùng để xem lộ trình: mỗi cấp mở những gì. Cấp 2 mở thời tiết, khí hậu phòng và thiết bị sưởi, làm mát. Thứ đã mở thì không khóa lại.']},
       {id:'quest',ic:'📜',t:'Nhiệm vụ và khách lạ',p:[
         'Bấm 📜 Nhiệm vụ trên thanh trên cùng. Mỗi giờ có 2 nhiệm vụ nhanh, mỗi ngày có 3 nhiệm vụ lớn; xong cả ba nhiệm vụ trong ngày được thêm xu và 2 vé.',
         'Nhiệm vụ xong thì bấm Nhận. Quên nhận cũng không sao: hết giờ hay sang ngày, thưởng được cộng tự động.',

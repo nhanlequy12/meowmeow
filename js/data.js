@@ -6,7 +6,7 @@ const STAR=[null,
  {n:'Hiếm',c:'#2464aa',g:'#5aa9ff',m:1.7,p:14,good:.65,sell:100},
  {n:'Sử thi',c:'#7a4ccc',g:'#b98bff',m:2.3,p:5,good:.75,sell:300},
  {n:'Huyền thoại',c:'#855a05',g:'#ffd24a',m:3.2,p:1,good:.88,sell:1000}];
-const GACHA_COST=100, PITY=10, TICKET_COST=100; // TICKET_COST: giá mua một vé gacha bằng xu (bằng giá một lượt nên không lời lỗ)
+const GACHA_COST=100, PITY=10, PITY5=40, TICKET_COST=100; // TICKET_COST: giá mua một vé gacha bằng xu (bằng giá một lượt nên không lời lỗ)
 
 /* ============ GIỐNG MÈO ============ */
 const BLK='#3a3448',WHT='#fbf7f0',ORG='#f0a050',DORG='#c96f28',CRM='#f6dfb8',GRY='#9aa3b5',DGRY='#646c80',BLU='#8794ad',BRN='#a8754a',DBRN='#5e3d28',SEAL='#5a4032',CHOC='#7a5238',SIL='#cfd4dc',GOLD='#e0b060',PNK='#f1c3b8',RUD='#c9783c',FAWN='#d9b48a',SAB='#6b4630';
@@ -794,4 +794,7 @@ const ROOM_K0=1.5,ROOM_K1=6,FURN_K0=1.5,FURN_KS=.2,BOWL_K=1.5;
 const nicePrice=p=>{const s=p<1000?10:p<10000?50:p<100000?500:1000;return Math.round(p/s)*s};
 ROOMS.filter(r=>r.price).sort((a,b)=>a.price-b.price).forEach((r,i,a)=>{r.price=nicePrice(r.price*(ROOM_K0+(ROOM_K1-ROOM_K0)*i/(a.length-1)))});
 FURNS.forEach(f=>{f.price=nicePrice(f.price*(f.bowl?BOWL_K:FURN_K0+FURN_KS*(f.ul-1)))});
-const unlocksAt=n=>[...ROOMS.filter(r=>r.ul===n).map(r=>r.n),...FOODS.filter(f=>f.ul===n).map(f=>f.n),...FURNS.filter(f=>f.ul===n).map(f=>f.n)]; // tên mọi thứ mở ở đúng cấp n
+// Tính năng mở theo cấp (ngoài phòng, món ăn, nội thất có trường ul). wx: thời tiết, khí hậu phòng, sức khỏe, nước uống, thiết bị và vật phẩm sinh tồn.
+const FEATS=[{lv:2,id:'wx',ic:'🌦️',n:'Thời tiết và khí hậu phòng',d:'Thời tiết đổi theo giờ, mỗi phòng có nhiệt độ và độ ẩm riêng. Mở cuốn sách khí hậu, thiết bị giữ ấm, làm mát, chống thời tiết và vật phẩm sinh tồn trong Cửa hàng.'}];
+const WX_LV=2;
+const unlocksAt=n=>[...FEATS.filter(f=>f.lv===n).map(f=>f.n),...ROOMS.filter(r=>r.ul===n).map(r=>r.n),...FOODS.filter(f=>f.ul===n).map(f=>f.n),...FURNS.filter(f=>f.ul===n).map(f=>f.n)]; // tên mọi thứ mở ở đúng cấp n

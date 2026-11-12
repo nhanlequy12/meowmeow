@@ -40,6 +40,7 @@ function load(){
   // năm giống thật 5★ có thuộc tính riêng: bé đang có được thêm vào đầu danh sách, đổi chỗ cho một thuộc tính xấu (nếu không có thì thuộc tính cuối) để số thuộc tính vẫn bằng số sao
   if(!S.mig6){S.cats.forEach(c=>{const bt=SP[c.sp]&&SP[c.sp].bt;if(bt&&!c.traits.includes(bt)){let i=-1;c.traits.forEach((t,j)=>{if(TRAITS[t]&&TRAITS[t].k==='b')i=j});if(i<0)for(let j=c.traits.length-1;j>=0;j--)if(TRAITS[c.traits[j]].k!=='x'){i=j;break}if(i>=0)c.traits.splice(i,1);c.traits.unshift(bt)}});S.mig6=1}
   S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
+  if(S.level>=WX_LV&&!S.wxU){S.wxU=1;S.wxOld=1} // người chơi đã qua cấp 2 trước bản cập nhật: thời tiết tự mở, tiến độ giữ nguyên (hướng dẫn thời tiết hiện một lần, cờ S.tut.wx)
   if(!S.bowlMig){for(const rid in S.rooms)giveBowl(rid,S.rooms[rid].bowlAt);S.bowlMig=1} // bản cũ: mỗi phòng có 1 bát cố định, nay thành món đồ
   fixSlots();
   // Bù thời gian vắng mặt (tối đa 8 giờ) theo từng bước 10 phút, để máy cho ăn tự đổ và mèo đói tự ra ăn đúng như lúc đang mở game.
@@ -61,9 +62,11 @@ function fixSlots(){while(S.trips.length<slotCount())S.trips.push(null)}
 // cấp 18 sau khoảng 32 giờ, tức mỗi căn phòng vừa đủ tiền mua không lâu sau khi được mở khóa. Sau cấp 18 (mở hết cửa hàng) thì không tăng nữa.
 const xpNeed=()=>Math.round(30*Math.pow(1.45,Math.min(S.level,MAX_LV)-1)/5)*5;
 const locked=x=>!!x&&S.level<(x.ul||1);   // phòng, món ăn hay nội thất chưa đủ cấp để mua
+// Thời tiết mở ở cấp WX_LV. Cờ S.wxU ghi vào bản lưu lúc mở, nên đã mở thì không bao giờ khóa lại.
+const wxOpen=()=>!!(S&&(S.wxU||S.level>=WX_LV));
 function addXp(n){
   S.xp+=Math.round(n);
-  while(S.xp>=xpNeed()){S.xp-=xpNeed();S.level++;const b=S.trips.length;fixSlots();
+  while(S.xp>=xpNeed()){S.xp-=xpNeed();S.level++;const b=S.trips.length;fixSlots();if(S.level>=WX_LV&&!S.wxU){S.wxU=1;if(typeof wxDirty==='function')wxDirty()}
     const d=DESTS.filter(x=>x.lvl===S.level).map(x=>x.n);
     const un=unlocksAt(S.level);
     notify('🎉 Lên cấp '+S.level+'!'+(S.trips.length>b?' Mở thêm 1 ô viễn chinh.':'')+(d.length?' Mở điểm mới: '+d.join(', ')+'.':'')+(un.length?' Cửa hàng mở: '+un.slice(0,4).join(', ')+(un.length>4?' và '+(un.length-4)+' món khác':'')+'.':''));}
@@ -162,7 +165,7 @@ function happyTarget(c){
   h+=palHappy(c);
   if(ROOM[c.room].water){const w=tE(c,'water');h+=w>0?10:w<0?-10:0}
   if(c.full<20)h-=25;
-  if(typeof wxHappy==='function')h+=wxHappy(c);
+  if(typeof wxHappy==='function'&&wxOpen())h+=wxHappy(c);
   return clamp(h,0,100);
 }
 // "Bạn cùng phòng": thuộc tính có e.pal={ids, happy, both, hunger} chỉ có tác dụng khi trong phòng có mèo thuộc danh sách ids (không tính bé đang viễn chinh)
@@ -180,7 +183,7 @@ function TRAITS_M(c,k){return tM(c,k)}
 /* ---------- thời gian trôi ---------- */
 function tick(dt,sim){
   if(S.adm&&S.adm.inf)S.coins=999999999;
-  const WXON=typeof wxCat==='function'; // thời tiết, khí hậu phòng, sức khỏe, nước uống (js/wx.js); thiếu file thì game chạy như cũ
+  const WXON=typeof wxCat==='function'&&wxOpen(); // thời tiết, khí hậu phòng, sức khỏe, nước uống (js/wx.js); thiếu file thì game chạy như cũ
   S.cats.forEach(c=>{
     const away=onTrip(c.uid),bf=buffOf(c);
     if(c.buff&&c.buff.until<=now())c.buff=null;
@@ -254,7 +257,7 @@ function coinCalc(c,d,ctx,rf){
 function tripInfo(c,did,kit){
   const d=DEST[did],g=gEff(),bf=buffOf(c);
   const o={dur:d.min*60000*clamp(1-(g.speed+tE(c,'speed')+(bf.speed||0)),.4,1.6),cost:Math.round(d.en*tM(c,'cost')),why:''};
-  if(typeof wxTripInfo==='function')wxTripInfo(c,did,o,kit); // thời tiết ở điểm đến: thời gian, năng lượng, rủi ro, tỉ lệ thành công
+  if(typeof wxTripInfo==='function'&&wxOpen())wxTripInfo(c,did,o,kit); // thời tiết ở điểm đến: thời gian, năng lượng, rủi ro, tỉ lệ thành công
   if(onTrip(c.uid))o.why='Đang đi vắng'; else if(c.full<20)o.why='Đang đói'; else if(!o.why&&c.en<o.cost)o.why='Không đủ sức (cần '+o.cost+'⚡)';
   const ctx={night:isNight(),monday:isMonday(),sleepy:c.en<50,hf:happyF(c),bc:bf.coin||0,ac:auraCoin(c)};
   const cc=coinCalc(c,d,ctx);
@@ -265,7 +268,7 @@ function startTrip(slot,uid,did,kit){
   const inf=tripInfo(c,did,kit); if(inf.why)return false;
   c.en-=inf.cost;
   S.trips[slot]=Object.assign({uid,dest:did,start:now(),end:now()+inf.dur,dur:inf.dur,cost:inf.cost},inf.ctx);
-  if(typeof wxTripStart==='function')wxTripStart(S.trips[slot],c,kit,inf); // giữ vật phẩm mang theo, ghi dự báo từng chặng
+  if(typeof wxTripStart==='function'&&wxOpen())wxTripStart(S.trips[slot],c,kit,inf); // giữ vật phẩm mang theo, ghi dự báo từng chặng
   save(); return true;
 }
 function claimTrip(slot){
@@ -285,7 +288,7 @@ function claimTrip(slot){
   if(Math.random()<tE(c,'loot')){res.bonus+=15;c.traits.forEach(t=>{if(TRAITS[t].e.loot)res.acts.push({t,txt:'+15 xu chiến lợi phẩm'})})}
   res.coins=Math.round(r.coins*m2);
   if(dbl){res.coins*=2;res.bonus*=2;res.ticket*=2}
-  if(typeof wxTripClaim==='function')wxTripClaim(p,c,res,d); // sự cố do thời tiết, vật phẩm tự kích hoạt, nhật ký viễn chinh
+  if(typeof wxTripClaim==='function'&&wxOpen())wxTripClaim(p,c,res,d); // sự cố do thời tiết, vật phẩm tự kích hoạt, nhật ký viễn chinh
   S.tickets+=res.ticket;
   S.coins+=res.coins+res.bonus;
   res.xp=Math.round(10*Math.pow(d.min/10,.8)*tM(c,'xp'));
@@ -369,25 +372,30 @@ function gachaRoll(useTicket,opt){
   return res;
 }
 function gachaCore(opt){
-  S.pity++;
+  // Hai bảo hiểm chạy song song: S.pity đếm lượt liền nhau chưa ra 4★ trở lên (lượt thứ PITY chắc chắn từ 4★, có từ trước);
+  // S.pity5 đếm lượt liền nhau chưa ra 5★ (lượt thứ PITY5 chắc chắn 5★). Bản lưu cũ chưa có pity5 thì bắt đầu từ 0, pity cũ giữ nguyên.
+  S.pity++;S.pity5=(S.pity5||0)+1;
   let r=Math.random()*100,star=1,acc=0;
   for(let s=5;s>=1;s--){acc+=STAR[s].p;if(r<acc){star=s;break}}
   if(S.pity>=PITY&&star<4)star=4;
   // opt.min (lượt gacha đầu của hướng dẫn tân thủ): dưới mức này thì rút lại trong các bậc từ min trở lên, giữ đúng tỉ lệ giữa các bậc đó
   if(opt.min&&star<opt.min){let t=0;for(let s=opt.min;s<=5;s++)t+=STAR[s].p;let r2=Math.random()*t;star=opt.min;for(let s=5;s>=opt.min;s--){r2-=STAR[s].p;if(r2<0){star=s;break}}}
   if(opt.max&&star>opt.max)star=opt.max;
+  const sure5=S.pity5>=PITY5&&!opt.max&&!opt.star&&!opt.rare; // đủ PITY5 lượt chưa có 5★: lượt này chắc chắn 5★ (không bị màu hiếm 4★ thế chỗ)
+  if(sure5)star=5;
   if(opt.star)star=opt.star;
-  if(star>=4)S.pity=0;
   let c;
-  if(opt.rare||(!opt.star&&Math.random()<RARE_P)){
+  if(opt.rare||(!opt.star&&!sure5&&Math.random()<RARE_P)){
     // màu hiếm: luôn 4★ dù giống gốc ở cấp nào, trait đầu tiên là trait của màu
     const sp=pick(BREEDS.filter(b=>!b.noRare)),rc=typeof opt.rare==='string'?opt.rare:pick(RARES).id;
-    star=4;S.pity=0;c=newCat(sp,4,rc);c.isNew=!(S.seenRare||{})[rc];
+    star=4;c=newCat(sp,4,rc);c.isNew=!(S.seenRare||{})[rc];
   }else{
     const vs=VARIANTS.filter(v=>v.r===star),bs=BREEDS.filter(b=>b.r===star);
     const sp=(vs.length&&Math.random()<.45)?pick(vs):pick(bs);
     c=newCat(sp,star);c.isNew=!S.seen[sp.id]||(sp.coats&&!(S.seenCoat||{})[lk(c)]);
   }
+  if(star>=4)S.pity=0;
+  if(star===5)S.pity5=0;
   c.room=freeRoom();
   S.cats.push(c); markSeen(c); addXp(3); onAct('gacha',1); save();
   return {cat:c};

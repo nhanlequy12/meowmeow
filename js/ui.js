@@ -269,7 +269,7 @@ const orbit=(p,r,n,cols,sp)=>{const t=performance.now()/1000;for(let i=0;i<n;i++
 // js/pack18.js dùng cặp này cho chín đuôi của Faker Ahri: hình trong phòng bỏ đuôi, đuôi được vẽ mỗi khung để phấp phới liên tục.
 const RKEY={},LOOKFX={};
 // hành động đang diễn của một bé: S5[sp], hoặc hành động phụ S5[sp].alt khi e.sga bật (js/pack18.js khai báo alt cho 10 bé thêm ngày 2026-11-11)
-const sigOf=(e,c)=>{const s=S5[c.sp];return s&&e.sga&&s.alt?s.alt:s};
+const sigOf=(e,c)=>{const s=S5[c.sp];return s&&s.form&&formOf(c)?s.form:s&&e.sga&&s.alt?s.alt:s}; // s.form: hành động riêng của trang phục hiếm (dài hơn, hình khác)
 // S5: hành động đặc trưng của mèo 5★, thỉnh thoảng tự diễn. pose: tư thế, hover: độ lơ lửng theo tiến độ k (0..1), fx: hạt mỗi khung hình
 const S5={
   v_goku:{n:'gồng mình hóa Siêu Saiyan trong 1 phút',dur:2.6,pose:'sit',look:(k,e)=>k>.6&&!formOf(entCat(e))?SSJK:undefined,start(e){e.sgB=0},
@@ -286,9 +286,10 @@ const S5={
   v_harry:{n:'vung đũa phép',dur:2.6,pose:'sit',fx:(e,p)=>{if(on(40))rp(p.x+14,p.y-24,pick(['#ffe9a0','#ffffff','#f2c230']),{vx:rnd(8,46),vy:-rnd(8,46),life:.5});if(on(10))rp(p.x+14+rnd(4,26),p.y-24-rnd(4,26),'#ffe9a0',{sh:'star',life:.5})}},
   v_tanjiro:{n:'vung kiếm vẽ vòng nước (hoặc vòng lửa Hỏa Thần)',dur:2.4,pose:'sit',fx:(e,p,k)=>{const f=formOf(entCat(e)),C=f?['#ff5a1a','#ff9a2a','#ffd24a']:['#2f86e6','#5aa9ff','#bfe2ff'];orbit(p,10+16*k,5,C,7);
       if(on(3))rp(p.x,p.y-16,C[1],{sh:'ring',r:5,vr:44,life:.5});if(f&&on(22))rp(p.x+rnd(-12,12),p.y-rnd(0,26),pick(C),{vy:-rnd(22,46),life:rnd(.25,.5),sz:ch(.4)?2:1})},end(e){e.cd=rnd(90,180)}},
-  v_itadori:{n:'đấm Hắc Thiểm (dạng Sukuna: các vệt chém)',dur:2,pose:k=>k<.55?'crouch'+(Math.floor(k*9)%2):'sit',fx:(e,p,k)=>{const f=formOf(entCat(e)),bd=e.flip?1:-1;
-      if(f){if(on(20))rp(p.x+rnd(-24,24),p.y-rnd(4,34),'#ffffff',{sh:'line',len:rnd(10,20),bd:ch(.5)?1:-1,life:.14});if(on(8))rp(p.x+rnd(-12,12),p.y-rnd(0,28),pick(['#8a1020','#e0283a']),{vy:-rnd(16,36),life:rnd(.25,.45)})}
-      else if(k>.5){if(on(30))rp(p.x+bd*rnd(6,18),p.y-rnd(8,24),pick(['#0a0a0a','#e0283a']),{sh:'bolt',pts:zig(bd,rnd(8,14),4,5),life:.1});if(!e.sgB){e.sgB=1;rp(p.x+bd*12,p.y-16,'#e0283a',{sh:'ring',r:3,vr:70,life:.4})}}},start(e){e.sgB=0},end(e){e.cd=rnd(90,180)}},
+  v_itadori:{n:'đấm Hắc Thiểm',dur:2,pose:k=>k<.55?'crouch'+(Math.floor(k*9)%2):'sit',fx:(e,p,k)=>{const bd=e.flip?1:-1;
+      if(k>.5){if(on(30))rp(p.x+bd*rnd(6,18),p.y-rnd(8,24),pick(['#0a0a0a','#e0283a']),{sh:'bolt',pts:zig(bd,rnd(8,14),4,5),life:.1});if(!e.sgB){e.sgB=1;rp(p.x+bd*12,p.y-16,'#e0283a',{sh:'ring',r:3,vr:70,life:.4})}}},start(e){e.sgB=0},end(e){e.cd=rnd(90,180)},
+    // dạng Sukuna: kết ấn, ngôi đền nhỏ trồi lên sau lưng, các nhát chém, rồi đền vỡ tan (js/shrine.js)
+    form:{n:'kết ấn mở Phục Ma Ngự Trù Tử',dur:5.6,pose:'sit',start(e){shrineRoom.start(e)},end(e){shrineRoom.end(e)},draw(g,e,p,k){shrineRoom.draw(g,e,p,k)},over(g,e,p,k){shrineRoom.over(g,e,p,k)}}},
   v_thunder:{n:'ngủ gật rồi lóe sét lao đi',dur:2.6,pose:k=>'sleep'+(Math.floor(k*5)%2),fx:(e,p,k)=>{if(k>.7){if(on(26))rp(p.x+rnd(-6,6),p.y-46,'#ffd83a',{sh:'bolt',pts:zig(1,0,5,5).map((q,i)=>[q[1],(i+1)*9]),life:.1});if(on(30))rp(p.x+rnd(-9,9),e.y-1,pick(['#ffd83a','#ffffff']),{vx:rnd(-34,34),vy:-rnd(18,48),g:170,life:.25})}else if(on(1.5))rp(p.x+8,p.y-34,'#a58e7a',{vy:-6,life:.8})},end(e){e.state='run';e.left=1;e.pre=0;e.boost=2.4;runTarget(e)}},
   v_gojo:{n:'kéo băng mắt, mở lãnh địa',dur:3.2,pose:'sit',look:(k,e)=>lk(entCat(e))+'!open',draw(g,e,p,k){g.fillStyle='rgba(60,30,120,'+(.38*Math.sin(Math.PI*k)).toFixed(3)+')';g.beginPath();g.ellipse(p.x,p.y-18,24,20,0,0,6.283);g.fill()},fx:(e,p)=>{orbit(p,20,3,['#b46aff','#5a8cff','#ffffff'],3);if(on(2.5))rp(p.x,p.y-18,'#b46aff',{sh:'ring',r:4,vr:30,life:.6})}},
   v_vader:{n:'vung kiếm ánh sáng',dur:2.6,pose:'sit',fx:(e,p,k)=>{const a=-2.6+k*2.4;for(let r=10;r<26;r+=3)rp(p.x+Math.cos(a)*r,p.y-16+Math.sin(a)*r,r>20?'#ffffff':'#ff3a3a',{life:.18,sz:2})}},
@@ -933,7 +934,8 @@ const MEOW={
   v_maneki:[[500,{f:520,d:.8}],[1700,{f:560,d:.18}],[1880,{f:500,d:.18}],[2060,{f:440,d:.22}],[3300,{f:500,d:.9}]],
   v_harry:[[300,{f:720,d:.3}],[1300,{f:800,d:.5,c:[.9,1.25,1.15]}],[2300,{f:900,d:.85,c:[1.25,1.1,.8,.55]}],[3200,{f:560,d:.7,c:[1,.9,1.05,.85]}]],
   v_tanjiro:[[300,{f:520,d:.5}],[2550,{f:640,d:.8,c:[.9,1.3,1.2,.9]}],[3200,{f:500,d:.5}]],
-  v_itadori:[[250,{f:500,d:.4}],[2200,{f:700,d:.7,c:[1,1.35,1.1,.8]}],[3400,{f:380,d:.8,c:[1,.9,.8,.7]}]],
+  get v_itadori(){return formOf(gz.cat)?[[250,{f:500,d:.4}],[1850,{f:340,d:.9,c:[1,.92,.85,.8]}],[3800,{f:300,d:1.1,c:[1,1.12,.95,.75]}],[6500,{f:420,d:.5,c:[1.2,1,.8]}],[7350,{f:440,d:.6}]] // dạng Sukuna: gầm trầm lúc kết ấn và lúc mở lãnh địa
+    :[[250,{f:500,d:.4}],[2200,{f:700,d:.7,c:[1,1.35,1.1,.8]}],[3400,{f:380,d:.8,c:[1,.9,.8,.7]}]]},
   v_thunder:[[150,{f:420,d:.7,c:[1,.92,.8],v:.14}],[1250,{f:840,d:.22}],[2350,{f:540,d:.6,c:[1,.95,.8,.7],v:.14}]],
   v_gojo:[[750,{f:480,d:.8}],[2400,{f:440,d:.9}]],
   v_vader:[[1900,{f:330,d:1.1,c:[.95,1.05,1,.8]}],[2850,{f:350,d:.5}]],
@@ -994,8 +996,9 @@ const INTRO={
     if(kg)every(T,2600,3800,60,()=>part({x:rnd(0,W),y:Hh+10,vx:rnd(-.6,.6),vy:-rnd(3,8),life:rnd(30,60),col:pick(FL),sz:pick([6,10])}));
     T(3100,()=>fxSpr('sit',k,50,60,'animation:pop .45s ease-out both'));
   }},
-  // Itadori: ngón tay bị nguyền của Sukuna lơ lửng, bé nhảy lên nuốt, rồi tung Hắc Thiểm (sét đen viền đỏ). Trang phục hiếm: Sukuna chiếm xác, mở Phục Ma Ngự Trù Tử, các vệt chém trắng cắt ngang màn hình
-  v_itadori:{dur:4200,run(T){
+  // Itadori: ngón tay bị nguyền của Sukuna lơ lửng, bé nhảy lên nuốt, rồi tung Hắc Thiểm (sét đen viền đỏ).
+  // Trang phục hiếm: nuốt xong thì Sukuna chiếm xác, kết ấn mở Phục Ma Ngự Trù Tử (đền trồi lên, lãnh địa, loạt chém; js/shrine.js), cảnh dài hơn
+  v_itadori:{get dur(){return formOf(gz.cat)?1750+shrineIntro.END:4200},run(T){
     const sk=formOf(gz.cat),k=K5(),d=cell(k),W=innerWidth,Hh=innerHeight,CUR=['#2a1a44','#6a3ab0','#12091f','#b04aff'],BF=['#0a0a0a','#e0283a','#0a0a0a','#ff6a6a'];
     fxTint('radial-gradient(circle,#24103a 0,#07030f 78%)');
     const me=fxSpr('sit',k,50,66,'animation:pop .4s ease-out both');
@@ -1004,7 +1007,8 @@ const INTRO={
     every(T,0,1150,50,()=>part({x:W*.5+rnd(-10,10)*d,y:Hh*.34+rnd(-8,8)*d,vx:rnd(-.5,.5),vy:-rnd(.5,2.2),life:rnd(22,44),col:pick(CUR),sz:pick([4,8])}));
     T(150,()=>glide(90,60,.9,'sawtooth',.05));
     T(1150,()=>{me.remove();fxSpr('leap1',k,50,44,'animation:ghost .45s ease-out both');glide(300,900,.25,'square',.04)});
-    T(1400,()=>{fg.remove();flash();fxTint('radial-gradient(circle,#3a0508 0,#060001 78%)');bolt(W*.5,'#e0283a');fxSpr('sit',k,50,66,'animation:shH .35s linear 3')});
+    let s1;T(1400,()=>{fg.remove();flash();fxTint('radial-gradient(circle,#3a0508 0,#060001 78%)');bolt(W*.5,'#e0283a');s1=fxSpr('sit',k,50,66,'animation:shH .35s linear 3')});
+    if(sk){shrineIntro(T,1750,k,()=>s1&&s1.remove());return}
     for(let i=0;i<5;i++)T(1900+i*55,()=>fxSpr('run'+(i*2)%8,k,8+i*15,62,'animation:ghost .5s ease-out both',{flip:1}));
     // Hắc Thiểm: lõi đen viền đỏ nổ ra ở điểm chạm, sét đen đỏ toả quanh
     T(2200,()=>{flash();fxEl('left:72%;top:60%;width:'+34*d+'px;height:'+34*d+'px;margin:'+(-17*d)+'px 0 0 '+(-17*d)+'px;border-radius:50%;background:radial-gradient(circle,#000 0 46%,#e0283a 50% 58%,transparent 62%);box-shadow:0 0 40px 14px #e0283a;animation:pop .28s ease-out both,ghost .7s .28s ease-out forwards');
@@ -1012,12 +1016,7 @@ const INTRO={
       for(let i=0;i<60;i++){const a=rnd(0,6.283),v=rnd(3,11);part({x:W*.72,y:Hh*.6,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(18,40),col:pick(BF),sz:pick([4,8,12])})}
       $('gz').classList.add('quake');setTimeout(()=>$('gz').classList.remove('quake'),500);glide(120,40,.7,'sawtooth',.07);
       fxTxt('HẮC THIỂM',50,26,'color:#0a0a0a;font-size:min(14vw,80px);letter-spacing:4px;font-style:italic;-webkit-text-stroke:2px #e0283a;text-shadow:0 0 22px #ff2a3a,5px 5px 0 #5a0008','skewIn 1.2s ease-out both')});
-    if(sk){
-      T(3000,()=>{flash();fxTint('radial-gradient(circle,#7a0a10 0,#1a0002 80%)');glide(70,45,1,'sawtooth',.07);
-        fxTxt('PHỤC MA NGỰ TRÙ TỬ',50,40,'color:#fff;font-size:min(8.5vw,52px);letter-spacing:2px;white-space:nowrap;text-shadow:0 0 16px #ff2a3a,4px 4px 0 #3a0004','pop .5s ease-out both')});
-      every(T,3050,4100,70,()=>fxEl('left:-10%;top:'+rnd(8,92)+'%;width:120%;height:4px;background:#fff;box-shadow:0 0 14px 4px #ffb0b0;transform-origin:'+pick(['left','right'])+';transform:rotate('+rnd(-38,38)+'deg);animation:slash .32s ease-out forwards'));
-    }
-    T(sk?3350:3050,()=>fxSpr('sit',k,50,66,'animation:pop .45s ease-out both'+(sk?';filter:drop-shadow(0 0 14px #e0283a)':'')));
+    T(3050,()=>fxSpr('sit',k,50,66,'animation:pop .45s ease-out both'));
     every(T,2300,4100,55,()=>fount(BF,2));
   }},
   // Goku: cưỡi Cân Đẩu Vân bay tới, gồng mình hóa Siêu Saiyan (hai tai chuyển vàng, hào quang vàng), tụ chưởng "KA-ME-HA-ME" rồi "HAAA!": luồng chưởng xanh thổi bay nửa trên ngọn núi
@@ -1451,7 +1450,8 @@ function gReveal(skipped){
 }
 function endReplay(){gz.timers.forEach(clearTimeout);gz.timers=[];$('gz').className=''}
 // xem lại intro của một bé 5★ đã gặp, từ tab Sưu tập
-function replayIntro(id){const sp=SP[id];playGacha({uid:0,sp:id,star:5,sex:'m',name:sp.n,traits:[sp.xt||sp.bt].filter(Boolean),replay:1})}
+// coat: xem lại intro của một trang phục hiếm đã gặp (vd Sukuna của Itadori); bỏ trống là trang phục thường
+function replayIntro(id,coat){const sp=SP[id],c={uid:0,sp:id,star:5,sex:'m',name:sp.n,traits:[sp.xt||sp.bt].filter(Boolean),replay:1};if(coat&&COATS[coat])c.coat=coat;playGacha(c)}
 function gachaDone(){
   gz.timers.forEach(clearTimeout);gz.timers=[];
   const c=gz.cat,v=$('gname').value.trim().slice(0,16); if(v)c.name=v; if(!gz.multi)delete c.isNew; // gacha 10 lượt: giữ dấu MỚI cho bảng kết quả, showMulti tự xóa
@@ -1674,7 +1674,8 @@ const PANEL={
    '<div class="row wrap" style="justify-content:center;margin-top:6px"><button class="sm" '+(S.coins<TICKET_COST?'disabled':'')+' onclick="doBuyTk(1)">Mua 1 vé 🎟 · '+TICKET_COST+' xu</button>'+
    (S.tickets<10?'<button class="sm" '+(S.coins<(10-S.tickets)*TICKET_COST?'disabled':'')+' onclick="doBuyTk('+(10-S.tickets)+')">Mua '+(10-S.tickets)+' vé cho đủ 10 · '+((10-S.tickets)*TICKET_COST).toLocaleString('vi-VN')+' xu</button>':'')+'</div>'+
    '<small>'+[1,2,3,4,5].map(s=>'<span style="color:'+scol(s)+'">'+s+'★ '+STAR[s].n+' '+STAR[s].p+'%</span>').join(' · ')+'</small>'+
-   '<small>Bảo hiểm: chắc chắn 4★ trở lên sau '+PITY+' lượt (đã mở '+Math.min(S.pity,PITY)+'/'+PITY+'). Số trait bằng số sao. Mèo trang phục chỉ có ở 4★–5★; màu lông hiếm rơi khoảng '+Math.round(RARE_P*100)+'% mỗi lượt.</small></div>';
+   '<div class="pity5" data-tip="Cứ '+PITY5+' lượt liền nhau chưa ra 5★ thì lượt thứ '+PITY5+' chắc chắn ra 5★. Ra 5★ sớm hơn thì đếm lại từ đầu. Bộ đếm được lưu, không mất khi thoát game."><div class="row" style="justify-content:space-between"><b>🛡 Bảo hiểm 5★</b><span>'+(PITY5-(S.pity5||0)<=1?'<b style="color:'+scol(5)+'">Lượt tiếp theo chắc chắn 5★</b>':'Chắc chắn 5★ trong <b>'+(PITY5-(S.pity5||0))+'</b> lượt nữa')+'</span></div><div class="bar"><i style="width:'+Math.min(100,(S.pity5||0)/PITY5*100)+'%;background:'+STAR[5].g+'"></i></div><small>Đã mở '+(S.pity5||0)+'/'+PITY5+' lượt chưa có 5★</small></div>'+
+   '<small>Thêm: chắc chắn 4★ trở lên sau '+PITY+' lượt (đã mở '+Math.min(S.pity,PITY)+'/'+PITY+'). Số trait bằng số sao. Mèo trang phục chỉ có ở 4★–5★; màu lông hiếm rơi khoảng '+Math.round(RARE_P*100)+'% mỗi lượt.</small></div>';
  },
  shop(){
   const tabs='<div class="row wrap" style="margin-bottom:8px"><button class="sm '+(shopT==='rooms'?'on':'')+'" onclick="shopT=\'rooms\';renderPanel()">🚪 Phòng</button>'+FCATS.map(c=>'<button class="sm '+(shopT===c[0]?'on':'')+'" onclick="shopT=\''+c[0]+'\';shopSel=null;renderPanel()">'+c[1]+'</button>').join('')+'</div>';
@@ -1727,7 +1728,8 @@ function openBreed(id){
   modal(head+'<div class="grid" style="grid-template-columns:repeat(2,1fr);margin:10px 0">'+b.coats.map(k=>{const ct=COATS[k];
     return sc[id+'~'+k]?'<div class="cell">'+catTag(id+'~'+k,2)+'<br><b>'+(ct.form?'✨ ':ct.u?'✦ ':'')+ct.n+'</b>'+(ct.f>=.99?'<br><span class="dim">gần như luôn là cái</span>':ct.f<=.25?'<br><span class="dim">đa số là đực</span>':'')+'</div>'
                        :'<div class="cell unk">'+catTag(id+'~'+k,2)+'<br><b>???</b>'+(ct.form?'<br><span class="dim">trang phục hiếm</span>':ct.u?'<br><span class="dim">màu ít gặp</span>':'')+'</div>'}).join('')+'</div>'+
-    (b.r===5&&INTRO[id]?'<button class="sm" onclick="replayIntro(\''+id+'\')">▶ Xem lại intro</button>':''));
+    (b.r===5&&INTRO[id]?'<div class="row wrap" style="justify-content:center"><button class="sm" onclick="replayIntro(\''+id+'\')">▶ Xem lại intro</button>'+
+      b.coats.filter(k=>COATS[k].form&&sc[id+'~'+k]).map(k=>'<button class="sm" onclick="replayIntro(\''+id+'\',\''+k+'\')">▶ Intro: ✨ '+COATS[k].n+'</button>').join('')+'</div>':''));
 }
 
 /* ============ ADMIN (chỉ để test): Ctrl+Shift+A, hoặc chạm 7 lần liên tiếp vào tên game ============ */

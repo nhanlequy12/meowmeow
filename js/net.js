@@ -44,7 +44,7 @@ function netSync(){
     if(j.fresh){netRestore(null,j.why);return}          // bản lưu đầu tiên đã có sẵn tiến độ: chơi lại từ đầu
     if(j.rq){ // hàng lượt gacha máy chủ phát: bỏ các lượt máy chủ đã ghi nhận, giữ các lượt vừa dùng sau khi gửi
       S.rqUsed=(S.rqUsed||[]).filter(u=>u.q>j.ack);const used=new Set(S.rqUsed.map(u=>u.q));
-      S.rq=j.rq.filter(r=>!used.has(r.q));if(!S.rqUsed.length)S.pity=j.pity;RQ_ON=true;save();
+      S.rq=j.rq.filter(r=>!used.has(r.q));if(!S.rqUsed.length){S.pity=j.pity%100;S.pity5=Math.floor(j.pity/100)}RQ_ON=true;save();
     }
     if(j.name&&j.name!==NET.pl.name){NET.pl.name=j.name;lsSet(PKEY,JSON.stringify(NET.pl))}
     const todo=(j.cmds||[]).filter(c=>c.n>(S.cn||0)).sort((a,b)=>a.n-b.n);

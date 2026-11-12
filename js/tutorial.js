@@ -7,7 +7,7 @@
    - Tiến độ lưu trong S.tut {step, got:{starter,ticket,gift}, hints:{}, cat, gcat, done}. Mỗi phần quà có cờ riêng trong got.
    - Chế độ xem lại (TUT.replay): không lưu bước, không phát quà, bước tốn xu/vé thành bước xem.
    API cho js/tut-starter.js và js/tut-hints.js: TUT.on, TUT.hook, TUT.hint, TUT.seen, TUT.resetHints, TUT.busy, TUT.active,
-   TUT.anim, TUT.fill, TUT.startReplay. Chữ ở js/tut-text.js. Thiết kế: docs/tutorial-plan.md. */
+   TUT.anim, TUT.fill, TUT.startReplay, TUT.addFlow (luồng phụ, vd js/tut-wx.js). Chữ ở js/tut-text.js. Thiết kế: docs/tutorial-plan.md. */
 const TUT=(()=>{
   const TX=TUT_TEXT,Q=s=>document.querySelector(s),QA=s=>[...document.querySelectorAll(s)];
   const st=()=>S.tut||(S.tut={done:1,hints:{}});
@@ -97,6 +97,19 @@ const TUT=(()=>{
     {id:'bye',say:'bye',guide:1}
   ];
   const SI=Object.fromEntries(STEPS.map((s,i)=>[s.id,i]));
+  /* ---------- luồng phụ (vd hướng dẫn thời tiết ở cấp 2, js/tut-wx.js) ----------
+     addFlow(id, {steps, when(), end(), close(), skipText}): một dãy bước riêng, chạy sau khi luồng chính đã xong.
+     Bước đang dở lưu ở S.tut.fl={id, step}. ST, SX là dãy bước và bảng tra đang chạy (luồng chính hoặc luồng phụ). */
+  const FLOWS={};let ST=STEPS,SX=SI,fl=null;
+  function addFlow(id,f){FLOWS[id]=f;f.six=Object.fromEntries(f.steps.map((s,i)=>[s.id,i]));
+    f.steps.forEach(s=>{if(s.act&&!subs['@'+s.act]){subs['@'+s.act]=1;on(s.act,(a,r)=>act(s.act,a,r))}})}
+  function run(id,step){const f=FLOWS[id];if(!f||cs)return;build();fl=id;ST=f.steps;SX=f.six;go(step&&SX[step]!=null?step:ST[0].id)}
+  const quiet=()=>!cs&&!rp&&!modalOn()&&!$('gz').className&&!(typeof bookOn==='function'&&bookOn())&&!document.hidden;
+  function auto(){
+    const t=S.tut;if(!t||!t.done||!S.cats.length||!quiet())return;
+    if(t.fl&&FLOWS[t.fl.id]){run(t.fl.id,t.fl.step);return}
+    for(const id in FLOWS)if(FLOWS[id].when()){run(id);return}
+  }
 
   /* ---------- quà: mỗi phần một cờ, không phát hai lần ---------- */
   const GIFT={coins:300,tickets:2,item:'mouse'};
@@ -146,14 +159,14 @@ const TUT=(()=>{
   /* ---------- chạy một bước ---------- */
   function go(id){
     if(id==null){finish();return}
-    let i=SI[id];
-    while(i<STEPS.length){const s=STEPS[i];
+    let i=SX[id];
+    while(i<ST.length){const s=ST[i];
       if(rp&&s.replayOff){i++;continue}
       if(s.skip&&s.skip()){if(s.leave)s.leave();i++;continue}
       break}
-    if(i>=STEPS.length){finish();return}
-    cs=STEPS[i];line=0;scrolled=false;scrollN=0;skipAsk=false;waiting=!!(cs.wait&&!rp);
-    if(!rp){st().step=cs.id;save()}
+    if(i>=ST.length){finish();return}
+    cs=ST[i];line=0;scrolled=false;scrollN=0;skipAsk=false;waiting=!!(cs.wait&&!rp);
+    if(!rp){if(fl)st().fl={id:fl,step:cs.id};else st().step=cs.id;save()}
     if(cs.tab)ensureTab(cs.tab);
     if(cs.enter)cs.enter();
     E.root.classList.add('on');E.root.classList.toggle('replay',rp);
@@ -168,7 +181,7 @@ const TUT=(()=>{
   }
   function next(){
     const s=cs;if(!s)return;if(s.leave)s.leave();
-    const i=SI[s.id]+1;go(i<STEPS.length?STEPS[i].id:null);
+    const i=SX[s.id]+1;go(i<ST.length?ST[i].id:null);
   }
   const isAct=()=>!!(cs&&cs.act&&!rp);
   const lines=()=>{const L=(TX.steps[cs.say]||['']).map(x=>fill(x));return rp&&cs.id==='hi'?L.slice(0,2):L};
@@ -176,7 +189,7 @@ const TUT=(()=>{
     const L=lines(),txt=L[Math.min(line,L.length-1)],tk=toks(txt);let n=0;
     clearInterval(typ);E.say.style.display='';
     const last=line>=L.length-1;
-    E.more.textContent=last&&isAct()?'':(last&&cs.card==='gift'&&!rp?'':TX.ui.tap+' ▸');
+    E.more.textContent=last&&isAct()?'':(last&&(cs.card==='gift'||cs.btn)&&!rp?'':TX.ui.tap+' ▸');
     const draw=()=>{E.txt.innerHTML=tk.slice(0,n).join('')+'<span class="tut-ghost">'+tk.slice(n).join('')+'</span>'};
     draw();typ=setInterval(()=>{n=Math.min(tk.length,n+2);draw();if(n>=tk.length){clearInterval(typ);typ=null}},28);
     E.txt.dataset.full=tk.join('');
@@ -187,7 +200,7 @@ const TUT=(()=>{
     const L=lines();
     if(line<L.length-1){line++;say();return}
     if(isAct()){nudge();return}
-    if(cs.card==='gift'&&!rp)return nudge();
+    if((cs.card==='gift'||cs.btn)&&!rp)return nudge();
     next();
   }
   function tapBlock(ev){ev.stopPropagation();ev.preventDefault();tapNext()}
@@ -195,12 +208,14 @@ const TUT=(()=>{
 
   /* ---------- thẻ giữa màn: màu sao, các dáng, quà, việc nên làm ---------- */
   function showCard(k){
-    const c=E.card;c.className='tut-card on k-'+k;let h='';
+    const c=E.card;let h='';
+    if(typeof k==='function'){c.className='tut-card on k-'+(cs.cardCls||'gift');c.innerHTML=emo(k());return}   // thẻ của luồng phụ: hàm trả HTML
+    c.className='tut-card on k-'+k;
     if(k==='stars'){
       const S_=TX.stars;
       h='<h3>'+S_.title+'</h3><div class="tut-stars">'+[1,2,3,4,5].map(n=>'<div class="r"><span class="s">'+starsOf(n)+'</span><b style="color:'+scol(n)+'">'+STAR[n].n+'</b><span class="dim">'+S_.colors[n-1]+'</span><span class="p">'+String(STAR[n].p).replace('.',',')+'%</span></div>').join('')+
         '<div class="r rb"><span class="s">'+starsOf(4,1)+'</span><b>'+S_.rainbowP+'</b><span class="dim">'+S_.rainbow+'</span><span class="p"></span></div></div>'+
-        '<div class="tut-pity">🛡 '+S_.pity+': '+Math.min(S.pity,PITY)+'/'+PITY+'</div>';
+        '<div class="tut-pity">🛡 '+S_.pity+': '+Math.min(S.pity,PITY)+'/'+PITY+' · '+S_.pity5+': '+(S.pity5||0)+'/'+PITY5+'</div>';
     }else if(k==='poses'){
       const a=starter();
       if(typeof tutPosesUI==='function'){c.innerHTML='';tutPosesUI(c,a);emoEl(c);return}
@@ -215,6 +230,10 @@ const TUT=(()=>{
     c.innerHTML=emo(h);
   }
   function giftTap(){if(!cs||cs.id!=='gift')return;grant('gift');showCard('gift');next()}
+  // nút trong thẻ của luồng phụ: TUT._fa(i) gọi cs.tap(i); trả false thì ở lại bước này
+  function flowTap(i){if(!cs||!cs.btn||skipAsk)return;if(cs.tap&&cs.tap(i)===false)return;next()}
+  // quà của luồng phụ: mỗi khóa phát đúng một lần (cờ trong S.tut.got)
+  function once(k,f){const t=st();t.got=t.got||{};if(t.got[k])return false;t.got[k]=1;f();save();return true}
 
   /* ---------- chọn mèo khởi đầu ---------- */
   function showPick(){
@@ -239,11 +258,12 @@ const TUT=(()=>{
     if(rp){endReplay_();return}
     const need=!(st().got&&st().got.starter);
     skipAsk=true;E.card.style.cssText='';E.card.className='tut-card on k-skip';E.say.style.display='none';
-    E.card.innerHTML=emo('<h3>'+TX.ui.skipTitle+'</h3><div>'+TX.ui.skipText+(need?'<br><b>'+TX.ui.skipNeedPick+'</b>':'')+'</div>'+
+    E.card.innerHTML=emo('<h3>'+TX.ui.skipTitle+'</h3><div>'+(fl?FLOWS[fl].skipText||'':TX.ui.skipText)+(need&&!fl?'<br><b>'+TX.ui.skipNeedPick+'</b>':'')+'</div>'+
       '<div class="row" style="justify-content:center;margin-top:10px"><button class="bad" onclick="TUT._skipYes()">'+TX.ui.skipYes+'</button><button class="go" onclick="TUT._skipNo()">'+TX.ui.skipNo+'</button></div>');
     waiting=false;
   }
   function skipYes(){
+    if(fl){finish();return}
     const t=st();t.skip=1;save();
     if(!(t.got&&t.got.starter)){go('pick');return}
     finishSkip();
@@ -254,6 +274,9 @@ const TUT=(()=>{
   /* ---------- kết thúc ---------- */
   function finish(){
     clearInterval(typ);typ=null;cs=null;waiting=false;
+    if(fl){const f=FLOWS[fl],was=rp;fl=null;ST=STEPS;SX=SI;rp=false;rpCat=null;if(f.close)f.close();
+      if(was)toast(TX.ui.replayEnd,{icon:'📖',title:TX.guide.name,ms:4200});else{delete st().fl;f.end();save()}
+      hide();render();return}
     if(rp){rp=false;rpCat=null;hide();toast(TX.ui.replayEnd,{icon:'📖',title:TX.guide.name,ms:4200});return}
     const t=st();t.done=1;t.step=null;delete t.skip;save();hide();render();
   }
@@ -372,7 +395,7 @@ const TUT=(()=>{
   }
   setInterval(()=>{if(!tipOn&&tipQ.length)pump()},1000);
   // ván mới giữa chừng (Chơi lại từ đầu, quản trị viên đặt lại): S.tut mới chưa xong thì chạy lại hướng dẫn
-  setInterval(()=>{if(!cs&&!rp&&S.tut&&!S.tut.done)start()},1000);
+  setInterval(()=>{if(!cs&&!rp&&S.tut&&!S.tut.done)start();else auto()},1000);
   function resetHints(){const t=st();t.hints={};save()}
 
   /* ---------- phím: chặn Esc, Tab, Enter ra ngoài ở bước bắt buộc ---------- */
@@ -394,7 +417,7 @@ const TUT=(()=>{
     if(cs.done&&!cs.done())return;
     next();
   }
-  ['petCat','openFeed','doFeed','setTab','openPicker','doTrip','gachaDone'].forEach(n=>on(n,(a,r)=>act(n,a,r)));
+  ['petCat','openFeed','doFeed','setTab','openPicker','doTrip','gachaDone'].forEach(n=>{subs['@'+n]=1;on(n,(a,r)=>act(n,a,r))});
   on('gReveal',()=>{if(cs&&cs.wait==='gReveal'&&waiting){waiting=false;line=0;scrolled=false;scrollN=0;say()}});
   // lượt gacha đầu tiên: dùng vé, chắc chắn ra 4★ (vẫn có thể là mèo trang phục hoặc màu hiếm)
   hook('doGacha');
@@ -407,18 +430,19 @@ const TUT=(()=>{
   /* ---------- khởi động ---------- */
   function start(){
     build();const t=st();
-    if(t.done&&S.cats.length)return;
+    if(t.done&&S.cats.length){auto();return}
     if(!t.step)t.step='hi';
     if(!S.cats.length){t.done=0;if(SI[t.step]==null||SI[t.step]>SI.pick)t.step='pick'} // bản lưu chưa có mèo: quay lại bước chọn mèo
     go(t.step);
   }
-  function startReplay(){
+  function startReplay(id){
     build();if(cs)return;
     if(modalOn())closeModal();
     rp=true;rpCat=S.cats.slice().sort((a,b)=>b.star-a.star)[0]||null;
+    if(id&&FLOWS[id]){run(id);return}
     go('hi');
   }
-  return {start,startReplay,on,hook,fire,hint,seen,resetHints,anim,pose,fill,grant,
+  return {start,startReplay,on,hook,fire,hint,seen,resetHints,anim,pose,fill,grant,addFlow,run,once,tabBtn,modalOn,flow:()=>fl,_fa:flowTap,
     active:()=>!!cs&&!rp,replaying:()=>rp,busy,step:()=>cs&&cs.id,
     _gift:giftTap,_skipYes:skipYes,_skipNo:skipNo};
 })();

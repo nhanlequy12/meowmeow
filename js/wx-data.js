@@ -207,4 +207,6 @@ WXDEV.forEach(f=>{
   if(f.bed)f.d+=' Ổ ngủ: chạm vào để cho '+(f.bed.at.length>1?'tối đa '+f.bed.at.length+' bé':'một bé')+' đi ngủ, hồi năng lượng nhanh gấp '+String(f.bed.en).replace('.',',')+' lần.';
   FURNS.push(f);FURN[f.id]=f;
 });
+// Thời tiết mở ở cấp WX_LV (2): mọi thiết bị thời tiết, kể cả ba món rẻ nhất, không mua được trước cấp đó. Đặt sau khi tính giá để giá không đổi.
+WXDEV.forEach(f=>{if(f.ul<WX_LV)f.ul=WX_LV});
 SUPPLY.forEach(s=>{s.price=nicePrice(s.price*1.5)}); // vật phẩm dùng một lần: giá rẻ để không bắt buộc, cùng hệ số với bát ăn

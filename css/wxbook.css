@@ -1,0 +1,131 @@
+/* ============ CUỐN SÁCH KHÍ HẬU (js/wx-ui.js: openBook) ============
+   Một cuốn sách mở hai trang: trái là dự báo thời tiết, phải là khí hậu các phòng (chia trang nhỏ, lật giấy).
+   z-index 19: trên thanh menu (15), dưới hộp thoại (20) để màn chi tiết mèo mở đè lên được, dưới hướng dẫn (45). */
+#wxbook{position:fixed;inset:0;z-index:19;display:none;align-items:center;justify-content:center;padding:10px;background:rgba(60,36,20,.55)}
+#wxbook.on{display:flex}
+.wb-book{--pg:#fbf3df;--pg2:#f3e6c8;--ink2:#4e3026;--edge:#8a5a3a;--cover:#b86a5a;--gold2:#e8b83a;
+  position:relative;display:flex;width:min(980px,100%);height:min(640px,100%);color:var(--ink2);
+  background:var(--cover);border:4px solid #6e3a30;border-radius:18px;padding:12px 14px 14px;
+  box-shadow:0 0 0 3px var(--gold2) inset,0 14px 0 -4px rgba(40,24,12,.35),0 20px 40px rgba(40,24,12,.4);animation:wbOpen .32s cubic-bezier(.3,1.3,.6,1)}
+html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
+@keyframes wbOpen{from{transform:scale(.86) rotate(-2deg);opacity:0}to{transform:none;opacity:1}}
+.wb-page{position:relative;flex:1 1 0;min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--pg);padding:14px 16px 10px;overflow:hidden}
+.wb-l{border-radius:10px 2px 2px 10px;box-shadow:inset -18px 0 22px -16px rgba(110,70,40,.45),inset 0 0 0 2px #e6d3a8}
+.wb-r{border-radius:2px 10px 10px 2px;box-shadow:inset 18px 0 22px -16px rgba(110,70,40,.45),inset 0 0 0 2px #e6d3a8;perspective:1100px}
+.wb-spine{flex:0 0 10px;background:linear-gradient(90deg,#c9ab78,#8a6a48 45%,#8a6a48 55%,#c9ab78)}
+.wb-x{position:absolute;top:-12px;right:-10px;z-index:3;width:44px;min-height:44px;padding:0;border-radius:50%;font-size:18px;background:var(--pink);color:#3a1020;border-color:#b85a70}
+.wb-mark{position:absolute;top:-6px;left:44px;width:22px;height:54px;background:#d8504a;z-index:2;clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%);box-shadow:inset 0 0 0 2px #a8302c}
+.wb-book h3{margin:0 0 6px;font-size:17px;text-align:center;color:#6e3a30;letter-spacing:.5px}
+.wb-book h3:after{content:"";display:block;height:3px;margin:5px auto 0;width:70%;border-bottom:3px dotted #c9ab78}
+.wb-book h4{margin:8px 0 4px;font-size:13px;text-align:left;color:#8a5a3a;text-transform:uppercase;letter-spacing:.6px}
+.wb-book .dim{color:#7a6048}
+.wb-book small{color:#7a6048}
+
+/* trang trái */
+.wb-now{display:flex;gap:12px;align-items:center}
+.wb-now .wi{flex:none}
+.wb-now .t{font-size:34px;font-weight:900;line-height:1}
+.wb-now .n{font-weight:800;font-size:16px}
+.wb-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.wb-chip{background:var(--pg2);border:2px solid #d9c394;border-radius:10px;padding:2px 8px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.wb-warn{margin-top:8px;padding:6px 10px;border-radius:10px;background:#ffe1d6;border:2px dashed #c0503a;color:#8a2a1a;font-weight:700;font-size:13px;animation:wbPulse 1.6s ease-in-out infinite}
+@keyframes wbPulse{50%{background:#ffd0c0}}
+.wb-fc{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding-right:2px}
+.wb-fr{display:flex;gap:8px;align-items:center;background:var(--pg2);border:2px solid #d9c394;border-radius:10px;padding:3px 8px;font-size:13px}
+.wb-fr.bad{border-color:#c0503a;background:#ffeadf}
+.wb-fr .wi{flex:none}
+.wb-fr b{white-space:nowrap}
+.wb-fr .g{flex:1;min-width:0}
+.wb-fx{margin-top:8px;font-size:12.5px;line-height:1.45;background:var(--pg2);border-radius:10px;padding:6px 10px;border-left:4px solid #e8b83a}
+
+/* trang phải */
+.wb-sheet{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;transform-origin:left center;backface-visibility:hidden}
+.wb-sheet.fl{animation:wbFlipL .42s ease-out}
+.wb-sheet.fr{animation:wbFlipR .42s ease-out}
+@keyframes wbFlipL{from{transform:rotateY(-78deg);opacity:.2;filter:brightness(.8)}to{transform:none;opacity:1}}
+@keyframes wbFlipR{from{transform:rotateY(78deg);opacity:.2;filter:brightness(.8);transform-origin:right center}to{transform:none;opacity:1;transform-origin:right center}}
+.wb-list{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.wb-room{display:flex;gap:8px;align-items:center;width:100%;min-height:62px;flex:0 0 auto;text-align:left;font:inherit;color:inherit;background:var(--pg2);border:2px solid #d9c394;border-radius:12px;padding:5px 9px;cursor:pointer}
+.wb-room:hover,.wb-room:focus-visible{border-color:#8a5a3a;background:#f7ecd0}
+.wb-room.cold{border-left:6px solid #6aa6e0}.wb-room.hot{border-left:6px solid #e8704a}.wb-room.ok{border-left:6px solid #5fbf7a}.wb-room.meh{border-left:6px solid #e8b83a}
+.wb-room .g{flex:1;min-width:0}
+.wb-room .nm{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wb-room .ln{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wb-room .bar{height:6px;margin:3px 0 0;background:#e2d2ae}
+.wb-room .dv{display:flex;gap:2px;align-items:center;flex:none;max-width:38%;flex-wrap:wrap;justify-content:flex-end;font-size:11.5px;font-weight:700}
+.wb-tag{display:inline-block;border-radius:7px;padding:0 6px;font-size:11.5px;font-weight:800;color:#fff;background:#c0503a;white-space:nowrap}
+.wb-tag.ok{background:#4f9a62}.wb-tag.c{background:#4a86c8}.wb-tag.w{background:#b8862a}
+.wb-nav{flex:none;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;font-weight:800}
+.wb-nav button{min-width:44px;min-height:40px;padding:0 10px}
+.wb-nav .pg{min-width:86px;text-align:center}
+.wb-det{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:3px;text-align:center}
+.wb-det .card{background:var(--pg2)}
+.wb-det .cd-sec{background:var(--pg2)}
+.wb-back{align-self:flex-start;margin-bottom:6px}
+
+/* biểu tượng thời tiết chuyển động (SVG) */
+.wi{display:inline-block;vertical-align:middle;overflow:visible}
+.wi [class]{transform-box:fill-box;transform-origin:center}
+.wi .ol{stroke:#4e3026;stroke-width:2;stroke-linejoin:round}
+.wi .rays{animation:wiSpin 9s linear infinite}
+.wi .sun{animation:wiBeat 2.4s ease-in-out infinite}
+.wi .hotw{animation:wiWave 1.1s ease-in-out infinite alternate}
+.wi .drop{animation:wiFall .9s linear infinite}
+.wi .drop.b{animation-delay:-.3s}.wi .drop.c{animation-delay:-.6s}
+.wi .bolt{animation:wiFlash 1.7s steps(1) infinite}
+.wi .flake{animation:wiSnow 2.2s linear infinite}
+.wi .flake.b{animation-delay:-.7s}.wi .flake.c{animation-delay:-1.4s}
+.wi.fast .flake{animation-duration:1s}.wi.fast .gust{animation-duration:.7s}
+.wi .gust{animation:wiGust 1.5s ease-in-out infinite}
+.wi .gust.b{animation-delay:-.5s}.wi .gust.c{animation-delay:-1s}
+.wi .fog{animation:wiFog 3s ease-in-out infinite alternate}
+.wi .fog.b{animation-direction:alternate-reverse}
+.wi .frost{animation:wiSpin 7s linear infinite}
+.wi .cl{animation:wiCloud 4s ease-in-out infinite alternate}
+.wi .bow{animation:wiBeat 3s ease-in-out infinite}
+@keyframes wiSpin{to{transform:rotate(360deg)}}
+@keyframes wiBeat{50%{transform:scale(1.08)}}
+@keyframes wiWave{from{transform:translateY(1px) scaleX(.9)}to{transform:translateY(-2px) scaleX(1.1)}}
+@keyframes wiFall{from{transform:translate(2px,-5px);opacity:0}25%{opacity:1}to{transform:translate(-2px,9px);opacity:0}}
+@keyframes wiFlash{0%,100%{opacity:0}8%,14%{opacity:1}11%{opacity:.3}40%{opacity:0}46%{opacity:1}52%{opacity:0}}
+@keyframes wiSnow{from{transform:translate(0,-5px);opacity:0}20%{opacity:1}50%{transform:translate(3px,3px)}to{transform:translate(-1px,11px);opacity:0}}
+@keyframes wiGust{0%{transform:translateX(-7px);opacity:0}40%{opacity:1}100%{transform:translateX(8px);opacity:0}}
+@keyframes wiFog{from{transform:translateX(-3px)}to{transform:translateX(3px)}}
+@keyframes wiCloud{from{transform:translateX(-1px)}to{transform:translateX(1.5px)}}
+@media (prefers-reduced-motion:reduce){.wi *,.wb-sheet,.wb-book,.wb-warn{animation:none!important}}
+
+/* chip thời tiết còn khóa */
+.wxchip.lock{opacity:.7;cursor:help}
+
+/* màn hẹp (điện thoại dọc): hai trang xếp trên dưới, gáy sách nằm ngang */
+@media (max-width:760px){
+  #wxbook{padding:6px}
+  .wb-book{flex-direction:column;height:100%;padding:8px 9px 10px;border-radius:14px}
+  .wb-page{padding:9px 11px 8px}
+  .wb-l{flex:0 1 auto;max-height:47%;border-radius:8px 8px 2px 2px;box-shadow:inset 0 -14px 18px -14px rgba(110,70,40,.45),inset 0 0 0 2px #e6d3a8}
+  .wb-r{flex:1 1 0;border-radius:2px 2px 8px 8px;box-shadow:inset 0 14px 18px -14px rgba(110,70,40,.45),inset 0 0 0 2px #e6d3a8}
+  .wb-spine{flex:0 0 7px;background:linear-gradient(#c9ab78,#8a6a48 45%,#8a6a48 55%,#c9ab78)}
+  .wb-x{top:-6px;right:-4px}
+  .wb-mark{left:20px;height:40px;width:16px}
+  .wb-now .t{font-size:26px}
+  .wb-book h3{font-size:15px;margin-bottom:4px}
+  .wb-fx{font-size:12px;margin-top:5px;padding:4px 8px}
+  .wb-room{min-height:56px}
+  .wb-fc{flex-direction:row;overflow-x:auto;overflow-y:hidden;flex:0 0 auto}
+  .wb-fr{flex:1 0 96px;flex-direction:column;gap:0;text-align:center;font-size:11.5px;line-height:1.25;padding:3px 4px;min-width:0}
+  .wb-l{overflow-y:auto}
+  .wb-sheet{transform-origin:center top}
+  @keyframes wbFlipL{from{transform:rotateX(70deg);opacity:.2}to{transform:none;opacity:1}}
+  @keyframes wbFlipR{from{transform:rotateX(-70deg);opacity:.2}to{transform:none;opacity:1}}
+}
+/* màn thấp (điện thoại ngang): vẫn hai trang trái phải, chữ gọn hơn */
+@media (max-height:520px) and (min-width:761px){
+  .wb-book{padding:8px 10px}.wb-page{padding:8px 12px 6px}.wb-now .t{font-size:24px}.wb-book h3{font-size:14px;margin-bottom:3px}
+  .wb-room{min-height:50px;padding:3px 8px}
+  .wb-fc{flex-direction:row;overflow-x:auto;overflow-y:hidden;flex:0 0 auto}.wb-fr{flex:1 0 90px;flex-direction:column;gap:0;text-align:center;font-size:11.5px;line-height:1.2;padding:2px 4px;min-width:0}.wb-l{overflow-y:auto}.wb-fx{margin-top:4px;padding:3px 8px;font-size:12px}.wb-mark{height:36px}
+}
+
+/* tab Gacha: khung bảo hiểm 5★ */
+.pity5{margin:8px 0 6px;padding:7px 10px;border:2px solid var(--line);border-radius:12px;background:var(--panel2);text-align:left;font-size:13.5px}
+.pity5 .bar{height:8px;margin:5px 0 3px}
+.pity5 .row{gap:8px;flex-wrap:wrap}

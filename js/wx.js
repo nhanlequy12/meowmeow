@@ -183,7 +183,7 @@ const batLeft=i=>{const f=FURN[i.fid];if(!f.bat)return 0;const b=i.bat==null?f.b
 /* ---------- vật phẩm sinh tồn ---------- */
 const invN=id=>(S.inv&&S.inv[id])||0;
 function buySupply(id,n){
-  const s=SUP[id];n=Math.max(1,n|0);if(!s)return {err:'Không có vật phẩm này.'};const cost=s.price*n;
+  const s=SUP[id];n=Math.max(1,n|0);if(!s)return {err:'Không có vật phẩm này.'};if(!wxOpen())return {err:'Vật phẩm sinh tồn mở ở cấp '+WX_LV+'.'};const cost=s.price*n;
   if(S.coins<cost)return {err:'Không đủ xu: cần '+cost.toLocaleString('vi-VN')+' xu.'};
   S.coins-=cost;S.inv=S.inv||{};S.inv[id]=invN(id)+n;save();return {n,cost};
 }

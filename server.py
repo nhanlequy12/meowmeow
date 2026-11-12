@@ -667,7 +667,7 @@ class H(SimpleHTTPRequestHandler):
             old, first = None, True
         if 'gpity' not in p:                      # hồ sơ có từ trước khi có trọng tài: lấy bảo hiểm gacha từ bản lưu cũ
             try:
-                p['gpity'] = max(0, min(int((old or {}).get('pity') or 0), 50))
+                p['gpity'] = max(0, min(int((old or {}).get('pity') or 0), 50)) + 100 * max(0, min(int((old or {}).get('pity5') or 0), 40))
             except (TypeError, ValueError):
                 p['gpity'] = 0
         gift = {'coins': sum(c.get('amt', 0) for c in done if c['type'] == 'coins'),

@@ -63,11 +63,12 @@ function bad(sv){
   if(sv.inv!=null&&(typeof sv.inv!=='object'||Object.entries(sv.inv).some(([id,q])=>!G.SUP[id]||!int(q,0,1e5))))return 'Túi đồ không hợp lệ';
   return '';
 }
-// chạy lại một lượt gacha bằng hạt giống, với bảo hiểm pity: trả mèo và pity sau lượt đó
+// chạy lại một lượt gacha bằng hạt giống, với bảo hiểm pity: trả mèo và pity sau lượt đó.
+// pity ở máy chủ là một số gộp: bộ đếm 4★ (S.pity) + 100 × bộ đếm 5★ (S.pity5)
 function replay(seed,pity,opt){
   const R0=Math.random;Math.random=G.prng(seed);
-  G.setS({pity,nid:1,seen:{},seenCoat:{},seenRare:{},cats:[],rooms:{},items:[],trips:[null],level:1,xp:0,coins:0,tickets:0});
-  try{const c=G.gachaCore(Object.assign({},opt)).cat;return {cat:{sp:c.sp,star:c.star,coat:c.coat,sex:c.sex,traits:c.traits},pity:G.getS().pity}}
+  G.setS({pity:pity%100,pity5:Math.floor(pity/100),nid:1,seen:{},seenCoat:{},seenRare:{},cats:[],rooms:{},items:[],trips:[null],level:1,xp:0,coins:0,tickets:0});
+  try{const c=G.gachaCore(Object.assign({},opt)).cat;return {cat:{sp:c.sp,star:c.star,coat:c.coat,sex:c.sex,traits:c.traits},pity:G.getS().pity+100*(G.getS().pity5||0)}}
   finally{Math.random=R0}
 }
 function judge(o){
@@ -115,7 +116,10 @@ function judge(o){
   const refund=gone.map(c=>{const g=G.releaseGift(c);return g.coins+TICKET_COST*g.ticket}).sort((a,b)=>a-b).slice(0,dRel).reduce((a,b)=>a+b,0);
   const newRooms=Object.keys(N.rooms).filter(r=>!O.rooms[r]).length;
   const water=FURN.waterbowl?FURN.waterbowl.price:0,wxMig=!O.wxMig&&N.wxMig?Object.keys(N.rooms).length:0; // bát nước tặng mỗi phòng (một lần) và kèm phòng mới
-  const known=(gift.coins||0)+TICKET_COST*(gift.tickets||0)+GACHA_COST*nfree+refund+newRooms*(FURN.bowl.price+water)+wxMig*water+(tutOpen?TUT_GIFT:0);
+  // quà của hướng dẫn thời tiết (js/tut-wx.js): một thiết bị chạy pin và 200 xu + 1 vé, mỗi phần một lần
+  const g0=(O.tut&&O.tut.got)||{},g1=(N.tut&&N.tut.got)||{};
+  const wxGift=(g1.wxdev&&!g0.wxdev?Math.max(FURN.bheater.price,FURN.bfan.price):0)+(g1.wxrw&&!g0.wxrw?200+TICKET_COST:0);
+  const known=(gift.coins||0)+TICKET_COST*(gift.tickets||0)+GACHA_COST*nfree+refund+newRooms*(FURN.bowl.price+water)+wxMig*water+(tutOpen?TUT_GIFT:0)+wxGift;
   const lv=Math.min(O.level,MAX_LV),hr=Math.max(0,o.dt)/3600;
   let bc=Math.min(CAP_C(lv),(o.budget&&o.budget.c!=null?o.budget.c:CAP_C(lv))+RATE_C(lv)*hr);
   const needC=value(N)-value(O)-known;
