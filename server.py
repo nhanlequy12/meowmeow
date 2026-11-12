@@ -55,6 +55,11 @@ SEC_HEADERS = (('X-Content-Type-Options', 'nosniff'), ('X-Frame-Options', 'DENY'
 LIM_API = (240, 60)        # tối đa 240 yêu cầu API mỗi 60 giây mỗi IP
 LIM_JOIN = (5, 3600)       # tối đa 5 hồ sơ mới mỗi giờ mỗi IP
 LIM_ADMFAIL = (8, 900)     # nhập sai mã quản trị 8 lần trong 15 phút thì khóa IP đó 15 phút
+LIM_XFAIL = (5, 900)       # nhập sai mã chuyển máy 5 lần trong 15 phút thì khóa IP đó 15 phút
+LIM_XFAIL_ALL = (40, 900)  # cả máy chủ: quá 40 lần sai trong 15 phút thì tạm khóa nhập mã (chống dò mã từ nhiều IP)
+LIM_XNEW = (10, 3600)      # tối đa 10 lần tạo mã (chuyển máy, khôi phục) mỗi giờ mỗi người chơi
+XF_TTL = 600               # giây: mã chuyển máy hết hạn sau 10 phút
+XF_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'   # không có I, O, 0, 1 cho khỏi nhầm khi gõ
 
 
 class Rate:
@@ -344,6 +349,27 @@ def push_loop(v):
             sys.stderr.write('push_loop: %r\n' % (e,))
 
 
+def xf_code(n):
+    return '-'.join(''.join(secrets.choice(XF_ABC) for _ in range(4)) for _ in range(n // 4))
+
+
+def xf_hash(code):
+    c = re.sub(r'[^A-Z0-9]', '', str(code or '').upper())
+    return hashlib.sha256(('meoxu-xfer:' + c).encode()).hexdigest() if len(c) in (8, 12) else ''
+
+
+def tok_hash(tok):
+    return hashlib.sha256(('meoxu-tok:' + str(tok)).encode()).hexdigest()
+
+
+def tok_check(p, tok):
+    """None nếu khóa đúng; 'moved' nếu là khóa cũ của máy đã chuyển hồ sơ sang máy khác; 'bad' nếu sai."""
+    tok = str(tok or '')
+    if hmac.compare_digest(tok.encode(), p['tok'].encode()):
+        return None
+    return 'moved' if tok and tok_hash(tok) in p.get('oldtok', []) else 'bad'
+
+
 def clean_name(s):
     s = re.sub(r'[\x00-\x1f<>]', '', str(s or '')).strip()[:20]
     return s or 'Người chơi'
@@ -406,7 +432,8 @@ def public(p, full=False):
         s.pop('cats', None)
     o = {'id': p['id'], 'name': p['name'], 'created': p.get('created'), 'last': p.get('last'), 'play': p.get('play', 0),
          'online': now() - p.get('last', 0) < ONLINE, 'pending': len(p.get('cmds', [])), 'sum': s, 'ip': p.get('ip', ''),
-         'warn': sum(1 for e in p.get('log', []) if e.get('w')), 'trust': bool(p.get('trust')), 'rej': p.get('rej', 0)}
+         'warn': sum(1 for e in p.get('log', []) if e.get('w')), 'trust': bool(p.get('trust')), 'rej': p.get('rej', 0),
+         'rc': bool(p.get('rc')), 'mvat': p.get('mvat', 0)}
     if full:
         o['log'] = p.get('log', [])[-120:]
         o['cmds'] = p.get('cmds', [])
@@ -549,6 +576,8 @@ class H(SimpleHTTPRequestHandler):
                 return self.send_json({'ok': 1, 'id': p['id'], 'tok': p['tok'], 'name': p['name']})
             if ep == 'sync':
                 return self.sync(b)
+            if ep.startswith('xfer/'):
+                return self.xfer(ep[5:], b)
             if ep.startswith('push/'):
                 return self.push_api(ep[5:], b)
             if not ep.startswith('admin/'):
@@ -579,6 +608,14 @@ class H(SimpleHTTPRequestHandler):
                 log(p, 'Quản trị ' + ('bỏ kiểm tra chống gian lận' if p['trust'] else 'bật lại kiểm tra chống gian lận'))
                 psave(p)
                 return self.send_json({'ok': 1})
+            if ep == 'admin/xfer':          # người chơi mất máy cũ, không có mã khôi phục: quản trị viên cấp mã chuyển máy
+                if not p.get('save'):
+                    return self.send_json({'err': 'Người chơi này chưa có bản lưu trên máy chủ'}, 400)
+                code = xf_code(8)
+                p['xf'] = {'h': xf_hash(code), 'e': now() + XF_TTL}
+                log(p, 'Quản trị viên tạo mã chuyển máy')
+                psave(p)
+                return self.send_json({'ok': 1, 'code': code, 'exp': p['xf']['e'], 'now': now()})
             if ep == 'admin/delete':
                 os.remove(ppath(p['id']))
                 return self.send_json({'ok': 1})
@@ -588,8 +625,9 @@ class H(SimpleHTTPRequestHandler):
         p = pload(str(b.get('id') or ''))
         if not p:
             return self.send_json({'err': 'gone'}, 404)
-        if not hmac.compare_digest(str(b.get('tok') or '').encode(), p['tok'].encode()):
-            return self.send_json({'err': 'Sai khóa người chơi'}, 403)
+        k = tok_check(p, b.get('tok'))
+        if k:
+            return self.tok_fail(p, k)
         t = now()
         gap = t - p.get('last', t)
         if 0 < gap <= 120:
@@ -602,7 +640,7 @@ class H(SimpleHTTPRequestHandler):
         cn = b.get('cn') if isinstance(b.get('cn'), int) else 0
         done = [c for c in p.get('cmds', []) if c['n'] <= cn]
         rest = [c for c in p.get('cmds', []) if c['n'] > cn]
-        out = {'ok': 1, 'name': p['name']}
+        out = {'ok': 1, 'name': p['name'], 'rc': (p.get('rc') or {}).get('t', 0)}
         raw = b.get('save')
         sv = None
         if isinstance(raw, str) and raw:
@@ -652,6 +690,71 @@ class H(SimpleHTTPRequestHandler):
         psave(p)
         self.send_json(out)
 
+    def tok_fail(self, p, k):
+        if k == 'moved':
+            return self.send_json({'err': 'moved', 'name': p['name'], 'at': p.get('mvat', 0)}, 409)
+        return self.send_json({'err': 'Sai khóa người chơi'}, 403)
+
+    def xfer(self, ep, b):
+        """Chuyển tiến độ sang máy khác. Máy mới chỉ nhận bản lưu hợp lệ mà máy chủ đang giữ (đã qua trọng tài), không bao giờ nhận
+        file từ người chơi. Nhận xong thì máy chủ cấp khóa mới cho máy mới và hủy khóa của máy cũ: mỗi lúc chỉ một máy chơi được."""
+        if ep == 'use':
+            ip = self.ip()
+            if RATE.over(('xfail', ip), LIM_XFAIL) or RATE.over(('xfail', '*'), LIM_XFAIL_ALL):
+                return self.send_json({'err': 'Nhập sai mã quá nhiều lần, đợi 15 phút rồi thử lại'}, 429)
+            h, t = xf_hash(b.get('code')), now()
+            hit, kind = None, ''
+            if h:
+                for q in pall():
+                    xf = q.get('xf') or {}
+                    if xf.get('h') and hmac.compare_digest(xf['h'], h) and xf.get('e', 0) > t:
+                        hit, kind = q, 'xf'
+                        break
+                    rc = q.get('rc') or {}
+                    if rc.get('h') and hmac.compare_digest(rc['h'], h):
+                        hit, kind = q, 'rc'
+                        break
+            if not hit or not hit.get('save'):
+                RATE.hit(('xfail', ip), LIM_XFAIL)
+                RATE.hit(('xfail', '*'), LIM_XFAIL_ALL)
+                return self.send_json({'err': 'Mã không đúng hoặc đã hết hạn'}, 400)
+            p = hit
+            p.pop(kind, None)                      # mã nào cũng chỉ dùng được một lần
+            p['oldtok'] = (p.get('oldtok', []) + [tok_hash(p['tok'])])[-8:]
+            p['tok'] = secrets.token_hex(16)
+            p['mvat'] = t
+            for e in p.get('subs', []):            # thông báo đẩy không còn gửi tới máy cũ
+                EP_OF.pop(e, None)
+            p['subs'] = []
+            log(p, 'Chuyển sang máy khác bằng %s (IP %s)' % ('mã khôi phục' if kind == 'rc' else 'mã chuyển máy', ip))
+            psave(p)
+            return self.send_json({'ok': 1, 'id': p['id'], 'tok': p['tok'], 'name': p['name'], 'save': p['save'], 'rc': kind == 'rc'})
+        p = pload(str(b.get('id') or ''))
+        k = tok_check(p, b.get('tok')) if p else 'bad'
+        if k:
+            return self.tok_fail(p, k)
+        if ep in ('new', 'rec') and not RATE.hit(('xnew', p['id']), LIM_XNEW):
+            return self.send_json({'err': 'Đã tạo mã quá nhiều lần, thử lại sau một giờ'}, 429)
+        if ep == 'new':                            # mã chuyển máy: 8 ký tự, 10 phút, một lần
+            if not p.get('save'):
+                return self.send_json({'err': 'Máy chủ chưa có bản lưu của bạn, đợi vài giây rồi thử lại'}, 400)
+            code = xf_code(8)
+            p['xf'] = {'h': xf_hash(code), 'e': now() + XF_TTL}
+            log(p, 'Tạo mã chuyển máy')
+            psave(p)
+            return self.send_json({'ok': 1, 'code': code, 'exp': p['xf']['e'], 'now': now(), 'sum': {x: (p.get('sum') or {}).get(x, 0) for x in ('level', 'coins', 'tickets', 'ncat')}})
+        if ep == 'cancel':
+            p.pop('xf', None)
+            psave(p)
+            return self.send_json({'ok': 1})
+        if ep == 'rec':                            # mã khôi phục: 12 ký tự, không hết hạn, dùng một lần; tạo mã mới thì mã cũ mất hiệu lực
+            code = xf_code(12)
+            p['rc'] = {'h': xf_hash(code), 't': now()}
+            log(p, 'Tạo mã khôi phục mới')
+            psave(p)
+            return self.send_json({'ok': 1, 'code': code, 't': p['rc']['t']})
+        self.send_json({'err': 'Không có'}, 404)
+
     def verdict(self, p, sv, done, t):
         """Hỏi trọng tài về bản lưu mới. Trả {ok:1,...} | {ok:0, why, fresh?, restore?} | {busy:1}."""
         reset = any(c['type'] == 'reset' for c in done)
@@ -688,8 +791,9 @@ class H(SimpleHTTPRequestHandler):
             m = (p or {}).get('pmsg')
             return self.send_json({'ok': 1, 'title': m['title'], 'body': m['body']} if m else {'ok': 0})
         p = pload(str(b.get('id') or ''))
-        if not p or not hmac.compare_digest(str(b.get('tok') or '').encode(), p['tok'].encode()):
-            return self.send_json({'err': 'Sai khóa người chơi'}, 403)
+        k = tok_check(p, b.get('tok')) if p else 'bad'
+        if k:
+            return self.tok_fail(p, k)
         e = str(b.get('endpoint') or '')
         if ep == 'sub':                     # trình duyệt của người chơi đăng ký nhận đẩy (giữ 3 đăng ký gần nhất)
             if not push_host_ok(e):

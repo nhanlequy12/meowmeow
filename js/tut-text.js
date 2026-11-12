@@ -324,7 +324,12 @@ const TUT_TEXT={
         'Công cụ thử nghiệm: tua nhanh 10 phút và chơi lại từ đầu (xóa toàn bộ dữ liệu).']},
       {id:'net',ic:'👥',t:'Chơi qua máy chủ chung',net:1,p:[
         'Khi game chạy qua máy chủ chung, lần đầu vào bạn đặt một cái tên để quản trị viên nhận ra.',
-        'Bản lưu tự sao lên máy chủ 30 giây một lần. Quà và thông báo của quản trị viên hiện ngay khi đồng bộ.']}
+        'Bản lưu tự sao lên máy chủ 30 giây một lần. Quà và thông báo của quản trị viên hiện ngay khi đồng bộ.']},
+      {id:'xfer',ic:'📱',t:'Chơi tiếp trên máy khác',net:1,p:[
+        'Đổi từ điện thoại sang máy tính (hay ngược lại): ở máy cũ chọn Cài đặt › Chuyển sang máy khác để lấy mã 8 ký tự. Ở máy mới chọn Nhận tiến độ từ máy khác rồi nhập mã; máy mới tinh thì game tự hỏi ngay lúc mở. Mã dùng một lần, hết hạn sau 10 phút.',
+        'Máy mới nhận đúng bản lưu máy chủ đang giữ: đủ mèo, xu, vé, phòng, đồ đạc, bảo hiểm gacha. Mỗi lúc chỉ một máy chơi được: nhận xong thì máy cũ thôi lưu tiến độ, những gì chơi thêm ở máy cũ không được giữ.',
+        'Phòng khi mất máy: tạo mã khôi phục 12 ký tự trong Cài đặt và ghi lại. Mã chỉ hiện một lần và dùng được một lần. Không có mã khôi phục thì nhờ quản trị viên tạo mã chuyển máy.',
+        'Đừng đưa mã cho người khác: ai có mã là lấy được tiến độ của bạn.']}
     ]
   }
 };
