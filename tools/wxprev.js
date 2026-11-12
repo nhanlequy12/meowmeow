@@ -6,7 +6,7 @@
 const fs=require('fs'),path=require('path'),zlib=require('zlib');
 const R=path.join(__dirname,'..');
 globalThis.localStorage={getItem(){return null},setItem(){}};
-const files=['js/data.js','js/wx-data.js','js/sprites.js','js/art.js'];
+const files=['js/data.js','js/wx-data.js','js/pw-data.js','js/sprites.js','js/art.js'];
 (0,eval)(files.map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+'\n;globalThis.__G={Art,FURN,WXDEV,SUPPLY};');
 const {Art,FURN,WXDEV,SUPPLY}=__G;globalThis.Art=Art;globalThis.FURN=FURN;
 const arg=process.argv[2]||'all';

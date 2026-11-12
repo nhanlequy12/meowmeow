@@ -47,7 +47,7 @@ const wxNow=()=>wxAt(wxClock());
 function wxReseed(seed,t){WXC.seed=seed|0;WX_OFF=(t||Date.now())-Date.now();Object.keys(WXE).forEach(k=>delete WXE[k]);if(typeof wxDirty==='function')wxDirty();if(typeof render==='function'&&S)render()}
 // dự báo n đợt tới (sau đợt hiện tại), mỗi đợt kèm nhiệt độ ở giữa đợt
 function wxForecast(n){const out=[];let t=wxNow().e;for(let i=0;i<n;i++){const o=wxAt(t+1);o.temp=wxAt(Math.floor((o.s+o.e)/2)).temp;out.push(o);t=o.e}return out}
-const wxHasStation=()=>S.items.some(i=>i.room&&FURN[i.fid].wx&&FURN[i.fid].wx.station&&!i.broken);
+const wxHasStation=()=>S.items.some(i=>i.room&&FURN[i.fid].wx&&FURN[i.fid].wx.station&&!i.broken&&!(typeof pwOff==='function'&&pwOff(i)));
 const wxDanger=o=>o.w.bad>=2;
 
 /* ---------- khí hậu phòng ---------- */
@@ -56,14 +56,14 @@ const devOk=(f,rid)=>{const r=f.wx.rooms,C=ROOM_CLIMATE[rid]||{};return !r||(r==
 function wxDevices(rid){
   const n={},on=[],off=[];
   itemsIn(rid).forEach(i=>{const f=FURN[i.fid];if(!f.wx||!Object.keys(f.wx).length||f.bed&&!f.wx.heat&&!f.wx.cool&&!f.wx.comfort&&!f.wx.shelter)return;
-    const why=i.broken?'đang hỏng':!devOk(f,rid)?'không hợp phòng này':(n[f.id]=(n[f.id]||0)+1)>(f.max||99)?'quá số lượng':i.off?'đang tắt':i.chg?'hết pin, đang sạc':'';
+    const why=i.broken?'đang hỏng':!devOk(f,rid)?'không hợp phòng này':(n[f.id]=(n[f.id]||0)+1)>(f.max||99)?'quá số lượng':i.off?'đang tắt':(typeof pwOff==='function'&&pwOff(i))?'hết pin':'';
     (why?off:on).push({i,f,why})});
   return {on,off};
 }
 const RCC={};let WXV=0;                          // bộ nhớ đệm khí hậu phòng: tính lại mỗi 20 giây, khi đồ trong phòng đổi, hoặc khi gọi wxDirty()
 const wxDirty=()=>{WXV++};
 function roomClimate(rid){
-  const t=wxClock(),its=itemsIn(rid),k=rid+'|'+Math.floor(t/20000)+'|'+WXV+'|'+its.length+'|'+its.reduce((a,i)=>a+(i.off?1:0)+(i.broken?2:0)+(i.chg?4:0),0);if(RCC[k])return RCC[k];
+  const t=wxClock(),its=itemsIn(rid),k=rid+'|'+Math.floor(t/20000)+'|'+WXV+'|'+its.length+'|'+its.reduce((a,i)=>a+(i.off?1:0)+(i.broken?2:0)+((typeof pwOff==='function'&&pwOff(i))?4:0),0);if(RCC[k])return RCC[k];
   const R=ROOM_CLIMATE[rid]||ROOM_CLIMATE.living,o=wxAt(t),D=wxDevices(rid),out=!!R.out;
   let ins=R.ins||0,H=0,K=0,Ha=0,Ka=0,sh=0,wb=0,hum=0,cf=0,quiet=0,dry=0,bath=0,health=0,sensor=0;
   const thermo=D.on.some(d=>d.f.wx.thermo);
@@ -74,13 +74,13 @@ function roomClimate(rid){
     if(w.shelter)sh+=w.shelter;if(w.wind)wb+=w.wind;if(w.hum)hum+=w.hum;if(w.comfort)cf+=w.comfort;if(w.quiet)quiet=1;if(w.dry)dry+=w.dry;if(w.bath)bath=1;if(w.health)health+=w.health;if(w.sensor)sensor=1});
   ins=Math.min(.85,ins);sh=Math.min(1,sh);wb=Math.min(1,wb);cf=Math.min(WXC.comfort.devCap,cf);
   const exp=R.exp*(1-ins);
-  let T=R.base+(o.temp-R.base)*exp+H-K;
+  let T=R.base+(o.temp-R.base)*exp+H-K;const T0=T; // T0: nhiệt độ trước khi máy tự động chạy (js/pw.js biết máy tự động có đang tốn pin không)
   if(T<21&&Ha)T=Math.min(21,T+Ha);if(T>25&&Ka)T=Math.max(25,T-Ka);
   T=Math.round(T*10)/10;
   const H2=Math.round(clamp(R.hum+(o.hum-R.hum)*exp+hum,10,100)),rain=o.rain*(out?1:R.exp*.15)*(1-sh),wind=o.wind*(out?1:R.exp*.3)*(1-wb),noise=o.noise*(quiet?0:out?1:.6);
   const dist=(v,b)=>v<b[0]?b[0]-v:v>b[1]?v-b[1]:0,C=WXC.comfort;
   const comfort=Math.round(clamp(100-C.degPen*dist(T,WXC.ideal)-C.humPen*dist(H2,WXC.comfyHum)-C.wind*wind-C.rain*rain-C.noise*noise+cf,0,100));
-  const r={rid,T,hum:H2,rain,wind,noise,comfort,exp,ins,heat:H+Ha,cool:K+Ka,shelter:sh,dry,bath,health,sensor,out,o,D};
+  const r={rid,T,T0,hum:H2,rain,wind,noise,comfort,exp,ins,heat:H+Ha,cool:K+Ka,shelter:sh,dry,bath,health,sensor,out,o,D};
   const ks=Object.keys(RCC);if(ks.length>200)ks.slice(0,100).forEach(x=>delete RCC[x]);
   return RCC[k]=r;
 }
@@ -89,12 +89,12 @@ function roomClimate(rid){
 const wxs=c=>c.wxs||(c.wxs={cx:0,hx:0,wet:0,sk:0,ex:0});
 // nhiệt độ cảm nhận của bé: phòng, cộng hiệu ứng ổ đang nằm (sưởi, mát, tự chỉnh), trừ khi ướt và gió lùa
 function wxFeel(c){
-  const rc=roomClimate(c.room),bi=typeof bedItem==='function'&&bedItem(c),bw=bi&&FURN[bi.fid].wx||{},x=wxs(c);
+  const rc=roomClimate(c.room),bi=typeof bedItem==='function'&&bedItem(c),bw=bi&&!(typeof pwOff==='function'&&pwOff(bi))&&FURN[bi.fid].wx||{},x=wxs(c);
   let T=rc.T;if(bw.lheat)T+=bw.lheat;if(bw.lcool)T-=bw.lcool;if(bw.lauto){if(T<22)T=Math.min(22,T+bw.lauto);else if(T>25)T=Math.max(25,T-bw.lauto)}
   const sh=!!bw.lshelter,rain=sh?0:rc.rain,wind=sh?0:rc.wind;
   return {rc,bi,T,rain,wind,feel:T-(x.wet>=WXC.wetSt?WXC.wetFeel:0)-wind*4};
 }
-const wxSt=c=>{const x=wxs(c),L=[];if(x.sk>0)L.push('sick');if(x.cx>=WXC.coldSt)L.push('cold');if(x.hx>=WXC.hotSt)L.push('hot');if(x.wet>=WXC.wetSt)L.push('wet');if(x.ex)L.push('exhausted');
+const wxSt=c=>{const x=wxs(c),L=[];if(c.fr>0)L.push('scared');if(x.sk>0)L.push('sick');if(x.cx>=WXC.coldSt)L.push('cold');if(x.hx>=WXC.hotSt)L.push('hot');if(x.wet>=WXC.wetSt)L.push('wet');if(x.ex)L.push('exhausted');
   if(c.wa!=null&&c.wa<WXC.water.low)L.push('thirsty');if((c.cf||0)>=75)L.push('comfy');if((x.rest||0)>now())L.push('rested');return L};
 const wxHas=(c,k)=>wxSt(c).includes(k);
 function wxCat(c,dt,sim){ // sim: đang bù thời gian vắng mặt (load() gọi tick(…, true))
@@ -155,7 +155,7 @@ function giveWater(rid){const f=FURN.waterbowl;S.items.push({iid:S.nid++,fid:'wa
 function fillWater(rid){let n=0;wbowls(rid).forEach(b=>{const cap=FURN[b.fid].water.cap;if((b.w||0)<cap){b.w=cap;n++}});if(n)save();return n}
 function wxDrink(rid){
   const bs=wbowls(rid).filter(b=>!b.broken);if(!bs.length)return;
-  bs.forEach(b=>{const W=FURN[b.fid].water;if(W.auto&&now()>=(b.wat||0)){b.w=W.cap;b.wat=now()+600000}});
+  bs.forEach(b=>{const W=FURN[b.fid].water;if(W.auto&&!(typeof pwOff==='function'&&pwOff(b))&&now()>=(b.wat||0)){b.w=W.cap;b.wat=now()+600000}});
   homeCats(rid).filter(c=>(c.wa==null?100:c.wa)<WXC.water.drinkAt).sort((a,b)=>a.wa-b.wa).forEach(c=>{
     const b=bs.find(b=>(b.w||0)>0);if(!b)return;const W=FURN[b.fid].water,hotNow=roomClimate(rid).T>WXC.hotAt;
     b.w--;c.wa=Math.min(100,c.wa+WXC.water.drink+(W.cool&&hotNow?10:0));const x=wxs(c);x.hx=Math.max(0,x.hx-(W.cool?40:20));if(W.happy)c.hp=clamp(c.hp+W.happy,0,100);
@@ -167,18 +167,11 @@ function wxTick(dt,sim){
   if(!S.wxMig){ownedRooms().forEach(r=>{if(!wbowls(r.id).length)giveWater(r.id)});S.wxMig=1}
   S.inv=S.inv||{};S.tlog=S.tlog||[];
   ownedRooms().forEach(r=>wxDrink(r.id));
-  wxBattery(dt,sim);
+  if(typeof pwTick==='function')pwTick(dt,sim); // điện năng: pin, sạc, điện mặt trời, máy phát, mất điện (js/pw.js)
   if(sim)S.cats.forEach(c=>{const f=c.wxs&&c.wxs.fl;if(!f)return;c.hp=Math.max(c.hp,f.hp);c.en=Math.max(c.en,f.en);c.he=Math.max(c.he,f.he);c.wa=Math.max(c.wa,f.wa)}); // vắng mặt: không xuống dưới mức sàn
 }
 
-// thiết bị chạy pin: đang bật thì mỗi phút trừ 1 phút pin; hết pin thì tự ngắt và sạc (run/chg phút pin mỗi phút) tới đầy rồi chạy lại; lúc tắt cũng sạc
-function wxBattery(dt,sim){
-  const m=dt/60;S.items.forEach(i=>{const f=FURN[i.fid];if(!f||!f.bat||i.room==null||i.broken)return;const B=f.bat;if(i.bat==null)i.bat=B.run;
-    if(i.chg||i.off){i.bat=Math.min(B.run,i.bat+B.run/B.chg*m);
-      if(i.chg&&i.bat>=B.run){i.chg=0;wxDirty();if(!sim)notify(f.n+' ở '+ROOM[i.room].n+' đã sạc đầy'+(i.off?'.':', chạy lại.'),{icon:'🔋',title:'Thiết bị',key:'wxbat'})}}
-    else{i.bat-=m;if(i.bat<=0){i.bat=0;i.chg=1;wxDirty();if(!sim)notify(f.n+' ở '+ROOM[i.room].n+' chạy đủ '+B.run/60+' giờ nên tự ngắt, sạc '+B.chg/60+' giờ rồi chạy lại.',{icon:'🪫',title:'Thiết bị',key:'wxbat'})}}});
-}
-const batLeft=i=>{const f=FURN[i.fid];if(!f.bat)return 0;const b=i.bat==null?f.bat.run:i.bat;return i.chg?(f.bat.run-b)/(f.bat.run/f.bat.chg)*MIN:b*MIN};
+// thiết bị chạy pin: từ 2026-11-12 không còn tự sạc; pin, sạc tay, ổ điện nằm ở js/pw.js
 
 /* ---------- vật phẩm sinh tồn ---------- */
 const invN=id=>(S.inv&&S.inv[id])||0;

@@ -36,7 +36,7 @@
     wx_stab:['Giờ mình ghé Cửa hàng xem đồ giữ ấm và làm mát nhé. Bấm vào tab Cửa hàng.'],
     wx_cat:['Cửa hàng có thêm các mục Giữ ấm, Làm mát, Chống thời tiết, Tiện nghi và Sinh tồn.','Máy sưởi làm phòng ấm lên, quạt và điều hòa làm phòng mát đi. Món nào chưa đủ cấp sẽ ghi 🔒 kèm cấp cần đạt.'],
     wx_gift:['Tớ tặng bạn một thiết bị chạy pin hợp với thời tiết lúc này. Bấm nút để nhận, tớ đặt luôn vào phòng cho.'],
-    wx_dev:['Máy đã nằm trong phòng rồi đó. Chạm vào máy để bật hoặc tắt; máy chạy pin 12 giờ rồi tự sạc 1 giờ.','Muốn dời chỗ thì bấm ✏ Sắp xếp đồ rồi kéo máy đi.'],
+    wx_dev:['Máy đã nằm trong phòng rồi đó. Chạm vào máy để bật hoặc tắt. Máy chạy pin và không tự sạc: hết pin thì cắm vào ổ điện để sạc bằng xu (tớ chỉ ngay sau đây).','Muốn dời chỗ thì bấm ✏ Sắp xếp đồ rồi kéo máy đi.'],
     wx_room:['Đây là trang chi tiết của phòng: thiết bị vừa đặt đã có tác dụng, nhiệt độ phòng đổi theo.','Phòng nào hay quá nóng hoặc quá lạnh thì mua thêm thiết bị cho phòng đó nhé.'],
     wx_done:['Xong rồi! Quà nhỏ cho bạn đây.'],
     wx_bye:['Nhớ ngó ô thời tiết mỗi lần ghé nhà. Cần xem lại thì mở Sổ tay trong ⚙ Cài đặt. Chúc các bé luôn dễ chịu!']
@@ -107,7 +107,7 @@
   });
 
   /* ---------- Sổ tay: nút xem lại; trước cấp WX_LV thì ẩn các chương thời tiết ---------- */
-  const WXP=['weather','climate','climstat','climfix','health','supply'];
+  const WXP=['weather','climate','climstat','climfix','health','supply','power','solar','outage','generator'];
   if(typeof THB_BOOK!=='undefined'){
     const all=TX.book.pages;
     Object.defineProperty(TX.book,'pages',{get:()=>wxOpen()?all:all.filter(p=>!WXP.includes(p.id))});

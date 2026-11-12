@@ -45,28 +45,28 @@ const wxLine=rid=>{if(!wxOpen())return '';const rc=roomClimate(rid),wb=wbowls(ri
 function doWater(){const n=fillWater(cur);toast(n?'Đã đổ đầy '+n+' bát nước ở '+ROOM[cur].n+'.':'Các bát nước đều đang đầy.',{icon:'💧',title:'Nước uống',key:'water'});renderPanel()}
 function wxToggle(iid,dev){const it=S.items.find(i=>i.iid===iid);if(!it)return;it.off=!it.off;wxDirty();save();if(dev)openDev(iid);else openClimate()}
 // thiết bị bật tắt tay (máy sưởi, quạt thường và loại chạy pin): chạm vào món trong phòng mở bảng nhỏ (ui.js ptrEnd gọi wxDevTap)
-const batTxt=i=>i.chg?'đang sạc, chạy lại sau '+fmtL(batLeft(i)):'pin còn '+fmtL(batLeft(i));
-function wxDevTap(it){const f=FURN[it.fid],w=f.wx;if(!w||!(f.bat||((w.heat||w.cool)&&!w.auto)))return false;openDev(it.iid);return true}
+const batTxt=i=>typeof pwBatTxt==='function'?pwBatTxt(i):''; // pin sạc tay: js/pw-ui.js
+function wxDevTap(it){const f=FURN[it.fid],w=f.wx;if((f.pw||f.pwx)&&typeof openPw==='function'){openPw(it.iid);return true}if(!w||!((w.heat||w.cool)&&!w.auto))return false;openDev(it.iid);return true} // đồ điện: bảng pin và nút Sạc thiết bị (js/pw-ui.js)
 function openDev(iid){
   const i=S.items.find(x=>x.iid===iid);if(!i||!i.room){closeModal();return}
   const f=FURN[i.fid],w=f.wx,rc=roomClimate(i.room),on=rc.D.on.some(d=>d.i===i),off=rc.D.off.find(d=>d.i===i),th=rc.D.on.some(d=>d.f.wx.thermo);
-  const st=i.broken?'Đang hỏng':i.chg?'Hết pin, tự ngắt để sạc':i.off?'Đang tắt':on?(th?'Đang bật · bộ điều chỉnh nhiệt độ tự chạy khi cần':'Đang chạy'):(off?off.why:'');
-  const pct=f.bat?(i.bat==null?100:i.bat/f.bat.run*100):0;
-  modal('<h3>'+f.n+'</h3><div style="text-align:center">'+furnTag(f.id,(!i.off&&!i.chg&&!i.broken&&f.anim)?'a1':'',96,72)+'</div>'+
+  const st=i.broken?'Đang hỏng':(typeof pwDead==='function'&&pwDead(i))?'Hết pin, ngừng chạy':i.off?'Đang tắt':on?(th?'Đang bật · bộ điều chỉnh nhiệt độ tự chạy khi cần':'Đang chạy'):(off?off.why:'');
+  const dead=(typeof pwDead==='function'&&pwDead(i)),pct=f.pw?pwPct(i)*100:0;
+  modal('<h3>'+f.n+'</h3><div style="text-align:center">'+furnTag(f.id,(!i.off&&!dead&&!i.broken&&f.anim)?'a1':'',96,72)+'</div>'+
     '<div class="cd-sec"><div class="cd-grid"><div class="k">Trạng thái</div><div><b style="color:'+(on?'var(--good)':'var(--bad)')+'">'+st+'</b></div>'+
     '<div class="k">Tác dụng</div><div>'+(w.heat?'🔥 ấm thêm '+String(w.heat).replace('.',',')+'°C ':'')+(w.cool?'❄️ mát '+String(w.cool).replace('.',',')+'°C':'')+'</div>'+
-    (f.bat?'<div class="k">🔋 Pin</div><div>'+batTxt(i)+wxBar(pct,i.chg?'#ffb347':'#5fd08a')+'</div>':'')+
+    (f.pw?'<div class="k">🔋 Pin</div><div>'+batTxt(i)+wxBar(pct,pct<20?'#ff6b6b':'#5fd08a')+'</div>':'')+
     '<div class="k">Phòng</div><div>'+ROOM[i.room].n+' · '+fmtT(rc.T)+'</div></div></div>'+
     '<div class="dim" style="margin-top:6px">'+f.d+'</div>'+
-    '<div class="row" style="justify-content:center;margin-top:8px">'+(i.broken||i.chg?'':'<button class="sm '+(i.off?'on':'')+'" onclick="wxToggle('+iid+',1)">'+(i.off?'▶ Bật':'⏸ Tắt')+'</button>')+'<button class="sm" onclick="openClimate(\''+i.room+'\')">🌡 Khí hậu phòng</button></div>');
+    '<div class="row" style="justify-content:center;margin-top:8px">'+(i.broken||dead?'':'<button class="sm '+(i.off?'on':'')+'" onclick="wxToggle('+iid+',1)">'+(i.off?'▶ Bật':'⏸ Tắt')+'</button>')+'<button class="sm" onclick="openClimate(\''+i.room+'\')">🌡 Khí hậu phòng</button></div>');
 }
 
 function climHtml(rid){
   const rc=roomClimate(rid),R=ROOM_CLIMATE[rid]||{},o=rc.o,th=rc.D.on.some(d=>d.f.wx.thermo);
-  const dv=d=>{const w=d.f.wx,man=d.f.bat||(w.heat||w.cool)&&!w.auto&&!th,fx=[];
+  const dv=d=>{const w=d.f.wx,man=(w.heat||w.cool)&&!w.auto&&!th,fx=[];
     if(w.heat)fx.push('🔥 +'+w.heat+'°'+(w.auto||th?' (tự động)':''));if(w.cool)fx.push('❄️ −'+w.cool+'°'+(w.auto||th?' (tự động)':''));if(w.ins)fx.push('🧱 cách nhiệt '+Math.round(w.ins*100)+'%');if(w.sun)fx.push('🌤 chống nắng');if(w.shelter)fx.push('☂️ che mưa '+Math.round(w.shelter*100)+'%');
     if(w.wind)fx.push('🌬 chắn gió '+Math.round(w.wind*100)+'%');if(w.hum)fx.push('💧 '+(w.hum>0?'+':'')+w.hum+'% ẩm');if(w.comfort)fx.push('😌 +'+w.comfort);if(w.dry)fx.push('💨 sấy khô');if(w.quiet)fx.push('🎧 át tiếng sấm');if(w.lheat||w.lcool||w.lauto)fx.push('🛏 chỉnh nhiệt cho bé nằm trên');
-    return '<div class="card" style="padding:6px 10px">'+furnTag(d.f.id,'',40,30)+'<div class="g"><b>'+d.f.n+'</b>'+(d.why?' <span class="dim">· '+d.why+'</span>':'')+'<br><small>'+(fx.join(' · ')||d.f.d)+(d.f.bat?' · 🔋 '+batTxt(d.i):'')+'</small></div>'+(man&&!d.i.broken&&!d.i.chg?'<button class="sm'+(d.i.off?'':' on')+'" onclick="wxToggle('+d.i.iid+')">'+(d.i.off?'Bật':'Đang bật')+'</button>':'')+'</div>'};
+    return '<div class="card" style="padding:6px 10px">'+furnTag(d.f.id,'',40,30)+'<div class="g"><b>'+d.f.n+'</b>'+(d.why?' <span class="dim">· '+d.why+'</span>':'')+'<br><small>'+(fx.join(' · ')||d.f.d)+(d.f.pw?' · 🔋 '+batTxt(d.i):'')+'</small></div>'+(man&&!d.i.broken&&!(typeof pwDead==='function'&&pwDead(d.i))?'<button class="sm'+(d.i.off?'':' on')+'" onclick="wxToggle('+d.i.iid+')">'+(d.i.off?'Bật':'Đang bật')+'</button>':'')+'</div>'};
   const cats=homeCats(rid),tips=[];
   if(rc.T<WXC.ideal[0])tips.push('Phòng đang lạnh: đặt máy sưởi, rèm giữ nhiệt, chăn ấm, hoặc chuyển các bé sang phòng kín hơn.');
   if(rc.T>WXC.ideal[1])tips.push('Phòng đang nóng: đặt quạt, điều hòa, rèm chống nắng, thảm làm mát; nhớ đổ nước.');
@@ -252,7 +252,7 @@ function wxRiskTag(inf){
   return p}}
 {const C0=choose;choose=function(e){const c=entCat(e);
   if(c&&!e.clone&&c.wxs&&Math.random()<.65){const st=wxSt(c),cold=st.includes('cold')||(c.wxs.dc||0)>3,hot=st.includes('hot')||(c.wxs.dh||0)>3;
-    if(cold||hot){const it=itemsIn(cur).find(i=>{const f=FURN[i.fid],w=f.wx;if(!w||i.broken||i.off||i.chg||!(f.bed||f.use))return false;return cold?(w.lheat||w.lauto||w.heat):(w.lcool||w.lauto)});
+    if(cold||hot){const it=itemsIn(cur).find(i=>{const f=FURN[i.fid],w=f.wx;if(!w||i.broken||i.off||(typeof pwDead==='function'&&pwDead(i))||!(f.bed||f.use))return false;return cold?(w.lheat||w.lauto||w.heat):(w.lcool||w.lauto)});
       if(it){const f=FURN[it.fid];if(f.bed){if(bedCats(it.iid).length<f.bed.at.length&&c.en<100&&putBed(c.uid,it.iid).ok)return}else{goItem(e,it);return}}}}
   return C0.apply(this,arguments)}}
 {const S0=stepEnt;stepEnt=function(e,dt){const c=entCat(e);
@@ -260,7 +260,7 @@ function wxRiskTag(inf){
     if(b&&now()-c.drink.t<4000&&e.state!=='jump'&&e.state!=='bed'&&e.state!=='sig'&&e.state!=='bye'&&!(e.state==='use'&&e.goal&&e.goal.at>=0)){e.goal={bowl:b.iid};e.tx=clamp(b.x+rnd(-10,10),14,WORLD_W-14);e.ty=clamp(b.y+rnd(1,4),FLOOR_MIN,FLOOR_MAX);e.state='walk';e.pre=.1;e.left=0;e.emo=null}}
   return S0.apply(this,arguments)}}
 // khung hoạt ảnh của thiết bị đang chạy, bát nước có nước (ui.js drawItem gọi)
-function wxVar(i){const f=FURN[i.fid];if(f.water)return (i.w||0)>0?'full':'';if(f.anim&&!i.off&&!i.chg&&!i.broken&&(!f.wx.rooms||devOk(f,i.room)))return Math.floor(performance.now()/220+i.iid)%2?'a1':'';return ''}
+function wxVar(i){const f=FURN[i.fid];if(f.water)return (i.w||0)>0?'full':'';if(f.pwx&&typeof pwVar==='function')return pwVar(i);if(f.anim&&!i.off&&!(typeof pwDead==='function'&&pwDead(i))&&!i.broken&&f.wx&&(!f.wx.rooms||devOk(f,i.room)))return Math.floor(performance.now()/220+i.iid)%2?'a1':'';return ''}
 
 /* ---------- hiệu ứng thời tiết và thiết bị trong phòng ---------- */
 const WXP=[],WXPMAX=260;
@@ -408,7 +408,7 @@ function admWxCat(k){const L=homeCats(cur);L.forEach(c=>{const x=wxs(c);if(c.he=
 function admWxDev(){let n=0;WXDEV.forEach(f=>{if(!S.items.some(i=>i.fid===f.id)){S.items.push({iid:S.nid++,fid:f.id,room:null,x:120,y:140,flip:false,broken:false});n++}});admDone(n?'Đã thêm '+n+' thiết bị vào kho (Nhà → Sắp xếp để đặt)':'Đã có đủ mọi thiết bị',1)}
 function admWxSup(){S.inv=S.inv||{};SUPPLY.forEach(s=>S.inv[s.id]=invN(s.id)+5);admDone('Mỗi vật phẩm sinh tồn +5',1)}
 function admWxWater(){let n=0;ownedRooms().forEach(r=>n+=fillWater(r.id));admDone('Đã đổ đầy '+n+' bát nước',1)}
-function admWxBat(full){let n=0;S.items.forEach(i=>{const f=FURN[i.fid];if(!f.bat||!i.room)return;n++;if(full){i.bat=f.bat.run;i.chg=0}else{i.bat=0;i.chg=1}});wxDirty();admDone(n?n+' thiết bị pin: '+(full?'sạc đầy':'hết pin, đang sạc'):'Chưa đặt thiết bị chạy pin nào trong phòng',1)}
+function admWxBat(full){let n=0;S.items.forEach(i=>{const f=FURN[i.fid];if(!f.pw||!i.room)return;n++;i.currentBattery=full?f.pw.batteryCapacity:0;if(full)delete i.lw});wxDirty();admDone(n?n+' thiết bị điện: '+(full?'sạc đầy':'hết pin'):'Chưa đặt thiết bị điện nào',1)}
 function admSkip(n){for(let k=0;k<n;k++)skipTime();admDone('Đã tua '+(n*10>=60?n*10/60+' giờ':n*10+' phút'),1)}
 {const s0=critStep,d0=critDraw;critStep=dt=>{s0(dt);wxStep(dt)};critDraw=g=>{d0(g);wxDraw(g)}}
 // khách lạ ngoài trời không ra khi mưa, tuyết, bão (quest.js đọc hàm này nếu có)

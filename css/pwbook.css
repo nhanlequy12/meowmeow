@@ -1,0 +1,41 @@
+/* ============ SÁCH ĐIỆN VÀ HIỆU ỨNG ĐIỆN (js/pw-ui.js) ============
+   Sách dùng chung khung .wb-* của Sách khí hậu (css/wxbook.css), chỉ đổi bìa xanh đêm. z-index 19 như sách khí hậu. */
+#pwbook{position:fixed;inset:0;z-index:19;display:none;align-items:center;justify-content:center;padding:10px;background:rgba(30,26,50,.55)}
+#pwbook.on{display:flex}
+.pw-book{--cover:#5a6a9a}
+html[data-theme=dark] .pw-book{--cover:#3e4a72}
+#pwbook .wb-l{overflow-y:auto}
+.pw-big{font-size:42px;line-height:1;filter:drop-shadow(0 2px 0 rgba(78,48,38,.35))}
+.pw-out{background:#2e2a48;color:#fff3c0;border-radius:12px;padding:8px 10px;border:3px solid #ffd83a;animation:pwGlow 1.6s ease-in-out infinite}
+.pw-out .t{font-weight:900;font-size:19px;letter-spacing:1px}
+.pw-out small{color:#e8e0ff;display:block;margin-top:3px;line-height:1.35}
+.pw-out .bar{background:#4a4468}
+@keyframes pwGlow{50%{box-shadow:0 0 0 3px rgba(255,216,58,.35)}}
+.pw-row{cursor:pointer}
+.pw-row .pw-ic{flex:none;width:34px;text-align:center}
+.pw-row button{flex:none}
+.pw-plug{flex:none;font-size:18px;animation:wiBeat 1.2s ease-in-out infinite}
+.pw-sum{flex:none;margin:-2px 0 5px;font-size:12.5px;text-align:center}
+.pw-bk{margin-top:auto;padding-top:8px;justify-content:center;gap:6px}
+.pw-tab{position:absolute;bottom:-14px;right:34px;z-index:3;min-height:36px;background:#ffd83a;border-color:#8a5a3a;color:#3a2410;font-weight:800}
+.pwchip.out{background:#3a2a48;color:#ffe9a0;border-color:#ffd83a;animation:pwBlink 1.4s ease-in-out infinite}
+.pwchip.out .dim{color:#d8d0f0}
+@keyframes pwBlink{50%{box-shadow:0 0 0 3px rgba(255,216,58,.45)}}
+.pw-warn{margin-top:8px;padding:6px 10px;border-radius:10px;background:#ffe1d6;border:2px dashed #c0503a;color:#8a2a1a;font-weight:700;font-size:13px;text-align:left}
+.pw-ol.off{opacity:.62}
+.pwline{border-left:4px solid #ffd83a}
+/* sét đánh: chớp trắng toàn màn hình, tia sét lớn */
+.pwfx{position:fixed;inset:0;z-index:44;pointer-events:none;animation:pwFlash 1.35s ease-out forwards}
+.pwfx svg{position:absolute;left:40%;top:0;width:20%;height:70%;filter:drop-shadow(0 0 14px #fff6b0) drop-shadow(0 0 30px #ffe066);animation:pwBoltA 1.35s steps(1) forwards}
+@keyframes pwFlash{0%{background:rgba(255,255,245,.95)}7%{background:rgba(255,255,245,.15)}13%{background:rgba(255,255,245,.85)}28%{background:rgba(16,16,44,.45)}100%{background:rgba(16,16,44,0)}}
+@keyframes pwBoltA{0%{opacity:1}9%{opacity:.2}14%{opacity:1}30%{opacity:0}100%{opacity:0}}
+.pwshake{animation:pwShake .6s linear}
+@keyframes pwShake{10%{transform:translate(-4px,2px)}20%{transform:translate(4px,-2px)}30%{transform:translate(-3px,-1px)}40%{transform:translate(3px,2px)}55%{transform:translate(-2px,1px)}70%{transform:translate(1px,-1px)}100%{transform:none}}
+@media (prefers-reduced-motion:reduce){.pwshake,.pwchip.out,.pw-out,.pw-plug{animation:none!important}.pwfx svg{animation-duration:.4s}}
+@media (max-width:760px){#pwbook{padding:6px}.pw-tab{bottom:-8px;right:14px}.pw-big{font-size:32px}}
+/* hàng trong trang Nguồn điện (không dùng .wb-fr vì màn thấp và màn hẹp biến .wb-fr thành ô dọc) */
+.pw-gl{display:flex;flex-direction:column;gap:5px}
+.pw-fr{display:flex;gap:8px;align-items:center;background:var(--pg2);border:2px solid #d9c394;border-radius:10px;padding:3px 8px;font-size:13px}
+.pw-fr .g{flex:1;min-width:0}.pw-fr .wi,.pw-fr img{flex:none}.pw-fr button{flex:none}
+.pwchip.out b{color:#ffe9a0}
+@media (max-width:520px){.pwchip.out .lbl{display:none}}

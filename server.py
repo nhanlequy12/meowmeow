@@ -88,7 +88,7 @@ RATE = Rate()
 
 class Judge:
     """Trọng tài tools/guard.js chạy nền bằng Node; tự khởi động lại khi mã game hoặc trọng tài đổi."""
-    FILES = ('js/data.js', 'js/wx-data.js', 'js/game.js', 'tools/guard.js')
+    FILES = ('js/data.js', 'js/wx-data.js', 'js/pw-data.js', 'js/game.js', 'tools/guard.js')
 
     def __init__(self):
         self.node = shutil.which('node')

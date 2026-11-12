@@ -3,9 +3,9 @@
    Mỗi phần in ĐẠT hoặc HỎNG kèm số liệu; thoát mã 1 nếu có phần hỏng. */
 const fs=require('fs'),path=require('path');const R=path.join(__dirname,'..');
 globalThis.localStorage={getItem(){return null},setItem(){},removeItem(){}};
-(0,eval)(['js/data.js','js/wx-data.js','js/game.js','js/wx.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
+(0,eval)(['js/data.js','js/wx-data.js','js/pw-data.js','js/game.js','js/wx.js','js/pw.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
   `\n;globalThis.T={get S(){return S},fresh,newCat,tick,load,save,wxAt,wxForecast,roomClimate,wxCat,wxSt,wxs,wxFeel,wxRegen,wxHunger,wxTick,fillWater,buySupply,useSupply,
-    tripInfo,startTrip,claimTrip,putBed,giveWater,kitFx,wxBattery,wxDevices,wxOverride,WXO,SP,FURN,WX,WXC,SEASONS,SUP,DEST,setOff:v=>{WX_OFF=v},setToff:v=>{TOFF=v},get TOFF(){return TOFF},setNotify:f=>{notify=f}};`);
+    tripInfo,startTrip,claimTrip,putBed,giveWater,kitFx,pwTick,wxDevices,wxOverride,WXO,SP,FURN,WX,WXC,SEASONS,SUP,DEST,setOff:v=>{WX_OFF=v},setToff:v=>{TOFF=v},get TOFF(){return TOFF},setNotify:f=>{notify=f}};`);
 let fail=0;const ok=(name,cond,info)=>{console.log((cond?'ĐẠT ':'HỎNG')+'  '+name+(info?'  ('+info+')':''));if(!cond)fail++};
 const MIN=60000,DAY=86400000,t0=Date.UTC(2026,10,11,0,0);
 // tìm thời điểm có kiểu thời tiết cần (và nhiệt độ thỏa điều kiện)
@@ -51,11 +51,10 @@ T.setNotify(()=>{});
   const tc=findT(o=>o.season.id==='winter'&&o.type==='cold'&&o.temp<=4),S=reset();at(tc);const o=T.wxAt(tc),lv=T.roomClimate('living'),bal=T.roomClimate('balcony');
   ok('Mùa đông: phòng khách lạnh (dưới 16°C) nhưng ấm hơn ban công nhiều',lv.T<16&&lv.T>bal.T+6,'ngoài '+o.temp+'°, ban công '+bal.T+'°, phòng khách '+lv.T+'°');
   const h=dev('bheater','living'),lv2=T.roomClimate('living');ok('Máy sưởi tích điện ấm thêm 2°C (yếu hơn máy sưởi mini 4°C)',Math.abs(lv2.T-lv.T-2)<.15,lv.T+'° → '+lv2.T+'°');
-  T.wxBattery(11*3600,false);ok('Sau 11 giờ vẫn chạy',!h.chg&&T.wxDevices('living').on.some(d=>d.i===h),'còn '+Math.round(h.bat)+' phút pin');
-  T.wxBattery(3600+60,false);ok('Bật liên tục 12 giờ thì tự ngắt và sạc',h.chg===1&&T.wxDevices('living').off.some(d=>d.i===h&&d.why==='hết pin, đang sạc'));
-  T.wxBattery(30*60,false);ok('Sạc chưa đủ 1 giờ thì chưa chạy',h.chg===1);
-  T.wxBattery(31*60,false);ok('Sạc đủ 1 giờ thì chạy lại',!h.chg&&h.bat===720&&T.wxDevices('living').on.some(d=>d.i===h));
-  h.off=1;h.bat=100;T.wxBattery(1800,false);ok('Lúc tắt thì tự sạc, không chạy',h.bat===460&&T.wxDevices('living').off.some(d=>d.i===h&&d.why==='đang tắt'));
+  T.pwTick(6*3600,false);ok('Pin 500 Wh, 70 W: sau 6 giờ vẫn chạy',T.wxDevices('living').on.some(d=>d.i===h),'còn '+Math.round(h.currentBattery)+' Wh');
+  T.pwTick(2*3600,false);ok('Hết pin thì ngừng chạy, mất tác dụng',h.currentBattery===0&&T.wxDevices('living').off.some(d=>d.i===h&&d.why==='hết pin'));
+  T.pwTick(5*3600,true);ok('Không tự sạc (kể cả lúc vắng mặt)',h.currentBattery===0);
+  h.off=1;T.pwTick(3600,false);ok('Tắt máy cũng không tự sạc',h.currentBattery===0&&T.wxDevices('living').off.some(d=>d.i===h&&d.why==='đang tắt'));
 }
 // 2c. Admin ghi đè mùa, thời tiết, giờ để thử
 {

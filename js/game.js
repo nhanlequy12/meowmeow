@@ -42,6 +42,7 @@ function load(){
   S.cats.forEach(c=>{if(c.coat&&!(SP[c.sp].coats&&ALLCOAT[c.coat]))delete c.coat;markSeen(c)});
   if(S.level>=WX_LV&&!S.wxU){S.wxU=1;S.wxOld=1} // người chơi đã qua cấp 2 trước bản cập nhật: thời tiết tự mở, tiến độ giữ nguyên (hướng dẫn thời tiết hiện một lần, cờ S.tut.wx)
   if(!S.bowlMig){for(const rid in S.rooms)giveBowl(rid,S.rooms[rid].bowlAt);S.bowlMig=1} // bản cũ: mỗi phòng có 1 bát cố định, nay thành món đồ
+  if(typeof pwMigrate==='function')pwMigrate(); // thiết bị pin kiểu cũ (i.bat, i.chg) sang pin sạc tay (js/pw.js)
   fixSlots();
   // Bù thời gian vắng mặt (tối đa 8 giờ) theo từng bước 10 phút, để máy cho ăn tự đổ và mèo đói tự ra ăn đúng như lúc đang mở game.
   const el=clamp((now()-(S.last||now()))/1000,0,8*3600);
@@ -130,7 +131,7 @@ const homeCats=rid=>S.cats.filter(c=>c.room===rid&&!onTrip(c.uid));
 const totalCap=()=>ownedRooms().reduce((a,r)=>a+r.cap,0);
 const freeRoom=()=>{const r=roomsByBuy().find(r=>catsIn(r.id).length<r.cap);return r?r.id:'wait'}; // phòng mua trước được lấp trước (cùng thứ tự với fillWait); hết chỗ thì vào Phòng chờ
 const roomHunger=rid=>{let m=ROOM[rid].hunger||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].hunger;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.max(.5,m)};
-const roomRegen=rid=>{let m=ROOM[rid].regen||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].regen;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.min(2,m)};
+const roomRegen=rid=>{let m=ROOM[rid].regen||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].regen;if(h&&!i.broken&&!seen[i.fid]&&!(typeof pwOff==='function'&&pwOff(i))){seen[i.fid]=1;m*=h}});return Math.min(2,m)};
 const itemsIn=rid=>S.items.filter(i=>i.room===rid);
 /* ---------- ổ ngủ: c.bed = iid của ổ, c.bk = chỗ nằm (chỉ số trong FURN[..].bed.at). Ngủ thì hồi năng lượng nhanh gấp bed.en lần, đầy thì tự dậy.
    Ổ bị cất, bán, hỏng, bé đổi phòng hay đi viễn chinh thì bé tự thôi ngủ (bedItem trả null, tick xóa c.bed). */
@@ -149,12 +150,12 @@ function kickBed(uid){const c=catBy(uid);if(!c||c.bed==null)return false;delete 
 const roomHas=(rid,fid)=>S.items.some(i=>i.room===rid&&i.fid===fid&&!i.broken);
 function gEff(){
   const e={coin:0,speed:0,ticket:0,pet:0,night:0},seen={};
-  S.items.forEach(i=>{if(!i.room||i.broken||seen[i.fid])return;seen[i.fid]=1;const g=FURN[i.fid].g;if(g)for(const k in g)e[k]+=g[k]});
+  S.items.forEach(i=>{if(!i.room||i.broken||seen[i.fid]||(typeof pwOff==='function'&&pwOff(i)))return;seen[i.fid]=1;const g=FURN[i.fid].g;if(g)for(const k in g)e[k]+=g[k]});
   return e;
 }
 function roomHappy(rid){
   let h=0; const seen={};
-  itemsIn(rid).forEach(i=>{if(i.broken||seen[i.fid])return;seen[i.fid]=1;h+=FURN[i.fid].happy||0});
+  itemsIn(rid).forEach(i=>{if(i.broken||seen[i.fid]||(typeof pwOff==='function'&&pwOff(i)))return;seen[i.fid]=1;h+=FURN[i.fid].happy||0});
   return Math.min(HAPPY_CAP,h)+(ROOM[rid].happy||0)-(ROOM[rid].wait?10:0);
 }
 function happyTarget(c){
@@ -202,7 +203,7 @@ function tick(dt,sim){
   ownedRooms().forEach(r=>{
     const bs=bowlsIn(r.id); if(!bs.length)return;
     // máy tự đổ thêm hạt khô cho đầy; nếu trong máy còn món khác do bạn đổ thì chờ mèo ăn hết đã
-    bs.forEach(b=>{if(FURN[b.fid].bowl.auto&&now()>=(b.at||0)&&homeCats(r.id).length&&!(b.left>0&&b.food!=='kibble')){const p=bowlCost(b,'kibble');if(S.coins>=p){S.coins-=p;if(TOFF)AWAY.cost+=p;fillBowl(b,'kibble')}}});
+    bs.forEach(b=>{if(FURN[b.fid].bowl.auto&&!(typeof pwOff==='function'&&pwOff(b))&&now()>=(b.at||0)&&homeCats(r.id).length&&!(b.left>0&&b.food!=='kibble')){const p=bowlCost(b,'kibble');if(S.coins>=p){S.coins-=p;if(TOFF)AWAY.cost+=p;fillBowl(b,'kibble')}}});
     if(bs.some(b=>b.left>0))eatCheck(r.id,false);
     const st=S.rooms[r.id];
     if(homeCats(r.id).some(c=>c.full<20)&&!bs.some(b=>b.left>0)&&bowlCap(r.id)<homeCats(r.id).length&&now()>=(st.warnAt||0)){st.warnAt=now()+300000;notify('🍽️ Thiếu bát ăn ở '+r.n+': '+homeCats(r.id).length+' bé nhưng chỉ có '+bowlCap(r.id)+' suất. Mua thêm bát ở Cửa hàng.')}

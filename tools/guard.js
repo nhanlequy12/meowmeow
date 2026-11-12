@@ -14,7 +14,7 @@
 const fs=require('fs'),path=require('path'),readline=require('readline');
 const ROOT=path.join(__dirname,'..');
 globalThis.localStorage={getItem(){return null},setItem(){},removeItem(){}};
-const src=['js/data.js','js/wx-data.js','js/game.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n;\n')+
+const src=['js/data.js','js/wx-data.js','js/pw-data.js','js/game.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n;\n')+
   '\n;globalThis.G={getS:()=>S,setS:v=>{S=v},gachaCore,prng,releaseGift,SP,FURN,ROOM,STAR,TRAITS,ALLCOAT,RARE,GACHA_COST,TICKET_COST,MAX_LV,PITY,SUP};';
 (0,eval)(src);
 const {SP,FURN,ROOM,TRAITS,ALLCOAT,GACHA_COST,TICKET_COST,MAX_LV,PITY}=G;
@@ -119,7 +119,9 @@ function judge(o){
   // quà của hướng dẫn thời tiết (js/tut-wx.js): một thiết bị chạy pin và 200 xu + 1 vé, mỗi phần một lần
   const g0=(O.tut&&O.tut.got)||{},g1=(N.tut&&N.tut.got)||{};
   const wxGift=(g1.wxdev&&!g0.wxdev?Math.max(FURN.bheater.price,FURN.bfan.price):0)+(g1.wxrw&&!g0.wxrw?200+TICKET_COST:0);
-  const known=(gift.coins||0)+TICKET_COST*(gift.tickets||0)+GACHA_COST*nfree+refund+newRooms*(FURN.bowl.price+water)+wxMig*water+(tutOpen?TUT_GIFT:0)+wxGift;
+  // quà hướng dẫn điện năng (js/tut-pw.js): ổ điện (đơn hoặc chống nước, có thể kèm quạt pin nếu chưa có thiết bị) + 50 xu; thưởng 150 xu
+  const pwGift=(g1.pwgift&&!g0.pwgift?Math.max(FURN.out1.price,FURN.outwet.price)+FURN.bfan.price+50:0)+(g1.pwrw&&!g0.pwrw?150:0);
+  const known=(gift.coins||0)+TICKET_COST*(gift.tickets||0)+GACHA_COST*nfree+refund+newRooms*(FURN.bowl.price+water)+wxMig*water+(tutOpen?TUT_GIFT:0)+wxGift+pwGift;
   const lv=Math.min(O.level,MAX_LV),hr=Math.max(0,o.dt)/3600;
   let bc=Math.min(CAP_C(lv),(o.budget&&o.budget.c!=null?o.budget.c:CAP_C(lv))+RATE_C(lv)*hr);
   const needC=value(N)-value(O)-known;

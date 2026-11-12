@@ -104,11 +104,11 @@ const WD=(id,n,price,kind,w,h,cat,ul,rare,wx,o)=>Object.assign({id,n,price,kind,
 const NAPA=(dx,dy)=>({dx,dy,front:1,sleep:1,emo:'z'});
 const WXDEV=[
  // giữ ấm
- // giá rẻ, chạy pin: yếu hơn nhiều, bật tắt tay; bật liên tục 12 giờ thì tự ngắt và sạc 1 giờ (bat: phút chạy, phút sạc)
- WD('bheater','Máy sưởi tích điện',100,'floor',12,14,'warm',1,1,{heat:2},{max:2,anim:1,bat:{run:720,chg:60},use:NAPA(10,1),d:'Rẻ, chạy pin: ấm phòng thêm 2°C khi đang bật.'}),
- WD('bwarmlamp','Đèn sưởi tích điện',140,'floor',10,20,'warm',2,1,{heat:2.5},{max:2,anim:1,bat:{run:720,chg:60},use:NAPA(9,1),d:'Rẻ, chạy pin: ấm phòng thêm 2,5°C khi đang bật.'}),
- WD('bfan','Quạt tích điện mini',90,'floor',12,14,'cool',1,1,{cool:2},{max:2,anim:1,bat:{run:720,chg:60},d:'Rẻ, chạy pin: mát phòng 2°C khi đang bật.'}),
- WD('bicefan','Quạt hơi đá tích điện',140,'floor',12,18,'cool',2,1,{cool:2.5,hum:3},{max:2,anim:1,bat:{run:720,chg:60},d:'Rẻ, chạy pin: mát phòng 2,5°C khi đang bật, thêm chút độ ẩm.'}),
+ // giá rẻ, chạy pin: yếu hơn nhiều, bật tắt tay. Pin, phí sạc, ổ điện: js/pw-data.js (không còn tự sạc)
+ WD('bheater','Máy sưởi tích điện',100,'floor',12,14,'warm',1,1,{heat:2},{max:2,anim:1,use:NAPA(10,1),d:'Rẻ, chạy pin: ấm phòng thêm 2°C khi đang bật.'}),
+ WD('bwarmlamp','Đèn sưởi tích điện',140,'floor',10,20,'warm',2,1,{heat:2.5},{max:2,anim:1,use:NAPA(9,1),d:'Rẻ, chạy pin: ấm phòng thêm 2,5°C khi đang bật.'}),
+ WD('bfan','Quạt tích điện mini',90,'floor',12,14,'cool',1,1,{cool:2},{max:2,anim:1,d:'Rẻ, chạy pin: mát phòng 2°C khi đang bật.'}),
+ WD('bicefan','Quạt hơi đá tích điện',140,'floor',12,18,'cool',2,1,{cool:2.5,hum:3},{max:2,anim:1,d:'Rẻ, chạy pin: mát phòng 2,5°C khi đang bật, thêm chút độ ẩm.'}),
  WD('heatmini','Máy sưởi mini',300,'floor',16,18,'warm',2,1,{heat:4},{max:2,anim:1,use:NAPA(13,1),d:'Làm ấm phòng thêm 4°C khi đang bật. Mèo lạnh hay nằm cạnh.'}),
  WD('heatpro','Máy sưởi cao cấp',1400,'floor',20,26,'warm',7,2,{heat:8,auto:1},{max:1,anim:1,use:NAPA(15,1),d:'Tự sưởi khi phòng lạnh, tối đa thêm 8°C, không làm phòng nóng quá.'}),
  WD('heatlamp','Đèn sưởi',700,'floor',14,40,'warm',4,1,{heat:5,outok:1},{max:2,anim:1,d:'Làm ấm thêm 5°C, dùng được cả ngoài ban công, sân vườn.'}),
@@ -202,8 +202,7 @@ WXDEV.forEach(f=>{
   f.price=f.water&&f.id==='waterbowl'?nicePrice(f.price*BOWL_K):nicePrice(f.price*(FURN_K0+FURN_KS*(f.ul-1))); // cùng hệ số giá cày lâu với nội thất khác
   const w=f.wx,rm=w.rooms==='out'?'phòng ngoài trời':w.rooms==='in'?'phòng trong nhà':Array.isArray(w.rooms)?w.rooms.map(r=>ROOM[r].n).join(', '):'';
   f.d='['+RARE_N[f.rare]+'] '+f.d+(rm?' Chỉ có tác dụng ở '+rm+'.':'')+(f.max?' Tối đa '+f.max+' món cùng loại có tác dụng trong một phòng.':'');
-  if(f.bat)f.d+=' Chạy pin: bật liên tục '+f.bat.run/60+' giờ thì tự ngắt và sạc '+f.bat.chg/60+' giờ rồi chạy lại; lúc tắt cũng tự sạc. Chạm vào món trong phòng để bật tắt.';
-  else if((f.wx.heat||f.wx.cool)&&!f.wx.auto)f.d+=' Chạm vào món trong phòng để bật tắt.';
+  if((f.wx.heat||f.wx.cool)&&!f.wx.auto)f.d+=' Chạm vào món trong phòng để bật tắt.';
   if(f.bed)f.d+=' Ổ ngủ: chạm vào để cho '+(f.bed.at.length>1?'tối đa '+f.bed.at.length+' bé':'một bé')+' đi ngủ, hồi năng lượng nhanh gấp '+String(f.bed.en).replace('.',',')+' lần.';
   FURNS.push(f);FURN[f.id]=f;
 });

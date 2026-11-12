@@ -150,3 +150,13 @@ Hai phiên Codex chỉ sửa file của mình, dùng API `TUT` của lõi, đọ
 2. Ba mèo khởi đầu: 1★, mèo con, một thuộc tính khởi đầu riêng.
 3. Lượt gacha đầu: chắc chắn 4★.
 4. Người chơi cũ: không chạy hướng dẫn, tắt mẹo theo ngữ cảnh; vẫn có Sổ tay và chơi lại hướng dẫn.
+
+## Hướng dẫn điện năng (2026-11-12, `js/tut-pw.js`)
+
+Ba luồng phụ của `TUT.addFlow`, mỗi luồng chạy đúng một lần:
+
+- `pw`, ngay sau hướng dẫn thời tiết ở cấp 2 (16 bước): thiết bị điện chạy pin và không tự sạc; bốn điều cần nhớ; tặng Ổ điện đơn (ổ chống nước nếu thiết bị ở chỗ ẩm) gắn sát chân tường cạnh thiết bị và 50 xu tiền sạc; thiết bị tặng còn 35% pin để tập; chạm thiết bị → 🔌 Sạc thiết bị → chọn ổ → xác nhận phí; dây cắm và vạch pin; ô ⚡ và hai trang Sách điện; thẻ về sét đánh, điện mặt trời (cấp 6), máy phát (cấp 14); thưởng 150 xu. Người chơi cũ đã xem hướng dẫn thời tiết thấy lời mời "Xem ngay / Để sau" (`S.pwOld`); "Để sau" vẫn nhận đủ quà. Cờ `S.tut.pw`; sét đánh chỉ xảy ra sau khi cờ này bật.
+- `pwout`, lần đầu mất điện (4 bước): đếm ngược, đồ pin vẫn chạy, mèo hoảng sợ và cách làm dịu, trang trái Sách điện. Cờ `S.tut.pwo`.
+- `pwgen`, lần đầu có máy phát (3 bước): chỉ đặt ở tầng hầm, sạc bằng xu, tự chuyển nguồn, dùng xong về 0%. Cờ `S.tut.pwg`.
+
+Sổ tay thêm bốn chương `power`, `solar`, `outage`, `generator` (ẩn trước cấp 2 như các chương thời tiết) và nút "▶ Xem lại hướng dẫn điện năng".
