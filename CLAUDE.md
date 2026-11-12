@@ -672,6 +672,7 @@ Người dùng gửi "PROMPT CẬP NHẬT GAME" 5 mục. Không tạo hệ thố
 
 ### Bảo hiểm 5★ (`PITY5=40`)
 - Hai bộ đếm trong `gachaCore`: `S.pity` (4★ trở lên sau 10 lượt, giữ nguyên luật cũ) và `S.pity5` (bắt đầu 0, +1 mỗi lượt không ra 5★, về 0 khi ra 5★, tới 40 thì lượt đó chắc chắn 5★). 10 lượt xử lý từng lượt. Lượt ép sao của hướng dẫn tân thủ và Admin không bị ép 5★ nhưng vẫn đếm. Bản lưu cũ chưa có `pity5` bắt đầu từ 0. Không có 50/50.
+- Lượt bảo hiểm thứ 10 ra 4★ TRỞ LÊN chứ không ép cứng 4★ (người dùng chỉnh ngày 2026-11-12): khi tới lượt bảo hiểm mà bốc ra dưới 4★ thì bốc lại giữa 4★ và 5★ theo tỉ lệ gốc 5:1, tức gần 17% là 5★; đo thật khoảng 15,5% vì 4% lượt ra màu hiếm (luôn 4★) chiếm một phần.
 - Tab Gacha có khung "🛡 Bảo hiểm 5★": còn bao nhiêu lượt, thanh tiến độ, "Lượt tiếp theo chắc chắn 5★" khi còn 1.
 - Máy chủ vẫn giữ một số `gpity` cho mỗi hồ sơ, nay là số gộp `pity4 + 100 × pity5` (`tools/guard.js`, `js/net.js`, `server.py`); hồ sơ cũ (số nhỏ hơn 100) tự hiểu là `pity5 = 0`.
 
@@ -687,4 +688,4 @@ Người dùng gửi "PROMPT CẬP NHẬT GAME" 5 mục. Không tạo hệ thố
 - Trong phòng: `S5.v_itadori.form` (5,6 giây, `sigOf` chọn `form` khi bé mang trang phục hiếm) gọi `shrineRoom`: đền nhỏ sau lưng bé, vũng máu, tay kết ấn, nhát chém có đầu sáng và đường cắt tách đôi, loạt chém lớn, đền vỡ đôi. Vẽ trong canvas phòng nên không che nút nào. Trang phục thường giữ Hắc Thiểm 2 giây.
 - Sưu tập: `replayIntro(id, coat)`; `openBreed` có thêm nút "▶ Intro: ✨ <tên trang phục hiếm>" cho mỗi trang phục hiếm đã gặp của bé 5★ (trước đây xem lại luôn là trang phục thường).
 - Số đo trong Chrome không giao diện, không GPU (dựng hình bằng phần mềm): PC 26–35 khung/giây lúc chém, điện thoại dọc 45–59, ngang 57–60; tối đa khoảng 60 phần tử trong `#gfx` trong 0,3 giây lúc lưới chém cuối; bản phòng 60 khung/giây. Chưa đo trên máy có GPU thật, chưa nghe âm thanh.
-- Chưa đổi: dạng Sukuna của Fushiguro (`js/pack18.js`) vẫn dùng cảnh cũ với cùng tên chiêu. Trong phòng, bé đứng sát tường thì nóc đền đè lên cửa sổ và khung tên che tầng giữa đền.
+- Dạng Sukuna của Fushiguro (`js/pack18.js`): cảnh giữ nguyên, nhưng thức thần đổi sang bản hung dữ và to gấp rưỡi (`PROP.nueX`, `dogX`, `rabbitX`: đen đỏ, mắt xếch đỏ, sừng, nanh, gai, viền đỏ sẫm qua `ol`), cả trong intro lẫn hành động trong phòng. Trang phục thường vẫn dùng Nue, Ngọc Khuyển, thỏ cũ. Trong phòng, bé đứng sát tường thì nóc đền đè lên cửa sổ và khung tên che tầng giữa đền.

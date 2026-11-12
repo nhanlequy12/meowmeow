@@ -377,7 +377,8 @@ function gachaCore(opt){
   S.pity++;S.pity5=(S.pity5||0)+1;
   let r=Math.random()*100,star=1,acc=0;
   for(let s=5;s>=1;s--){acc+=STAR[s].p;if(r<acc){star=s;break}}
-  if(S.pity>=PITY&&star<4)star=4;
+  // lượt bảo hiểm: ra 4★ TRỞ LÊN, bốc lại giữa 4★ và 5★ theo đúng tỉ lệ gốc của hai bậc (5%:1%, tức khoảng 17% là 5★), không ép cứng 4★
+  if(S.pity>=PITY&&star<4)star=Math.random()*(STAR[4].p+STAR[5].p)<STAR[5].p?5:4;
   // opt.min (lượt gacha đầu của hướng dẫn tân thủ): dưới mức này thì rút lại trong các bậc từ min trở lên, giữ đúng tỉ lệ giữa các bậc đó
   if(opt.min&&star<opt.min){let t=0;for(let s=opt.min;s<=5;s++)t+=STAR[s].p;let r2=Math.random()*t;star=opt.min;for(let s=5;s>=opt.min;s--){r2-=STAR[s].p;if(r2<0){star=s;break}}}
   if(opt.max&&star>opt.max)star=opt.max;

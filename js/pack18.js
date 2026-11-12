@@ -36,6 +36,19 @@ const PROP={
     b.ell(12,11.6,4,5,B);b.tri(10,16,12,17.6,14,16,B);b.ell(12,7,3.4,3,M);b.set(10,7,INK,'x');b.set(13,7,INK,'x');b.tri(11.4,8,12.6,8,12,9.2,[230,170,80],'x')}},
   dogW:{w:16,h:11,d:dogD([238,238,240],INK)},dogB:{w:16,h:11,d:dogD([46,46,58],[230,60,70])},
   rabbit:{w:8,h:8,d:b=>{const W=[246,246,248];b.ell(4,5.6,2.8,2.1,W);b.ell(4,3.6,2,1.8,W);b.rect(2.6,.4,1,2.8,W);b.rect(4.4,.4,1,2.8,W);b.set(3,3,INK,'x');b.set(4,3,INK,'x')}},
+  // thức thần của dạng Sukuna (trang phục hiếm fgSukuna): to hơn, đen đỏ, mắt xếch đỏ, có sừng, nanh và gai
+  nueX:{w:30,h:24,ol:[96,14,28],d:(b,f)=>{const B=[26,18,28],W=[86,22,38],W2=[52,14,26],M=[232,226,214],RED=[240,40,50];
+    if(f){b.tri(11,13,.6,19,8,20.4,W);b.tri(19,13,29.4,19,22,20.4,W);b.tri(6,15,1,22.6,8,19,W2);b.tri(24,15,29,22.6,22,19,W2)}
+    else{b.tri(11,13,.6,2,7,17,W);b.tri(19,13,29.4,2,23,17,W);b.tri(5,9,.4,11.6,6,14,W2);b.tri(25,9,29.6,11.6,24,14,W2);b.tri(7,12,2,16.6,8,17,W2);b.tri(23,12,28,16.6,22,17,W2)}
+    b.ell(15,15,5,6.4,B);b.tri(12,21,15,23.6,18,21,B);b.rect(12.4,20.4,1,2.4,M);b.rect(16.6,20.4,1,2.4,M);
+    b.tri(11.6,7.4,9.4,1.6,13.4,6,B);b.tri(18.4,7.4,20.6,1.6,16.6,6,B);
+    b.ell(15,9.4,4.6,3.8,M);b.tri(11.4,8,14.4,9.8,11.8,10.2,RED,'x');b.tri(18.6,8,15.6,9.8,18.2,10.2,RED,'x');
+    b.rect(12.6,11.6,4.8,.8,INK,'x');b.tri(13,12.2,14.2,12.2,13.6,13.8,M);b.tri(15.8,12.2,17,12.2,16.4,13.8,M);b.rect(14.6,14.6,.8,3,RED,'x')}},
+  dogX:{w:20,h:14,ol:[96,14,28],d:b=>{const C=[24,20,30],RED=[240,40,50];b.ell(8.6,8.4,6.2,3.4,C);b.ell(15.4,5.6,3.4,3,C);b.tri(13.6,3.2,14.2,.2,15.8,2.8,C);b.tri(16,2.8,17.6,.4,18.2,3.8,C);
+    b.rect(17,5.6,2.8,1.8,C);b.rect(16.4,8.6,3,1,C);b.rect(17.4,7.4,.6,1.2,WHT,'x');b.rect(18.6,7.4,.6,1.2,WHT,'x');
+    b.rect(3.6,10.6,1.8,3.2,C);b.rect(6.8,10.8,1.8,3,C);b.rect(10.6,10.8,1.8,3,C);b.rect(13,10.6,1.8,3.2,C);b.cap(2.6,7,.8,2.6,.9,C);
+    b.tri(5,5.8,6,2.8,7,5.4,C);b.tri(8,5.2,9,2.2,10,5.2,C);b.tri(11,5.4,12,3,12.8,5.6,C);b.rect(15.4,4.6,1.8,1,RED,'x');b.rect(6,8,5,.8,[86,22,38],'x')}},
+  rabbitX:{w:10,h:10,ol:[96,14,28],d:b=>{const C=[30,22,34],RED=[240,40,50];b.ell(5,7,3.4,2.6,C);b.ell(5,4.6,2.6,2.2,C);b.rect(3.2,.4,1.2,3.4,C);b.rect(5.6,.4,1.2,3.4,C);b.set(4,4,RED,'x');b.set(6,4,RED,'x');b.rect(4.4,6,.6,1,WHT,'x');b.rect(5.2,6,.6,1,WHT,'x')}},
   dragon:{w:16,h:14,d:b=>{const G=[74,160,140],D=[48,112,100];b.tri(4,5,3,.6,6.6,4,D);b.tri(10,4,13,.6,12,5,D);b.ell(8,8,5.6,4.6,G);b.ell(11.6,9.8,3.2,2.4,G);b.rect(9,6,2,2,[255,214,74],'x');b.set(10,6,INK,'x');b.set(13,9,D,'x');b.rect(9.6,11.4,1,1,WHT,'x');b.rect(11.6,11.6,1,1,WHT,'x');b.rect(3.4,7,1.4,1,D,'x');b.rect(3,9,1.4,1,D,'x')}},
   tiger:{w:16,h:14,d:b=>{const O=[240,150,60],K=[70,44,40];b.tri(2,6,2.4,1,6,3.6,O);b.tri(14,6,13.6,1,10,3.6,O);b.ell(8,8,6.2,5,O);b.ell(8,10.4,3,2.2,[252,240,224]);b.rect(7.4,3,1.2,2.6,K,'x');b.rect(5,3.6,1,2,K,'x');b.rect(10,3.6,1,2,K,'x');b.rect(2,8,2,1,K,'x');b.rect(12,8,2,1,K,'x');b.rect(5,7,1.6,1.2,[255,230,120],'x');b.rect(9.4,7,1.6,1.2,[255,230,120],'x');b.set(8,10,K,'x')}},
   smite:{w:12,h:12,d:b=>{const O=[255,122,42],Y=[255,214,90];b.tri(6,.4,3.6,6,8.4,6,O);b.tri(6,11.6,3.6,6,8.4,6,O);b.tri(.4,6,6,3.6,6,8.4,O);b.tri(11.6,6,6,3.6,6,8.4,O);b.ell(6,6,2.4,2.4,Y)}},
@@ -66,7 +79,7 @@ const PROP={
   cloudp:{w:26,h:9,d:b=>{const W=[250,250,255];b.ell(13,6,11,2.6,W);b.ell(7,4.6,4.4,3,W);b.ell(13.4,3.8,5.6,3.4,W);b.ell(19.6,4.8,4.2,2.8,W)}},
 };
 const PCV={},PURL={};
-function propCv(name,f,q){const key=name+'|'+(f||0)+'|'+q;if(PCV[key])return PCV[key];const P=PROP[name],b=new Art.Buf(P.w,P.h);P.d(b,f||0);b.pastel(.05);b.shade(.13);b.outline([112,74,52]);return PCV[key]=bufCanvas(b,q)}
+function propCv(name,f,q){const key=name+'|'+(f||0)+'|'+q;if(PCV[key])return PCV[key];const P=PROP[name],b=new Art.Buf(P.w,P.h);P.d(b,f||0);b.pastel(.05);b.shade(.13);b.outline(P.ol||[112,74,52]);return PCV[key]=bufCanvas(b,q)}
 // đạo cụ trong phòng: tâm ngang x, đáy y (ô thế giới). o: f khung, s cỡ, a độ mờ, flip, rot
 function propAt(g,name,x,y,o){
   o=o||{};const P=PROP[name],cv=propCv(name,o.f,fk(BS)),s=o.s||1,w=P.w*s,h=P.h*s,px=Math.round((x-w/2)*ZC)/ZC,py=Math.round((y-h)*ZC)/ZC;
@@ -133,9 +146,9 @@ const heartUp=(p,col)=>{if(on(5))rp(p.x+rnd(-8,8),p.y-rnd(30,38),col||'#ff8fa3',
 Object.assign(S5,{
   // Fushiguro: chập chân, bóng đen lan ra, Nue mọc sau lưng vỗ cánh phát điện rồi tan
   v_fushiguro:{n:'chập chân gọi Nue từ bóng tối',dur:3.2,pose:k=>k>.12&&k<.9?'sitb':'sit',
-    draw(g,e,p,k){const a=fade(k,.28,.92);glowAt(g,p.x,p.y-1,14+10*a,3+2*a,'#0b0a14',.55*a);if(k>.44&&k<.9)propAt(g,'nue',p.x,p.y-30-3*Math.sin(k*22),{f:Math.floor(k*26)%2,a:fade(k,.44,.9),s:rare(e)?1.3:1})},
+    draw(g,e,p,k){const a=fade(k,.28,.92);glowAt(g,p.x,p.y-1,14+10*a,3+2*a,'#0b0a14',.55*a);if(k>.44&&k<.9)propAt(g,rare(e)?'nueX':'nue',p.x,p.y-(rare(e)?36:30)-3*Math.sin(k*22),{f:Math.floor(k*26)%2,a:fade(k,.44,.9),s:rare(e)?1.5:1})},
     fx(e,p,k){if(k>.68&&k<.86&&on(14))rp(p.x+rnd(-14,14),p.y-rnd(26,46),rare(e)?'#e0405a':'#9363eb',{sh:'bolt',pts:zig(ch(.5)?1:-1,10,3,5),life:.1});if(k>.28&&k<.92&&on(8))rp(p.x+rnd(-14,14),p.y-1,'#1c1a2c',{vy:-rnd(4,10),life:.5,sz:2,a:.6})},end:end5,
-    alt:{n:'Nue hiện ra sau lưng',dur:4,pose:'sit',draw(g,e,p,k){propAt(g,'nue',p.x+3*Math.sin(k*6),p.y-30,{f:k>.35&&k<.75?Math.floor(k*22)%2:0,a:.9*fade(k,.05,.95),rot:k<.35?.18*Math.sin(k*9):0})},
+    alt:{n:'Nue hiện ra sau lưng',dur:4,pose:'sit',draw(g,e,p,k){propAt(g,rare(e)?'nueX':'nue',p.x+3*Math.sin(k*6),p.y-(rare(e)?36:30),{s:rare(e)?1.4:1,f:k>.35&&k<.75?Math.floor(k*22)%2:0,a:.9*fade(k,.05,.95),rot:k<.35?.18*Math.sin(k*9):0})},
       fx(e,p){if(on(5))rp(p.x+rnd(-12,12),p.y-rnd(24,44),'#9363eb',{life:.4})},end:end5}},
   // Faker: chỉnh kính, đưa chân lên miệng "Shhh", sáu sao sáng sau lưng (Ahri: chín đuôi linh lực và quả cầu)
   v_faker:{n:'ra dấu Shhh',dur:3.5,pose:k=>k>.28&&k<.72?'groom1':'sit',
@@ -219,12 +232,12 @@ Object.assign(INTRO,{
     const R=gz.cat.coat==='fgSukuna',k=K5(),key=lk(gz.cat),BOLT=R?'#d2304e':'#9363eb';
     fxTint('radial-gradient(circle,#1c1a34 0,#05050c 78%)');
     const ring=fxEl('left:50%;top:68%;width:64vmin;height:18vmin;margin:-9vmin 0 0 -32vmin;border-radius:50%;background:radial-gradient(#000 35%,rgba(0,0,0,0) 70%);animation:pop .5s ease-out both');
-    let me,t1,nue;
+    let me,t1,nue;const NU=R?'nueX':'nue',Z=R?1.5:1;   // dạng Sukuna: thức thần bản hung dữ, to gấp rưỡi
     T(350,()=>{me=fxSpr('sit',k,50,58,'animation:pop .4s ease-out both',{key:R?'v_fushiguro~v_fushiguro_0':key})});
     T(800,()=>{t1=big('THẬP CHỦNG ẢNH PHÁP THUẬT',13,'#e6dcff','0 0 14px #7a4ae0,3px 3px 0 #1a1030',5);seq([220,262,311],.12,.3,'triangle',.05)});
-    T(1200,()=>{fxProp('dogW',k,0,76,'animation:fly 1s linear both',{s:1.5});fxProp('dogB',k,0,84,'animation:fly 1s linear .1s reverse both',{s:1.5,flip:1})});
-    for(let i=0;i<7;i++)T(1800+i*55,()=>fxProp('rabbit',k,10+i*13.5,72+(i%2)*9,'animation:pop .25s ease-out both, ghost .35s ease-in .45s forwards',{s:1.4}));
-    T(2300,()=>{nue=fxProp('nue',k,50,34,'animation:rise .45s ease-out both',{s:3});let f=0;every(T,0,2100,140,()=>{if(nue.isConnected)nue.firstChild.src=propSrc('nue',f^=1,kk(k))});glide(200,520,.5,'sawtooth',.05);
+    T(1200,()=>{fxProp(R?'dogX':'dogW',k,0,R?72:76,'animation:fly 1s linear both',{s:1.5*Z});fxProp(R?'dogX':'dogB',k,0,84,'animation:fly 1s linear .1s reverse both',{s:1.5*Z,flip:1})});
+    for(let i=0;i<7;i++)T(1800+i*55,()=>fxProp(R?'rabbitX':'rabbit',k,10+i*13.5,72+(i%2)*9,'animation:pop .25s ease-out both, ghost .35s ease-in .45s forwards',{s:1.4*Z}));
+    T(2300,()=>{nue=fxProp(NU,k,50,R?32:34,'animation:rise .45s ease-out both',{s:R?3.4:3});let f=0;every(T,0,2100,140,()=>{if(nue.isConnected)nue.firstChild.src=propSrc(NU,f^=1,kk(k))});glide(200,520,.5,'sawtooth',.05);
       if(R){flash();fxTint('radial-gradient(circle,#3a0c18 0,#070308 78%)');me.firstChild.src=sprSrc(key,'sit',k)}});
     T(2800,()=>{flash();for(let i=0;i<4;i++)T(i*90,()=>bolt(innerWidth*(.14+.24*i),BOLT))});
     every(T,2300,4000,50,()=>part({x:rnd(0,innerWidth),y:rnd(0,innerHeight),vy:-rnd(.5,2),life:rnd(20,40),col:pick([BOLT,'#2a2740','#ffffff']),sz:pick([4,6])}));
@@ -233,7 +246,7 @@ Object.assign(INTRO,{
     // trang phục hiếm: lãnh địa của Sukuna (tên tiếng Việt quen thuộc), các nhát chém trắng quét khắp màn hình
     if(R)every(T,3350,4000,70,()=>fxEl('left:-10%;top:'+rnd(8,92)+'%;width:120%;height:0;transform:rotate('+rnd(-38,38)+'deg)','<div style="height:4px;background:#fff;box-shadow:0 0 14px 4px #ffb0b0;transform-origin:'+pick(['left','right'])+';animation:slash .32s ease-out forwards"></div>'));
     T(4000,()=>{if(me)me.remove();if(nue)nue.remove();ring.style.animation='ghost .4s ease-in forwards'});
-    T(4500,()=>{flash();fxProp('nue',k,50,38,'animation:pop .4s ease-out both',{s:2.2});fxSpr('sit',k,50,62,'animation:pop .4s ease-out both');fount([BOLT,'#ffffff'],10)});
+    T(4500,()=>{flash();fxProp(NU,k,50,R?36:38,'animation:pop .4s ease-out both',{s:R?2.6:2.2});fxSpr('sit',k,50,62,'animation:pop .4s ease-out both');fount([BOLT,'#ffffff'],10)});
   }},
   // Faker: đại sảnh tối, 6 cúp CKTG, 2 cúp MSI, 10 cúp LCK (đúng ba mẫu cúp), cận mặt, Shhh trong im lặng, sáu sao vàng
   v_faker:{dur:6500,run(T){

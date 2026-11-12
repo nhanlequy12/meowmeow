@@ -38,4 +38,8 @@ const unlucky=f=>{Math.random=()=>.5;try{return f()}finally{Math.random=R0}};
   const S=reset();S.pity=3;S.pity5=38;const seed=123456,M0=Math.random;Math.random=T.prng(seed);let a;try{a=T.gachaCore({}).cat}finally{Math.random=M0}
   const enc1=S.pity+100*S.pity5;reset();const S2=T.S;S2.pity=3;S2.pity5=38;Math.random=T.prng(seed);let b;try{b=T.gachaCore({}).cat}finally{Math.random=M0}
   ok('Cùng hạt giống và cùng bộ đếm thì ra cùng mèo (máy chủ kiểm lại được)',a.sp===b.sp&&a.star===b.star&&enc1===S2.pity+100*S2.pity5,a.sp+' '+a.star+'★, số gộp '+enc1); }
+{ // lượt bảo hiểm 10: ra 4★ TRỞ LÊN (bốc giữa 4★ và 5★ theo tỉ lệ gốc 5:1), không ép cứng 4★
+  let n4=0,n5=0;for(let i=0;i<6000;i++){const S=reset();S.pity=T.PITY-1;S.pity5=0;const s=roll();if(s===5)n5++;else if(s===4)n4++}
+  ok('Lượt bảo hiểm thứ 10 luôn từ 4★ trở lên',n4+n5===6000,'4★ '+n4+', 5★ '+n5);
+  ok('Lượt bảo hiểm thứ 10 có thể ra 5★ (khoảng 17–18%)',n5/6000>.14&&n5/6000<.22,(n5/60).toFixed(1)+'%'); }
 console.log(fail?fail+' phần HỎNG':'Tất cả đều ĐẠT');process.exit(fail?1:0);

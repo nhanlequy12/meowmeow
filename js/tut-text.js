@@ -212,7 +212,7 @@ const TUT_TEXT={
         'Một lượt tốn 100 xu hoặc 1 vé; Mở ×10 tốn 1.000 xu hoặc 10 vé.',
         'Tỉ lệ: 1★ Phổ thông 50%, 2★ Không phổ biến 30%, 3★ Hiếm 14%, 4★ Sử thi 5%, 5★ Huyền thoại 1%.',
         'Màu sao: 1 trắng, 2 xanh lục, 3 xanh biển, 4 tím, 5 vàng lấp lánh. Màu lông hiếm, mắt quý hiếm và trang phục hiếm có sao 7 màu.',
-        'Bảo hiểm: quá 9 lượt liên tiếp chưa ra 4★ thì lượt thứ 10 chắc chắn từ 4★ trở lên.',
+        'Bảo hiểm: quá 9 lượt liên tiếp chưa ra 4★ thì lượt thứ 10 chắc chắn từ 4★ trở lên (vẫn có thể là 5★, khoảng 1 trên 6).',
         'Bảo hiểm 5★: tối đa 40 lượt liền nhau chưa ra 5★ thì lượt thứ 40 chắc chắn 5★. Ra 5★ thì đếm lại từ 0. Tab Gacha luôn ghi còn bao nhiêu lượt; bộ đếm được lưu.',
         'Ở 4★ và 5★, khoảng 45% là mèo trang phục (anime, phim, meme). Sao càng nhiều, xu viễn chinh càng cao: 5★ gấp 3,2 lần 1★.']},
       {id:'trait',ic:'✨',t:'Thuộc tính',p:[
