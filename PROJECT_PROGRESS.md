@@ -90,6 +90,12 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Kiểm tra đã chạy: Playwright ở PC, điện thoại dọc, điện thoại ngang, dừng animation ở 6 mốc để chụp (cả hai chiều, sách điện, bấm liên tục); `node tools/wxtest.js`, `tools/pwtest.js`, `tools/pitytest.js`.
 - Chưa kiểm tra: điện thoại thật (độ mượt trên máy yếu).
 
+## Đợt 2026-11-12: giải thích khí hậu gọn trong sách
+
+- Commit `c3443b0` (chi tiết ở `CLAUDE.md` mục 33): file mới `js/wx-guide.js`. Trang phòng có bốn dòng trạng thái với nhãn màu (🟢 🟡 🔴 kèm chữ) và nút ⓘ, thẻ "Cần xử lý" (nguyên nhân → ảnh hưởng → nút làm ngay), số liệu chi tiết gập lại. Trang "Giải thích nhanh" 5 mục (Nhiệt độ, Độ ẩm, Thoải mái, Thời tiết, Xử lý), đánh dấu mức của phòng đang xem; mục Xử lý gợi ý thiết bị hợp phòng với nút Tắt, Bật, Sạc tay, Đặt từ kho, Mua hoặc cấp cần mở. Ngưỡng lấy từ `WXC`, không đổi công thức. Màu thoải mái và nhãn "Không hợp với mèo" đổi ngưỡng 35 thành 40 cho khớp luật hồi sức khỏe.
+- Kiểm tra đã chạy: Playwright ở PC, điện thoại dọc, điện thoại ngang (ép tuyết, giông, nắng như đổ lửa, nắng đẹp bằng `WXO.ty`): không tràn khung, không lỗi JS, các nút chạy đúng; `node tools/wxtest.js`, `tools/pwtest.js`, `tools/pitytest.js`, `node --check` mọi file JS.
+- Chưa kiểm tra: điện thoại thật, người chơi thật đọc có hiểu nhanh không.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
