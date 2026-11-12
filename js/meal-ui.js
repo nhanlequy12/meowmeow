@@ -190,8 +190,9 @@ function mlGo(id){
   const r=mealPour(k,rid,id,P.plan);
   if(r.err){toast(r.err,{type:'warn'});render();mlDraw();return}
   mlRemember(k,id);save();closeModal();
-  const go=homeCats(rid).filter(c=>mealOf(c)&&c.meal.k===k&&!was.has(c.uid)),loved=F?go.filter(c=>favs(c).includes(id)).map(c=>esc(c.name)):[],u=mlU(k);
-  toast('Đã đổ <b>'+r.n+'</b> '+u+' vào '+r.bowls.length+' bát'+(cost?' (mua thêm '+lack+' '+u+', −'+mlXu(cost)+' xu)':'')+'. Kho còn '+mInvN(k,id)+' '+u+'.'+
+  const go=homeCats(rid).filter(c=>mealOf(c)&&c.meal.k===k&&!was.has(c.uid)),loved=F?go.filter(c=>favs(c).includes(id)).map(c=>c.name):[],u=mlU(k);
+  // toast tự esc() nội dung: không chèn thẻ HTML, không esc() trước (từng hiện nguyên chữ "<b>1</b>")
+  toast('Đã đổ '+r.n+' '+u+' vào '+r.bowls.length+' bát'+(cost?' (mua thêm '+lack+' '+u+', −'+mlXu(cost)+' xu)':'')+'. Kho còn '+mInvN(k,id)+' '+u+'.'+
     (go.length?' '+go.length+' bé chạy ra '+(F?'ăn':'uống')+'.':'')+(loved.length?' ❤ Món khoái khẩu của '+loved.join(', ')+'.':''),
     F?{type:'feed',title:f.n+' · '+ROOM[rid].n}:{icon:'💧',title:f.n+' · '+ROOM[rid].n,key:'water'});
   render();

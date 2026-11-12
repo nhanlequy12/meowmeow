@@ -322,7 +322,7 @@ setTimeout(()=>{if(!S||!pwOpen())return;const L=[];
   if(PWAWAY.strike)L.push('⚡ Sét đánh làm mất điện 15 phút'+(pwOut()?' (còn '+mmss(pwOut().e-now())+')':', nay đã có điện lại'));
   if(PWAWAY.dead.length)L.push('🪫 Hết pin: '+[...new Set(PWAWAY.dead)].slice(0,4).join(', '));
   const low=pwLow().filter(i=>!pwDead(i));if(low.length)L.push('🔋 '+low.length+' thiết bị pin dưới '+Math.round(PWC.low*100)+'%');
-  if(L.length)toast(L.join('<br>'),{icon:'⚡',title:'Điện năng lúc bạn vắng',ms:9000,key:'pwaway'});PWAWAY.dead=[];PWAWAY.strike=0},2500);
+  if(L.length)toast(L.join(' · '),{icon:'⚡',title:'Điện năng lúc bạn vắng',ms:9000,key:'pwaway'});PWAWAY.dead=[];PWAWAY.strike=0},2500);
 
 /* ---------- Admin: thử mất điện, pin, điện mặt trời, máy phát ---------- */
 {const A0=openAdmin;openAdmin=function(){A0.apply(this,arguments);const mb=$('mbox');if(!mb||!$('axu'))return;const rb=mb.querySelector('button.bad'),row=rb&&rb.parentElement;
