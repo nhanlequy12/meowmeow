@@ -102,6 +102,12 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Kiểm tra đã chạy: `node tools/medtest.js` (70 phần), `tools/wxtest.js`, `tools/pwtest.js`, `tools/pitytest.js`, `tools/lvtest.js`, `tools/catcheck.js`, `node --check` mọi file JS; Playwright ở PC, điện thoại dọc, điện thoại ngang (hướng dẫn tân thủ từ ván mới, nước, gãy chân khi viễn chinh, nhập viện, ra viện, hướng dẫn Nhà thuốc): không lỗi JS.
 - Chưa kiểm tra: người chơi thật, cân bằng xu dài ngày, `server.py` thật, điện thoại thật.
 
+## Đợt 2026-11-12: điện thoại chỉ chơi màn hình ngang
+
+- Commit `c0b2023` (chi tiết ở `CLAUDE.md` mục 35): `js/orient.js` hiện màn nhắc xoay ngang khi điện thoại đang dọc (chặn thao tác, có nút toàn màn hình và khóa hướng trên trình duyệt hỗ trợ), đặt `--vvh` theo `visualViewport`; `css/mobile.css` tắt tự phóng chữ của Safari iOS, chừa vùng tai thỏ (`viewport-fit=cover`), chiều cao hộp thoại, thẻ gacha, hướng dẫn theo vùng nhìn thấy thật. Sách khí hậu, sách điện giữ hai trang trái phải trên màn ngang; thẻ kết quả gacha hai cột trên màn ngang thấp.
+- Kiểm tra đã chạy: Playwright dò tràn ngang ở 11 cỡ (667×375, 667×320, 740×360, 740×300, 844×390, 852×393, 915×412, 932×430, 1024×768, 1280×800, 1920×1080) qua mọi tab và hộp thoại chính, gacha 1 và 10 lượt, hướng dẫn: không phần tử nào tràn. Màn nhắc xoay ngang đúng ở 390×844, 360×740, không hiện ở 768×1024 và máy tính. lvtest, medtest, pitytest, pwtest, wxtest, `node --check` đạt.
+- Chưa kiểm tra: Safari iOS và Chrome Android thật (tai thỏ, thanh địa chỉ, bàn phím, khóa hướng).
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
