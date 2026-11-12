@@ -121,6 +121,9 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 ## Đợt 2026-11-12: mục cửa hàng theo bảng chữ cái
 - Commit `3cdb29f`: các mục cửa hàng (`FCATS`) xếp theo bảng chữ cái tiếng Việt, bỏ biểu tượng đầu tên; 🚪 Phòng vẫn đứng đầu; món trong từng mục giữ nguyên thứ tự. Đã xem trên PC 1280×800 và điện thoại ngang 844×390; gardentest, lvtest, wxtest đạt.
 
+## Đợt 2026-11-12: intro Faker Hồ Ly bỏ quạt đuôi lớn
+- Commit `f420cbb`: `INTRO.v_faker` trong `js/pack18.js` không còn vẽ hai quạt chín đuôi trắng cỡ lớn (hàm `tailsFan` đã xóa) ở dạng Ahri; chín đuôi vẽ sẵn trong hình của bé giữ nguyên. Đã chạy intro cả ba trang phục của Faker trong trình duyệt ở 1280×800: không lỗi JS, không còn quạt đuôi. Chưa xem điện thoại ngang.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
