@@ -1,3 +1,35 @@
+# Việc cần làm ngay (rà soát ngày 2026-11-12)
+
+Người dùng nêu bốn yêu cầu về hiệu ứng của mèo 4★ và 5★ và bảo rà lại, thiếu gì thì ghi vào đây. Cách rà: chạy game trong Chrome không giao diện rồi đọc thẳng các bảng `INTRO`, `S5`, `MD`, `TRAIL`, `LOOKFX`, `COATS` (27 bé 5★, 67 bé 4★). Chưa sửa gì trong đợt rà này.
+
+## Kết quả rà
+
+| Yêu cầu | Tình trạng | Chi tiết |
+|---|---|---|
+| 1a. Mọi 5★ có intro riêng | Đạt 27/27 | |
+| 1b. Trang phục hiếm thì intro khác đôi chút | Đạt 13/27 | 14 bé chỉ đổi hình bé trong intro, cảnh y hệt trang phục thường |
+| 2a. 5★ có hoạt ảnh đặc biệt trong phòng | Đạt 27/27 | 15 bé có thêm trạng thái 60 giây; 12 bé chỉ có hành động ngắn 2–4 giây |
+| 2b. Trang phục hiếm thì hoạt ảnh trong phòng đặc biệt và đẹp hơn | Đạt 13/27 | 14 bé diễn y hệt trang phục thường (chỉ khác hình và luồng khí) |
+| 3a. 4★ trở lên có vệt khi đi và chạy | Đạt 69/94 | 25 giống thật 4★ chỉ có bụi chân như mèo 1★ |
+| 3b. Vài bé có hiệu ứng quanh thân ngay cả khi đứng yên (Zenitsu luôn có sét) | Thiếu | Chưa có cơ chế; Zenitsu chỉ có sét lúc di chuyển và trong 60 giây Thần tốc |
+| 4. 5★ trang phục hiếm luôn có hiệu ứng quanh thân theo chủ đề (Thần Tài vàng có tiền rơi) | Đạt 1/29 | Chỉ Faker Ahri (chín đuôi phấp phới). 27 bộ khác chỉ có luồng khí một màu bốc lên, không theo chủ đề. Hokage Đệ Thất không có gì |
+
+## Việc cần làm
+
+1. **Intro riêng cho trang phục hiếm của 14 bé** (thêm vài chi tiết khác biệt, giữ cảnh gốc; người dùng dặn không sửa intro của trang phục thường): Khao Manee (mão vàng), Lykoi (khăn đỏ), Savannah (Pharaoh), Sokoke (thần rừng), Suphalak (vòng hoa nhài), Naruto (Cửu Vĩ, Hokage), Zenitsu (Hỏa Lôi Thần), Gojo (Lục Nhãn), Harry Potter (Tầm thủ), Darth Vader (Trắng), Nyan Cat (Tac Nayn), Thần Tài (Vàng ròng), Phi Hành Gia (cam), Hoàng Gia (tím).
+2. **Hoạt ảnh trong phòng đẹp hơn cho trang phục hiếm của đúng 14 bé trên** (`S5[sp].form` như Itadori dạng Sukuna, `sigOf` đã hỗ trợ sẵn).
+3. **Hiệu ứng quanh thân luôn bật** (cơ chế mới, đề xuất bảng `AMB[khóa ngoại hình]` gọi trong `drawEnt` cả lúc đứng yên, có trần hạt):
+   - Zenitsu: tia sét nhỏ quanh thân (cả trang phục thường).
+   - Mọi trang phục hiếm 5★ (29 bộ) có hiệu ứng theo chủ đề, ví dụ: Thần Tài vàng tiền rơi, Hỏa Lôi Thần sét đỏ, Lục Nhãn quả cầu tím, Tầm thủ trái Snitch bay quanh, Vader Trắng bụi băng, Tac Nayn sao tối, Phi Hành Gia cam tia lửa, Hoàng Gia tím hoa giấy, Cửu Vĩ lửa chakra, Hokage lá bay, Siêu Saiyan God lửa đỏ, Hỏa Thần tàn lửa, Sukuna vệt chém nhỏ, cùng 5 giống thật và 10 bé của gói mới (Faker Ahri đã có).
+   - Chọn thêm vài bé 4★ và 5★ thường có hiệu ứng quanh thân nhẹ (cần người dùng chỉ định bé nào ngoài Zenitsu).
+4. **Vệt đi và chạy cho 25 giống thật 4★**: thêm `TRAIL` cho từng giống hoặc một vệt chung của bậc 4★ (ví dụ bụi kèm lấp lánh tím).
+5. **(Tùy chọn) Trạng thái 60 giây** cho 12 bé 5★ chưa có: Tanjiro, Itadori, Fushiguro, Chi, Faker, Oner, Keria, Hackclaw, Hello Kitty, Kuromi, Pusheen, Marie.
+6. **Bảng Admin, mục nhận mèo tự chọn** (yêu cầu người dùng gửi rồi ngắt giữa chừng, chưa làm): nhớ bé vừa chọn, lần mở bảng sau hiện sẵn bé đó và danh sách mở ra đúng hàng của bé; kèm vài tối ưu cho việc chọn (ví dụ ô tìm theo tên, lọc theo sao, danh sách bé chọn gần đây).
+
+Lưu ý khi làm: trần 280 hạt mỗi phòng (`PMAX`), phòng có thể tới 12 bé, nên hiệu ứng luôn bật phải thưa (khoảng 2–4 hạt mỗi giây mỗi bé) và nhường hạt khi gần trần.
+
+---
+
 # Việc cần làm (ghi ngày 2026-11-11, chiều)
 
 Đợt này làm 3 tính năng và 3 tối ưu bạn chọn. Mã đã viết xong, chạy thử từng phần ở PC, điện thoại dọc, điện thoại ngang (không lỗi JS) và **đã push** theo lời bạn. Còn vài bước kiểm tra dưới đây.
