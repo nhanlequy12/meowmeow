@@ -136,7 +136,7 @@ function bookLeft(){
 }
 function bookRight(){
   const rooms=ownedRooms();
-  if(WB.rid&&S.rooms[WB.rid])return '<div class="wb-sheet '+WB.dir+'"><button class="sm wb-back" onclick="bookRoom(null)">‹ Danh sách phòng</button><div class="wb-det">'+climHtml(WB.rid)+'</div></div>';
+  if(WB.rid&&S.rooms[WB.rid])return '<div class="wb-sheet '+WB.dir+'"><div class="wb-bar"><button class="sm wb-back" onclick="bookRoom(null)">‹ Danh sách phòng</button><button class="sm on wb-go" onclick="bookGo(\''+WB.rid+'\')">'+(WB.rid===cur&&tab==='home'?'🏠 Xem phòng này':'🚪 Đến '+ROOM[WB.rid].n)+' ▸</button></div><div class="wb-det">'+climHtml(WB.rid)+'</div></div>';
   WB.rid=null;
   const n=Math.max(1,Math.ceil(rooms.length/WB.per));WB.pg=clamp(WB.pg,0,n-1);
   const row=r=>{const rc=roomClimate(r.id),W=roomWarn(rc),on=rc.D.on,cls=rc.T<WXC.ideal[0]?'cold':rc.T>WXC.ideal[1]?'hot':rc.comfort>=60?'ok':'meh';
@@ -171,6 +171,8 @@ function openBook(rid){
 function closeBook(){const e=$('wxbook');if(e)e.classList.remove('on')}
 function bookPage(d){WB.pg+=d;WB.dir=d>0?'fl':'fr';bookDraw('r')}
 function bookRoom(rid){WB.dir=rid?'fl':'fr';if(!rid)WB.fit=0;if(!rid){const i=ownedRooms().findIndex(r=>r.id===WB.rid);if(i>=0)WB.pg=Math.floor(i/WB.per)}WB.rid=rid;bookDraw('r')}
+// đóng sách và chuyển thẳng tới phòng đó (tab Phòng) để đặt, bật tắt thiết bị hoặc dời mèo
+function bookGo(rid){if(!S.rooms[rid])return;closeBook();if(tab!=='home')setTab('home');if(cur!==rid)setRoom(rid);toast('Đã chuyển tới '+ROOM[rid].n+'. Chạm vào máy sưởi, quạt để bật tắt; bấm Sắp xếp đồ để đặt thiết bị mới.',{icon:'🚪',title:'Khí hậu phòng',key:'bookgo'})}
 function openWeather(){openBook()}
 function openClimate(rid){openBook(rid||WB.rid||cur)}
 addEventListener('keydown',ev=>{if(ev.key==='Escape'&&bookOn()&&$('modal').style.display!=='flex')closeBook()});

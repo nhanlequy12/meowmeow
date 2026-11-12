@@ -61,7 +61,8 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 .wb-det{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:3px;text-align:center}
 .wb-det .card{background:var(--pg2)}
 .wb-det .cd-sec{background:var(--pg2)}
-.wb-back{align-self:flex-start;margin-bottom:6px}
+.wb-bar{display:flex;gap:6px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:6px;flex:none}
+.wb-go{white-space:nowrap}
 
 /* biểu tượng thời tiết chuyển động (SVG) */
 .wi{display:inline-block;vertical-align:middle;overflow:visible}
