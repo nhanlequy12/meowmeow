@@ -219,6 +219,7 @@ function tick(dt,sim){
   if(MEDON)medTick(dt,sim);
   if(typeof mealTick==='function')mealTick(dt,sim); // mèo đi tới bát, ăn uống vơi dần (js/meal.js)
   if(typeof strayTick==='function')strayTick(dt,sim); // giận dỗi, bỏ nhà đi, tìm về (js/stray.js)
+  if(typeof gardenTick==='function')gardenTick(dt,sim); // vườn nhỏ: cây lớn theo nắng mưa, cá đẻ (js/garden.js)
   if(!sim)scratchTick();
 }
 // kiểm tra cào sofa 10 phút một lần; sau khi vắng lâu chỉ bù tối đa 3 lần

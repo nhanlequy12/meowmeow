@@ -1,0 +1,38 @@
+/* ============ VƯỜN NHỎ (2026-11-12): bảng chậu cây, hồ cá, giỏ vườn (js/garden-ui.js) ============ */
+.gd{display:flex;flex-direction:column;gap:10px;min-width:0}
+.gd h3{margin:0}
+.gd-hd{display:flex;align-items:center;gap:12px;min-width:0}
+.gd-hd img{flex:none;max-width:40%;height:auto}
+.gd-ht{min-width:0}.gd-ht b{font-size:17px}.gd-ht .dim{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:2px}
+.gd-sec{background:var(--panel2);border:2px solid color-mix(in srgb,var(--line) 40%,transparent);border-radius:12px;padding:9px 11px;min-width:0}
+.gd-name{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.gd-st{font-size:12.5px;font-weight:700;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--line) 14%,transparent)}
+.gd-st.ok{background:#dff2d4;color:#2f6b25}.gd-st.bad{background:#f8dcd4;color:#8a3a2a}
+html[data-theme=dark] .gd-st.ok{background:#2e4a2a;color:#cdeec0}html[data-theme=dark] .gd-st.bad{background:#4f2c26;color:#f6cfc6}
+.gd-rows{display:grid;grid-template-columns:auto minmax(0,1fr) 3.2em;gap:5px 8px;align-items:center;font-size:13.5px}
+.gd-rows b{text-align:right}
+.gd-bar{height:10px;border-radius:6px;background:color-mix(in srgb,var(--line) 18%,transparent);overflow:hidden}
+.gd-bar i{display:block;height:100%;border-radius:6px;transition:width .4s}
+.gd-eta{font-size:13px;margin-top:6px;line-height:1.4}
+.gd-why{display:flex;flex-wrap:wrap;gap:5px}
+.gd-act,.gd-foot{display:flex;flex-wrap:wrap;gap:8px}
+.gd-act button{flex:1 1 auto}
+.gd-seeds{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
+.gd-seed{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;text-align:left;align-items:center;padding:6px 10px;min-height:52px}
+.gd-seed .gd-ic{grid-row:1/3;font-size:24px}.gd-seed small{font-size:11.5px;opacity:.85;white-space:normal}
+.gd-inv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.gd-pc{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--panel2);border-radius:12px;padding:8px 4px;border:2px solid color-mix(in srgb,var(--line) 40%,transparent)}
+.gd-pc .gd-ic{font-size:26px}.gd-pc b{font-size:18px}.gd-pc small{font-size:12px}
+.gd-pc.zero{opacity:.55}
+.gd-rec{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.gd-r{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.gd-r>div{display:flex;flex-direction:column;min-width:0}.gd-r small{font-size:12px}
+.gd-r .ok{color:#2f7a2a;font-weight:700}.gd-r .no{color:#a8452f;font-weight:700}
+html[data-theme=dark] .gd-r .ok{color:#9fdc8e}html[data-theme=dark] .gd-r .no{color:#f0a593}
+.gd-r button{flex:none;white-space:nowrap}
+/* điện thoại ngang thấp: gọn lại */
+@media (orientation:landscape) and (max-height:520px){
+  .gd{gap:7px}.gd-hd img{max-height:44px;width:auto}.gd-sec{padding:6px 9px}
+  .gd-seeds{grid-template-columns:repeat(3,minmax(0,1fr))}.gd-seed{min-height:44px;padding:4px 7px}.gd-seed .gd-ic{font-size:20px}
+  .gd-inv .gd-pc{padding:4px}.gd-pc .gd-ic{font-size:20px}
+}

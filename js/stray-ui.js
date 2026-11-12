@@ -34,9 +34,9 @@ function straySec(c){
     '<div class="st-row"><b>🔍 Nhờ một bé ở nhà đi tìm</b> <small>· '+STRAY.hunt.min+' phút, bé đi tìm tốn '+STRAY.hunt.en+'⚡</small>'+
       (helpers.length?'<div class="st-pick">'+helpers.slice(0,8).map(o=>'<button class="sm'+(ok(o)?'':' st-no')+'" onclick="doStrayHunt('+c.uid+','+o.uid+')"'+(ok(o)?'':' data-tip="'+(o.full<STRAY.hunt.full?'Đang đói':'Không đủ sức')+'"')+'>'+esc(o.name)+' <small>⚡'+Math.round(o.en)+'</small></button>').join('')+'</div>':'<div class="dim">Không có bé nào ở nhà để đi tìm.</div>')+'</div>';
   const fv=favs(c),foods=FOODS.filter(f=>f.full>0).sort((a,b)=>(fv.includes(b.id)?1:0)-(fv.includes(a.id)?1:0)||a.price-b.price);
-  const lure=s.lure?'<div class="st-row"><b>🍲 Bát '+FOOD[s.lure.food].n.toLowerCase()+' đang chờ ở '+R.n+'</b> · bé về sau '+fmtM(s.lure.end-t)+'</div>':
+  const lure=s.lure?'<div class="st-row"><b>🍲 Bát '+lureName(s.lure.food).toLowerCase()+' đang chờ ở '+R.n+'</b> · bé về sau '+fmtM(s.lure.end-t)+'</div>':
     '<div class="st-row"><b>🍲 Đặt bát mồi ở '+R.n+'</b> <small>· món khoái khẩu ❤️ '+STRAY.lure.fav+' phút, món khác '+STRAY.lure.other+' phút</small><div class="st-pick">'+
-      foods.slice(0,5).map(f=>{const cost=f.price*STRAY.lure.mult;return '<button class="sm" '+(S.coins<cost?'disabled ':'')+'onclick="doStrayLure('+c.uid+',\''+f.id+'\')">'+(fv.includes(f.id)?'❤️ ':'')+f.ic+' '+f.n+' <small>'+cost+' xu</small></button>'}).join('')+'</div></div>';
+      foods.slice(0,5).map(f=>{const cost=f.price*STRAY.lure.mult;return '<button class="sm" '+(S.coins<cost?'disabled ':'')+'onclick="doStrayLure('+c.uid+',\''+f.id+'\')">'+(fv.includes(f.id)?'❤️ ':'')+f.ic+' '+f.n+' <small>'+cost+' xu</small></button>'}).join('')+(typeof gdLureBtns==='function'?gdLureBtns(c.uid):'')+'</div></div>';
   return '<div class="cd-sec st-box"><h4>🎒 '+esc(c.name)+' đã bỏ nhà đi</h4>'+
     '<div class="st-why">Vì <b>'+esc(s.why.join(', '))+'</b> · đi được '+fmtM(t-s.at)+' · <b>bé vẫn an toàn</b>, không bao giờ mất hẳn.</div>'+
     hunt+lure+'<div class="dim st-self">🏠 Không làm gì thì bé tự về sau '+fmtM(s.at+STRAY.back-t)+'.</div></div>';

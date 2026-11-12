@@ -23,6 +23,8 @@ const strayCat=c=>!!strayOf(c.uid);
 // bé đi lạc, hoặc bé đang đi tìm bạn: đều không có mặt ở nhà
 const strayAway=uid=>!!S.stray&&(!!S.stray[uid]||Object.values(S.stray).some(s=>s.hunt&&s.hunt.by===uid));
 const strayList=()=>S.stray?S.cats.filter(c=>S.stray[c.uid]):[];
+// tên món của bát mồi: món ăn (FOOD) hoặc rau vườn 'g:<cây>' (js/garden.js)
+const lureName=f=>FOOD[f]?FOOD[f].n:(typeof GCROP!=='undefined'&&/^g:/.test(f)&&GCROP[f.slice(2)])?GCROP[f.slice(2)].n:'mồi';
 // các lý do khổ của bé lúc này (rỗng = ổn)
 function strayWhy(c){
   const L=[];
@@ -69,7 +71,7 @@ function strayHome(c,how){
   const H=STRAY.home;c.full=Math.max(c.full,H.full);c.hp=Math.max(c.hp,H.hp);if(c.wa!=null)c.wa=Math.max(c.wa,H.wa);c.ng=0;delete c.ng;
   if(!S.rooms[c.room])c.room=freeRoom();
   const by=s&&s.hunt&&catBy(s.hunt.by);
-  const msg=how==='hunt'&&by?by.name+' đã tìm thấy '+c.name+' và dẫn bé về nhà.':how==='lure'?c.name+' ngửi thấy bát '+FOOD[s.lure.food].n.toLowerCase()+' và đã tự về nhà.':c.name+' đã tự tìm đường về nhà sau chuyến lang thang.';
+  const msg=how==='hunt'&&by?by.name+' đã tìm thấy '+c.name+' và dẫn bé về nhà.':how==='lure'?c.name+' ngửi thấy bát '+lureName(s.lure.food).toLowerCase()+' và đã tự về nhà.':c.name+' đã tự tìm đường về nhà sau chuyến lang thang.';
   S.strayBack=S.strayBack||[];S.strayBack.push({uid:c.uid,msg,t:now(),seen:TOFF?0:1}); // về trong lúc vắng (seen 0): báo khi tải game (js/stray-ui.js)if(S.strayBack.length>5)S.strayBack.shift();
   notify(msg+' Nhớ cho bé ăn uống đầy đủ nhé.',{icon:'🏠',title:'Bé đã về nhà',key:'home'+c.uid});
   if(typeof wxDirty==='function')wxDirty();

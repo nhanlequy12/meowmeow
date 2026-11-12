@@ -14,7 +14,7 @@
 const fs=require('fs'),path=require('path'),readline=require('readline');
 const ROOT=path.join(__dirname,'..');
 globalThis.localStorage={getItem(){return null},setItem(){},removeItem(){}};
-const src=['js/data.js','js/wx-data.js','js/pw-data.js','js/med-data.js','js/game.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n;\n')+
+const src=['js/data.js','js/wx-data.js','js/pw-data.js','js/med-data.js','js/garden-data.js','js/game.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n;\n')+
   '\n;globalThis.G={getS:()=>S,setS:v=>{S=v},gachaCore,prng,releaseGift,SP,FURN,ROOM,STAR,TRAITS,ALLCOAT,RARE,GACHA_COST,TICKET_COST,MAX_LV,PITY,SUP,FOOD};';
 (0,eval)(src);
 const {SP,FURN,ROOM,TRAITS,ALLCOAT,GACHA_COST,TICKET_COST,MAX_LV,PITY}=G;
