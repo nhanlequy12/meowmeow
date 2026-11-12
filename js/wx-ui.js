@@ -61,32 +61,7 @@ function openDev(iid){
     '<div class="row" style="justify-content:center;margin-top:8px">'+(i.broken||dead?'':'<button class="sm '+(i.off?'on':'')+'" onclick="wxToggle('+iid+',1)">'+(i.off?'▶ Bật':'⏸ Tắt')+'</button>')+'<button class="sm" onclick="openClimate(\''+i.room+'\')">🌡 Khí hậu phòng</button></div>');
 }
 
-function climHtml(rid){
-  const rc=roomClimate(rid),R=ROOM_CLIMATE[rid]||{},o=rc.o,th=rc.D.on.some(d=>d.f.wx.thermo);
-  const dv=d=>{const w=d.f.wx,man=(w.heat||w.cool)&&!w.auto&&!th,fx=[];
-    if(w.heat)fx.push('🔥 +'+w.heat+'°'+(w.auto||th?' (tự động)':''));if(w.cool)fx.push('❄️ −'+w.cool+'°'+(w.auto||th?' (tự động)':''));if(w.ins)fx.push('🧱 cách nhiệt '+Math.round(w.ins*100)+'%');if(w.sun)fx.push('🌤 chống nắng');if(w.shelter)fx.push('☂️ che mưa '+Math.round(w.shelter*100)+'%');
-    if(w.wind)fx.push('🌬 chắn gió '+Math.round(w.wind*100)+'%');if(w.hum)fx.push('💧 '+(w.hum>0?'+':'')+w.hum+'% ẩm');if(w.comfort)fx.push('😌 +'+w.comfort);if(w.dry)fx.push('💨 sấy khô');if(w.quiet)fx.push('🎧 át tiếng sấm');if(w.lheat||w.lcool||w.lauto)fx.push('🛏 chỉnh nhiệt cho bé nằm trên');
-    return '<div class="card" style="padding:6px 10px">'+furnTag(d.f.id,'',40,30)+'<div class="g"><b>'+d.f.n+'</b>'+(d.why?' <span class="dim">· '+d.why+'</span>':'')+'<br><small>'+(fx.join(' · ')||d.f.d)+(d.f.pw?' · 🔋 '+batTxt(d.i):'')+'</small></div>'+(man&&!d.i.broken&&!(typeof pwDead==='function'&&pwDead(d.i))?'<button class="sm'+(d.i.off?'':' on')+'" onclick="wxToggle('+d.i.iid+')">'+(d.i.off?'Bật':'Đang bật')+'</button>':'')+'</div>'};
-  const cats=homeCats(rid),tips=[];
-  if(rc.T<WXC.ideal[0])tips.push('Phòng đang lạnh: đặt máy sưởi, rèm giữ nhiệt, chăn ấm, hoặc chuyển các bé sang phòng kín hơn.');
-  if(rc.T>WXC.ideal[1])tips.push('Phòng đang nóng: đặt quạt, điều hòa, rèm chống nắng, thảm làm mát; nhớ đổ nước.');
-  if(rc.rain>.2)tips.push('Mưa tạt vào phòng: lắp mái che, rèm chắn mưa hoặc lều trú mưa để các bé không bị ướt.');
-  if(rc.wind>.3)tips.push('Gió lùa: cửa chống gió, cửa kính hoặc rèm chắn mưa giúp chắn gió.');
-  if(rc.noise)tips.push('Sấm sét làm các bé kém vui: máy tạo tiếng ồn trắng át được tiếng sấm.');
-  if(rc.hum<WXC.comfyHum[0]||rc.hum>WXC.comfyHum[1])tips.push(rc.hum>WXC.comfyHum[1]?'Phòng ẩm quá: máy hút ẩm giúp dễ chịu hơn.':'Phòng khô quá: máy tạo độ ẩm giúp dễ chịu hơn.');
-  return '<h3>🌡 '+ROOM[rid].n+'</h3>'+
-    '<div class="cd-sec"><div class="cd-grid"><div class="k">Ngoài trời</div><div>'+o.w.ic+' '+o.w.n+' · '+fmtT(o.temp)+' · 💧 '+o.hum+'%</div>'+
-    '<div class="k">Trong phòng</div><div><b>'+fmtT(rc.T)+'</b> · 💧 '+rc.hum+'%</div>'+
-    '<div class="k">Độ thoải mái</div><div><b>'+rc.comfort+'</b>/100'+wxBar(rc.comfort,rc.comfort>=60?'#5fd08a':rc.comfort>=35?'#ffb347':'#ff6b6b')+'</div>'+
-    '<div class="k">Thông với ngoài</div><div>'+(R.out?'Phòng ngoài trời':'Hở '+Math.round((R.exp||0)*100)+'%')+' · cách nhiệt '+Math.round(rc.ins*100)+'%</div>'+
-    '<div class="k">Sưởi / làm mát</div><div>🔥 '+String(Math.round(rc.heat*10)/10).replace('.',',')+'° · ❄️ '+String(Math.round(rc.cool*10)/10).replace('.',',')+'°'+(th?' · tự động':'')+'</div>'+
-    '<div class="k">Mưa, gió, ồn</div><div>'+(rc.rain>.05?'☔ '+Math.round(rc.rain*100)+'%':'không mưa tạt')+' · '+(rc.wind>.05?'🌬 '+Math.round(rc.wind*100)+'%':'không gió lùa')+(rc.noise?' · ⚡ sấm':'')+'</div></div></div>'+
-    (tips.length?'<div class="dim" style="text-align:left;margin-top:8px">💡 '+tips.join('<br>💡 ')+'</div>':'')+
-    (typeof openHandbook==='function'?'<div class="row wrap" style="justify-content:center;margin-top:8px"><button class="sm" onclick="openHandbook(\'climstat\')">📖 Giải thích các chỉ số</button><button class="sm" onclick="openHandbook(\'climfix\')">🛠 Cách xử lý</button></div>':'')+
-    '<h4 style="text-align:left;margin:12px 0 6px">Thiết bị có tác dụng ('+rc.D.on.length+')</h4>'+(rc.D.on.length?rc.D.on.map(dv).join(''):'<div class="dim">Chưa có. Mua ở Cửa hàng, các mục Giữ ấm, Làm mát, Chống thời tiết, Tiện nghi.</div>')+
-    (rc.D.off.length?'<h4 style="text-align:left;margin:12px 0 6px">Không có tác dụng ('+rc.D.off.length+')</h4>'+rc.D.off.map(dv).join(''):'')+
-    (cats.length?'<h4 style="text-align:left;margin:12px 0 6px">Các bé trong phòng</h4>'+cats.map(c=>'<div class="card tap" style="padding:6px 10px" onclick="openCat('+c.uid+')">'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' <small>· cảm thấy '+fmtT(wxFeel(c).feel)+'</small><br>'+wxBadges(c,1)+'</div></div>').join(''):'');
-}
+// climHtml (trang chi tiết phòng trong sách) nằm ở js/wx-guide.js cùng trang Giải thích nhanh
 
 /* ---------- CUỐN SÁCH KHÍ HẬU: trang trái dự báo thời tiết, trang phải khí hậu các phòng (chia trang nhỏ, lật giấy). CSS: css/wxbook.css ---------- */
 const WXK={sunny:'sun',ideal:'bow',hot:'hot',heatwave:'hot',drizzle:'rain',storm:'storm',cold:'frost',snow:'snow',blizzard:'bliz',wind:'wind',fog:'fog'};
@@ -110,16 +85,16 @@ function wxIcon(type,sz){
   else h=[9,15,21,27].map((y,i)=>'<rect class="fog '+(i%2?'b':'')+'" x="'+(i%2?7:4)+'" y="'+y+'" width="'+(i%2?22:26)+'" height="3.4" rx="1.7" fill="#aab0c0"/>').join('');
   return '<svg class="wi'+(k==='bliz'?' fast':'')+'" width="'+(sz||36)+'" height="'+(sz||36)+'" viewBox="0 0 36 36" aria-hidden="true">'+h+'</svg>';
 }
-const WB={pg:0,rid:null,per:4,dir:''};
+const WB={pg:0,rid:null,per:4,dir:'',g:null}; // g: trang Giải thích nhanh đang mở (js/wx-guide.js)
 const bookOn=()=>{const e=$('wxbook');return !!(e&&e.classList.contains('on'))};
-const comfCol=v=>v>=60?'#5fbf7a':v>=35?'#e8a83a':'#e0584a',comfTxt=v=>v>=60?'Dễ chịu':v>=35?'Tạm được':'Khó chịu';
+const comfCol=v=>v>=60?'#5fbf7a':v>=40?'#e8a83a':'#e0584a',comfTxt=v=>v>=60?'Dễ chịu':v>=40?'Tạm được':'Khó chịu'; // 60, 40: ngưỡng hồi sức khỏe, khỏi ốm (js/wx.js)
 // cảnh báo của một phòng: quá lạnh, quá nóng, mưa tạt, gió lùa, không hợp với mèo
 function roomWarn(rc){
   const L=[];
   if(rc.T<WXC.coldAt)L.push(['c','❄️ Quá lạnh']);else if(rc.T<WXC.ideal[0])L.push(['w','Hơi lạnh']);
   if(rc.T>WXC.hotAt)L.push(['','🔥 Quá nóng']);else if(rc.T>WXC.ideal[1])L.push(['w','Hơi nóng']);
   if(rc.rain>.2)L.push(['c','☔ Mưa tạt']);if(rc.wind>.3)L.push(['w','🌬 Gió lùa']);
-  if(rc.comfort<35)L.push(['','⚠ Không hợp với mèo']);
+  if(rc.comfort<40)L.push(['','⚠ Không hợp với mèo']);
   return L;
 }
 function bookLeft(){
@@ -146,7 +121,7 @@ function bookRight(){
       '<div class="ln">'+(W.length?W.map(w=>'<span class="wb-tag '+w[0]+'">'+w[1]+'</span>').join(' '):'<span class="wb-tag ok">✓ Phù hợp với mèo</span>')+'</div></div>'+
       '<div class="dv">'+(on.length?on.slice(0,3).map(d=>furnTag(d.f.id,'',24,20)).join('')+(on.length>3?'+'+(on.length-3):''):'<span class="dim">chưa có<br>thiết bị</span>')+'</div></button>'};
   return '<div class="wb-sheet"><h3>Khí hậu các phòng</h3><div class="wb-list">'+rooms.slice(WB.pg*WB.per,(WB.pg+1)*WB.per).map(row).join('')+'</div>'+
-    '<div class="wb-nav"><button class="sm" '+(WB.pg<=0?'disabled':'')+' onclick="bookPage(-1)" aria-label="Trang trước">◀</button><span class="pg">Trang '+(WB.pg+1)+' / '+n+'</span><button class="sm" '+(WB.pg>=n-1?'disabled':'')+' onclick="bookPage(1)" aria-label="Trang sau">▶</button></div></div>';
+    '<div class="wb-nav"><button class="sm" '+(WB.pg<=0?'disabled':'')+' onclick="bookPage(-1)" aria-label="Trang trước">◀</button><span class="pg">Trang '+(WB.pg+1)+' / '+n+'</span><button class="sm" '+(WB.pg>=n-1?'disabled':'')+' onclick="bookPage(1)" aria-label="Trang sau">▶</button>'+(typeof bookGuide==='function'?'<button class="sm wb-help" onclick="bookGuide()" aria-label="Giải thích nhanh">📖 Giải thích</button>':'')+'</div></div>';
 }
 // vẽ lại: part = 'l' (trang trái), 'r' (trang phải) hoặc bỏ trống (cả hai). Sau khi vẽ danh sách phòng thì đo chỗ trống để biết mỗi trang nhỏ chứa được mấy phòng.
 function bookDraw(part){
@@ -188,7 +163,7 @@ function openBook(rid){
   if($('modal').style.display==='flex'&&!$('modal').classList.contains('lock'))closeModal();
   let e=$('wxbook');
   if(!e){e=document.createElement('div');e.id='wxbook';e.addEventListener('click',ev=>{if(ev.target===e)closeBook()});document.body.appendChild(e)}
-  WB.rid=rid&&S.rooms[rid]?rid:null;
+  WB.rid=rid&&S.rooms[rid]?rid:null;WB.g=null;
   if(!WB.rid){const i=ownedRooms().findIndex(r=>r.id===cur);if(i>=0)WB.pg=Math.floor(i/WB.per)}
   if(bookOn()){bookDraw('r');return}
   e.innerHTML='<div class="wb-book" role="dialog" aria-label="Sách khí hậu"><div class="wb-mark"></div><button class="wb-x sm" aria-label="Đóng" onclick="closeBook()">✕</button><div class="wb-page wb-l"></div><div class="wb-spine"></div><div class="wb-page wb-r"></div></div>';
@@ -196,14 +171,14 @@ function openBook(rid){
 }
 function closeBook(){const e=$('wxbook');if(e)e.classList.remove('on')}
 function bookPage(d){WB.pg+=d;WB.dir=d>0?'fl':'fr';bookDraw('r')}
-function bookRoom(rid){WB.dir=rid?'fl':'fr';if(!rid)WB.fit=0;if(!rid){const i=ownedRooms().findIndex(r=>r.id===WB.rid);if(i>=0)WB.pg=Math.floor(i/WB.per)}WB.rid=rid;bookDraw('r')}
+function bookRoom(rid){WB.g=null;WB.dir=rid?'fl':'fr';if(!rid)WB.fit=0;if(!rid){const i=ownedRooms().findIndex(r=>r.id===WB.rid);if(i>=0)WB.pg=Math.floor(i/WB.per)}WB.rid=rid;bookDraw('r')}
 // đóng sách và chuyển thẳng tới phòng đó (tab Phòng) để đặt, bật tắt thiết bị hoặc dời mèo
 function bookGo(rid){if(!S.rooms[rid])return;closeBook();if(tab!=='home')setTab('home');if(cur!==rid)setRoom(rid);toast('Đã chuyển tới '+ROOM[rid].n+'. Chạm vào máy sưởi, quạt để bật tắt; bấm Sắp xếp đồ để đặt thiết bị mới.',{icon:'🚪',title:'Khí hậu phòng',key:'bookgo'})}
 function openWeather(){openBook()}
 function openClimate(rid){openBook(rid||WB.rid||cur)}
 addEventListener('keydown',ev=>{if(ev.key==='Escape'&&bookOn()&&$('modal').style.display!=='flex')closeBook()});
 addEventListener('resize',()=>{if(bookOn()){WB.fit=0;bookDraw('r')}});
-setInterval(()=>{if(bookOn()&&$('modal').style.display!=='flex'){bookDraw('l');if(!WB.rid)bookDraw('r')}},5000);
+setInterval(()=>{if(bookOn()&&$('modal').style.display!=='flex'){bookDraw('l');if(!WB.rid&&!WB.g)bookDraw('r')}},5000);
 
 /* ---------- trạng thái mèo ---------- */
 const wxStatusLeft=(c,k)=>{const x=wxs(c),F=wxFeel(c);

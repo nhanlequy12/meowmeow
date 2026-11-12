@@ -76,6 +76,69 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 .wb-bar{display:flex;gap:6px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:6px;flex:none}
 .wb-go{white-space:nowrap}
 
+/* trang phòng và "Giải thích nhanh" (js/wx-guide.js). Nhãn màu luôn có biểu tượng + chữ; chữ đậm, nền nhạt, tương phản cao trên giấy */
+.wl{display:inline-block;border-radius:8px;padding:0 6px;font-size:12px;font-weight:800;line-height:1.55;white-space:nowrap;border:1.5px solid}
+.wl-g{color:#1f5e33;background:#dcf2e1;border-color:#7cc08f}
+.wl-y{color:#6b4a00;background:#fff0bf;border-color:#e0b640}
+.wl-r{color:#8e1f14;background:#ffded7;border-color:#e0806e}
+.wl-b{color:#174e85;background:#dcecff;border-color:#86b4e6}
+.wl-f{color:#5a3a12;background:#fde6c8;border-color:#e0a860}
+.wl-x{color:#5a4a3a;background:#ece2cc;border-color:#c9b48c}
+.wb-i{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;min-height:0;padding:0;margin:0 0 0 2px;border-radius:50%;border:1.5px solid #b89a6a;background:#fff8e6;color:#6e4a2a;font-size:13px;font-weight:900;line-height:1;cursor:help;vertical-align:middle;box-shadow:none}
+.wg-sts{display:flex;flex-direction:column;gap:4px;margin:2px 0 6px;text-align:left}
+.wg-st{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.2fr) auto;gap:6px;align-items:center;background:var(--pg2);border:2px solid #d9c394;border-radius:10px;padding:3px 8px;font-size:13px}
+.wg-st .k{font-weight:800;white-space:nowrap}
+.wg-st .v{min-width:0;overflow-wrap:anywhere}
+.wg-st .v .bar{height:5px}
+.wg-lv{background:none;border:0;padding:0;min-height:0;box-shadow:none;cursor:pointer}
+.wb-det h4,.wg-body h4{margin:10px 0 5px;text-align:left}
+.wg-card{text-align:left;background:#fffaf0;border:2px solid #d9c394;border-left-width:6px;border-radius:10px;padding:6px 9px;margin:0 0 6px}
+.wg-card.wg-r{border-left-color:#d0503c}.wg-card.wg-y{border-left-color:#e0b640}
+.wg-ct{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:baseline}
+.wg-eff{font-size:13px;margin:3px 0 2px;line-height:1.4;font-weight:500}
+.wg-acts{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}
+.wg-a{display:inline-flex;align-items:center;gap:4px;background:var(--pg2);border-radius:9px;padding:2px 4px 2px 6px;max-width:100%}
+.wg-a small{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:9em}
+.wg-a .sm,.wg-acts .sm,.wg-dev .sm{min-height:32px;padding:0 9px;font-size:12.5px;white-space:nowrap}
+.wg-more{margin-left:auto}
+.wg-ok{text-align:left;margin:4px 0 6px;font-size:13px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.wg-btns{justify-content:center;margin:6px 0 2px}
+.wg-more-d{margin:6px 0 2px;text-align:left}
+.wg-more-d summary{cursor:pointer;font-weight:800;color:#8a5a3a;font-size:13px;padding:4px 0}
+.wg-dev{display:flex;gap:8px;align-items:center;text-align:left;background:var(--pg2);border:2px solid #d9c394;border-radius:10px;padding:4px 8px;margin:0 0 5px}
+.wg-dev .g{flex:1;min-width:0}
+.wg-dev small{display:block;line-height:1.35;color:#6e5440}
+.wg-tabs{flex:none;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin:0 0 6px}
+.wg-tabs .sm{flex:1 1 auto;min-height:34px;padding:0 5px;font-size:12px;white-space:nowrap}
+.wg-body{text-align:left}
+.wg-body.wg-in{animation:wgIn .22s ease-out}
+@keyframes wgIn{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
+.wg-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.wg-li{background:var(--pg2);border:2px solid transparent;border-radius:10px;padding:5px 8px;font-size:13px;line-height:1.45}
+.wg-li.cur{border-color:#8a5a3a;background:#fff6dc}
+.wg-rng{font-weight:800;color:#6e4a2a}
+.wg-li>span:not(.wl){font-weight:500}
+.wg-li b,.wg-eff b,.wg-tip b{font-weight:900;color:#6e2414}
+.wg-here{color:#8a3a20;font-size:12px;white-space:nowrap}
+.wg-fix{border:2px solid transparent;border-radius:12px;padding:5px;margin:0 0 6px}
+.wg-fix.cur{border-color:#8a5a3a;background:#fff6dc}
+.wg-fix .wg-ct{margin:0 0 5px}
+.wg-tip{font-size:12.5px;line-height:1.45;background:#fff6dc;border-left:4px solid #e8b83a;border-radius:8px;padding:5px 9px;margin:6px 0}
+.wg-gen{font-size:13px;line-height:1.5;padding:3px 2px;border-bottom:1px dotted #d9c394}
+.wb-help{white-space:nowrap}
+@media (max-width:760px){
+  .wg-st{grid-template-columns:minmax(0,1fr) auto;font-size:12.5px}
+  .wg-st .v{grid-column:1/-1;grid-row:2}
+  .wg-st .wg-lv{grid-column:2;grid-row:1}
+  .wg-a small{max-width:7em}
+}
+/* điện thoại (dọc hoặc ngang): 5 mục giải thích nằm gọn một hàng, biểu tượng trên chữ */
+@media (max-width:760px),(max-height:520px){
+  .wg-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+  .wg-tabs .sm{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:11px;line-height:1.1;padding:2px 1px;min-height:38px}
+}
+@media (prefers-reduced-motion:reduce){.wg-body.wg-in{animation:none}}
+
 /* biểu tượng thời tiết chuyển động (SVG) */
 .wi{display:inline-block;vertical-align:middle;overflow:visible}
 .wi [class]{transform-box:fill-box;transform-origin:center}
