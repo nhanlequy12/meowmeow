@@ -78,6 +78,12 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Kiểm tra đã chạy: `node tools/pwtest.js`, `node tools/wxtest.js`, `node --check`; Playwright ở PC, điện thoại dọc, điện thoại ngang (hướng dẫn điện, sách điện nhiều trang, sạc qua ổ, điện mặt trời, sét đánh, máy phát, bản lưu cũ): không lỗi JS, không tràn khung.
 - Chưa kiểm tra: người chơi thật, âm thanh sấm, chạy liền mạch nhiều giờ, `server.py` thật với phí sạc.
 
+## Đợt 2026-11-12: chuyển tiến độ sang máy khác
+
+- Commit `254aefc` (chi tiết ở `CLAUDE.md` mục 32): mã chuyển máy 8 ký tự (10 phút, dùng một lần), mã khôi phục 12 ký tự, quản trị viên cấp mã, máy cũ tự bị khóa (409), khóa IP khi nhập sai, máy chủ chỉ lưu băm của mã. Sửa `server.py`, `js/net.js`, `js/ui.js`, `js/tut-text.js`.
+- Kiểm tra đã chạy: Playwright với `server.py` thật ở điện thoại dọc, PC, điện thoại ngang (30 bước); `node tools/wxtest.js`, `tools/pwtest.js`, `tools/pitytest.js`, `node --check` mọi file JS.
+- Chưa kiểm tra: hai máy thật qua LAN hoặc đường hầm HTTPS, điện thoại thật, mã hết hạn sau đúng 10 phút.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
