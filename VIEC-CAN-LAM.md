@@ -16,6 +16,8 @@ Người dùng nêu bốn yêu cầu về hiệu ứng của mèo 4★ và 5★ 
 
 ## Việc cần làm
 
+**Cập nhật 2026-11-12, tối: cả sáu việc dưới đây đã làm xong** (chi tiết ở `CLAUDE.md` mục 31; việc 6 do phiên khác làm ở commit `3de1932`). Còn lại là phần người dùng tự xem: chuyển động liền mạch, âm thanh, điện thoại.
+
 1. **Intro riêng cho trang phục hiếm của 14 bé** (thêm vài chi tiết khác biệt, giữ cảnh gốc; người dùng dặn không sửa intro của trang phục thường): Khao Manee (mão vàng), Lykoi (khăn đỏ), Savannah (Pharaoh), Sokoke (thần rừng), Suphalak (vòng hoa nhài), Naruto (Cửu Vĩ, Hokage), Zenitsu (Hỏa Lôi Thần), Gojo (Lục Nhãn), Harry Potter (Tầm thủ), Darth Vader (Trắng), Nyan Cat (Tac Nayn), Thần Tài (Vàng ròng), Phi Hành Gia (cam), Hoàng Gia (tím).
 2. **Hoạt ảnh trong phòng đẹp hơn cho trang phục hiếm của đúng 14 bé trên** (`S5[sp].form` như Itadori dạng Sukuna, `sigOf` đã hỗ trợ sẵn).
 3. **Hiệu ứng quanh thân luôn bật** (cơ chế mới, đề xuất bảng `AMB[khóa ngoại hình]` gọi trong `drawEnt` cả lúc đứng yên, có trần hạt):
