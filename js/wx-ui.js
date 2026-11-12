@@ -306,9 +306,7 @@ function wxDraw(g){
     else if(p.t==='sp'){g.fillStyle='#fff6c8';g.fillRect(Math.round(p.x),Math.round(p.y),1,1)}});
   g.globalAlpha=1;
   if(WXU.flash>0){g.fillStyle='rgba(255,255,240,'+WXU.flash+')';g.fillRect(x0,yT,VW,out?VHV:hh)}
-  // số lượt nước còn trong bát nước
-  wbowls(cur).forEach(b=>{const f=FURN[b.fid],tx='💧'+(b.w||0);g.font='bold 4.5px system-ui,sans-serif';const tw=Math.ceil(g.measureText(tx).width)+3,nx=Math.round(b.x-tw/2),ny=Math.round(b.y-f.h)-8;
-    g.fillStyle=(b.w||0)>0?'#2a5f8a':'#8a3040';g.fillRect(nx-.5,ny-.5,tw+1,7);g.fillStyle='#f0f8ff';g.fillRect(nx,ny,tw,6);g.fillStyle=(b.w||0)>0?'#2a5f8a':'#8a3040';g.textBaseline='top';g.fillText(tx,nx+1.5,ny+.6)});
+  // nhãn số lượt nước của bát nước: nay vẽ chung với bát ăn ở js/meal-ent.js (meLabel)
 }
 
 /* ---------- cửa sổ nhìn ra ngoài: bầu trời theo giờ và thời tiết, mây, mưa, tuyết, sấm, sương, cây và mặt đất theo mùa ----------

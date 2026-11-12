@@ -1,9 +1,9 @@
 "use strict";
 /* Kiểm thử nước uống, bệnh tật, thuốc, bệnh viện, chấn thương viễn chinh (chạy: node tools/medtest.js).
-   Dùng đúng mã game: data.js, wx-data.js, pw-data.js, med-data.js, game.js, wx.js, pw.js, med.js. Thoát mã 1 nếu có phần hỏng. */
+   Dùng đúng mã game: data.js, wx-data.js, pw-data.js, med-data.js, game.js, wx.js, pw.js, med.js, meal.js. Thoát mã 1 nếu có phần hỏng. */
 const fs=require('fs'),path=require('path'),cp=require('child_process');const R=path.join(__dirname,'..');
 let STORE=null;globalThis.localStorage={getItem(k){return k==='meoxu_v2'?STORE:null},setItem(k,v){if(k==='meoxu_v2')STORE=v},removeItem(){}};
-(0,eval)(['js/data.js','js/wx-data.js','js/pw-data.js','js/med-data.js','js/game.js','js/wx.js','js/pw.js','js/med.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
+(0,eval)(['js/data.js','js/wx-data.js','js/pw-data.js','js/med-data.js','js/game.js','js/wx.js','js/pw.js','js/med.js','js/meal.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
   `\n;globalThis.T={get S(){return S},set S(v){S=v},fresh,newCat,tick,load,save,wxs,wxFeel,wxOverride,fillWater,wxDrink,buyDrink,drinkStock,bowlList,wbowls,invN,medAdd,medCure,medUse,medCan,buyMed,medStatus,ills,inHosp,
     hospPlan,hospAdmit,hospLeft,medTripClaim,injOdds,medTripWhy,tripInfo,startTrip,claimTrip,homeCats,onTrip,medOpen,happyTarget,medRegen,SP,FURN,DIS,MED,MEDS,DRINK,DRINKS,MEDC,INJ,WXC,DEST,MED_COMPLEX,MED_LV,
     setToff:v=>{TOFF=v},get TOFF(){return TOFF},setNotify:f=>{notify=f}};`);
@@ -13,6 +13,10 @@ const reset=lv=>{STORE=null;T.setToff(0);T.fresh();const S=T.S;S.tut={done:1,hin
 const cat=(room)=>{const c=T.newCat(T.SP.muop,1);c.room=room||'living';c.en=80;c.hp=70;c.full=90;T.S.cats.push(c);return c};
 const run=(min,step)=>{for(let i=0;i<min;i+=(step||1)){T.setToff(T.TOFF+(step||1)*MIN);T.tick((step||1)*60)}};
 const bowl=()=>T.wbowls('living')[0];
+// uống không còn tức thì (js/meal.js): bé được giao bát, đi tới bát, uống vài giây rồi mới cộng chỉ số. sip(c) tua từng giây tới khi bé uống xong.
+const sec=s=>{for(let i=0;i<s;i++){T.setToff(T.TOFF+1000);T.tick(1)}};
+const sip=c=>{for(let i=0;i<40&&(i<1||c.meal);i++)sec(1)};
+const near=(a,b)=>Math.abs(a-b)<1; // trôi tự nhiên trong vài giây tua (khát, sức khỏe, thoải mái) nhỏ hơn 1 điểm
 
 // 1. nước uống ở cấp 1
 {
@@ -20,7 +24,7 @@ const bowl=()=>T.wbowls('living')[0];
   ok('Cấp 1: được tặng bát nước và '+T.MEDC.starter+' chai Nước lọc một lần',bowl()&&T.invN('w_plain')===T.MEDC.starter&&S.med.gw===1);
   T.tick(1);ok('Quà nước không phát lại',T.invN('w_plain')===T.MEDC.starter);
   const w0=c.wa;run(60);ok('Cấp 1: nước của bé giảm theo thời gian',c.wa<w0-15&&c.wa>w0-25,w0.toFixed(1)+' → '+c.wa.toFixed(1));
-  c.wa=50;bowl().w=2;bowl().wl=['w_plain','w_special'];T.tick(1);
+  c.wa=50;bowl().w=2;bowl().wl=['w_plain','w_special'];T.tick(1);sip(c);
   ok('Bé khát tự uống đúng loại nước trong bát (Nước đặc biệt +60)',c.wa>=99&&bowl().w===1&&bowl().wl.length===1,'nước '+c.wa.toFixed(0)+', bát còn '+bowl().w);
   bowl().w=0;bowl().wl=[];const st=T.invN('w_plain'),r=T.fillWater('living');
   ok('Đổ nước trừ đúng số chai trong kho',r.n===8&&T.invN('w_plain')===st-8&&bowl().w===8,'rót '+r.n+', kho '+st+' → '+T.invN('w_plain'));
@@ -34,9 +38,11 @@ const bowl=()=>T.wbowls('living')[0];
 {
   const S=reset(5),c=cat();
   ok('6 loại nước đúng giá và lượng nước',JSON.stringify(T.DRINKS.map(d=>[d.price,d.wa]))==='[[5,20],[12,35],[25,50],[40,50],[60,40],[100,60]]');
-  c.wa=40;c.he=50;T.wxs(c).hx=100;bowl().w=1;bowl().wl=['w_electro'];T.wxDrink('living');ok('Nước điện giải: +50 nước, hạ nhiệt',c.wa===90&&T.wxs(c).hx<=40,'nước '+c.wa+', phơi nóng '+T.wxs(c).hx);
-  c.wa=40;bowl().w=1;bowl().wl=['w_nutri'];T.wxDrink('living');ok('Nước dinh dưỡng: +40 nước, +5 sức khỏe',c.wa===80&&c.he===55);
-  c.wa=30;c.cf=50;bowl().w=1;bowl().wl=['w_special'];T.wxDrink('living');ok('Nước đặc biệt: +60 nước, +5 thoải mái',c.wa===90&&c.cf===55);
+  c.wa=40;c.he=50;T.wxs(c).hx=100;bowl().w=1;bowl().wl=['w_electro'];T.wxDrink('living');
+  ok('Gọi uống chỉ giao bát, chưa cộng nước',c.meal&&c.meal.k==='w'&&c.wa===40&&bowl().wl.length===1);sip(c);
+  ok('Nước điện giải: +50 nước, hạ nhiệt',near(c.wa,90)&&T.wxs(c).hx<=40&&!bowl().wl.length,'nước '+c.wa.toFixed(1)+', phơi nóng '+T.wxs(c).hx.toFixed(0));
+  c.wa=40;c.he=50;bowl().w=1;bowl().wl=['w_nutri'];T.wxDrink('living');sip(c);ok('Nước dinh dưỡng: +40 nước, +5 sức khỏe',near(c.wa,80)&&near(c.he,55),'nước '+c.wa.toFixed(1)+', sức khỏe '+c.he.toFixed(1));
+  c.wa=30;c.cf=50;bowl().w=1;bowl().wl=['w_special'];T.wxDrink('living');sip(c);ok('Nước đặc biệt: +60 nước, +5 thoải mái',near(c.wa,90)&&near(c.cf,55),'nước '+c.wa.toFixed(1)+', thoải mái '+c.cf.toFixed(1));
   // máy lọc nước
   S.items=S.items.filter(i=>!T.FURN[i.fid].water);S.items.push({iid:S.nid++,fid:'waterfilter',room:'living',x:200,y:150,w:0,currentBattery:480});
   S.inv={w_plain:5};c.wa=100;T.wxDrink('living');const f=bowl();

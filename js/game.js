@@ -43,6 +43,7 @@ function load(){
   if(S.level>=WX_LV&&!S.wxU){S.wxU=1;S.wxOld=1} // người chơi đã qua cấp 2 trước bản cập nhật: thời tiết tự mở, tiến độ giữ nguyên (hướng dẫn thời tiết hiện một lần, cờ S.tut.wx)
   if(!S.bowlMig){for(const rid in S.rooms)giveBowl(rid,S.rooms[rid].bowlAt);S.bowlMig=1} // bản cũ: mỗi phòng có 1 bát cố định, nay thành món đồ
   if(typeof pwMigrate==='function')pwMigrate(); // thiết bị pin kiểu cũ (i.bat, i.chg) sang pin sạc tay (js/pw.js)
+  if(typeof mealLoad==='function')mealLoad(); // bát ăn kiểu cũ (b.food + b.left) sang danh sách suất; bé đang đi tới bát thì đi lại (js/meal.js)
   fixSlots();
   // Bù thời gian vắng mặt (tối đa 8 giờ) theo từng bước 10 phút, để máy cho ăn tự đổ và mèo đói tự ra ăn đúng như lúc đang mở game.
   const el=clamp((now()-(S.last||now()))/1000,0,8*3600);
@@ -205,17 +206,18 @@ function tick(dt,sim){
       c.hp=Math.abs(t-c.hp)<=step?t:c.hp+Math.sign(t-c.hp)*step;
     }
   });
-  // máy cho ăn tự đổ hạt khô; mèo đói tự ra ăn phần còn lại trong bát
-  ownedRooms().forEach(r=>{
+  // máy cho ăn tự đổ hạt khô cho đầy chỗ trống (trả xu trực tiếp, không qua kho); mèo đói được giao bát và tự đi tới ăn (js/meal.js)
+  if(typeof mealCall==='function')ownedRooms().forEach(r=>{ // công cụ kiểm thử không nạp js/meal.js thì bỏ qua phần ăn
     const bs=bowlsIn(r.id); if(!bs.length)return;
-    // máy tự đổ thêm hạt khô cho đầy; nếu trong máy còn món khác do bạn đổ thì chờ mèo ăn hết đã
-    bs.forEach(b=>{if(FURN[b.fid].bowl.auto&&!(typeof pwOff==='function'&&pwOff(b))&&now()>=(b.at||0)&&homeCats(r.id).length&&!(b.left>0&&b.food!=='kibble')){const p=bowlCost(b,'kibble');if(S.coins>=p){S.coins-=p;if(TOFF)AWAY.cost+=p;fillBowl(b,'kibble')}}});
-    if(bs.some(b=>b.left>0))eatCheck(r.id,false);
+    bs.forEach(b=>{if(FURN[b.fid].bowl.auto&&!b.broken&&!(typeof pwOff==='function'&&pwOff(b))&&now()>=(b.at||0)&&homeCats(r.id).length){const n=mFree('f',b),p=mPrice('f','kibble',n);
+      if(n>0&&S.coins>=p){S.coins-=p;if(TOFF)AWAY.cost+=p;const l=fdList(b);for(let i=0;i<n;i++)l.push('kibble');b.left=l.length;b.food='kibble';b.at=now()+600000}}});
+    mealCall(r.id,'f',false);
     const st=S.rooms[r.id];
-    if(homeCats(r.id).some(c=>c.full<20)&&!bs.some(b=>b.left>0)&&bowlCap(r.id)<homeCats(r.id).length&&now()>=(st.warnAt||0)){st.warnAt=now()+300000;notify('🍽️ Thiếu bát ăn ở '+r.n+': '+homeCats(r.id).length+' bé nhưng chỉ có '+bowlCap(r.id)+' suất. Mua thêm bát ở Cửa hàng.')}
+    if(homeCats(r.id).some(c=>c.full<20)&&!bs.some(b=>mAvail('f',b)>0)&&bowlCap(r.id)<homeCats(r.id).length&&now()>=(st.warnAt||0)){st.warnAt=now()+300000;notify('🍽️ Thiếu bát ăn ở '+r.n+': '+homeCats(r.id).length+' bé nhưng chỉ có '+bowlCap(r.id)+' suất. Mua thêm bát ở Cửa hàng.')}
   });
   if(WXON)wxTick(dt,sim);
   if(MEDON)medTick(dt,sim);
+  if(typeof mealTick==='function')mealTick(dt,sim); // mèo đi tới bát, ăn uống vơi dần (js/meal.js)
   if(typeof strayTick==='function')strayTick(dt,sim); // giận dỗi, bỏ nhà đi, tìm về (js/stray.js)
   if(!sim)scratchTick();
 }
@@ -311,45 +313,24 @@ function claimTrip(slot){
 /* ---------- cho ăn ---------- */
 const bowlsIn=rid=>S.items.filter(i=>i.room===rid&&FURN[i.fid].bowl);
 const bowlCap=rid=>bowlsIn(rid).reduce((a,b)=>a+FURN[b.fid].bowl.cap,0);
-const bowlReady=rid=>bowlsIn(rid).some(b=>now()>=(b.at||0));
-const bowlNext=rid=>bowlsIn(rid).reduce((m,b)=>Math.min(m,b.at||0),Infinity);
-// Giá niêm yết của món ăn là cho 8 suất. Đổ bát chỉ trả cho số suất còn thiếu: bát còn thừa đúng món đó thì chỉ đổ thêm cho đầy,
-// còn đổi sang món khác thì phần thừa bị bỏ và trả đủ cả bát.
-const bowlNeed=(b,fid)=>FURN[b.fid].bowl.cap-(b.food===fid?(b.left||0):0);
-const bowlCost=(b,fid)=>{const n=bowlNeed(b,fid);return n>0?Math.max(1,Math.round(FOOD[fid].price*n/8)):0};
-function giveBowl(rid,at){S.items.push({iid:S.nid++,fid:'bowl',room:rid,x:70,y:158,flip:false,broken:false,left:0,at:at||0})}
-function fillBowl(b,fid){b.food=fid;b.left=FURN[b.fid].bowl.cap;b.at=now()+600000}
+// bát còn chỗ để đổ thêm (không còn thời gian chờ 10 phút giữa hai lần đổ: kho và suất trong bát giờ tính riêng, js/meal.js)
+const bowlReady=rid=>bowlsIn(rid).some(b=>!b.broken&&mFree('f',b)>0);
+const bowlNext=rid=>now();
+const bowlNeed=(b,fid)=>mFree('f',b);
+const bowlCost=(b,fid)=>mPrice('f',fid,mFree('f',b));
+function giveBowl(rid,at){S.items.push({iid:S.nid++,fid:'bowl',room:rid,x:70,y:158,flip:false,broken:false,left:0,fl:[],at:at||0})}
 let pickBowl=(c,bs)=>bs[0]; // giao diện thay bằng hàm chọn bát gần bé nhất
-// một bé ăn một suất trong bát
-function serve(b,c){
-  const B=FURN[b.fid].bowl,f=FOOD[b.food],rid=b.room,fav=favs(c).includes(b.food),chef=homeCats(rid).some(o=>tE(o,'chef'));
-  let gain=f.full*(fav?1.2:1)*(chef?1.25:1)*(B.eff||1); if(b.food==='kibble'&&tE(c,'picky'))gain*=.5;
-  c.full=clamp(c.full+gain,0,100);
-  c.hp=clamp(c.hp+(f.hp||0)+(fav?10:0)+(B.hp||0),0,100);
-  c.en=clamp(c.en+(f.en||0),0,100);
-  if(f.buff)c.buff=Object.assign({food:b.food,until:now()+f.min*60000*(fav?1.5:1)},f.buff);
-  b.left--;c.eat={iid:b.iid,t:now()};
-  const coins=Math.round((4+(roomHas(rid,'tank')?2:0)+(ROOM[rid].thank||0)+(B.coin||0))*gMult());S.coins+=coins;
-  if(TOFF){AWAY.n++;AWAY.coins+=coins}
-  return {coins,fav};
-}
-// all = vừa đổ thức ăn: bé nào cũng ra ăn; còn lại chỉ bé đói (dưới 50) mới ăn phần thừa
-function eatCheck(rid,all){
-  const res={coins:0,loved:[],n:0};
-  homeCats(rid).filter(c=>all||c.full<50).sort((a,b)=>a.full-b.full).forEach(c=>{
-    const bs=bowlsIn(rid).filter(b=>b.left>0&&b.food); if(!bs.length)return;
-    const r=serve(pickBowl(c,bs)||bs[0],c);res.coins+=r.coins;res.n++;if(r.fav)res.loved.push(c.name);
-  });
-  return res;
-}
+// Cho ăn nhanh (nút gợi ý, hướng dẫn tân thủ, bot cân bằng): mua đúng số suất gợi ý còn thiếu trong kho rồi chia đều vào các bát.
+// Mèo được giao bát và tự đi tới ăn; xu cảm ơn đến lúc bé ăn xong một suất (js/meal.js mealGain).
 function feedRoom(rid,fid){
-  const cats=homeCats(rid),ready=bowlsIn(rid).filter(b=>now()>=(b.at||0));
-  if(!ready.length||!cats.length||locked(FOOD[fid]))return null;
-  let cost=0,n=0;
-  ready.forEach(b=>{const p=bowlCost(b,fid);if(S.coins<p)return;S.coins-=p;cost+=p;n++;fillBowl(b,fid)});
-  if(!n)return null;
-  const r=eatCheck(rid,true); addXp(5); onAct('feed',1); if(r.loved.length)onAct('fav',r.loved.length); save();
-  return Object.assign(r,{cost,bowls:n,miss:cats.length-r.n});
+  const cats=homeCats(rid);if(!bowlsIn(rid).length||!cats.length||locked(FOOD[fid]))return null;
+  const n=mSuggest('f',rid);if(n<1)return null;
+  const lack=Math.max(0,n-fdN(fid));let cost=0;if(lack){const r=mealBuy('f',fid,lack);if(r.err)return null;cost=r.cost}
+  const was=new Set(S.cats.filter(c=>mealOf(c)).map(c=>c.uid));
+  const pl=mealPlan('f',rid,n,'even'),r=mealPour('f',rid,fid,pl.plan);if(r.err)return null;
+  const go=cats.filter(c=>mealOf(c)&&c.meal.k==='f'&&!was.has(c.uid));
+  const loved=go.filter(c=>favs(c).includes(fid)).map(c=>c.name);
+  return {coins:0,loved,n:go.length,bowls:r.bowls.length,poured:r.n,miss:Math.max(0,cats.filter(c=>c.full<MEALC.hungry).length-go.length-cats.filter(c=>mealOf(c)&&c.meal.k==='f'&&was.has(c.uid)).length),cost};
 }
 const PET_CD=600000; // mỗi bé nhận xu vuốt ve 10 phút một lần (trước là 20 giây: bấm liên tục kiếm xu và kinh nghiệm nhanh hơn cả viễn chinh)
 function petCat(c){

@@ -4,7 +4,7 @@
    Bản lưu cũ đã qua cấp 2: tự mở, giữ nguyên tiến độ, có cờ S.wxOld để mời xem hướng dẫn. Cấp mở của phòng, món ăn, nội thất cũ không đổi. */
 const fs=require('fs'),path=require('path');const R=path.join(__dirname,'..');
 let store={};globalThis.localStorage={getItem:k=>store[k]||null,setItem:(k,v)=>{store[k]=v},removeItem:k=>{delete store[k]}};
-(0,eval)(['js/data.js','js/wx-data.js','js/game.js','js/wx.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
+(0,eval)(['js/data.js','js/wx-data.js','js/game.js','js/wx.js','js/meal.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
   `\n;globalThis.T={get S(){return S},fresh,load,save,KEY,WX_LV,FEATS,WXDEV,SUPPLY,FURN,ROOMS,FOODS,FURNS,SP,newCat,wxOpen,addXp,xpNeed,buyItem,buySupply,tick,tripInfo,unlocksAt,locked,wxHappy,happyTarget,setNotify:f=>{notify=f}};`);
 let fail=0;const ok=(name,cond,info)=>{console.log((cond?'ĐẠT ':'HỎNG')+'  '+name+(info?'  ('+info+')':''));if(!cond)fail++};
 const notes=[];T.setNotify(m=>notes.push(String(m)));

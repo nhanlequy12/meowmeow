@@ -15,7 +15,7 @@ const fs=require('fs'),path=require('path'),readline=require('readline');
 const ROOT=path.join(__dirname,'..');
 globalThis.localStorage={getItem(){return null},setItem(){},removeItem(){}};
 const src=['js/data.js','js/wx-data.js','js/pw-data.js','js/med-data.js','js/game.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n;\n')+
-  '\n;globalThis.G={getS:()=>S,setS:v=>{S=v},gachaCore,prng,releaseGift,SP,FURN,ROOM,STAR,TRAITS,ALLCOAT,RARE,GACHA_COST,TICKET_COST,MAX_LV,PITY,SUP};';
+  '\n;globalThis.G={getS:()=>S,setS:v=>{S=v},gachaCore,prng,releaseGift,SP,FURN,ROOM,STAR,TRAITS,ALLCOAT,RARE,GACHA_COST,TICKET_COST,MAX_LV,PITY,SUP,FOOD};';
 (0,eval)(src);
 const {SP,FURN,ROOM,TRAITS,ALLCOAT,GACHA_COST,TICKET_COST,MAX_LV,PITY}=G;
 
@@ -36,6 +36,7 @@ function value(sv){
   const sup=(id,q)=>{const s=G.SUP[id];if(s&&q>0)v+=s.price*q};               // vật phẩm sinh tồn trong túi đồ và đang mang theo trong chuyến đi
   Object.entries(sv.inv||{}).forEach(([id,q])=>sup(id,+q||0));
   sv.trips.forEach(p=>{if(p&&p.kit)Object.entries(p.kit).forEach(([id,q])=>sup(id,+q||0))});
+  Object.entries(sv.fdinv||{}).forEach(([id,q])=>{const f=G.FOOD[id];if(f&&q>0)v+=f.price*q/8}); // kho thức ăn (js/meal.js): giá niêm yết cho 8 suất
   return v;
 }
 // lỗi cấu trúc: trả lý do, hoặc '' nếu ổn
@@ -60,6 +61,7 @@ function bad(sv){
   const iid=new Set();
   for(const i of sv.items){if(!i||!FURN[i.fid]||iid.has(i.iid))return 'Nội thất không hợp lệ';iid.add(i.iid)}
   for(const r in sv.rooms)if(!ROOM[r])return 'Phòng không có trong game';
+  if(sv.fdinv!=null&&(typeof sv.fdinv!=='object'||Object.entries(sv.fdinv).some(([id,q])=>!G.FOOD[id]||!int(q,0,1e5))))return 'Kho thức ăn không hợp lệ';
   if(sv.inv!=null&&(typeof sv.inv!=='object'||Object.entries(sv.inv).some(([id,q])=>!G.SUP[id]||!int(q,0,1e5))))return 'Túi đồ không hợp lệ';
   return '';
 }

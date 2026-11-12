@@ -113,9 +113,9 @@ FCATS.push(['drink','🥤 Nước uống']);
 FEATS.push({lv:1,id:'water',ic:'🥤',n:'Nước uống',d:'Mua nước ở Cửa hàng rồi đổ vào bát nước cho các bé.'},
   {lv:MED_LV,id:'med',ic:'🏥',n:'Nhà thuốc & Bệnh viện thú y',d:'Mua thuốc, điều trị và cho bé nhập viện. Mở ở ô 🏥 trên cùng.'});
 WXST.sick.cure='Cho bé nghỉ ở phòng ấm, khô, thoải mái khoảng 1,5 giờ, hoặc chữa ở Nhà thuốc & Bệnh viện thú y.';
-WXST.thirsty.cure='Mua nước ở Cửa hàng, mục 🥤 Nước uống, rồi bấm Đổ nước.';
+WXST.thirsty.cure='Bấm 💧 Cho uống cạnh nút Cho ăn để rót nước (thiếu thì mua luôn).';
 WXST.thirsty.d='Thiếu nước: kém vui, hồi năng lượng chậm; hết nước thì mất sức khỏe.';
-FURN.waterbowl.d=FURN.waterbowl.d.replace('Bấm "Đổ nước" (miễn phí) để đổ đầy.','Bấm "Đổ nước" để rót nước mua ở Cửa hàng.');
+FURN.waterbowl.d=FURN.waterbowl.d.replace('Bấm "Đổ nước" (miễn phí) để đổ đầy.','Bấm "Cho uống" để rót nước.');
 FURN.waterfilter.d=FURN.waterfilter.d.replace('Tự đổ đầy nước mỗi 10 phút (kể cả lúc vắng)','Tự rót nước đang có trong kho mỗi 10 phút, kể cả lúc vắng (không tự tạo ra nước)');
 SUP.coldmed.home={health:10};
 SUP.coldmed.d='Tự dùng khi bé bị lạnh hoặc ướt trên đường: giảm 60% khả năng bị ốm. Ở nhà: +10 sức khỏe (muốn chữa khỏi thì đến Nhà thuốc).';

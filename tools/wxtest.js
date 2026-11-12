@@ -3,7 +3,7 @@
    Mỗi phần in ĐẠT hoặc HỎNG kèm số liệu; thoát mã 1 nếu có phần hỏng. */
 const fs=require('fs'),path=require('path');const R=path.join(__dirname,'..');
 globalThis.localStorage={getItem(){return null},setItem(){},removeItem(){}};
-(0,eval)(['js/data.js','js/wx-data.js','js/pw-data.js','js/game.js','js/wx.js','js/pw.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
+(0,eval)(['js/data.js','js/wx-data.js','js/pw-data.js','js/game.js','js/wx.js','js/pw.js','js/meal.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
   `\n;globalThis.T={get S(){return S},fresh,newCat,tick,load,save,wxAt,wxForecast,roomClimate,wxCat,wxSt,wxs,wxFeel,wxRegen,wxHunger,wxTick,fillWater,buySupply,useSupply,
     tripInfo,startTrip,claimTrip,putBed,giveWater,kitFx,pwTick,wxDevices,wxOverride,WXO,SP,FURN,WX,WXC,SEASONS,SUP,DEST,setOff:v=>{WX_OFF=v},setToff:v=>{TOFF=v},get TOFF(){return TOFF},setNotify:f=>{notify=f}};`);
 let fail=0;const ok=(name,cond,info)=>{console.log((cond?'ĐẠT ':'HỎNG')+'  '+name+(info?'  ('+info+')':''));if(!cond)fail++};

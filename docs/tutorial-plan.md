@@ -21,9 +21,9 @@ Chỉ hướng dẫn những gì game đang có; mục nào không có trong mã
 | Phòng | Kéo để xem, phóng to thu nhỏ (＋ －, Ctrl + lăn, chụm 2 ngón), chạm mèo để theo dõi và vuốt ve | `#roomwrap`, `follow`, `petCat` | Luồng chính |
 | Dáng và hành động của mèo | Ngồi, chớp mắt, vẫy đuôi, liếm lông, ngủ, đi, chạy, nhảy, trèo đồ nhiều tầng, ra bát ăn; 5★ có hành động riêng và trạng thái 60 giây | `stepEnt`, `S5`, `MD`, CatKit | Luồng chính (làm quen), mẹo 5★ |
 | Vuốt ve | Mỗi bé 10 phút một lần, xu bằng số sao, +3 vui, +1 kinh nghiệm | `petCat`, `PET_CD` | Luồng chính |
-| Cho ăn | Bát ăn trong phòng; 8 món, mở theo cấp; trả theo suất cần đổ; mỗi bé ăn xong cảm ơn 4 xu; bát đổ lại sau 10 phút; món khoái khẩu ❤; buff | `openFeed`, `feedRoom` | Luồng chính, mẹo món mới |
-| Bát ăn, thiếu bát | 5 loại bát (nhựa, inox, gốm, máy tự động, vàng); thiếu suất thì bé đói đứng chờ | `bowlCap`, cảnh báo trong `tick` | Mẹo khi thiếu bát |
-| Lúc bạn vắng | Bù tối đa 8 giờ: mèo đói tự ra ăn suất thừa, máy cho ăn tự đổ | `load`, `AWAY` | Mẹo lần đầu có thông báo |
+| Cho ăn | 8 món, mở theo cấp; mua vào kho riêng (`S.fdinv`) rồi đổ vào bát; số suất gợi ý, nút ✎ Tùy chỉnh số lượng; chia Chia đều, Ưu tiên bát 1, Tự chọn; chạm một bát để đổ riêng; mèo tự đi tới bát, ăn hết một suất thì bát mới vơi và cảm ơn 4 xu; đổ thêm lúc nào cũng được (mỗi bé vẫn chỉ ra ăn lần "vừa đổ" 10 phút một lần); món khoái khẩu ❤; buff | `openFeed`, `feedRoom`, `js/meal.js`, `js/meal-ui.js` | Luồng chính, mẹo món mới |
+| Bát ăn, thiếu bát | 7 loại bát (nhựa, inox, gốm, máy tự động, vàng, bát đôi, bát chân cao), riêng với bát nước; mỗi bát 2 bé ăn cùng lúc, bé tới sau xếp hàng; thiếu suất thì bé đói đứng chờ | `bowlCap`, `MEALC.slots`, cảnh báo trong `tick` | Mẹo khi thiếu bát |
+| Lúc bạn vắng | Bù tối đa 8 giờ: mèo đói tự ra ăn suất thừa, máy cho ăn tự đổ hạt khô, máy lọc nước rót nước có trong kho | `load`, `AWAY`, `mealTick(…, true)` | Mẹo lần đầu có thông báo |
 | Viễn chinh | 1 → 5 ô (cấp 1, 3, 5, 7, 9); 5 điểm đến mở theo cấp; thẻ đông người, gần nước, thiên nhiên; ban đêm; chiến lợi phẩm, vé; cần no ≥ 20 và đủ năng lượng | `PANEL.trip`, `drawPicker`, `claimTrip` | Luồng chính, mẹo nhận quà lần đầu |
 | Cửa hàng | 17 phòng (Phòng khách miễn phí), 94 món nội thất trong 15 mục; khóa theo cấp; hiệu ứng vui, hồi sức, đói chậm, bonus cả nhà | `PANEL.shop` | Luồng chính (giới thiệu ngắn) |
 | Sắp xếp đồ | Kéo thả bám lưới, xoay, cất kho, xóa hoàn 25%, sửa đồ hỏng 30% | `toggleEdit` | Mẹo khi bấm lần đầu |
@@ -74,7 +74,7 @@ Bản đầu đề xuất 2★ kèm thêm một thuộc tính tốt của giốn
 5. `fol` [xem] Khoanh thẻ theo dõi: camera đi theo bé, thẻ hiện độ no, năng lượng, độ vui. Ba khung tiếp theo giải thích từng chỉ số: no dưới 20 không đi viễn chinh được, năng lượng là sức trả cho chuyến đi, độ vui nhân xu viễn chinh (thêm 2026-11-11).
 6. `poses` [xem] Bảng dáng của chính bé vừa chọn, đều đang chuyển động: Ngồi, Vẫy đuôi, Liếm lông, Ngủ, Đi, Chạy, Nhảy. Lời thoại: bé tự sinh hoạt, trèo đồ, mèo con hiếu động, mèo già hay ngủ.
 7. `view` [xem] Khoanh khung phòng và nút ＋ －: kéo để xem, phóng to thu nhỏ.
-8. `feed` [bấm] Khoanh nút "Cho ăn". 9. `food` [bấm] Trong hộp chọn món, khoanh nút Hạt khô. 10. `fed` [xem] Bát đổ lại sau 10 phút; đói dưới 20 thì không đi viễn chinh.
+8. `feed` [bấm] Khoanh nút "Cho ăn". 9. `food` [bấm] Trong hộp chọn món, khoanh nút Hạt khô. 10. `fed` [xem] Bé tự đi tới bát, ăn hết một suất thì bát mới vơi rồi cảm ơn 4 xu; đổ thêm lúc nào cũng được; đói dưới 20 thì không đi viễn chinh.
 
 ### D. Gacha lần đầu
 11. `ticket` [xem] Xoài tặng 1 vé gacha (cờ `got.ticket`).
@@ -160,3 +160,15 @@ Ba luồng phụ của `TUT.addFlow`, mỗi luồng chạy đúng một lần:
 - `pwgen`, lần đầu có máy phát (3 bước): chỉ đặt ở tầng hầm, sạc bằng xu, tự chuyển nguồn, dùng xong về 0%. Cờ `S.tut.pwg`.
 
 Sổ tay thêm bốn chương `power`, `solar`, `outage`, `generator` (ẩn trước cấp 2 như các chương thời tiết) và nút "▶ Xem lại hướng dẫn điện năng".
+
+## Bát ăn, bát nước, mua và chia suất (2026-11-12)
+
+Chữ trong `js/tut-text.js` (bước `fed`, chương Sổ tay `feed`, chương `health`) và `js/tut-med.js` (trang Nước uống, đoạn Bát nước) đã viết lại theo luật mới:
+
+- Thức ăn và nước mua vào kho trước, rồi mới đổ vào bát. Kho thức ăn (`S.fdinv`) và kho nước (`S.inv`) riêng, bát ăn và bát nước cũng riêng.
+- Bấm Cho ăn hoặc 💧 Cho uống: game gợi ý số suất vừa đủ cho các bé đang cần; nút ✎ Tùy chỉnh số lượng để đổi.
+- Nhiều bát thì chọn Chia đều, Ưu tiên bát 1 hoặc Tự chọn. Chạm vào một bát trong phòng để đổ riêng cho bát đó.
+- Mèo tự đi tới bát, ăn (uống) hết một suất thì bát mới vơi, ăn xong mới cộng chỉ số và cảm ơn.
+- Không còn "bát đổ lại sau 10 phút". Nhịp 10 phút chỉ còn ở chỗ mỗi bé ra ăn lần "vừa đổ bát" tối đa 10 phút một lần.
+
+Luồng chính giữ nguyên các bước `feed`, `food`, `fed`; chỉ đổi lời thoại. Nếu giao diện Cho ăn mới đổi nút mà bước `food` khoanh (nút Hạt khô trong hộp chọn món) thì phải sửa bước đó trong `js/tutorial.js`.

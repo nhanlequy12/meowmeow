@@ -4,7 +4,7 @@
 const fs=require('fs'),path=require('path');const R=path.join(__dirname,'..');
 const STORE={};globalThis.localStorage={getItem:k=>STORE[k]==null?null:STORE[k],setItem:(k,v)=>{STORE[k]=String(v)},removeItem:k=>{delete STORE[k]}};
 let NOW=Date.UTC(2026,10,12,5,0);Date.now=()=>NOW;
-(0,eval)(['js/data.js','js/wx-data.js','js/pw-data.js','js/game.js','js/wx.js','js/pw.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
+(0,eval)(['js/data.js','js/wx-data.js','js/pw-data.js','js/game.js','js/wx.js','js/pw.js','js/meal.js'].map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;\n')+
   `\n;globalThis.T={get S(){return S},set S(v){S=v},fresh,newCat,tick,load,save,wxAt,roomClimate,wxDevices,putBed,bedItem,roomHappy,buyItem,clampItem,sellItem,
    pwTick,pwStartCharge,pwStopCharge,pwQuote,pwStrike,pwRestore,pwGenCharge,pwOut,genOn,powerOn,pwDark,pwCur,pwPct,pwDead,pwSolarCap,pwSol,pwSolarRate,pwRunning,pwCalm,pwOutletWhy,pwRoomOk,pwMigrate,
    PW_OUT_Y,PWC,PWAWAY,FURN,SP,WXO,setNotify:f=>{notify=f}};`);

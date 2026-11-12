@@ -678,7 +678,7 @@ FURN.tree.lv=FURN.treegreen.lv=[[-6,-36],[2,-71]];
  F('bowl','Bát nhựa',60,'floor',18,10,'bowl','bowl',[],{bowl:{cap:4},d:'4 suất mỗi lần đổ. Mỗi phòng được tặng sẵn một cái.'}),
  F('bowlsteel','Bát inox',280,'floor',22,11,'bowl','bowl',['#b8c0cc','#96a0b0'],{bowl:{cap:8},d:'Bền và to: 8 suất mỗi lần đổ, một cái đủ cho phòng 8 bé.'}),
  F('bowlclay','Bát gốm',350,'floor',18,10,'bowl','bowl',['#e8a888','#c98468'],{bowl:{cap:4,hp:5},d:'4 suất. Mỗi bé ăn ở bát này được thêm 5 độ vui.'}),
- F('feeder','Máy cho ăn tự động',1500,'floor',20,28,'bowl','feeder',[],{bowl:{cap:4,auto:1},d:'4 suất. Cứ 10 phút tự đổ thêm hạt khô cho đầy, kể cả khi bạn vắng (tối đa 8 giờ). Chỉ trừ xu cho số suất mèo đã ăn.'}),
+ F('feeder','Máy cho ăn tự động',1500,'floor',20,28,'bowl','feeder',[],{bowl:{cap:4,auto:1},d:'4 suất. Cứ 10 phút tự đổ thêm hạt khô cho đầy chỗ trống, kể cả khi bạn vắng (tối đa 8 giờ). Chỉ trả xu cho số suất vừa đổ thêm.'}),
  F('bowlgold','Bát vàng',3000,'floor',22,11,'bowl','bowl',['#f2c84a','#d6a020'],{bowl:{cap:8,eff:1.25,coin:3},d:'8 suất. Thức ăn hiệu quả hơn 25%, mỗi bé cảm ơn thêm 3 xu.'}),
 ].forEach(f=>{FURNS.push(f);FURN[f.id]=f});
 /* ---------- nội thất bổ sung đợt 2026-11-11: 54 món cho mọi mục, thêm bộ Trung thu (cấp 8) và bộ Biển (cấp 15, đi với Hồ bơi) ---------- */

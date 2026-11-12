@@ -126,7 +126,9 @@
     const wf=FURN.waterfilter,wb=FURN.waterbowl;
     return P('Nước uống phải mua ở Cửa hàng, mục 🥤 Nước uống. Nước cất trong kho, dùng chung cho mọi phòng. Lúc bắt đầu bạn được tặng '+MEDC.starter+' chai '+DRINK.w_plain.n+'.')+
       L(DRINKS.map(w=>row(w.ic,w.n,'<b>'+vn(w.price)+' xu</b>',w.d)))+
-      P('<b>Bát nước.</b> Ở tab Phòng bấm 💧 Đổ nước để rót nước trong kho vào bát. Mỗi chai là một lượt uống'+(wb&&wb.water?', '+wb.n+' chứa '+wb.water.cap+' lượt':'')+'. Bé tự ra uống khi nước dưới '+WXC.water.drinkAt+'.')+
+      P('<b>Bát nước.</b> Bát nước là đồ riêng, không dùng chung với bát ăn. Nước mua vào kho rồi mới rót vào bát. Ở tab Phòng bấm 💧 Cho uống (cạnh nút Cho ăn) và chọn loại nước: game gợi ý số chai vừa đủ, bấm ✎ Tùy chỉnh số lượng để đổi. Chai trong kho rót trước, thiếu thì mua thêm đúng số còn thiếu. Mỗi chai là một lượt uống'+(wb&&wb.water?', '+wb.n+' chứa '+wb.water.cap+' lượt':'')+'.')+
+      P('<b>Chia vào bát.</b> Phòng có nhiều bát nước thì chọn Chia đều, Ưu tiên bát 1 hoặc Tự chọn. Chạm vào một bát nước trong phòng để rót riêng cho bát đó.')+
+      P('<b>Bé uống thế nào.</b> Khi nước dưới '+WXC.water.drinkAt+', bé tự đi tới bát. Uống hết một lượt thì bát mới vơi và bé mới đỡ khát.')+
       (wf&&wf.water?P('<b>'+wf.n+'.</b> Cứ 10 phút máy tự rót nước đang có trong kho cho đầy '+wf.water.cap+' lượt, loại rẻ trước, kể cả lúc bạn vắng. Máy không tự tạo ra nước: kho hết thì bát cũng cạn.'):'')+
       P('<b>Cảnh báo.</b> Game báo khi kho còn dưới '+MEDC.lowStock+' chai, hoặc khi bát cạn mà có bé đang khát.')+
       P('<b>Lúc bạn vắng mặt.</b> Các bé không bị nguy hiểm vì khát: nước của bé không tụt dưới '+WXC.away.water+' và không phát bệnh mới.');

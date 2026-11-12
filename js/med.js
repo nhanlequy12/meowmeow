@@ -220,7 +220,7 @@ function medTick(dt,sim){
   // cảnh báo nước: kho sắp hết, hoặc có bé khát mà bát cạn
   if(S.tut&&S.tut.done&&now()>=(M.lowAt||0)){
     const st=drinkStock(),dry=ownedRooms().filter(r=>homeCats(r.id).some(c=>(c.wa==null?100:c.wa)<WXC.water.low)&&!wbowls(r.id).some(b=>(b.w|0)>0));
-    if(dry.length){M.lowAt=now()+10*MIN;notify('💧 Bát nước ở '+dry.map(r=>r.n).join(', ')+' đã cạn, các bé đang khát. '+(st?'Bấm Đổ nước.':'Mua nước ở Cửa hàng, mục 🥤 Nước uống.'))}
+    if(dry.length){M.lowAt=now()+10*MIN;notify('💧 Bát nước ở '+dry.map(r=>r.n).join(', ')+' đã cạn, các bé đang khát. '+(st?'Bấm Cho uống.':'Bấm Cho uống để mua và rót nước.'))}
     else if(st<MEDC.lowStock&&ownedRooms().some(r=>homeCats(r.id).length&&waterNeed(r.id)>=wbowls(r.id).reduce((a,b)=>a+FURN[b.fid].water.cap,0)/2)){M.lowAt=now()+30*MIN;notify('🥤 Nước dự trữ sắp hết (còn '+st+' chai). Mua thêm ở Cửa hàng, mục 🥤 Nước uống.')}
   }
 }

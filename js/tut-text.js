@@ -49,8 +49,8 @@ const TUT_TEXT={
     feed:['Bé hơi đói rồi. Bấm Cho ăn nào!'],
     food:['Hạt khô rẻ mà no lâu. Chọn Hạt khô nhé!'],
     fed:[
-      'Ngon quá! Ăn xong mỗi bé cảm ơn bạn 4 xu.',
-      'Bát đổ lại được sau 10 phút. Bé đói dưới 20 thì không đi viễn chinh được đâu.'
+      'Bé tự đi tới bát. Ăn hết một suất thì bát mới vơi, rồi bé cảm ơn bạn 4 xu.',
+      'Đổ thêm lúc nào cũng được. Bé đói dưới 20 thì không đi viễn chinh được đâu.'
     ],
     ticket:['Giờ tới phần vui nhất: hộp quà mèo! Tớ tặng bạn 1 vé 🎟 để mở thử.'],
     gtab:['Bấm vào tab Gacha nào.'],
@@ -204,10 +204,14 @@ const TUT_TEXT={
         'Về lâu dài, độ vui trôi dần (1 điểm mỗi phút) về một mức do phòng quyết định: nội thất, thuộc tính của bé, bạn cùng phòng. Bé đói hoặc ngồi Phòng chờ thì mức này thấp đi.',
         'Thuộc tính, buff thức ăn và đồ đạc làm các con số trên nhanh hoặc chậm hơn; chạm vào nhãn thuộc tính để xem.']},
       {id:'feed',ic:'🍚',t:'Cho ăn',p:[
-        'Bấm Cho ăn để đổ đầy mọi bát đang sẵn sàng trong phòng. Mỗi bé ra ăn một suất rồi cảm ơn bạn 4 xu.',
-        'Giá niêm yết là cho 8 suất; bạn chỉ trả cho số suất cần đổ thêm. Bát đổ lại được sau 10 phút.',
+        'Thức ăn mua vào kho trước, rồi mới đổ vào bát. Bấm Cho ăn và chọn món: game gợi ý số suất vừa đủ cho các bé đang cần ăn. Muốn số khác thì bấm ✎ Tùy chỉnh số lượng.',
+        'Giá niêm yết là cho 8 suất; mua bao nhiêu suất trả bấy nhiêu. Lúc đổ, game lấy trong kho trước, thiếu thì mua thêm đúng số còn thiếu. Muốn mua để dành thì bấm Chỉ mua vào kho. Suất chưa đổ nằm lại trong kho, lần sau dùng tiếp.',
+        'Phòng có nhiều bát thì chọn cách chia: Chia đều (bát nào cũng có), Ưu tiên bát 1 (đổ đầy bát đầu rồi mới tới bát sau) hoặc Tự chọn (tự đặt số suất cho từng bát). Chạm vào một bát trong phòng để đổ riêng cho bát đó.',
+        'Đổ xong, các bé tự đi tới bát. Bé ăn hết một suất thì bát mới vơi đi, rồi bé cảm ơn bạn 4 xu. Mỗi bát cho 2 bé ăn cùng lúc, bé tới sau đứng chờ.',
+        'Đổ thêm lúc nào cũng được. Vừa đổ thì bé nào cũng ra ăn, nhưng mỗi bé 10 phút chỉ ăn một lần; ngoài lúc đó chỉ bé đói dưới 50 mới tự ra ăn. Bé đang ăn mà bị gọi đi thì phần còn lại vẫn nằm trong bát.',
+        'Bát ăn và bát nước là hai thứ riêng, kho cũng riêng: thức ăn chỉ đổ vào bát ăn, nước chỉ rót vào bát nước.',
         'Mỗi món có tác dụng riêng: hạt khô rẻ và no lâu, cá ngừ tăng xu viễn chinh, ức gà thêm năng lượng... Món khoái khẩu ❤ cho no và vui hơn.',
-        'Mỗi bát có số suất giới hạn. Thiếu suất thì có bé phải nhịn: mua thêm bát ở Cửa hàng. Lúc bạn vắng, bé đói tự ra ăn suất còn thừa.']},
+        'Mỗi bát có số suất giới hạn. Thiếu suất thì có bé phải nhịn: mua thêm bát ở Cửa hàng. Lúc bạn vắng, bé đói tự ra ăn suất còn thừa, Máy cho ăn tự động còn tự đổ hạt khô.']},
       {id:'gacha',ic:'🥚',t:'Gacha và độ hiếm',p:[
         'Một lượt tốn 100 xu hoặc 1 vé; Mở ×10 tốn 1.000 xu hoặc 10 vé.',
         'Tỉ lệ: 1★ Phổ thông 50%, 2★ Không phổ biến 30%, 3★ Hiếm 14%, 4★ Sử thi 5%, 5★ Huyền thoại 1%.',
@@ -268,10 +272,10 @@ const TUT_TEXT={
         'Ảnh hưởng của độ thoải mái của bé: độ vui bé hướng tới cộng thêm (thoải mái − 50) × 0,25, tức 66 được +4, 30 bị −5; hồi năng lượng nhân từ ×0,75 (thoải mái 0) tới ×1,25 (thoải mái 100); từ 75 trở lên có trạng thái Thoải mái 😌 (+5 vui, hồi năng lượng nhanh hơn 10%); ngủ dậy với thoải mái từ 60 trở lên được Ngủ ngon 🌙 (viễn chinh +5% xu, tốn ít năng lượng hơn 10%).']},
       {id:'climfix',ic:'🛠',t:'Hướng dẫn xử lý khi phòng khó chịu',p:[
         'Phòng lạnh (dưới 20°C): tắt quạt nếu đang bật; đặt máy sưởi (rẻ nhất là Máy sưởi tích điện +2°C, Máy sưởi mini +4°C, Lò sưởi +10°C); lắp rèm giữ nhiệt hoặc cửa kính cách nhiệt để phòng ít bị kéo theo ngoài trời; cho bé nằm chăn lông, chăn điện, giường sưởi; hoặc chuyển bé sang phòng kín hơn (phòng ngủ, thư viện, phòng hoàng gia). Bé đang Lạnh: Súp nóng chữa ngay.',
-        'Phòng nóng (trên 26°C): tắt máy sưởi; đặt quạt (Quạt tích điện −2°C, Quạt đứng −5°C, Điều hòa tới −10°C); rèm chống nắng; thảm hoặc giường làm mát; nhớ đổ nước vì bé khát nhanh. Bé đang Nóng quá: Gel làm mát hoặc Bình nước điện giải.',
+        'Phòng nóng (trên 26°C): tắt máy sưởi; đặt quạt (Quạt tích điện −2°C, Quạt đứng −5°C, Điều hòa tới −10°C); rèm chống nắng; thảm hoặc giường làm mát; nhớ rót nước vào bát nước vì bé khát nhanh. Bé đang Nóng quá: Gel làm mát hoặc Bình nước điện giải.',
         'Mưa tạt, bé bị ướt: ở phòng ngoài trời lắp mái che ban công, rèm chắn mưa, lều trú mưa; trong nhà mưa tạt thường không đủ làm ướt. Máy sấy lông làm khô ngay, máy hút ẩm và máy nước nóng (phòng tắm) làm khô nhanh hơn.',
         'Gió lùa: cửa chống gió, cửa kính cách nhiệt, rèm chắn mưa. Sấm: Máy tạo tiếng ồn trắng. Phòng ẩm quá: máy hút ẩm; khô quá: máy tạo độ ẩm.',
-        'Bé ốm: chữa ở Nhà thuốc & Bệnh viện thú y, hoặc để bé ở phòng ấm (19–28°C cảm thấy), khô, thoải mái từ 60; nằm ổ thì khỏi nhanh gấp đôi. Bé khát: mua nước ở Cửa hàng rồi bấm Đổ nước, hoặc đặt Máy lọc nước tự rót nước trong kho.',
+        'Bé ốm: chữa ở Nhà thuốc & Bệnh viện thú y, hoặc để bé ở phòng ấm (19–28°C cảm thấy), khô, thoải mái từ 60; nằm ổ thì khỏi nhanh gấp đôi. Bé khát: bấm Cho uống cạnh nút Cho ăn, hoặc đặt Máy lọc nước tự rót nước trong kho.',
         'Mẹo: Bộ cảm biến nhiệt độ báo cho bạn khi phòng khó chịu; Bộ điều chỉnh nhiệt độ biến máy sưởi, quạt trong phòng thành tự động; Trạm dự báo cho xem trước 6 đợt thời tiết để chuẩn bị. Lúc bạn vắng, thời tiết không làm mèo tụt quá sâu và không làm mèo bị ốm mới.']},
       {id:'power',ic:'🔌',t:'Điện năng: pin và sạc tay',p:[
         'Mọi thiết bị điện (quạt, máy sưởi, đèn sưởi, điều hòa, máy lọc không khí, máy hút ẩm, máy tạo độ ẩm, máy nước nóng, máy sấy lông, máy cho ăn tự động, máy lọc nước, cảm biến, trạm dự báo…) đều có pin tích hợp. Pin tụt khi máy chạy; máy tự động (điều hòa, máy sưởi cao cấp) chỉ tốn pin lúc đang thật sự sưởi hoặc làm mát; chăn điện, giường sưởi chỉ tốn pin khi có bé nằm. Hết pin thì máy ngừng chạy và mất tác dụng. Chăn, rèm, giường gỗ, mái che không dùng điện.',
@@ -293,7 +297,7 @@ const TUT_TEXT={
         'Máy có thanh năng lượng riêng; bạn tự sạc bằng xu khi đang có điện (bấm vào máy hoặc trong Sách điện). Máy không bao giờ tự sạc, kể cả lúc bạn vắng.',
         'Khi mất điện, máy đã sạc tự chuyển sang nguồn dự phòng: đèn sáng lại, ổ điện sạc tiếp được, các bé hết sợ nhanh hơn. Có điện lại thì máy đã chạy về 0% và chuyển sang trạng thái cần sạc; game không tự trừ xu.']},
       {id:'health',ic:'❤️',t:'Sức khỏe, nước uống và trạng thái',p:[
-        'Mèo có thêm Sức khỏe ❤️, Nước uống 💧 và Độ thoải mái. Mỗi phòng được tặng một bát nước; mua nước ở Cửa hàng, mục 🥤 Nước uống, rồi bấm Đổ nước; mèo khát tự ra uống. Máy lọc nước tự rót nước đang có trong kho.',
+        'Mèo có thêm Sức khỏe ❤️, Nước uống 💧 và Độ thoải mái. Mỗi phòng được tặng một bát nước, riêng với bát ăn. Nước mua vào kho rồi mới rót vào bát: bấm 💧 Cho uống cạnh nút Cho ăn, chọn loại nước (mỗi chai một lượt uống). Bé khát tự đi tới bát, uống hết một lượt thì bát mới vơi. Máy lọc nước tự rót nước đang có trong kho.',
         'Trạng thái tạm thời: Lạnh 🥶, Nóng quá 🥵, Ướt 💦, Kiệt sức 😵, Ốm 🤒, Khát 💧, Thoải mái 😌, Ngủ ngon 🌙. Màn chi tiết của bé ghi rõ lý do, cách chữa và thời gian còn lại; vật phẩm như thuốc chống cảm, súp nóng dùng được ngay ở đó.',
         'Lúc bạn vắng, thời tiết không làm mèo tụt quá sâu và không làm mèo bị ốm mới.']},
       {id:'supply',ic:'🎒',t:'Viễn chinh và vật phẩm sinh tồn',p:[
