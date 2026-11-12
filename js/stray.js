@@ -9,6 +9,7 @@
 const STRAY={
   lv:4,                 // mở từ cấp 4 (người mới chưa bị)
   leave:360,            // điểm giận đủ để bỏ đi: khoảng 6 giờ vừa đói vừa buồn (hoặc 3 giờ đói, khát, buồn cùng lúc)
+  max:1,                // số bé được đi lạc cùng một lúc: bé đó về rồi bé khác mới có thể bỏ đi (các bé đủ giận ở lại nhà với nhãn Giận dỗi)
   warn:150,             // từ mức này bé "Giận dỗi" (khoảng 2,5 giờ vừa đói vừa buồn, hoặc một đêm bỏ đói lúc vắng): báo trước để người chơi kịp chăm
   calm:4,               // khi được chăm tử tế: giảm 4 điểm mỗi phút (6 giờ giận nguôi trong 1,5 giờ)
   away:.5,              // lúc người chơi vắng (bù thời gian khi tải game): giận chậm bằng một nửa; một đêm bỏ đói thì giận dỗi, hai đêm liền mới bỏ đi
@@ -53,9 +54,10 @@ function strayTick(dt,sim){
     if(!c.ng)delete c.ng;
     if(old<STRAY.warn&&c.ng>=STRAY.warn&&!sim)notify('đang giận dỗi vì '+strayWhy(c).join(', ')+'. Cho ăn, đổ nước, vuốt ve ngay, không thì bé sẽ bỏ nhà đi!',{icon:'😾',title:c.name,key:'sulk'+c.uid,mtitle:'Giận dỗi'});
   });
-  // bỏ đi: luôn giữ ít nhất một bé ở nhà; mỗi lần chỉ một bé
-  const left=S.cats.filter(c=>!strayCat(c)).length,go=home.filter(c=>(c.ng||0)>=STRAY.leave).sort((a,b)=>b.ng-a.ng)[0];
-  if(go&&left>1)strayLeave(go);
+  // bỏ đi: luôn giữ ít nhất một bé ở nhà; mỗi lúc chỉ STRAY.max bé đi lạc.
+  // Trước ngày 2026-11-12 giới hạn là "mỗi nhịp tick một bé": cả đàn cùng bị bỏ bê thì gần như cả đàn đi (mô phỏng 20 bé: 19 bé đi trong một lần mở game).
+  const out=S.cats.filter(c=>strayCat(c)).length,left=S.cats.length-out,go=home.filter(c=>(c.ng||0)>=STRAY.leave).sort((a,b)=>b.ng-a.ng)[0];
+  if(go&&left>1&&out<STRAY.max)strayLeave(go);
 }
 function strayLeave(c){
   const why=strayWhy(c);

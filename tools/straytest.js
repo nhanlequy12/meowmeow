@@ -36,11 +36,26 @@ const ng=c=>Math.round(c.ng||0);
   const f0=a.full,h0=a.hp;a.full=40;run(30);ok('Chỉ số bé đi lạc đứng yên',a.full===40,a.full);
   ok('Nhớ phòng bé rời đi',s.room==='living');
 }
-// 3. luôn giữ ít nhất một bé ở nhà; mỗi lần một bé
+// 3. luôn giữ ít nhất một bé ở nhà; mỗi lúc chỉ một bé đi lạc
 {const S=reset(),a=cat('living','A');a.ng=T.STRAY.leave;run(5,()=>starve(a));ok('Chỉ còn một bé: bé không bỏ đi',!T.strayOf(a.uid));
   const b=cat('living','B'),c=cat('living','C');a.ng=b.ng=T.STRAY.leave;c.ng=0;run(1,()=>{starve(a);starve(b)});
-  ok('Hai bé cùng đủ giận: mỗi lần chỉ một bé đi',T.strayList().length===1);
-  run(1,()=>{starve(a);starve(b)});ok('Lần sau bé kia mới đi, vẫn còn một bé ở nhà',T.strayList().length===2&&!T.strayOf(c.uid));
+  ok('Hai bé cùng đủ giận: chỉ một bé đi',T.strayList().length===1);
+  const gone=T.strayList()[0],stay=gone===a?b:a;
+  run(120,()=>starve(stay));ok('Đang có một bé đi lạc: bé kia đủ giận vẫn ở nhà, mang nhãn Giận dỗi',T.strayList().length===1&&!T.strayOf(stay.uid)&&T.strayMood(stay),'giận '+ng(stay));
+  ok('Điểm giận không vượt mức bỏ đi',ng(stay)===T.STRAY.leave,ng(stay));
+  const r=T.strayLure(gone.uid,T.favs(gone)[0]);run(T.STRAY.lure.fav+1,()=>{stay.full=90;stay.wa=90;stay.hp=70;stay.he=90});
+  ok('Bé đi lạc về, bé kia đã được chăm: không ai bỏ đi nữa',T.strayList().length===0&&ng(stay)<T.STRAY.leave,'giận '+ng(stay));
+  stay.ng=T.STRAY.leave;T.strayLeave(gone);run(30,()=>starve(stay));ok('Lại có bé đi lạc: bé kia vẫn chưa đi',T.strayList().length===1&&!T.strayOf(stay.uid));
+  S.stray[gone.uid].at-=T.STRAY.back;run(2,()=>starve(stay));
+  ok('Bé đi lạc về mà bé kia vẫn bị bỏ bê: tới lượt bé kia bỏ đi, vẫn còn bé ở nhà',T.strayList().length===1&&!!T.strayOf(stay.uid)&&!T.strayOf(c.uid));
+}
+// 3b. cả đàn bị bỏ bê: chỉ một bé đi, kể cả khi bù thời gian vắng mặt; bản lưu cũ có nhiều bé đi lạc thì giữ nguyên, không thêm bé nào đi
+{const S=reset(),L=[];for(let i=0;i<12;i++)L.push(cat('living','M'+i));L.forEach(c=>c.ng=T.STRAY.leave);
+  run(600,()=>L.forEach(c=>{if(!T.strayOf(c.uid))starve(c)}));ok('12 bé cùng đủ giận suốt 10 giờ: chỉ một bé đi lạc',T.strayList().length===1,T.strayList().length);
+  for(let i=0;i<48;i++){T.setToff(T.TOFF+10*MIN);L.forEach(c=>{if(!T.strayOf(c.uid))starve(c)});T.tick(600,true)}
+  ok('Thêm 8 giờ vắng mặt: vẫn chỉ một bé đi lạc',T.strayList().length===1,T.strayList().length);
+  const S2=reset(),K=[];for(let i=0;i<6;i++)K.push(cat('living','K'+i));T.strayLeave(K[0]);T.strayLeave(K[1]);T.strayLeave(K[2]);K[3].ng=T.STRAY.leave;
+  run(60,()=>starve(K[3]));ok('Bản lưu cũ đang có ba bé đi lạc: ba bé giữ nguyên, không thêm bé nào đi',T.strayList().length===3&&!T.strayOf(K[3].uid));
 }
 // 4. chưa đủ cấp hoặc đang hướng dẫn thì không giận
 {const S=reset(T.STRAY.lv-1),a=cat('living','A'),b=cat('living','B');run(400,()=>starve(a));ok('Dưới cấp '+T.STRAY.lv+': không giận, không bỏ đi',!a.ng&&!T.strayOf(a.uid));

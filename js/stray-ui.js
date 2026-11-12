@@ -70,7 +70,7 @@ setTimeout(()=>{if(!S||!S.stray)return;let n=0;
   const i=P.findIndex(p=>p.id==='health');P.splice(i<0?P.length:i+1,0,{id:'stray',ic:'🎒',t:'Bé giận dỗi và bỏ nhà đi',p:[
     'Mèo không bao giờ chết hay mất hẳn. Nhưng nếu bị bỏ bê lâu (từ cấp '+STRAY.lv+'), bé sẽ giận rồi bỏ nhà đi lang thang một thời gian.',
     'Bé khổ khi đói (no dưới 5%), khát, buồn (vui dưới 25) hoặc yếu (sức khỏe dưới 30). Có từ hai điều khổ cùng lúc thì bé tích giận; ba điều thì giận nhanh gấp đôi; lúc bạn vắng thì giận chậm bằng một nửa. Được chăm tử tế thì bé nguôi dần.',
-    'Khoảng 2,5 giờ vừa đói vừa buồn (hoặc một đêm bạn vắng mà bát trống), bé hiện nhãn 😾 Giận dỗi và game báo trước. Bị bỏ bê tổng cộng khoảng 6 giờ (hai đêm vắng liền mà bát trống) thì bé bỏ nhà đi. Nhà luôn còn ít nhất một bé, và mỗi lần chỉ một bé bỏ đi.',
+    'Khoảng 2,5 giờ vừa đói vừa buồn (hoặc một đêm bạn vắng mà bát trống), bé hiện nhãn 😾 Giận dỗi và game báo trước. Bị bỏ bê tổng cộng khoảng 6 giờ (hai đêm vắng liền mà bát trống) thì bé bỏ nhà đi. Nhà luôn còn ít nhất một bé, và mỗi lúc chỉ một bé đi lạc: bé đó về rồi, nếu vẫn bị bỏ bê thì mới có bé khác bỏ đi.',
     'Bé đi lạc không ở trong phòng, không đi viễn chinh được, chỉ số đứng yên. Ô 🎒 trên cùng cho biết có bao nhiêu bé đi lạc.',
     'Đưa bé về: nhờ một bé khác ở nhà đi tìm ('+STRAY.hunt.min+' phút, tốn '+STRAY.hunt.en+' năng lượng, bé đi tìm phải không đói), hoặc đặt bát mồi (giá gấp '+STRAY.lure.mult+' giá món; món khoái khẩu về sau '+STRAY.lure.fav+' phút, món khác '+STRAY.lure.other+' phút). Không làm gì thì bé tự về sau 2 ngày.',
     'Về nhà bé được ăn uống tạm và vui lại một nửa. Nhớ cho bé ăn, đổ nước để bé không giận lần nữa.']})})();
