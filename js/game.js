@@ -81,7 +81,7 @@ const rollAge=()=>{const r=Math.random();return r<.5?rnd(0,2):r<.92?rnd(AGE_ADUL
 const ageDays=c=>Math.max(0,(now()-(c.born||now()))/DAY);
 const ageStage=c=>{const d=ageDays(c);return d<AGE_ADULT?0:d<AGE_OLD?1:2};
 const catBy=uid=>S.cats.find(c=>c.uid===uid);
-const onTrip=uid=>S.trips.some(p=>p&&p.uid===uid)||!!(S.hosp&&S.hosp[uid]); // đi viễn chinh, hoặc đang nằm viện (js/med.js): đều không có mặt ở nhà
+const onTrip=uid=>S.trips.some(p=>p&&p.uid===uid)||!!(S.hosp&&S.hosp[uid])||(typeof strayAway==='function'&&strayAway(uid)); // đi viễn chinh, nằm viện (js/med.js), bỏ nhà đi hoặc đang đi tìm bạn (js/stray.js): đều không có mặt ở nhà
 const awayTxt=c=>S.hosp&&S.hosp[c.uid]?'đang nằm viện':'đang viễn chinh';
 const has=(c,t)=>c.traits.includes(t);
 const tE=(c,k)=>c.traits.reduce((a,t)=>a+(TRAITS[t].e[k]||0),0);
@@ -190,6 +190,7 @@ function tick(dt,sim){
   const MEDON=typeof medCat==='function'; // nước uống, bệnh tật, bệnh viện (js/med.js)
   S.cats.forEach(c=>{
     if(MEDON&&inHosp(c.uid)){medHospCat(c);return} // đang nằm viện: bệnh viện lo ăn uống, chỉ số không tụt
+    if(typeof strayCat==='function'&&strayCat(c))return; // bỏ nhà đi (js/stray.js): chỉ số đứng yên tới khi bé về
     const away=onTrip(c.uid),bf=buffOf(c);
     if(c.buff&&c.buff.until<=now())c.buff=null;
     if(WXON)wxCat(c,dt,sim);
@@ -215,6 +216,7 @@ function tick(dt,sim){
   });
   if(WXON)wxTick(dt,sim);
   if(MEDON)medTick(dt,sim);
+  if(typeof strayTick==='function')strayTick(dt,sim); // giận dỗi, bỏ nhà đi, tìm về (js/stray.js)
   if(!sim)scratchTick();
 }
 // kiểm tra cào sofa 10 phút một lần; sau khi vắng lâu chỉ bù tối đa 3 lần

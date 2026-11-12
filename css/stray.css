@@ -1,0 +1,18 @@
+/* ============ BÉ BỎ NHÀ ĐI (js/stray-ui.js) ============ */
+.stchip{border-color:#c0703a;background:#ffe9cf;color:#6a3410;font-weight:800;animation:stPulse 1.8s ease-in-out infinite}
+html[data-theme=dark] .stchip{background:#5a3a22;color:#ffe3c4}
+@keyframes stPulse{50%{box-shadow:0 0 0 4px rgba(224,128,64,.25)}}
+.stg.st-go{background:#ffe1c4;color:#7a3a10;border-color:#d08a4a}
+.stg.st-hunt{background:#dcecff;color:#1f4e85;border-color:#86b4e6}
+.stg.st-sulk{background:#ffd9d2;color:#8e1f14;border-color:#e0806e}
+.st-box{text-align:left;border:3px solid #e0a060;background:#fff4e2}
+html[data-theme=dark] .st-box{background:#4a3424}
+.st-box h4{margin:0 0 4px;font-size:15px;text-transform:none;letter-spacing:0}
+.st-why{font-size:13px;line-height:1.45;margin-bottom:6px}
+.st-row{margin:8px 0 0;font-size:13.5px;line-height:1.4}
+.st-row .bar{height:7px;margin-top:4px}
+.st-pick{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.st-pick .sm{min-height:38px;padding:4px 9px;font-size:12.5px}
+.st-pick .st-no{opacity:.6}
+.st-self{margin-top:8px;font-size:12.5px}
+@media (prefers-reduced-motion:reduce){.stchip{animation:none}}
