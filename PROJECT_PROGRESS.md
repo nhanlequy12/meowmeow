@@ -108,6 +108,12 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Kiểm tra đã chạy: Playwright dò tràn ngang ở 11 cỡ (667×375, 667×320, 740×360, 740×300, 844×390, 852×393, 915×412, 932×430, 1024×768, 1280×800, 1920×1080) qua mọi tab và hộp thoại chính, gacha 1 và 10 lượt, hướng dẫn: không phần tử nào tràn. Màn nhắc xoay ngang đúng ở 390×844, 360×740, không hiện ở 768×1024 và máy tính. lvtest, medtest, pitytest, pwtest, wxtest, `node --check` đạt.
 - Chưa kiểm tra: Safari iOS và Chrome Android thật (tai thỏ, thanh địa chỉ, bàn phím, khóa hướng).
 
+## Đợt 2026-11-12: bé giận dỗi và bỏ nhà đi
+
+- Commit `9b77122` (chi tiết ở `CLAUDE.md` mục 36): mèo không bao giờ chết hay mất hẳn. Từ cấp 4, bé bị bỏ bê (từ hai trong bốn điều: đói, khát, buồn, yếu) thì tích giận, hiện 😾 Giận dỗi rồi bỏ nhà đi tạm thời; luôn còn ít nhất một bé ở nhà. Đưa về bằng cách nhờ bạn đi tìm (20 phút), đặt bát mồi (30 hoặc 90 phút, trả xu), hoặc bé tự về sau 2 ngày. File mới `js/stray.js`, `js/stray-ui.js`, `css/stray.css`, `tools/straytest.js`; `game.js` thêm 3 móc.
+- Kiểm tra đã chạy: `node tools/straytest.js` (37 phần), medtest, pitytest trên đúng bản commit; Playwright PC 1280×800, điện thoại ngang 844×390 và 667×375: không lỗi JS, không tràn ngang.
+- Chưa kiểm tra: người chơi thật, cân bằng ngưỡng giận lâu dài, `server.py` chạy thật.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
