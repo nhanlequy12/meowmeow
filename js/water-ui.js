@@ -54,4 +54,7 @@ function doBuyDrink(id,n,back){const r=buyDrink(id,n);if(r.err){toast(r.err,{typ
 // Admin: đổ đầy mọi bát bằng Nước lọc, không trừ kho (chỉ để thử)
 admWxWater=function(){let n=0;ownedRooms().forEach(r=>wbowls(r.id).forEach(b=>{const cap=FURN[b.fid].water.cap;if((b.w|0)<cap){bowlList(b);while(b.wl.length<cap)b.wl.push('w_plain');b.w=cap;n++}}));save();admDone('Đã đổ đầy '+n+' bát nước (không trừ kho)',1)};
 // màn hẹp: Cho ăn và Cho uống chia đôi một hàng, nút Sắp xếp đồ xuống hàng dưới để chữ trên nút không bị bóp thành ba dòng
+// màn chưa tới 900px (điện thoại ngang, máy tính bảng): ba nút Cho ăn, Cho uống, Sắp xếp đồ không còn chừa đủ chỗ cho dòng chữ bên trái,
+// nên dòng chữ lên một hàng riêng và ba nút chia đều hàng dưới
+document.head.insertAdjacentHTML('beforeend','<style>@media(max-width:900px){.feedbar{flex-wrap:wrap;gap:6px}.fdinfo{flex:1 1 100%}.fdbtns{flex:1 1 100%}.fdbtns>button{flex:1 1 0;min-width:0}.fdbtns .fdgo{min-width:0}}</style>');
 document.head.insertAdjacentHTML('beforeend','<style>@media(max-width:560px){.fdbtns{flex-wrap:wrap}.fdbtns .fdgo{flex:1 1 40%}.fdbtns>button:not(.fdgo){flex:1 1 100%}}</style>');

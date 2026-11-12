@@ -26,14 +26,14 @@
   Object.assign(TX.steps,{
     med_offer:['Chào bạn! Nhà mình vừa có Nhà thuốc đó.'],
     med_hi:['Nhà thuốc & Bệnh viện thú y đã mở cửa! Từ giờ các bé có thể ốm hoặc bị thương.','Đừng lo, tớ chỉ nhanh cách chăm các bé nhé.'],
-    med_chip:['Ô 🏥 này báo có bao nhiêu bé đang cần chăm sóc.'],
-    med_open:['Bấm vào ô 🏥 để mở Nhà thuốc & Bệnh viện thú y.'],
+    med_chip:['Nút 🏥 Nhà thuốc ở thanh bên trái báo có bao nhiêu bé đang cần chăm sóc.'],
+    med_open:['Bấm nút 🏥 Nhà thuốc ở thanh bên trái để mở Nhà thuốc & Bệnh viện thú y.'],
     med_care:['Mục Mèo cần chăm sóc liệt kê các bé đang ốm, bị thương hoặc nằm viện.','Bấm vào một bé để xem bệnh và cách chữa.'],
     med_shop:['Mục Mua thuốc có hai loại. Thuốc giảm triệu chứng rẻ, giúp bé dễ chịu một lúc nhưng không chữa khỏi.','Thuốc điều trị có tỉ lệ khỏi ghi sẵn. Mỗi đợt bệnh chỉ thử được tối đa '+MEDC.tries+' lần.'],
     med_treat:['Mục Điều trị: chọn bé, chọn bệnh rồi chọn thuốc đang có trong kho.','Thử đủ '+MEDC.tries+' lần mà chưa khỏi thì đưa bé đến bệnh viện.'],
     med_hosp:['Bệnh viện chữa khỏi chắc chắn, mất '+MEDC.hospMin+' phút thật. Thời gian vẫn trôi khi bạn thoát game.','Ca nghiêm trọng như sốc nhiệt, gãy chân thì phải vào viện, thuốc không chữa được.'],
     med_gift:['Tớ tặng bạn ít thuốc và nước để phòng khi cần.'],
-    med_bye:['Thấy ô 🏥 hiện số thì ghé xem ngay nhé. Cần xem lại thì mở Sổ tay trong ⚙ Cài đặt. Chúc các bé luôn khỏe!']
+    med_bye:['Thấy nút 🏥 Nhà thuốc hiện số thì ghé xem ngay nhé. Cần xem lại thì mở Sổ tay trong ⚙ Cài đặt. Chúc các bé luôn khỏe!']
   });
 
   /* ---------- quà một lần ---------- */
@@ -147,7 +147,7 @@
     const hi=dest.reduce((a,k)=>dg(k)>dg(a)?k:a,dest[0]),lo=dest.reduce((a,k)=>dg(k)<dg(a)?k:a,dest[0]);
     const od=k=>{const o=injOdds(k,[],40,{});return 'tai nạn nhẹ '+pct(o.minor)+', bong gân '+pct(o.sprain)+', gãy chân '+pct(o.frac)};
     const maxBad=Math.max(0,...Object.values(WX).map(w=>w.bad||0));
-    return P('Mở ở ô 🏥 trên cùng, từ cấp '+MED_LV+'. Thuốc mua xong nằm trong kho, dùng ở mục Điều trị.')+
+    return P('Mở bằng nút 🏥 Nhà thuốc ở thanh bên trái, từ cấp '+MED_LV+'. Thuốc mua xong nằm trong kho, dùng ở mục Điều trị.')+
       Hd('Thuốc giảm triệu chứng')+P('Trong '+MEDC.relief+' phút, triệu chứng chỉ còn '+pct(MEDC.reliefK)+'. Không chữa khỏi và không cộng dồn.')+
       L(of('sym').map(m=>row(m.ic,m.n,'<b>'+vn(m.price)+' xu</b>','Cho bệnh về '+m.grp.map(g=>GRP_N[g]).join('; ')+'.')))+
       Hd('Thuốc điều trị')+P('Có tỉ lệ chữa khỏi. Mỗi đợt bệnh thử tối đa '+MEDC.tries+' lần; hết lượt mà chưa khỏi thì phải đến bệnh viện. Không dùng cho chấn thương và ca nghiêm trọng chỉ bệnh viện chữa được.')+

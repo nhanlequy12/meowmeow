@@ -147,9 +147,8 @@
 .md-log .w{font-weight:700}
 .md-log .ev-cure,.md-log .ev-self,.md-log .ev-out{border-left-color:#6fbf8a}.md-log .ev-ill,.md-log .ev-fail{border-left-color:#d98a78}.md-log .ev-hosp{border-left-color:#3f7fd0}
 /* ô trên cùng và nhãn trên thẻ mèo */
-.medchip{cursor:pointer;white-space:nowrap}
-.medchip.lock{opacity:.7;cursor:help}
-.medchip.sev{border-color:var(--bad)}
+#tabs .medchip.lock{opacity:.6}
+#tabs .medchip.sev{border-color:var(--bad)}
 .tag.medtag{background:color-mix(in srgb,var(--c) 20%,#fff);color:#3c2414;border-color:var(--c);font-weight:700}
 @media (prefers-reduced-motion:reduce){.md-box,.md-pat,.md-blk,.md-iv i,.md-hrt,.md-z,.md-res,.md-spk i{animation:none!important}.md-z,.md-spk{display:none}.md-bar i{transition:none}}
 /* điện thoại dọc */

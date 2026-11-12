@@ -4,7 +4,7 @@
    File này không trừ xu, không đổi bệnh: mọi việc đi qua buyMed, medUse, hospAdmit.
    - openMed(tab, uid): lớp phủ #medbook (z-index 19) kiểu phòng khám, 5 mục: care (Mèo cần chăm sóc), shop (Mua thuốc), treat (Điều trị),
      hosp (Bệnh viện), log (Hồ sơ). closeMed(), medOn(). Nút mục có id mt-care, mt-shop, mt-treat, mt-hosp, mt-log.
-   - Ô 🏥 trên cùng (#medchip): số bé bệnh, 🔵 và thời gian ra viện gần nhất; chưa đủ cấp thì là ô khóa.
+   - Nút 🏥 Nhà thuốc ở thanh tab bên trái (#medchip): số bé bệnh, 🔵 khi có bé nằm viện; chưa đủ cấp thì nút mờ có ổ khóa.
    - Thẻ mèo: bọc wxBadges để thêm đúng MỘT nhãn trạng thái y tế (không thêm danh sách bệnh hay nút vào màn chi tiết mèo).
    - Mỗi giây: chỉ cập nhật đồng hồ đếm ngược và thanh tiến độ; cả trang chỉ vẽ lại khi tình trạng bệnh, nằm viện hoặc số xu đổi (giữ vị trí cuộn). */
 const MU={tab:'care',uid:0,flt:0,busy:0,res:null,sig:'',img:{}};
@@ -29,17 +29,20 @@ function mdCatImg(c,pose,k){
   return '<img class="px" width="'+o.w/d+'" height="'+o.h/d+'" src="'+o.src+'">';
 }
 
-/* ---------- ô 🏥 trên cùng ---------- */
+/* ---------- nút 🏥 Nhà thuốc ở thanh tab bên trái (trước là ô trên cùng) ----------
+   Không phải một tab thật: bấm vào mở lớp phủ openMed như cũ. Giữ id #medchip để hướng dẫn tân thủ (js/tut-med.js) khoanh đúng nút.
+   Số bé bệnh hiện như dấu ❗ của các tab khác; có bé nằm viện thì thêm 🔵 và thời gian ra viện gần nhất. Chưa đủ cấp thì nút mờ có ổ khóa. */
 {const R0=renderTop;renderTop=function(){R0.apply(this,arguments);
-  const top=$('top');if(!top||typeof S==='undefined'||!S)return;const el=document.createElement('div');el.id='medchip';
-  if(!medOpen()){el.className='chip medchip lock';el.setAttribute('data-tip','Nhà thuốc & Bệnh viện thú y mở khóa ở cấp '+MED_LV+'.');el.innerHTML='🔒 Nhà thuốc <span class="dim">· cấp '+MED_LV+'</span>'}
+  const tb=$('tabs');if(!tb||typeof S==='undefined'||!S)return;const el=document.createElement('button');el.id='medchip';
+  if(!medOpen()){el.className='medchip lock';el.setAttribute('data-tip','Nhà thuốc & Bệnh viện thú y mở khóa ở cấp '+MED_LV+'.');
+    el.setAttribute('onclick',"toast('Nhà thuốc & Bệnh viện thú y mở khóa ở cấp '+MED_LV+'.',{icon:'🔒',title:'Nhà thuốc'})");el.innerHTML='<span>🔒</span>Nhà thuốc'}
   else{
     const sick=mdSick(),H=mdInHosp(),sev=sick.some(c=>medSev(c)>=3);
-    el.className='chip tap medchip'+(sev?' sev':'');el.setAttribute('onclick','openMed()');
+    el.className='medchip'+(sev?' sev':'')+(medOn()?' on':'');el.setAttribute('onclick','openMed()');
     el.setAttribute('data-tip',sick.length||H.length?(sick.length?sick.length+' bé đang bệnh'+(sev?', có ca nghiêm trọng':'')+'. ':'')+(H.length?H.length+' bé đang nằm viện. ':'')+'Bấm để mở Nhà thuốc & Bệnh viện thú y.':'Nhà thuốc & Bệnh viện thú y: mua thuốc, điều trị, nhập viện.');
-    el.innerHTML='🏥'+(sick.length?' <b style="color:'+(sev?'var(--bad)':'#b8690a')+'">'+sick.length+'</b>':'')+(H.length?' 🔵 <b>'+mmss(hospLeft(H[0].uid))+'</b>':'');
+    el.innerHTML='<span>🏥</span>Nhà thuốc'+(sick.length?' <b style="color:'+(sev?'var(--bad)':'#b8690a')+'">'+sick.length+'</b>':'')+(H.length?' 🔵':'');
   }
-  emoEl(el);const ref=top.querySelector('.pwchip')||top.querySelector('.wxchip');top.insertBefore(el,ref?ref.nextSibling:top.querySelector('.xp'));
+  emoEl(el);tb.appendChild(el);
 }}
 
 /* ---------- thẻ mèo: đúng một nhãn trạng thái y tế ---------- */

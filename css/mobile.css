@@ -73,3 +73,11 @@ html.need-land #app,html.need-land .tabs,html.need-land #toast,html.need-land #t
   .gv-bd>.cd-sec+.gv-btn{grid-column:1/-1}  /* xem lại intro: chỉ có nút Đóng */
   .gv .cd-desc{font-size:13px}
 }
+/* thanh menu bên trái trên điện thoại ngang có 8 nút (thêm 🏥 Nhà thuốc): chia đều chiều cao màn hình thay vì xếp chồng rồi tràn xuống dưới */
+@media (orientation:landscape) and (max-height:520px) and (max-width:1023px){
+  .tabs{grid-auto-rows:minmax(0,1fr);align-content:stretch}
+  .tabs button{min-height:0;overflow:hidden}
+}
+@media (orientation:landscape) and (max-height:400px) and (max-width:1023px){
+  .tabs{gap:2px}.tabs button{font-size:10px;line-height:1.1;padding:1px 0}
+}

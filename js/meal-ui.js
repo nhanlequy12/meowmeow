@@ -246,3 +246,6 @@ document.head.insertAdjacentHTML('beforeend','<style>'+
 '@media(max-width:560px){.ml-cols{grid-template-columns:1fr}.ml-ls,.ml-r{max-height:none;overflow:visible}}'+
 '@media(max-height:520px){.ml-hd{margin-bottom:4px}.ml-badge{width:30px;height:30px;font-size:18px}.ml-hd h3{display:inline;font-size:15px;margin-right:6px}.ml-sum,.ml-cats{display:inline}.ml-cats::before{content:" · "}'+'.ml-r{gap:5px}.ml-box{padding:5px 8px}.ml-go,.ml-buy{min-height:40px}.ml-sel small{-webkit-line-clamp:1}.ml-ls,.ml-r{max-height:calc(var(--vvh,100dvh) - 92px)}}'+
 '</style>');
+// ui.js vẽ giao diện lần đầu ngay khi nạp xong chính nó, trước khi các file nạp sau (nút Cho uống, nút Nhà thuốc ở thanh bên trái...) kịp bọc PANEL.home
+// và renderTop; vẽ lại một lần khi trang đã nạp đủ để những nút đó hiện ngay, không phải đợi lần vẽ lại kế tiếp
+addEventListener('load',()=>{try{render()}catch(e){}});

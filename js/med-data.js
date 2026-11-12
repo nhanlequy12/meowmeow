@@ -111,7 +111,7 @@ const INJ={minor:[.01,.8],sprain:[.002,.3],frac:[0,.08],fracFrom:.03,wx:.15,stum
 /* ---------- gắn vào cửa hàng, lộ trình, trạng thái ---------- */
 FCATS.push(['drink','🥤 Nước uống']);
 FEATS.push({lv:1,id:'water',ic:'🥤',n:'Nước uống',d:'Mua nước ở Cửa hàng rồi đổ vào bát nước cho các bé.'},
-  {lv:MED_LV,id:'med',ic:'🏥',n:'Nhà thuốc & Bệnh viện thú y',d:'Mua thuốc, điều trị và cho bé nhập viện. Mở ở ô 🏥 trên cùng.'});
+  {lv:MED_LV,id:'med',ic:'🏥',n:'Nhà thuốc & Bệnh viện thú y',d:'Mua thuốc, điều trị và cho bé nhập viện. Mở bằng nút 🏥 Nhà thuốc ở thanh bên trái.'});
 WXST.sick.cure='Cho bé nghỉ ở phòng ấm, khô, thoải mái khoảng 1,5 giờ, hoặc chữa ở Nhà thuốc & Bệnh viện thú y.';
 WXST.thirsty.cure='Bấm 💧 Cho uống cạnh nút Cho ăn để rót nước (thiếu thì mua luôn).';
 WXST.thirsty.d='Thiếu nước: kém vui, hồi năng lượng chậm; hết nước thì mất sức khỏe.';
