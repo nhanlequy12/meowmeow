@@ -11,7 +11,7 @@
    Trạng thái lọc (CPA) chỉ nằm trong bộ nhớ, không vào bản lưu. Mỗi lúc một tiêu chí.
    Hợp đồng với hướng dẫn tân thủ: nút Xếp gợi ý có lớp cp-arr, thanh lọc có lớp cp-filter. */
 // chữ của file này (hằng CPA_TX) nằm ở js/compat-data.js
-// c: lọc ở tab Mèo {k:'room'|'food'|'drink', id}; a: lọc ở Sưu tập {k:'room'|'food', id, all: xem mọi nhóm, g: nhóm lúc bật all}
+// c: lọc ở tab Mèo {k:'room'|'food'|'drink', id}; a: lọc ở Sưu tập {k:'room'|'food'|'drink', id, all: xem mọi nhóm, g: nhóm lúc bật all}
 const CPA={k:null,id:null,a:{k:null,id:null,all:false,g:null}};
 const cpaSrc=k=>k==='room'?ROOM:k==='food'?FOOD:typeof DRINK!=='undefined'?DRINK:{};
 const cpaName=(k,id)=>(cpaSrc(k)[id]||{}).n||'';
@@ -32,7 +32,7 @@ const cpaTag=(lv,text,tip,mb,pre)=>'<span class="cpa-tg'+(mb?' cpa-mb':'')+'" ta
 // các lần vẽ lại tab (chọn nhiều, đổi lọc phòng) không phải tính lại cho 150 bé
 let CPA_MF={key:'',m:{}};
 function cpaMisfits(){
-  const key=Object.keys(S.rooms).join()+'|'+S.cats.map(c=>c.uid+c.room+(onTrip(c.uid)?'!':'')+c.traits.length).join()+'|'+S.items.map(i=>i.fid+(i.room||'')+(i.broken?'!':'')).join();
+  const key=Object.keys(S.rooms).join()+'|'+CP.tempKey()+'|'+S.cats.map(c=>c.uid+c.room+(onTrip(c.uid)?'!':'')+c.traits.length).join()+'|'+S.items.map(i=>i.fid+(i.room||'')+(i.broken?'!':'')).join();
   if(key!==CPA_MF.key){const m={};S.cats.forEach(c=>{m[c.uid]=CP.misfit(c)});CPA_MF={key,m}}
   return CPA_MF.m;
 }
@@ -79,19 +79,20 @@ function cpaAlbum(list0){
   if(A.all&&(A.g!==albumG||!A.k))A.all=false; // bấm sang nhóm khác thì về lại xem từng nhóm
   const tags={};let list=null,sum='';
   if(A.k){
-    const fn=A.k==='room'?CP.spRoom:CP.spFood,nm=cpaName(A.k,A.id),L=[];
+    const fn=A.k==='room'?CP.spRoom:A.k==='food'?CP.spFood:CP.spDrink,nm=cpaName(A.k,A.id),L=[];
     (A.all?BREEDS.concat(VARIANTS):list0).forEach((s,i)=>{const r=fn(s.id,A.id);if(r.lv>=1)L.push({s,r,i})});
     L.sort((a,b)=>b.r.lv-a.r.lv||(a.r.maybe?1:0)-(b.r.maybe?1:0)||b.r.score-a.r.score||b.s.r-a.s.r||a.i-b.i);
     // nhãn xuống dòng riêng dưới hàng sao (ô loài hẹp). Loài chưa gặp: chỉ ghi mức, không ghi lý do (tên thuộc tính riêng sẽ lộ ra bé là ai)
     L.forEach(x=>{const r=x.r,seen=S.seen[x.s.id],mb=!!r.maybe;
       tags[x.s.id]='<br>'+cpaTag(r.lv,mb?CP_LV[r.lv].n+' · '+X.maybe:'',seen?CP.tip(nm,r)+(mb?'. '+X.maybeTip:''):CP.tip(nm,{lv:r.lv,tip:''})+(mb?' ('+X.maybe+')':'')+'. '+T.notSeen,mb)});
     list=L.map(x=>x.s);
-    sum=(L.length?'<b>'+esc(ft(A.k==='room'?X.spRoom:X.spFood,{v:L.length,f:nm}))+'</b><span class="dim">'+X.spOrder+'</span>'
+    sum=(L.length?'<b>'+esc(ft(A.k==='room'?X.spRoom:A.k==='food'?X.spFood:X.spDrink,{v:L.length,f:nm}))+'</b><span class="dim">'+X.spOrder+'</span>'
       :'<span class="dim">'+esc(ft(X.noSp,{f:nm,g:A.all?X.everyGroup:X.thisGroup}))+'</span>')+
       '<button class="sm'+(A.all?' on':'')+'" onclick="cpaAll()">'+X.allGroups+'</button>';
   }
   const bar='<div class="cp-filter cpa-bar"><b class="cpa-h">'+T.filter+'</b>'+cpaSel('cpaSetA','room',T.filterRoom,ROOMS,A)+cpaSel('cpaSetA','food',T.filterFood,FOODS,A)+
-    (A.k?'<div class="cpa-sum">'+sum+'<button class="sm cpa-x" onclick="cpaSetA()">'+X.clear+'</button></div>':'')+'<div class="cpa-note">'+T.drinkNote+'</div></div>';
+    (typeof DRINKS!=='undefined'?cpaSel('cpaSetA','drink',T.filterSpDrink,DRINKS,A):'')+
+    (A.k?'<div class="cpa-sum">'+sum+'<button class="sm cpa-x" onclick="cpaSetA()">'+X.clear+'</button></div>':'')+'</div>';
   return {bar,list,tag:s=>tags[s.id]||''};
 }
 
@@ -105,8 +106,9 @@ function cpaBreed(id){
   const one=r=>cpaTag(r.lv,mbn(r),CP.tip(r.n,r)+mbt(r),r.maybe);
   const rooms=show.length?show.map(one).join('')+(rest.length?'<span class="cpa-more" tabindex="0" data-tip="'+esc(X.moreTip+': '+rest.map(r=>r.n).join(', '))+'">'+CP.ft(T.more,{v:rest.length})+'</span>':''):'<span class="dim">'+T.anyRoom+'</span>';
   const foods=I.foods.length?I.foods.map(one).join(''):'<span class="dim">'+X.anyFood+'</span>';
+  const drinks=I.drinks.map(r=>cpaTag(r.lv,DRINK[r.id].ic+' '+r.n,CP.tip(r.n,r))).join('');
   const likes=I.likes.map(l=>cpaTag(CP.lvOf(l.pts),mbn(l),CP.ft(T.toyTip,{n:l.tn,v:l.pts,f:l.n})+mbt(l),l.maybe,furnTag(l.fid,'',28,22))).join('');
-  return '<div class="cd-sec cpa-sp"><h4>'+X.spTitle+'</h4>'+row(T.bestRoom,rooms)+row(T.bestFood,foods)+(likes?row(T.bestToy,likes):'')+'</div>';
+  return '<div class="cd-sec cpa-sp"><h4>'+X.spTitle+'</h4>'+row(T.bestRoom,rooms)+row(T.bestFood,foods)+(drinks?row(T.bestDrink,drinks):'')+(likes?row(T.bestToy,likes):'')+'</div>';
 }
 
 if(typeof document!=='undefined')document.head.insertAdjacentHTML('beforeend','<style id="cpa-css">'+

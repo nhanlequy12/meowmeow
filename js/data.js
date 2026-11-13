@@ -215,7 +215,8 @@ const TRAITS={
  smalleater:{n:'Ăn như mèo',k:'g',d:'Đói chậm hơn 30%.',e:{hunger:.7}},
  playful:{n:'Ham chơi',k:'g',d:'+12 độ vui khi phòng có đồ chơi chuột.',e:{like:['mouse',12]}},
  birdwatch:{n:'Ngắm chim',k:'g',d:'+12 độ vui khi phòng có cửa sổ.',e:{like:['window',12]}},
- sunbath:{n:'Tắm nắng',k:'g',d:'+12 độ vui khi ở ban công hoặc sân vườn.',e:{outdoor:12}},
+ sunbath:{n:'Tắm nắng',k:'g',d:'+12 độ vui khi ở phòng ngoài trời (ban công, sân vườn, nhà kính, hồ bơi, sân thượng).',e:{outdoor:12}},
+ homebody:{n:'Thích ở trong nhà',k:'g',d:'+8 độ vui khi ở phòng trong nhà (mọi phòng không phải ngoài trời).',e:{indoor:8}},
  loyal:{n:'Quấn chủ',k:'g',d:'Vuốt ve tăng gấp đôi độ vui, +5 độ vui.',e:{petHappy:2,self:5}},
  collector:{n:'Tha đồ về nhà',k:'g',d:'+30% cơ hội mang thêm chiến lợi phẩm (15 xu).',e:{loot:.30}},
  naturekid:{n:'Con của rừng',k:'g',d:'+15% xu ở các điểm thiên nhiên.',e:{nature:.15}},
@@ -298,7 +299,7 @@ const TRAITS={
  v_huh:{n:'Huh?',k:'x',d:'Không ai hiểu bé làm gì ngoài đó: xu nhân ngẫu nhiên từ ×0,7 đến ×1,5.',e:{gamble:[.7,1.5]}},
  v_garfield:{n:'Ghét thứ Hai',k:'x',d:'+15% xu mọi ngày, riêng thứ Hai (giờ thật) thì −20%. Đói nhanh hơn 50%.',e:{monday:1,hunger:1.5}},
 };
-const CONFLICT=[['swimmer','waterfear'],['charmer','shy'],['fast','lazy'],['fast','wander'],['glutton','smalleater'],['nightowl','coldfear'],['gentle','scratcher'],['gentle','grumpy'],['sturdy','zoomies'],['sleeper','zoomies'],['sleeper','fast']];
+const CONFLICT=[['sunbath','homebody'],['swimmer','waterfear'],['charmer','shy'],['fast','lazy'],['fast','wander'],['glutton','smalleater'],['nightowl','coldfear'],['gentle','scratcher'],['gentle','grumpy'],['sturdy','zoomies'],['sleeper','zoomies'],['sleeper','fast']];
 
 /* ============ THỨC ĂN (giá niêm yết là cho 8 suất; mỗi bát chỉ trả cho số suất cần đổ thêm) ============ */
 const FOODS=[
@@ -660,6 +661,8 @@ const QUOTE={v_fushiguro:'Thập Chủng Ảnh Pháp Thuật… Nue!',v_faker:'A
  v_nyan:'Nya nya nya nya nya nya nya~',v_maneki:'Vẫy một cái, tiền vô như nước.',v_astro:'Một bước nhỏ của mèo, một cú nhảy dài của loài mèo.',v_royal:'Ngươi được phép gãi cằm ta.',
  khaomanee:'Một mắt nhìn trời xanh, một mắt nhìn vàng ròng.',lykoi:'Awoooo… à nhầm, meo.',savannah:'Hai mét à? Nhảy khởi động thôi.',sokoke:'Rừng dạy ta đi không một tiếng động.',suphalak:'Hiếm như đồng đỏ, quý hơn vàng.'};
 BREEDS.concat(VARIANTS).forEach(s=>{if(QUOTE[s.id])s.q=QUOTE[s.id]});
+// giống hay ngủ, lười (trừ giống thích tắm nắng) thì hay có thuộc tính Thích ở trong nhà
+BREEDS.forEach(b=>{if(/\b(sleeper|lazy)\b/.test(b.t||'')&&!/\bsunbath\b/.test(b.t||''))b.t+=' homebody'});
 
 /* ---------- nội thất nhiều tầng: lv = danh sách chỗ đứng từ thấp lên cao [lệch ngang so với tâm, độ cao so với chân đồ] ---------- */
 const towerLv=(w,h,n)=>{const a=[];for(let i=0;i<n-1;i++)a.push([(i%2?1:-1)*Math.round(w*.23),-22-20*i]);a.push([0,-(h-5)]);return a};

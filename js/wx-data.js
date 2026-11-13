@@ -14,6 +14,8 @@ const WXC={
   comfyHum:[35,65],     // độ ẩm dễ chịu (%)
   indoor:24,            // nhiệt độ một phòng kín hoàn toàn
   // tác động mỗi phút theo số độ lạnh dưới coldAt hoặc nóng trên hotAt (nhiệt độ cảm nhận của bé)
+  // bộ lông đổi nhiệt độ bé cảm nhận: giống lông dài (fur) thấy ấm hơn 2°C (đỡ lạnh, nhưng mau nóng), giống không lông (hl) thấy lạnh hơn 3°C (mau lạnh, nhưng đỡ nóng)
+  fur:{long:2, bare:-3},
   coldAt:16, hotAt:28,   // dưới 16°C là lạnh. Phòng trong nhà mùa đông xuống khoảng 11–15°C: lạnh ít hơn ngoài trời nhiều nhưng vẫn cần sưởi
   coldHp:.25, coldEn:.19, coldHunger:.035, coldExpo:1,  // 8°C: -2 vui/phút, -1,5 năng lượng/phút, đói nhanh hơn 28%
   hotHp:.15, hotEn:.2, hotWater:.1, hotExpo:1,

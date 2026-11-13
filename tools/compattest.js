@@ -5,9 +5,11 @@
 const fs=require('fs'),path=require('path');const R=path.join(__dirname,'..');
 let STORE=null;globalThis.localStorage={getItem(k){return k==='meoxu_v2'?STORE:null},setItem(k,v){if(k==='meoxu_v2')STORE=v},removeItem(){}};
 const FILES=['js/data.js','js/wx-data.js','js/pw-data.js','js/med-data.js','js/garden-data.js','js/compat-data.js','js/game.js','js/wx.js','js/pw.js','js/med.js','js/meal.js','js/stray.js','js/garden.js','js/compat.js'];
+// roomClimate đổi được trong lúc thử (bộ lông × nhiệt độ phòng); RC0 là hàm thật
 (0,eval)(FILES.filter(f=>fs.existsSync(path.join(R,f))).map(f=>fs.readFileSync(path.join(R,f),'utf8')).join('\n;')+
   `\n;globalThis.T={get S(){return S},fresh,newCat,tick,save,giveBowl,bowlCap,happyTarget,roomHappy,homeCats,catsIn,favs,tE,tM,SP,ROOMS,ROOM,FOODS,FOOD,DRINKS,TRAITS,BREEDS,VARIANTS,FURN,WXC,CP,CPC,CP_LV,CP_TEXT,wxOverride,
-    setNotify:f=>{notify=f}};`);
+    favDrink,DRINK,DRINK_FAV,DRINK_FIX,wxFur,mealGain,CONFLICT,FOOD,
+    setNotify:f=>{notify=f},setClimate:f=>{roomClimate=f},RC0:roomClimate};`);
 const {CP,CPC,ROOMS,ROOM,FOODS,DRINKS,TRAITS,SP,BREEDS,VARIANTS}=T;
 let fail=0;const ok=(name,cond,info)=>{console.log((cond?'ĐẠT ':'HỎNG')+'  '+name+(info!=null?'  ('+info+')':''));if(!cond)fail++};
 T.setNotify(()=>{});
@@ -116,14 +118,16 @@ ok('Bốn mức có tên và biểu tượng riêng',[2,1,0,-1].every(l=>T.CP_LV
   S.level=2;ok('Lên cấp 2: Mèo trắng → Súp thưởng',CP.tutFood(cat('trang',['s_trang']))==='churu');
   const fans=CP.foodFans('kibble',S.cats);ok('foodFans(): chỉ các bé hợp món, hợp nhất đứng đầu',fans.length>0&&fans.every(x=>x.lv>=1)&&fans.every((x,i)=>!i||fans[i-1].score>=x.score));
 }
-// 11. nước uống: theo trạng thái
-{const S=reset(2);S.wxU=1;const a=cat('muop',[],'living');
-  ok('Bé bình thường: nước nào cũng Bình thường',DRINKS.every(d=>CP.drink(a,d.id).lv===0));
-  a.wxs={cx:0,hx:T.WXC.hotSt,wet:0,sk:0,ex:0};ok('Đang nóng × nước điện giải (hạ nhiệt): Rất hợp',CP.drink(a,'w_electro').lv===2&&CP.drinks(a)[0].id==='w_electro',CP.drink(a,'w_electro').tip);a.wxs.hx=0;
-  a.he=40;ok('Sức khỏe thấp × nước dinh dưỡng: Hợp',CP.drink(a,'w_nutri').lv===1&&CP.drink(a,'w_plain').lv===0);a.he=100;
+// 11. nước uống: nước khoái khẩu của loài, và theo trạng thái
+{const S=reset(2);S.wxU=1;const a=cat('muop',[],'living');const fd=T.favDrink(a),oth=DRINKS.filter(d=>d.id!==fd);
+  ok('Mướp ta có nước khoái khẩu là Nước lọc',fd==='w_plain',fd);
+  ok('Nước khoái khẩu: Rất hợp và đứng đầu; nước khác Bình thường',CP.drink(a,fd).lv===2&&CP.drinks(a)[0].id===fd&&oth.every(d=>CP.drink(a,d.id).lv===0),CP.drink(a,fd).tip);
+  ok('Lý do ghi đúng phần thưởng của game (+'+T.DRINK_FAV.hp+' vui, +'+T.DRINK_FAV.cf+' thoải mái)',new RegExp('\\+'+T.DRINK_FAV.hp+' vui').test(CP.drink(a,fd).tip));
+  a.wxs={cx:0,hx:T.WXC.hotSt,wet:0,sk:0,ex:0};ok('Đang nóng × nước điện giải (hạ nhiệt): Rất hợp, đứng trên mọi nước không phải khoái khẩu',CP.drink(a,'w_electro').lv===2&&CP.drinks(a).filter(d=>d.id!==fd)[0].id==='w_electro',CP.drink(a,'w_electro').tip);a.wxs.hx=0;
+  a.he=40;ok('Sức khỏe thấp × nước dinh dưỡng: Hợp',CP.drink(a,'w_nutri').lv===1&&CP.drink(a,'w_mineral').lv===0);a.he=100;
   a.cf=20;ok('Kém thoải mái × nước đặc biệt: Hợp',CP.drink(a,'w_special').lv===1);a.cf=80;
-  a.wa=10;ok('Rất khát × nước từ +50: Hợp',CP.drink(a,'w_pure').lv===1&&CP.drink(a,'w_plain').lv===0);a.wa=100;
-  S.wxU=0;S.level=1;a.wxs.hx=T.WXC.hotSt;ok('Thời tiết chưa mở khóa: không gợi ý theo nóng lạnh',CP.drink(a,'w_electro').lv===0);
+  a.wa=10;ok('Rất khát × nước từ +50: Hợp',CP.drink(a,'w_pure').lv===1&&CP.drink(a,'w_mineral').lv===0);a.wa=100;
+  S.wxU=0;S.level=1;a.wxs.hx=T.WXC.hotSt;ok('Thời tiết chưa mở khóa: không gợi ý theo nóng lạnh (khoái khẩu vẫn còn)',CP.drink(a,'w_electro').lv===0&&CP.drink(a,fd).lv===2);
 }
 // 12. theo loài
 {const S=reset();
@@ -183,5 +187,56 @@ ok('Bốn mức có tên và biểu tượng riêng',[2,1,0,-1].every(l=>T.CP_LV
   ok('150 bé, 17 phòng (sức chứa '+cap+'): xếp xong trong '+ms+' ms, '+P.moves.length+' bé chuyển',ms<2500&&!r.err&&r.n===P.moves.length);
   ok('Không phòng nào quá sức chứa, không bé nào mất',ROOMS.every(x=>T.catsIn(x.id).length<=x.cap)&&S.cats.length===150);
   ok('Tổng độ vui của game sau khi xếp không giảm',h1>=h0-1e-6,Math.round(h0)+' → '+Math.round(h1));
+}
+// 16. nước khoái khẩu theo loài
+{const S=reset(2);const all=Object.values(SP);
+  ok('Cả 150 loài đều có đúng một nước khoái khẩu có thật',all.length===150&&all.every(s=>T.DRINK[s.drink]));
+  ok('Ba mèo khởi đầu và Xoài: nước rẻ ghi tay (DRINK_FIX)',Object.entries(T.DRINK_FIX).every(([k,v])=>SP[k].drink===v));
+  ok('Bé 1★, 2★ chỉ thích nước lọc hoặc khoáng; 5★ thích nước đắt',all.filter(s=>s.r<=2).every(s=>['w_plain','w_mineral'].includes(s.drink))&&all.filter(s=>s.r===5).every(s=>['w_electro','w_nutri','w_special'].includes(s.drink)));
+  ok('spDrink: đúng nước khoái khẩu là Rất hợp, nước khác Bình thường (150 loài)',all.every(s=>DRINKS.every(d=>CP.spDrink(s.id,d.id).lv===(d.id===s.drink?2:0))));
+  ok('spInfo có danh sách nước, đúng một nước',all.every(s=>{const x=CP.spInfo(s.id);return x.drinks.length===1&&x.drinks[0].id===s.drink}));
+  const a=cat('muop',[],'living'),wb=Object.values(T.FURN).find(f=>f.water),b=wb&&item(wb.id,'living');
+  if(b){a.hp=50;a.cf=50;const r1=T.mealGain(a,b,'w','w_plain',1);const hp1=a.hp,cf1=a.cf;a.hp=50;a.cf=50;const r2=T.mealGain(a,b,'w','w_mineral',1);
+    ok('Uống nước khoái khẩu: thêm vui và thoải mái so với nước khác',r1.fav===true&&!r2.fav&&hp1-a.hp===T.DRINK_FAV.hp,hp1+' / '+a.hp)}
+  else ok('Có bát nước để thử uống',false);
+}
+// 17. thích ở trong nhà
+{const S=reset();const H=T.TRAITS.homebody;
+  ok('Thuộc tính Thích ở trong nhà: +8 vui ở phòng trong nhà, xung khắc với Tắm nắng',H&&H.e.indoor===8&&T.CONFLICT.some(x=>x.includes('homebody')&&x.includes('sunbath')));
+  const hb=BREEDS.filter(b=>/\bhomebody\b/.test(b.t||''));
+  ok('Giống hay ngủ, lười (không thích nắng) thì hay có thuộc tính này',hb.length>=5&&hb.every(b=>/\b(sleeper|lazy)\b/.test(b.t)&&!/\bsunbath\b/.test(b.t)),hb.map(b=>b.id).join(','));
+  const a=cat('muop',['homebody'],'living');
+  ok('Thích trong nhà: Hợp ở mọi phòng trong nhà, Bình thường ngoài trời',IN.filter(r=>!ROOM[r].wait).every(r=>lv(a,r)===1)&&OUT.every(r=>lv(a,r)===0));
+  const n=cat('muop',[],'living');
+  ok('Điểm khớp độ vui game tính: hơn bé thường đúng 8 trong nhà, 0 ngoài trời',['living','bedroom','balcony','garden'].every(r=>{a.room=n.room=r;return Math.abs(T.happyTarget(a)-T.happyTarget(n)-CP.room(a,r).score)<1e-6}));a.room=n.room='living';
+  ok('Theo loài: giống hay có thuộc tính này Hợp (maybe) trong nhà',CP.spRoom(hb[0].id,'living').lv===1&&CP.spRoom(hb[0].id,'living').maybe===true);
+}
+// 18. bộ lông × nhiệt độ phòng
+{const S=reset(2);S.wxU=1;const hl=BREEDS.find(b=>b.hl),lf=SP.mainecoon;
+  const a=cat(hl.id,[],'living','Trụi'),b=cat('mainecoon',[],'living','Xù'),n=cat('muop',[],'living','Thường');
+  ok('Độ lệch cảm nhận: không lông −3°C, lông dài +2°C, lông thường 0',T.wxFur(a)===T.WXC.fur.bare&&T.wxFur(b)===T.WXC.fur.long&&T.wxFur(n)===0&&T.WXC.fur.bare<0&&T.WXC.fur.long>0);
+  const TT={living:22,balcony:14,garden:30};T.setClimate(rid=>Object.assign({},T.RC0(rid),{T:TT[rid]!=null?TT[rid]:22}));
+  ok('Không lông × phòng 14°C: Không hợp; × phòng 30°C: Hợp',lv(a,'balcony')===-1&&lv(a,'garden')===1,CP.room(a,'balcony').tip);
+  ok('Lông dài × phòng 30°C: Không hợp; × phòng 14°C: Hợp',lv(b,'garden')===-1&&lv(b,'balcony')===1,CP.room(b,'garden').tip);
+  ok('Phòng dễ chịu 22°C: bộ lông không ảnh hưởng',lv(a,'living')===0&&lv(b,'living')===0);
+  ok('Lông thường: Bình thường ở cả ba phòng',['living','balcony','garden'].every(r=>lv(n,r)===0));
+  const m=CP.misfit(b);b.room='garden';const m2=CP.misfit(b);b.room='living';
+  ok('Bé lông dài ở phòng nóng được cảnh báo',m2&&m2.kind==='bad',m2&&m2.kind);
+  S.wxU=0;S.level=1;ok('Thời tiết chưa mở khóa: không xét bộ lông',lv(a,'balcony')===0&&lv(b,'garden')===0);
+  T.setClimate(T.RC0);
+}
+// 19. gợi ý món ăn, nước uống cho phòng đang xem (chỉ các bé của phòng đó)
+{const S=reset(5);const a=cat('muop',[],'living','A'),b=cat('muop',[],'living','B'),c=cat('vang',[],'bedroom','C');
+  const L=CP.roomMenu('f','living'),B=CP.roomMenu('f','bedroom');
+  ok('Phòng khách (2 mướp): món đứng đầu là Hạt khô, 2 bé rất hợp',L[0].id==='kibble'&&L[0].love===2,L.slice(0,3).map(x=>x.id+':'+x.pts).join(','));
+  ok('Phòng ngủ (1 mèo vàng): món đứng đầu là Pate',B[0].id==='pate'&&B[0].love===1);
+  ok('Chỉ tính bé của phòng đó',L.every(x=>x.fans.every(f=>f.c.room==='living'))&&B.every(x=>x.fans.every(f=>f.c===c)));
+  ok('roomPick nước: Phòng khách Nước lọc, Phòng ngủ Nước khoáng',CP.roomPick('w','living').id==='w_plain'&&CP.roomPick('w','bedroom').id==='w_mineral');
+  ok('Phòng không có bé: không gợi ý',CP.roomPick('f','kitchen')===null&&CP.roomPick('w','kitchen')===null);
+  S.trips=[{uid:c.uid,did:'alley',end:Date.now()+6e5}];ok('Bé đang viễn chinh không tính',CP.roomPick('f','bedroom')===null);S.trips=[null];
+  const p=cat('persian',[],'kitchen','P');S.level=1;const K=CP.roomMenu('f','kitchen');
+  ok('Món khoái khẩu còn khóa: xuống cuối, không được chọn',K[K.length-1].locked&&CP.roomPick('f','kitchen')?.id!=='premium',K.map(x=>x.id+(x.locked?'🔒':'')).join(','));
+  p.traits=['picky'];S.level=8;ok('Kén ăn: Hạt khô bị trừ điểm trong bảng của phòng',CP.roomMenu('f','kitchen').find(x=>x.id==='kibble').bad===1);
+  ok('Phòng chờ: không gợi ý',CP.roomPick('f','wait')===null);
 }
 console.log(fail?'\nCÓ '+fail+' PHẦN HỎNG':'\nTất cả đều đạt');process.exit(fail?1:0);

@@ -147,7 +147,10 @@ function mealGain(c,b,k,id,q){
   const W=FURN[b.fid].water,w=DRINK[id]||DRINK.w_plain,hotNow=wxOpen()&&ROOM[c.room]&&roomClimate(c.room).T>WXC.hotAt;
   c.wa=Math.min(100,(c.wa==null?100:c.wa)+(w.wa+(W.cool&&hotNow?10:0))*q);const x=wxs(c);x.hx=Math.max(0,x.hx-((W.cool?40:20)+(w.cool||0))*q);
   if(w.he)c.he=clamp((c.he==null?100:c.he)+w.he*q,0,100);if(w.cf)c.cf=clamp((c.cf==null?60:c.cf)+w.cf*q,0,100);if(W.happy)c.hp=clamp(c.hp+W.happy*q,0,100);
-  return {coins:0};
+  // nước khoái khẩu của loài (js/med-data.js): thêm chút vui và thoải mái
+  const fav=typeof favDrink==='function'&&favDrink(c)===id;
+  if(fav){c.hp=clamp(c.hp+DRINK_FAV.hp*q,0,100);if(c.cf!=null)c.cf=clamp(c.cf+DRINK_FAV.cf*q,0,100)}
+  return {coins:0,fav};
 }
 function mealEnd(c,b){const m=c.meal;const r=mealGain(c,b,m.k,m.id,m.por);delete c.meal;if(typeof mealDone==='function')mealDone(c,b,m,r);return r}
 // dừng giữa chừng: chưa bắt đầu ăn thì chỉ bỏ giữ chỗ; đang ăn thì tính phần đã ăn, phần còn lại thành phần ăn dở trong bát

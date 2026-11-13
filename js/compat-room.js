@@ -5,6 +5,8 @@
      .cp-room   dòng "Mèo hợp với phòng này" ngay sau khối .feedbar: icon mặt các bé đang có mà hợp phòng (bấm bé ở phòng khác là đặt nhanh vào phòng đang xem),
                 rồi các loài chưa có mà hợp (mờ; chưa từng gặp thì bóng đen), cuối dòng là nút .cp-arr "Xếp gợi ý"
      .cp-warn   mỗi bé đang ở phòng không hợp (hoặc có phòng hợp hơn hẳn) một dòng cảnh báo kèm nút chuyển phòng; thẻ của bé đó bên dưới có thêm một dấu nhỏ
+     .cp-menu   "Nên cho phòng này ăn … uống …": món ăn và nước hợp nhất với các bé đang ở nhà trong phòng đang xem (CP.roomPick); bấm là mở bảng Cho ăn,
+                Cho uống với món đó chọn sẵn. Tính lại mỗi lần vẽ (đổi theo tình trạng của bé), không giữ đệm.
    Tên lớp cp-room, cp-warn, cp-arr là hợp đồng với hướng dẫn tân thủ (js/tut-more.js), đừng đổi.
    Hàm toàn cục: cpPut(uid, rid) chuyển một bé; openArrange() mở bản XEM TRƯỚC của CP.plan(), chỉ áp dụng khi bấm "Áp dụng".
    Tab Phòng vẽ lại mỗi giây nên kết quả được giữ đệm theo cprKey() (phòng đang xem, bé nào ở phòng nào, đồ đang đặt...) và HTML không chứa số đổi theo thời gian. */
@@ -30,7 +32,8 @@ function cprKey(){
   for(const i of S.items)if(i.room&&!i.broken)h=(h*33+i.iid*17+(CPR.RI[i.room]||0))>>>0;
   k+=h+'|';
   for(const c of S.cats)k+=c.uid+':'+c.room+(onTrip(c.uid)?'a':'')+c.traits.length+c.name+';';
-  return k;
+  // nhiệt độ từng phòng (quy tắc bộ lông × nhiệt độ, js/compat.js): chỉ cần biết phòng nằm ở khoảng nào so với các ngưỡng
+  return k+'|'+CP.tempKey();
 }
 
 /* ---------- dòng A: mèo hợp với phòng này ---------- */
@@ -72,12 +75,26 @@ function cprWarn(){
   return '<div class="cpr-ws">'+(open?rows:rows.slice(0,2)).join('')+
     (more>0?'<button type="button" class="cpr-more sm" onclick="cprMore('+(open?0:1)+')">'+(open?T.less:cprFt(CPR_TX.moreCats,{v:more}))+'</button>':'')+'</div>';
 }
+/* ---------- dòng C: nên cho phòng này ăn gì, uống gì ---------- */
+function cprMenu(){
+  if(!ROOM[cur]||ROOM[cur].wait)return '';
+  const U=CP_TEXT.ui,P=[['f',U.menuFood],['w',U.menuDrink]].map(([k,lb])=>{
+    const r=CP.roomPick(k,cur),it=r&&(k==='f'?FOOD[r.id]:typeof DRINK!=='undefined'&&DRINK[r.id]);if(!it)return '';
+    const tip=cprFt(U.menuTip,{f:it.n,r:ROOM[cur].n,a:r.love,b:r.like,x:r.bad?cprFt(U.menuBad,{v:r.bad}):''});
+    const fans=r.fans.filter(x=>x.lv>=1).sort((a,b)=>b.lv-a.lv).slice(0,3).map(x=>faceChip({key:lk(x.c),lv:x.lv,sz:'s'}).replace(' tabindex="0"','')).join('');
+    return '<button type="button" class="cpr-mi" data-tip="'+esc(tip)+'" data-tk="rmn'+k+'" onclick="cprMeal(\''+k+'\')"><span class="cpr-mk2">'+esc(lb)+'</span>'+
+      '<span class="cpr-mf">'+it.ic+' '+esc(it.n)+'</span><span class="cpr-mfs">'+fans+'</span></button>'}).filter(Boolean);
+  if(!P.length)return '';
+  return '<div class="cp-menu cpr-menu"><b class="cpr-lb">'+esc(U.menu)+'</b>'+P.join('')+'</div>';
+}
+function cprMeal(k){cprHide();openMeal(k==='w'?'w':'f')}
 function cprMore(v){if(v)CPR.wopen[cur]=1;else delete CPR.wopen[cur];cprHide();renderPanel()}
 
 {const H0=PANEL.home;PANEL.home=function(){
   let h=H0.apply(this,arguments);if(edit||!S.cats.length||!ROOM[cur])return h;
   try{
-    const k=cprKey();if(k!==CPR.k){CPR.h=cprFit()+cprWarn();CPR.k=k}
+    const k=cprKey();if(k!==CPR.k){CPR.hf=cprFit();CPR.hw=cprWarn();CPR.k=k}
+    const add=CPR.hf+cprMenu()+CPR.hw;
     // dấu trên thẻ của bé: chèn ngay sau tên, trước khi thêm dòng gợi ý (dòng gợi ý cũng có onclick="openCat(...)")
     for(const uid in CPR.mk){
       const a=h.indexOf('<div class="card tap" onclick="openCat('+uid+')">');if(a<0)continue;
@@ -88,7 +105,7 @@ function cprMore(v){if(v)CPR.wopen[cur]=1;else delete CPR.wopen[cur];cprHide();r
     // mốc: hết khối .feedbar (nút Sắp xếp đồ là nút cuối của khối)
     const a=h.indexOf('<button onclick="toggleEdit()">'),e=a<0?-1:h.indexOf('</div></div>',a);
     if(e<0)return h;
-    return h.slice(0,e+12)+CPR.h+h.slice(e+12);
+    return h.slice(0,e+12)+add+h.slice(e+12);
   }catch(err){console.error(err);return h}
 }}
 
@@ -125,6 +142,10 @@ function cprGo(){
 document.head.insertAdjacentHTML('beforeend','<style id="cpr-css">'+
 '.cpr-fit{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-bottom:8px;padding:3px 8px;min-height:44px;border:2px dotted var(--line);border-radius:12px;background:var(--panel)}'+
 '.cpr-lb{flex:none;font-size:13.5px}.cpr-none{font-size:13px}'+
+'.cpr-menu{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin:-2px 0 8px;padding:3px 8px;min-height:40px;border:2px dotted var(--line);border-radius:12px;background:var(--panel)}'+
+'button.cpr-mi{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:2px 8px 2px 9px;margin:0;border-radius:11px;font-size:13px;font-weight:700;border-color:color-mix(in srgb,var(--cp2) 55%,var(--line));background:color-mix(in srgb,var(--cp2) 8%,var(--panel))}'+
+'.cpr-mk2{font-weight:600;color:var(--dim)}.cpr-mf{white-space:nowrap}.cpr-mfs{display:inline-flex;gap:3px}'+
+'.cpr-mfs .fc{padding:0;border-width:1.5px;border-radius:8px}.cpr-mfs img.face:not(.px){width:20px;height:20px}.cpr-mfs .cpm{right:-5px;bottom:-3px;min-width:13px;height:13px;line-height:13px;font-size:9.5px}'+
 '.cpr-fit .fcr{flex:1 1 0;min-width:120px}.cpr-fit .cpr-none{flex:1 1 0;min-width:120px}'+
 '.cpr-fit .fc.cpr-s0{margin-left:8px}'+
 'button.cpr-arr{flex:none;margin-left:auto;min-height:38px;padding:3px 12px;font-weight:700;white-space:nowrap}'+

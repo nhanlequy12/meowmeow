@@ -158,7 +158,7 @@ function tutPickChip(tspRes, tspDef, tspIcon) {
     cpLabel(tspRes.lv, tspRes.n) + (tspNeed ? '<small class="tsp-lv">' + esc(CP.ft(TSP_TEXT.lv, {v:tspNeed})) + '</small>' : '') + '</span>';
 }
 
-/* Khối "Hợp với bé": phòng và đồ ăn đọc từ module tương thích (đúng thuộc tính khởi đầu của bé), không viết tay. Game chưa có sở thích nước theo giống nên dòng nước luôn là câu chung. */
+/* Khối "Hợp với bé": phòng và đồ ăn đọc từ module tương thích (đúng thuộc tính khởi đầu của bé), không viết tay. Dòng nước là nước khoái khẩu của loài (CP.spInfo(..).drinks); loài nào cũng có một loại. */
 function tutPickFit(tspStarter) {
   const tspText = TUT_TEXT.pick;
   const tspInfo = CP.spInfo(tspStarter.sp, {traits:tspStarter.traits, exact:1});
@@ -167,7 +167,8 @@ function tutPickFit(tspStarter) {
   return '<div class="tsp-detail tsp-fit"><span class="tsp-label">' + esc(tspText.fitL) + '</span><div class="tsp-fitrows">' +
     tspRow(tspText.roomL, tspInfo.rooms.map(tspRes => tutPickChip(tspRes, ROOM[tspRes.rid])).join('') || '<span class="tsp-any">' + esc(tspText.anyRoom) + '</span>') +
     (tspFoods ? tspRow(tspText.foodL, tspFoods) : '') +
-    tspRow(tspText.drinkL, '<span class="tsp-any" tabindex="0" data-tip="' + esc(CP_TEXT.ui.drinkNote) + '">' + esc(tspText.anyDrink) + '</span>') + '</div></div>';
+    tspRow(tspText.drinkL, tspInfo.drinks.map(tspRes => tutPickChip(tspRes, DRINK[tspRes.id], DRINK[tspRes.id].ic)).join('') ||
+      '<span class="tsp-any" tabindex="0" data-tip="' + esc(CP_TEXT.ui.drinkNote) + '">' + esc(tspText.anyDrink) + '</span>') + '</div></div>';
 }
 
 /* Các nhãn thuộc tính giữ nguyên data-tip và tabindex của tagOf để dùng tooltip chung. */

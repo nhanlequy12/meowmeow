@@ -169,6 +169,8 @@ canvas#room{background:#b5a086}
 .cell .ic{height:48px;display:flex;align-items:center;justify-content:center}
 .qchip{cursor:pointer;user-select:none}.qchip.ready{border-style:solid;border-color:#e58aa0;animation:qpulse 1.6s ease-in-out infinite}
 @keyframes qpulse{50%{transform:scale(1.06)}}
+/* ô Nhiệm vụ phóng to khi nhấp nháy: cắt phần lấn ra mép phải để trang không cuộn ngang (clip không tạo khung cuộn nên #top vẫn dính trên cùng) */
+#top{overflow-x:clip}
 .qbadge{display:inline-block;background:#e2484e;color:#fff;border-radius:9px;padding:0 6px;font-size:12px;font-weight:800;line-height:18px}
 .qrow{gap:8px}.qrow .qic{font-size:22px;width:26px;text-align:center;flex:none}.qrow .bar{margin:4px 0 2px}.qrow button{flex:none;min-width:64px}.qgot{opacity:.62}.qhd{margin:10px 2px 4px}
 .nestl{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:0 8px}.nestl .card{cursor:pointer;margin-bottom:6px;padding:6px}.nestc .row{margin-top:6px}

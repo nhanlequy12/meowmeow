@@ -92,8 +92,10 @@ function wxFeel(c){
   const rc=roomClimate(c.room),bi=typeof bedItem==='function'&&bedItem(c),bw=bi&&!(typeof pwOff==='function'&&pwOff(bi))&&FURN[bi.fid].wx||{},x=wxs(c);
   let T=rc.T;if(bw.lheat)T+=bw.lheat;if(bw.lcool)T-=bw.lcool;if(bw.lauto){if(T<22)T=Math.min(22,T+bw.lauto);else if(T>25)T=Math.max(25,T-bw.lauto)}
   const sh=!!bw.lshelter,rain=sh?0:rc.rain,wind=sh?0:rc.wind;
-  return {rc,bi,T,rain,wind,feel:T-(x.wet>=WXC.wetSt?WXC.wetFeel:0)-wind*4};
+  return {rc,bi,T,rain,wind,feel:T-(x.wet>=WXC.wetSt?WXC.wetFeel:0)-wind*4+wxFur(c)};
 }
+// độ lệch nhiệt độ cảm nhận theo bộ lông của giống (WXC.fur): lông dài +2°C, không lông −3°C, còn lại 0
+function wxFur(c){const s=c&&SP[c.sp];return !s||!WXC.fur?0:s.hl?WXC.fur.bare:s.fur?WXC.fur.long:0}
 const wxSt=c=>{const x=wxs(c),L=[];if(c.fr>0)L.push('scared');if(x.sk>0)L.push('sick');if(x.cx>=WXC.coldSt)L.push('cold');if(x.hx>=WXC.hotSt)L.push('hot');if(x.wet>=WXC.wetSt)L.push('wet');if(x.ex)L.push('exhausted');
   if(c.wa!=null&&c.wa<WXC.water.low)L.push('thirsty');if((c.cf||0)>=75)L.push('comfy');if((x.rest||0)>now())L.push('rested');return L};
 const wxHas=(c,k)=>wxSt(c).includes(k);

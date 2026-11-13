@@ -21,6 +21,9 @@
      CP.food(c, fid) / CP.foods(c)      món ăn; foods() xếp hợp nhất đứng đầu, thêm {id, locked}
      CP.drink(c, did) / CP.drinks(c)    nước uống (theo trạng thái lúc này)
      CP.foodFans(fid, cats) / CP.drinkFans(did, cats)   trong danh sách cats, bé nào hợp món/nước đó (lv >= 1)
+     CP.roomMenu(k, rid) / CP.roomPick(k, rid)   gợi ý cho CẢ PHÒNG rid (k 'f' món ăn, 'w' nước): mọi món xếp theo độ hợp với các bé đang ở nhà trong
+                                phòng đó / món nên dùng (null nếu không món nào nổi hơn). Chỉ xét bé của đúng phòng đó
+     CP.spDrink(sid, did)       nước khoái khẩu của loài
      CP.likes(c)                nội thất bé thích: [{fid, n, pts, tn, has}]
      CP.pals(c)                 bạn thân của bé: [{tn, ids, grp, here:[tên bé đang ở cùng phòng]}]
      CP.spRoom(sid, rid, {traits, exact, live}) / CP.spFood(sid, fid, {traits, exact})   theo LOÀI (chưa có bé cụ thể): thuộc tính chắc chắn
@@ -64,6 +67,7 @@ const CP=(()=>{
     let w=0,ng=0,hg=1;const wn=[],nn=[],hn=[];
     E.forEach(t=>{const e=t.e;
       if(e.outdoor&&R.outdoor)out.push({s:e.outdoor,n:t.n,d:ft(T.outdoor,{v:e.outdoor})});
+      if(e.indoor&&!R.outdoor&&!R.wait)out.push({s:e.indoor,n:t.n,d:ft(T.indoor,{v:e.indoor})});
       if(e.like&&x.has&&x.has(e.like[0]))out.push({s:e.like[1],n:t.n,d:ft(T.like,{v:e.like[1],f:itemName(rid,e.like[0])})});
       if(e.bigRoom&&x.count!=null&&x.count>=C.bigAt)out.push({s:e.bigRoom,n:t.n,d:ft(T.big,{v:-e.bigRoom,k:C.bigAt})});
       if(e.pal&&x.mates){const p=palOf(e.pal,x.self,x.mates),v=p.both?e.pal.both:p.n?e.pal.happy||0:0;if(v)out.push({s:v,n:t.n,d:ft(T.pal,{v,c:p.names.join(', ')})})}
@@ -72,12 +76,21 @@ const CP=(()=>{
     if(R.water&&w<0)out.push({s:C.waterDn,n:wn.join(', '),d:ft(T.waterDn,{v:-C.waterDn,r:R.n})});
     if(R.night&&ng>0)out.push({s:C.nightRoom,n:nn.join(', '),d:ft(T.night,{v:pct(R.night),r:R.n})});
     if(R.hunger&&R.hunger<1&&hg>1)out.push({s:C.hungerRoom,n:hn.join(', '),d:ft(T.hunger,{v:pct(1-R.hunger),r:R.n})});
+    // bộ lông × nhiệt độ phòng lúc này (x.T: nhiệt độ phòng, x.fur: độ lệch cảm nhận của giống, js/wx.js wxFur). Đổi theo thời tiết và thiết bị
+    if(x.T!=null&&x.fur&&typeof WXC!=='undefined'){const f=x.T+x.fur,o={v:Math.round(x.T),r:R.n},nm=x.fur<0?T.bare:T.longfur;
+      if(x.fur<0&&f<WXC.coldAt)out.push({s:C.furBad,n:nm,d:ft(T.furCold,o)});
+      else if(x.fur>0&&f>WXC.hotAt)out.push({s:C.furBad,n:nm,d:ft(T.furHot,o)});
+      else if(x.fur>0&&x.T<WXC.coldAt)out.push({s:C.furGood,n:nm,d:ft(T.furWarm,o)});
+      else if(x.fur<0&&x.T>WXC.hotAt)out.push({s:C.furGood,n:nm,d:ft(T.furCool,o)})}
     return out;
   }
+  // nhiệt độ lúc này của một phòng đang có (null khi thời tiết chưa mở khóa), và độ lệch cảm nhận theo bộ lông của một bé hay một loài
+  const tempOf=rid=>typeof wxOpen==='function'&&wxOpen()&&typeof roomClimate==='function'&&S.rooms[rid]?roomClimate(rid).T:null;
+  const furOf=c=>typeof wxFur==='function'?wxFur(c):0;
   const sure=e=>({s:e.s,t:(e.n?e.n+': ':'')+e.d});
   function room(c,rid,o){
     o=o||{};const st=o.static,mates=st?null:(o.mates||homeCats(rid)).filter(x=>x!==c);
-    const raw=roomWhy(c.traits,rid,st?{}:{has:o.has||hasItem(rid),mates,count:o.count!=null?o.count:catsIn(rid).length+(c.room===rid?0:1),self:c});
+    const raw=roomWhy(c.traits,rid,st?{}:{has:o.has||hasItem(rid),mates,count:o.count!=null?o.count:catsIn(rid).length+(c.room===rid?0:1),self:c,T:tempOf(rid),fur:furOf(c)});
     const why=raw.map(sure);
     if(mates&&!(raw[0]&&raw[0].fixed)){const a=mates.reduce((s,m)=>s+tE(m,'aura'),0);if(a)why.push({s:a,amb:1,t:ft(a>0?TX.room.auraUp:TX.room.auraDn,{v:Math.abs(a)})})}
     return pack(why,{rid});
@@ -113,7 +126,7 @@ const CP=(()=>{
     return r;
   }
   function spRoom(sid,rid,o){
-    const t=spTraits(sid,o),x=o&&o.live&&S.rooms[rid]?{has:hasItem(rid)}:{},cw=roomWhy(t.cert,rid,x).map(sure),mw=[];
+    const t=spTraits(sid,o),live=o&&o.live&&S.rooms[rid],x=live?{has:hasItem(rid)}:{},cw=roomWhy(t.cert,rid,live?{has:x.has,T:tempOf(rid),fur:furOf({sp:sid})}:x).map(sure),mw=[];
     t.maybe.forEach(id=>roomWhy([id],rid,x).forEach(e=>{if(e.s>0)mw.push({s:e.s*C.maybe,maybe:1,t:ft(TX.room.maybe,{n:e.n||TRAITS[id].n})+': '+e.d})}));
     return spPack(cw,mw,{rid,id:sid});
   }
@@ -147,17 +160,33 @@ const CP=(()=>{
   const foodFans=(fid,cats)=>(cats||[]).map(c=>Object.assign(food(c,fid),{c})).filter(r=>r.lv>=1).sort(byFit);
   function tutFood(c){const L=c?foods(c,{static:1}).filter(r=>!r.locked&&r.lv>=1):[];return L.length?L[0].id:'kibble'}
 
-  /* ---------- mèo × nước uống (theo trạng thái; game chưa có sở thích nước theo giống) ---------- */
+  /* ---------- mèo × nước uống: nước khoái khẩu của loài (SP[..].drink, js/med-data.js) và tình trạng lúc này ---------- */
   function drink(c,did){
     const d=typeof DRINK!=='undefined'?DRINK[did]:null,T=TX.drink,why=[];if(!d)return pack(why,{id:did});
     const wx=typeof wxOpen==='function'&&wxOpen()&&typeof wxHas==='function';
+    if(typeof favDrink==='function'&&favDrink(c)===did)why.push({s:C.favDrink,t:favDrinkText()});
     if(d.cool&&wx&&wxHas(c,'hot'))why.push({s:C.hot,t:T.hot});
     if(d.he&&((c.he!=null&&c.he<C.weak.at)||(wx&&wxHas(c,'sick'))))why.push({s:C.weak.pts,t:ft(T.weak,{v:d.he})});
     if(d.cf&&wx&&c.cf!=null&&c.cf<C.uncomf.at)why.push({s:C.uncomf.pts,t:ft(T.uncomf,{v:d.cf})});
     if(typeof WXC!=='undefined'&&c.wa!=null&&c.wa<WXC.water.low&&d.wa>=C.parched.wa)why.push({s:C.parched.pts,t:ft(T.parched,{v:d.wa})});
     return pack(why,{id:did});
   }
+  const favDrinkText=()=>ft(TX.drink.fav,typeof DRINK_FAV!=='undefined'?{v:DRINK_FAV.hp,k:DRINK_FAV.cf}:{v:0,k:0});
   const drinks=c=>(typeof DRINKS!=='undefined'?DRINKS:[]).map((d,i)=>Object.assign(drink(c,d.id),{i})).sort((a,b)=>b.score-a.score||a.i-b.i);
+  // theo loài: chỉ có nước khoái khẩu (phần theo trạng thái cần một bé cụ thể)
+  function spDrink(sid,did){const sp=SP[sid],why=[];if(sp&&sp.drink===did)why.push({s:C.favDrink,t:favDrinkText()});return pack(why,{id:did})}
+
+  /* ---------- gợi ý cho CẢ PHÒNG: món ăn (k 'f') hoặc nước (k 'w') hợp với các bé đang ở nhà trong phòng rid nhất ----------
+     roomMenu trả mọi món, hợp nhất đứng đầu (món còn khóa xuống cuối): {id, n, pts, love, like, bad, locked, fans:[kết quả từng bé có dấu]}.
+     roomPick trả món nên dùng (món đã mở khóa có điểm dương cao nhất), hoặc null khi không món nào nổi hơn. Chỉ xét bé của đúng phòng đó. */
+  function roomMenu(k,rid){
+    const cats=ROOM[rid]&&!ROOM[rid].wait?homeCats(rid):[],src=k==='f'?FOODS:typeof DRINKS!=='undefined'?DRINKS:[],W=C.menu;
+    return src.map((f,i)=>{let love=0,like=0,bad=0;const fans=[];
+      cats.forEach(c=>{const r=k==='f'?food(c,f.id):drink(c,f.id);if(!r.lv)return;if(r.lv===2)love++;else if(r.lv===1)like++;else bad++;fans.push(Object.assign(r,{c}))});
+      return {id:f.id,n:f.n,i,love,like,bad,pts:W.love*love+W.like*like+W.bad*bad,locked:k==='f'&&locked(f),fans}})
+      .sort((a,b)=>(a.locked?1:0)-(b.locked?1:0)||b.pts-a.pts||a.i-b.i);
+  }
+  const roomPick=(k,rid)=>roomMenu(k,rid).find(r=>!r.locked&&r.pts>0)||null;
   const drinkFans=(did,cats)=>(cats||[]).map(c=>Object.assign(drink(c,did),{c})).filter(r=>r.lv>=1).sort(byFit);
 
   /* ---------- nội thất bé thích, bạn thân ---------- */
@@ -175,6 +204,7 @@ const CP=(()=>{
     const t=spTraits(sid,o);
     return {rooms:ROOMS.map((r,i)=>Object.assign(spRoom(sid,r.id,o),{n:r.n,i,owned:!!S.rooms[r.id]})).filter(r=>r.lv!==0).sort((a,b)=>b.score-a.score||a.i-b.i),
       foods:FOODS.map((f,i)=>Object.assign(spFood(sid,f.id,o),{n:f.n,i})).filter(r=>r.lv!==0).sort((a,b)=>b.score-a.score||a.i-b.i),
+      drinks:(typeof DRINKS!=='undefined'?DRINKS:[]).map((d,i)=>Object.assign(spDrink(sid,d.id),{n:d.n,i})).filter(r=>r.lv!==0),
       likes:likesOf(t.cert).concat(likesOf(t.maybe).map(x=>Object.assign(x,{maybe:1}))).filter((x,i,a)=>a.findIndex(y=>y.fid===x.fid)===i)};
   }
 
@@ -186,11 +216,12 @@ const CP=(()=>{
     const t0=Date.now(),own=ownedRooms().map(r=>r.id),ids=own.concat(['wait']);
     const all=S.cats.filter(c=>ids.includes(c.room)),A={},orig={};all.forEach(c=>{A[c.uid]=orig[c.uid]=c.room});
     const fixed={};all.forEach(c=>{if(onTrip(c.uid))fixed[c.uid]=1});
-    const sens=c=>c.traits.some(t=>{const e=(TRAITS[t]||{e:{}}).e;return e.outdoor||e.like||e.bigRoom||e.pal||e.water||e.aura||e.night>0||e.hunger>1});
-    const SN={},AU={},FX={};all.forEach(c=>{SN[c.uid]=sens(c);AU[c.uid]=tE(c,'aura');FX[c.uid]=!!tE(c,'fixedHappy')});
+    const sens=c=>c.traits.some(t=>{const e=(TRAITS[t]||{e:{}}).e;return e.outdoor||e.indoor||e.like||e.bigRoom||e.pal||e.water||e.aura||e.night>0||e.hunger>1});
+    const SN={},AU={},FX={},FUR={},TMP={};all.forEach(c=>{FUR[c.uid]=furOf(c);SN[c.uid]=sens(c)||!!FUR[c.uid];AU[c.uid]=tE(c,'aura');FX[c.uid]=!!tE(c,'fixedHappy')});
+    ids.forEach(r=>{TMP[r]=tempOf(r)});
     const HAS={};ids.forEach(r=>{const h=hasItem(r),m={};HAS[r]=fid=>fid in m?m[fid]:(m[fid]=h(fid))});
     const score=(rid,L)=>{let s=0,au=0;L.forEach(c=>au+=AU[c.uid]);
-      L.forEach(c=>{if(FX[c.uid])return;if(SN[c.uid]||ROOM[rid].wait)roomWhy(c.traits,rid,{has:HAS[rid],mates:L,count:L.length,self:c}).forEach(e=>s+=e.s);s+=au-AU[c.uid]});return s};
+      L.forEach(c=>{if(FX[c.uid])return;if(SN[c.uid]||ROOM[rid].wait)roomWhy(c.traits,rid,{has:HAS[rid],mates:L,count:L.length,self:c,T:TMP[rid],fur:FUR[c.uid]}).forEach(e=>s+=e.s);s+=au-AU[c.uid]});return s};
     const M={},RS={};ids.forEach(r=>{M[r]=all.filter(c=>A[c.uid]===r);RS[r]=score(r,M[r])});
     // sức chứa khi xếp: không vượt sức chứa phòng, và không dồn thêm bé vào phòng quá số suất của các bát ăn đang có (kẻo xếp xong lại thiếu bát); bé đang ở Phòng chờ thì vẫn được vào, vì ở Phòng chờ còn không được cho ăn
     const CAP={};own.forEach(r=>{const bc=typeof bowlCap==='function'?bowlCap(r):Infinity;CAP[r]=Math.min(ROOM[r].cap,Math.max(M[r].length,bc))});
@@ -238,5 +269,11 @@ const CP=(()=>{
     return {n:mv.length};
   }
 
-  return {lvOf,label,tip,room,rooms,misfit,fitCats,fitSpecies,food,foods,foodFans,tutFood,drink,drinks,drinkFans,likes,pals,spRoom,spFood,spInfo,spTraits,plan,apply,ft};
+  // khóa nhiệt độ cho các giao diện giữ đệm kết quả: mỗi phòng đang có nằm ở khoảng nào so với các ngưỡng của quy tắc bộ lông (đổi khoảng thì phải tính lại)
+  function tempKey(){
+    if(typeof wxOpen!=='function'||!wxOpen()||typeof roomClimate!=='function'||typeof WXC==='undefined')return '';
+    let k='';for(const rid in S.rooms){if(!ROOM[rid]||ROOM[rid].wait)continue;const t=roomClimate(rid).T;k+=t<WXC.coldAt?0:t<WXC.coldAt+3?1:t<=WXC.hotAt-2?2:t<=WXC.hotAt?3:4}
+    return k;
+  }
+  return {tempKey,lvOf,label,tip,room,rooms,misfit,fitCats,fitSpecies,food,foods,foodFans,tutFood,drink,drinks,drinkFans,likes,pals,spRoom,spFood,spDrink,spInfo,spTraits,roomMenu,roomPick,plan,apply,ft};
 })();

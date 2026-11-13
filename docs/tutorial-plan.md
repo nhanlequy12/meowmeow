@@ -272,6 +272,8 @@ Mức theo tổng điểm riêng của bé: từ 10 **Rất hợp** (♥ xanh l�
 | Quy tắc | Đọc từ | Điểm | Ghi chú |
 |---|---|---|---|
 | Thích ngoài trời | thuộc tính có `e.outdoor` (Tắm nắng) × `ROOM.outdoor` (Ban công, Sân vườn, Nhà kính, Hồ bơi, Sân thượng) | +12 | đúng số game cộng vào độ vui |
+| Thích ở trong nhà (thêm 2026-11-13) | thuộc tính `homebody` (`e.indoor`) × phòng không ngoài trời, không phải Phòng chờ | +8 | luật mới của game (`happyTarget`); giống hay ngủ, lười mà không thích nắng hay có thuộc tính này |
+| Bộ lông × nhiệt độ (thêm 2026-11-13) | `wxFur(c)`: giống không lông (`hl`) cảm thấy lạnh hơn 3°C, lông dài (`fur`) ấm hơn 2°C (`WXC.fur`) × nhiệt độ phòng lúc này (`roomClimate`) | −6 khi nhiệt độ cảm nhận vượt ngưỡng lạnh 16°C hoặc nóng 28°C; +4 chiều ngược lại (không lông ở phòng nóng, lông dài ở phòng lạnh) | chỉ khi thời tiết đã mở khóa; đổi theo thời tiết và thiết bị. Luật game: `wxFeel` cộng thêm độ lệch này nên bé thật sự mau lạnh hay mau nóng hơn |
 | Thích nước | tổng `e.water` dương × `ROOM.water` (Hồ bơi) | +10 | |
 | Sợ nước | tổng `e.water` âm × Hồ bơi | −10 | |
 | Nội thất bé thích | `e.like:[món, điểm]` × phòng ĐANG CÓ món đó, không hỏng (Tháp mèo tính cả mọi đồ leo trèo nhiều tầng) | +điểm của thuộc tính (10–20) | đổi theo đồ đang đặt |
@@ -285,7 +287,7 @@ Mức theo tổng điểm riêng của bé: từ 10 **Rất hợp** (♥ xanh l�
 
 - Cảnh báo (`CP.misfit`): tổng (điểm riêng + aura) từ −5 trở xuống là "không hợp" (đỏ); hoặc có phòng đang có, còn chỗ, hơn phòng hiện tại từ 10 điểm là "có phòng hợp hơn" (xanh biển).
 - Theo loài (bé chưa có, Sưu tập, thẻ mèo khởi đầu): thuộc tính chắc chắn của loài (`xt`, `bt`) tính đủ; thuộc tính "giống này hay có" (trường `t`) tính một nửa và tối đa là Hợp, ghi rõ "hay có".
-- Xếp gợi ý (`CP.plan`): tìm kiếm cục bộ tối đa hóa tổng điểm cả nhà (điểm riêng + aura), mỗi bé phải chuyển bị trừ 0,6 điểm; bé đang vắng nhà giữ nguyên; không vượt sức chứa; chỉ áp dụng khi người chơi bấm (`CP.apply`).
+- Xếp gợi ý (`CP.plan`): tìm kiếm cục bộ tối đa hóa tổng điểm cả nhà (điểm riêng + aura), mỗi bé phải chuyển bị trừ 2 điểm (`CPC.moveCost`, trước 0,6: tránh chuyển cả đàn chỉ để lợi rất ít); bé đang vắng nhà giữ nguyên; không vượt sức chứa; chỉ áp dụng khi người chơi bấm (`CP.apply`).
 
 ### Mèo × món ăn
 
@@ -298,16 +300,21 @@ Mức theo tổng điểm riêng của bé: từ 10 **Rất hợp** (♥ xanh l�
 | Đang đói | độ no dưới 30 × món no từ 45 | +4 |
 | Đang kiệt sức | năng lượng dưới 25 × món trừ năng lượng (Cỏ mèo) | −6 |
 
-### Mèo × nước uống (chỉ theo tình trạng lúc đó)
+### Mèo × nước uống
 
 | Quy tắc | Đọc từ | Điểm |
 |---|---|---|
+| Nước khoái khẩu (thêm 2026-11-13) | `SP[sp].drink` (`js/med-data.js`): mỗi loài một loại, theo bậc sao (1–2★ nước lọc hoặc khoáng, 5★ nước đắt), cố định theo mã băm của id; uống đúng loại thì +6 vui, +3 thoải mái mỗi lần (`DRINK_FAV`) | +20 |
 | Đang nóng | trạng thái Nóng (`wxHas(c,'hot')`) × nước có `cool` | +12 |
 | Sức khỏe thấp | sức khỏe dưới 60 hoặc đang ốm × nước có `he` | +6 |
 | Kém thoải mái | thoải mái dưới 40 × nước có `cf` | +5 |
 | Rất khát | nước dưới mức `WXC.water.low` × nước từ +50 | +5 |
 
-Game chưa có sở thích nước theo giống hay thuộc tính, nên không có quy tắc "nước yêu thích"; đây là đề xuất bổ sung dữ liệu (xem báo cáo).
+### Gợi ý cho cả phòng đang xem (thêm 2026-11-13)
+
+`CP.roomMenu(k, rid)` chấm mọi món ăn (`k='f'`) hoặc nước (`k='w'`) theo CÁC BÉ ĐANG Ở NHÀ TRONG PHÒNG `rid`: mỗi bé Rất hợp +3, Hợp +1, Không hợp −2 (`CPC.menu`); món còn khóa xuống cuối. `CP.roomPick` là món có điểm dương cao nhất chưa khóa (không có thì không gợi ý). Dùng ở:
+- tab Phòng: dòng `.cp-menu` "Nên cho phòng này ăn … uống …" (bấm mở bảng với món đó chọn sẵn);
+- bảng Cho ăn, Cho uống mở bằng nút của phòng: món hợp với phòng lên đầu, món gợi ý có nhãn "Gợi ý" và được chọn sẵn thay cho món dùng lần trước; dòng đầu ghi "Xếp theo N bé đang ở <phòng>". Mở cho một bé (`openMealFor`) thì vẫn theo bé đó. Lúc đang hướng dẫn tân thủ thì không đổi gì.
 
 ## Kết quả đợt 2026-11-12 (đã làm xong)
 
@@ -335,9 +342,9 @@ Game chưa có sở thích nước theo giống hay thuộc tính, nên không c
 
 ### Cần chủ game quyết, và dữ liệu còn thiếu
 
-1. Sở thích đồ uống: game không có. Đề xuất thêm trường `drink` cho mỗi giống (như `fav`) hoặc `e.drink` cho thuộc tính, kèm phần thưởng nhỏ khi uống đúng loại; khi có, chỉ cần thêm một quy tắc vào `CP.drink`.
-2. Chịu nóng, chịu lạnh theo giống trong phòng (mèo không lông, lông dài): `wxFeel` hiện coi mọi bé như nhau, nên gợi ý không phân biệt được "phòng lạnh không hợp mèo không lông".
-3. Sở thích trong nhà: chỉ có thuộc tính thích ngoài trời (Tắm nắng). Không có thuộc tính thích phòng yên tĩnh, thích bếp… nên phần lớn mèo ở mức Bình thường với mọi phòng.
+1. ĐÃ LÀM 2026-11-13 (chủ game bảo "sửa hết"): nước khoái khẩu theo loài (`SP[sp].drink`, +6 vui, +3 thoải mái).
+2. ĐÃ LÀM 2026-11-13: chịu nóng, lạnh theo bộ lông (`WXC.fur`, `wxFur`).
+3. ĐÃ LÀM 2026-11-13: thuộc tính Thích ở trong nhà (`homebody`, +8 vui ở phòng trong nhà).
 4. Lượt gacha đầu: yêu cầu ghi "từ 3★", game đang chắc chắn 4★ theo quyết định cũ; giữ 4★.
-5. Xếp gợi ý tối đa hóa độ vui, nên hay dồn bé về phòng có bé "làm cả phòng vui" (Bánh mì +15); đã chặn không vượt số suất bát ăn. Nếu muốn ưu tiên khác (ví dụ ít phải chuyển hơn) thì tăng `CPC.moveCost`.
+5. Xếp gợi ý tối đa hóa độ vui, nên hay dồn bé về phòng có bé "làm cả phòng vui" (Bánh mì +15); đã chặn không vượt số suất bát ăn. Nếu muốn ưu tiên khác (ví dụ ít phải chuyển hơn) thì tăng `CPC.moveCost`. 2026-11-13: đã tăng từ 0,6 lên 2.
 6. Loài chưa gặp trong dòng gợi ý của phòng hiện bóng đen kèm mức, không lộ lý do. Nếu muốn giấu hẳn loài chưa gặp thì bỏ phần `fitSpecies` chưa gặp trong `js/compat-room.js`.

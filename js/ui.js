@@ -1485,7 +1485,7 @@ function openCat(uid,back){
       (ct?row(coatLbl(c),'<b>'+ct.n+'</b> '+coatTags(c)):'')+
       row('Tuổi','<span class="tag g" tabindex="0" data-tip="'+esc(AGE_TIP[ageStage(c)])+'">'+ageTxt(c)+'</span>')+
       row('Nơi ở',away?(inHospX(c)?'🏥 Đang nằm viện':'Đang đi viễn chinh'):ROOM[c.room].n)+
-      row('Khoái khẩu',favs(c).map(f=>FOOD[f].ic+' '+FOOD[f].n).join(', '))+
+      row('Khoái khẩu',favs(c).map(f=>FOOD[f].ic+' '+FOOD[f].n).join(', ')+(typeof favDrink==='function'&&DRINK[favDrink(c)]?' · '+DRINK[favDrink(c)].ic+' '+DRINK[favDrink(c)].n:''))+
     '</div><div class="cd-desc">'+sp.d+'</div></div>'+
     // chỉ số
     '<div class="cd-sec"><h4>Chỉ số</h4><div class="cd-stats">'+st('🍗','Độ no',c.full,c.full<20?'#ff6b6b':'#ffb347')+st('⚡','Năng lượng',c.en,'#7fb7ff')+st('😊','Độ vui',c.hp,'#5fd08a')+'</div>'+

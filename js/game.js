@@ -163,7 +163,7 @@ function roomHappy(rid){
 function happyTarget(c){
   const fx=tE(c,'fixedHappy'); if(fx)return fx;
   let h=50+roomHappy(c.room)+tE(c,'self');
-  c.traits.forEach(t=>{const e=TRAITS[t].e;if(e.like&&(roomHas(c.room,e.like[0])||(e.like[0]==='tree'&&itemsIn(c.room).some(i=>FURN[i.fid].lv&&!i.broken))))h+=e.like[1];if(e.outdoor&&ROOM[c.room].outdoor)h+=e.outdoor;if(e.bigRoom&&catsIn(c.room).length>=6)h+=e.bigRoom});
+  c.traits.forEach(t=>{const e=TRAITS[t].e;if(e.like&&(roomHas(c.room,e.like[0])||(e.like[0]==='tree'&&itemsIn(c.room).some(i=>FURN[i.fid].lv&&!i.broken))))h+=e.like[1];if(e.outdoor&&ROOM[c.room].outdoor)h+=e.outdoor;if(e.indoor&&!ROOM[c.room].outdoor&&!ROOM[c.room].wait)h+=e.indoor;if(e.bigRoom&&catsIn(c.room).length>=6)h+=e.bigRoom});
   homeCats(c.room).forEach(o=>{if(o!==c)h+=tE(o,'aura')});
   h+=palHappy(c);
   if(ROOM[c.room].water){const w=tE(c,'water');h+=w>0?10:w<0?-10:0}

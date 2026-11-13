@@ -9,7 +9,8 @@ let STORE=null;globalThis.localStorage={getItem(k){return k==='meoxu_v2'?STORE:n
 let fail=0;const ok=(name,cond,info)=>{console.log((cond?'ĐẠT ':'HỎNG')+'  '+name+(info!=null?'  ('+info+')':''));if(!cond)fail++};
 const MIN=60000,N=[];T.setNotify((m,o)=>N.push((o&&o.mtitle||'')+': '+m));
 const reset=lv=>{STORE=null;T.setToff(0);T.fresh();const S=T.S;S.tut={done:1,hints:{},got:{}};S.coins=100000;S.level=lv||6;S.wxU=1;T.wxOverride('ty','sunny');T.wxOverride('se',0);T.wxOverride('hr',12);T.tick(0);N.length=0;return S};
-const cat=(room,nm)=>{const c=T.newCat(T.SP.muop,1);c.room=room||'living';c.en=80;c.hp=70;c.full=90;c.wa=90;c.he=90;if(nm)c.name=nm;T.S.cats.push(c);return c};
+// không thuộc tính: newCat bốc ngẫu nhiên một thuộc tính (Ăn như mèo, Khó ở...) làm tốc độ đói, buồn đổi theo lượt chạy, phần 8 từng hỏng khoảng 1 trong 30 lần
+const cat=(room,nm)=>{const c=T.newCat(T.SP.muop,1);c.traits=[];c.room=room||'living';c.en=80;c.hp=70;c.full=90;c.wa=90;c.he=90;if(nm)c.name=nm;T.S.cats.push(c);return c};
 // bỏ bê: giữ bé đói, khát, buồn trong suốt khoảng thời gian (không có bát, không nước)
 const starve=c=>{c.full=0;c.wa=5;c.hp=10};
 const run=(min,fn)=>{for(let i=0;i<min;i++){T.setToff(T.TOFF+MIN);if(fn)fn();T.tick(60)}};

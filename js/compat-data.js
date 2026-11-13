@@ -1,7 +1,7 @@
 "use strict";
 /* ============ GỢI Ý TƯƠNG THÍCH: SỐ VÀ CHỮ (2026-11-12) ============
    Nạp cùng các file dữ liệu (sau js/garden-data.js). Luật ở js/compat.js; file này chỉ có hằng số và chữ để dễ sửa.
-   Mọi quy tắc đều đọc từ dữ liệu có sẵn của game (TRAITS, ROOMS, FOODS, DRINKS, trạng thái của bé), không thêm thuộc tính mới.
+   Mọi quy tắc đều đọc từ dữ liệu của game (TRAITS, ROOMS, FOODS, DRINKS, nước khoái khẩu và bộ lông của giống, trạng thái của bé); module không tự đặt ra sở thích nào.
 
    Bốn mức (CP_LV): 2 Rất hợp (xanh lục, ♥) · 1 Hợp (xanh biển, ✓) · 0 Bình thường (không dấu) · −1 Không hợp (đỏ, !).
    Dấu là ký tự chữ thường (không phải emoji) để hiện giống nhau trong nhãn, trên icon mặt mèo và trong tooltip.
@@ -15,6 +15,7 @@ const CPC={
   nightRoom:4,                      // bé có thưởng xu đêm ở phòng cộng xu chuyến đêm (Tầng hầm): cùng điều kiện nên là Hợp
   hungerRoom:4,                     // bé mau đói ở phòng làm đói chậm (Bếp, Nhà kính): Hợp
   bigAt:6,                          // Hay ghen: phòng từ 6 mèo (đúng số trong happyTarget)
+  furBad:-6, furGood:4,             // bộ lông × nhiệt độ phòng lúc này (WXC.fur): không lông ở phòng đang lạnh, lông dài ở phòng đang nóng là Không hợp; chiều ngược lại là Hợp
   better:10,                        // phòng khác hơn phòng đang ở từ ngần này điểm thì gợi ý chuyển
   maybe:.5,                         // thuộc tính "giống này hay có" (không chắc): điểm nhân hệ số này và mức tối đa là Hợp
   // --- mèo × món ăn ---
@@ -24,13 +25,16 @@ const CPC={
   sad:{at:40,hp:15,pts:5},          // độ vui dưới 40 và món cho từ +15 vui
   hungry:{at:30,full:45,pts:4},     // độ no dưới 30 và món no từ 45
   drain:{at:25,pts:-6},             // năng lượng dưới 25 mà món trừ năng lượng (Cỏ mèo)
-  // --- mèo × nước uống (theo trạng thái; game chưa có sở thích nước theo giống) ---
+  // --- mèo × nước uống: nước khoái khẩu của loài (js/med-data.js), cộng các quy tắc theo trạng thái lúc đó ---
+  favDrink:20,                      // nước khoái khẩu (+6 vui, +3 thoải mái mỗi lần uống)
   hot:12,                           // bé đang nóng × nước có hạ nhiệt
   weak:{at:60,pts:6},               // sức khỏe dưới 60 hoặc đang ốm × nước cộng sức khỏe
   uncomf:{at:40,pts:5},             // thoải mái dưới 40 × nước cộng thoải mái
   parched:{wa:50,pts:5},            // rất khát × nước từ +50
+  // --- gợi ý món ăn, nước uống cho CẢ PHÒNG đang xem: điểm của một món = số bé rất hợp × love + số bé hợp × like + số bé không hợp × bad ---
+  menu:{love:3,like:1,bad:-2},
   // --- xếp gợi ý ---
-  moveCost:.6,                      // mỗi bé phải chuyển phòng bị trừ ngần này điểm, để không chuyển khi lợi quá ít
+  moveCost:2,                       // mỗi bé phải chuyển phòng bị trừ ngần này điểm, để không chuyển khi lợi quá ít
   planMs:600, planIter:12           // giới hạn thời gian (ms) và số lượt đi qua cả đàn của bộ xếp
 };
 const CP_LV={
@@ -45,6 +49,13 @@ const CP_TEXT={
   room:{
     // mỗi lý do ghép thành "<tên thuộc tính>: <mô tả>"; thuộc tính không chắc có thì thành "<maybe>: <mô tả>"
     outdoor:'+{v} vui ở phòng ngoài trời',
+    indoor:'+{v} vui ở phòng trong nhà',
+    bare:'Không lông',
+    longfur:'Lông dài',
+    furCold:'{r} đang lạnh với bé ({v}°C), bé không lông mau lạnh',
+    furHot:'{r} đang nóng với bé ({v}°C), bé lông dài mau nóng',
+    furWarm:'bộ lông dày chịu được cái lạnh {v}°C của {r}',
+    furCool:'da trần chịu được cái nóng {v}°C của {r}',
     waterUp:'+{v} vui ở {r}',
     waterDn:'−{v} vui ở {r}',
     like:'+{v} vui vì phòng có {f}',
@@ -75,6 +86,7 @@ const CP_TEXT={
   },
   // lý do mèo × nước uống
   drink:{
+    fav:'Nước khoái khẩu: +{v} vui, +{k} thoải mái mỗi lần uống',
     hot:'Đang nóng: nước này hạ nhiệt',
     weak:'Sức khỏe thấp: nước này +{v} sức khỏe',
     uncomf:'Kém thoải mái: nước này +{v} thoải mái',
@@ -102,7 +114,7 @@ const CP_TEXT={
     arrangeDone:'Đã chuyển {v} bé theo gợi ý',
     arrangeStale:'Nhà vừa có thay đổi, bấm Xếp gợi ý lại nhé.',
     foodFans:'Bé thích món này',
-    drinkFans:'Bé đang cần loại nước này',
+    drinkFans:'Bé hợp loại nước này',
     forCat:'Hợp nhất với {c}',
     best:'Hợp với bé',
     bestRoom:'Phòng',
@@ -115,14 +127,24 @@ const CP_TEXT={
     foodLocked:'mở ở cấp {v}',
     anyRoom:'Phòng nào cũng được',
     anyDrink:'Nước nào cũng được',
-    drinkNote:'Game chưa có sở thích nước theo giống. Nước được gợi ý theo tình trạng của bé lúc này.',
+    drinkNote:'Nước được gợi ý theo nước khoái khẩu của bé và theo tình trạng lúc này (đang nóng, yếu, rất khát).',
+    menu:'Nên cho phòng này',
+    menuFood:'ăn',
+    menuDrink:'uống',
+    menuTip:'{f}: hợp nhất với các bé đang ở {r} ({a} bé rất hợp, {b} bé hợp{x}). Bấm để mở bảng với món này.',
+    menuBad:', {v} bé không hợp',
+    menuRec:'Gợi ý',
+    menuHead:'Xếp theo {v} bé đang ở {r}',
+    menuHeadTip:'Món hợp với các bé đang ở {r} đứng đầu, món có nhãn Gợi ý được chọn sẵn. Chỉ tính các bé đang ở nhà trong phòng này; sang phòng khác thì gợi ý theo phòng đó.',
+    menuRecTip:'Hợp với các bé trong {r} nhất: {a} bé rất hợp, {b} bé hợp{x}',
+    filterSpDrink:'Thích nước',
     more:'+{v}',
     less:'Thu gọn',
     filter:'Lọc theo sự phù hợp',
     filterAll:'Tất cả',
     filterRoom:'Hợp phòng',
     filterFood:'Thích món',
-    filterDrink:'Cần nước',
+    filterDrink:'Hợp nước',
     sortFit:'Hợp nhất'
   }
 };
@@ -188,11 +210,11 @@ const CPA_TX={
   order:'hợp nhất đứng đầu',
   catsRoom:'{v} bé hợp {f}',
   catsFood:'{v} bé thích {f}',
-  catsDrink:'{v} bé đang cần {f}',
+  catsDrink:'{v} bé hợp {f}',
   among:'trong {r}',
   noRoom:'Chưa có bé nào đặc biệt hợp {f}{w}.',
   noFood:'Chưa có bé nào đặc biệt thích {f}{w}.',
-  noDrink:'Không bé nào đang cần riêng {f}{w}.',
+  noDrink:'Không bé nào đặc biệt hợp {f}{w}.',
   noWhere:' trong số các bé ở {r}',
   noCats:'Nhà chưa có bé nào.',
   fitBad:'{v} bé đang ở phòng không hợp',
@@ -203,6 +225,7 @@ const CPA_TX={
   hint:'Gợi ý',
   spRoom:'{v} loài hợp {f}',
   spFood:'{v} loài thích {f}',
+  spDrink:'{v} loài thích {f}',
   spOrder:'chắc chắn trước, "hay có" sau',
   noSp:'Không có loài nào đặc biệt hợp {f} trong {g}.',
   thisGroup:'nhóm này',

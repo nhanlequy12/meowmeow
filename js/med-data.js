@@ -38,6 +38,14 @@ const DRINKS=[
 ];
 DRINKS.forEach(w=>{w.grp='drink'});
 const DRINK=Object.fromEntries(DRINKS.map(w=>[w.id,w]));
+/* Nước khoái khẩu theo loài (2026-11-13): mỗi giống và mèo trang phục thích đúng một loại nước (trường drink), như món khoái khẩu fav.
+   Loại nước theo bậc sao (bé càng hiếm càng kén), chọn trong bậc bằng mã băm của id nên cố định qua các lần chạy; DRINK_FIX ghi đè tay.
+   Uống đúng loại: thêm DRINK_FAV.hp độ vui và DRINK_FAV.cf thoải mái mỗi lần uống (js/meal.js, mealGain). Lượng nước nhận được không đổi. */
+const DRINK_TIER={1:['w_plain','w_mineral'],2:['w_plain','w_mineral'],3:['w_mineral','w_pure'],4:['w_pure','w_electro','w_nutri'],5:['w_electro','w_nutri','w_special']};
+const DRINK_FIX={muop:'w_plain',vang:'w_mineral',trang:'w_plain',venxam:'w_plain'};   // ba mèo khởi đầu và Xoài: nước rẻ, có ngay từ đầu
+const DRINK_FAV={hp:6,cf:3};
+BREEDS.concat(VARIANTS).forEach(s=>{if(s.drink&&DRINK[s.drink])return;const L=DRINK_TIER[s.r]||DRINK_TIER[1];let h=0;for(const ch of s.id)h=(h*31+ch.charCodeAt(0))>>>0;s.drink=DRINK_FIX[s.id]||L[h%L.length]});
+const favDrink=c=>{const s=c&&typeof SP!=='undefined'&&SP[c.sp];return s&&s.drink||null};
 
 /* ---------- bệnh và chấn thương ----------
    sev: 1 nhẹ, 2 vừa, 3 nghiêm trọng; grp: nhóm thuốc giảm triệu chứng có tác dụng; fx: mất mỗi phút (hp vui, en năng lượng, wa nước, he sức khỏe);
