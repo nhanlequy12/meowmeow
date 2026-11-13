@@ -861,3 +861,24 @@ Người dùng bảo "sửa hết" các điểm còn mở của mục 39 và th�
 - Sửa thêm: ô Nhiệm vụ nhấp nháy không còn làm trang cuộn ngang (`#top{overflow-x:clip}` trong index.html); `tools/straytest.js` hết chập chờn (mèo thử nay không có thuộc tính ngẫu nhiên).
 - Kiểm thử: `node tools/compattest.js` thêm bốn phần (16–19: nước khoái khẩu, thích trong nhà khớp `happyTarget`, bộ lông với nhiệt độ giả lập qua `setClimate`, gợi ý theo phòng); mọi bộ cũ và `catcheck` đạt; Playwright chơi hết 39 bước ở 3 cỡ màn và các luồng bỏ qua, vào lại, chơi lại, người chơi cũ.
 - Chưa kiểm tra: người chơi thật; cân bằng xu (nước khoái khẩu của bé 5★ là loại đắt, người chơi có thể tốn thêm xu nếu luôn mua theo gợi ý; bot `ecobot.js` chưa mô phỏng việc này).
+
+## 41. Đo lại kinh tế với đủ luật thời tiết, điện, nước, bệnh (2026-11-13)
+
+Người dùng bảo "đo lại kinh tế trước". Chưa đổi số nào của game; chỉ sửa công cụ đo và ghi số.
+- `tools/ecobot.js` có `--full=1` (mặc định): nạp thêm `wx-data.js`, `pw-data.js`, `med-data.js`, `wx.js`, `pw.js`, `med.js`, `stray.js`, tua mỗi lần ghé 10 bước 1 phút như lúc đang mở game (không phải chế độ bù vắng mặt, vì chế độ đó có mức sàn và không phát bệnh mới). Bot chơi như người chăm mà tiết kiệm: mua Nước lọc đúng số chai gợi ý rồi rót; phòng có mèo lạnh hơn `WXC.coldAt` thì mua máy sưởi chạy pin, nóng hơn `WXC.hotAt` thì mua quạt chạy pin (tối đa 3 máy mỗi loại mỗi phòng), một ổ điện mỗi phòng có máy, bật tắt theo nhiệt độ, pin dưới 35% thì cắm sạc; bệnh nhẹ tự khỏi thì chờ, Trầy xước dùng Băng gạc, Bong gân thì nẹp rồi chờ, bệnh chữa bằng thuốc dùng Thuốc tốt, còn lại nhập viện. Không mang vật phẩm sinh tồn, không trồng vườn. `--full=0` là bot cũ để so. In thêm chi tiêu cho luật mới, số lần bệnh, nhập viện, bỏ nhà đi, độ vui trung bình, phần trăm lần ghé phòng quá lạnh hay quá nóng, và từng loại bệnh. Bọc `medAdd` để đếm bệnh.
+- `tools/gachaloop.js`: đo vòng quay gacha bằng xu rồi phóng sinh mọi bé không giữ.
+
+Số đo (5 lượt, 240 giờ, 4 giờ chơi mỗi ngày, nhìn tab Phòng 30% thời gian, giá hiện tại `ROOM_K1=6`, `FURN_KS=.2`):
+
+| Mốc | Không có luật mới (`--full=0`) | Đủ luật (`--full=1`) | Chênh |
+|---|---|---|---|
+| Cấp 18 | 39 giờ | 41,8 giờ | +7% |
+| Phòng thứ 5 (Phòng chơi) | 4,8 giờ | 5,2 giờ | +8% |
+| Phòng thứ 9 (Thư viện) | 16,2 giờ | 20,8 giờ | +28% |
+| Phòng hoàng gia | 160 giờ | 189,5 giờ | +18% |
+| Đủ mọi món nội thất | 184,2 giờ | 232,3 giờ | +26% |
+
+- Chi cho luật mới, tính theo phần trăm tổng xu kiếm được: nước 5,3% (610 xu mỗi giờ), bệnh viện 3,2%, thuốc 2%, thiết bị và ổ điện 1,6%, sạc điện 0,5%; tổng khoảng 12,6%. Nguồn thu gần như không đổi (viễn chinh 45%, vuốt ve 19%, cảm ơn bữa ăn 16%, nhiệm vụ ngày 11%).
+- Mèo (nhà tới khoảng 150 bé): 3 lần bệnh mỗi giờ, 0,5 lần nhập viện mỗi giờ, 2,2 lần bỏ nhà đi mỗi lượt 240 giờ dù được chăm đều, độ vui trung bình 82; phòng có mèo quá lạnh 8% và quá nóng 8% số lần ghé. Bệnh nhiều nhất trong một lượt: cảm lạnh 195, sốt 160 (phần lớn từ cảm lạnh để tự khỏi quá 2 giờ), kiệt sức vì nóng 88, căng thẳng 49, viêm da 49, dị ứng 46, hạ thân nhiệt 45, viêm mắt 44.
+- Gacha rồi phóng sinh (200.000 lượt, `node tools/gachaloop.js`): giữ bé 5★, phóng sinh phần còn lại thì mỗi lượt hoàn trung bình 70 xu trên giá 100, một bé 5★ tốn ròng khoảng 870 xu thay vì khoảng 2.900 xu khi không phóng sinh. Giữ từ 4★: hoàn 32 xu mỗi lượt, mỗi bé tốn ròng khoảng 420 xu thay vì 620. Tiền phóng sinh hiện tại (`STAR[n].sell`): 20, 40, 100, 300, 1.000 xu, 5★ thêm 1 vé.
+- Chờ người dùng quyết: giữ nhịp chậm hơn này hay hạ giá phòng, nội thất lại; có giảm tiền phóng sinh hay không.

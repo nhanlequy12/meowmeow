@@ -145,6 +145,11 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Kiểm thử: compattest (thêm 4 phần), facetest, catcheck 150/150 và 8 bộ cũ đạt; Playwright 39 bước ở 3 cỡ màn, bỏ qua, vào lại, chơi lại, người chơi cũ, không lỗi JS.
 - Giữ nguyên theo quyết định cũ: lượt gacha đầu chắc chắn 4★; loài chưa gặp hiện bóng đen.
 
+## Đợt 2026-11-13: đo lại kinh tế với đủ luật
+- Bot `tools/ecobot.js` thêm `--full=1` (mặc định): chạy cả thời tiết, điện, nước uống, bệnh, bé bỏ nhà đi, tua như lúc đang mở game; công cụ mới `tools/gachaloop.js`. Chưa đổi số nào của game. Số đo ở `CLAUDE.md` mục 41.
+- Kết quả chính: luật mới ăn khoảng 12,6% tổng xu kiếm được (nước 5,3%, bệnh viện 3,2%, thuốc 2%, thiết bị 1,6%, sạc 0,5%); Phòng hoàng gia 160 → 189,5 giờ, đủ nội thất 184 → 232 giờ. Gacha rồi phóng sinh: một bé 5★ tốn ròng khoảng 870 xu thay vì 2.900.
+- Chờ người dùng quyết: có chỉnh giá hay tiền phóng sinh không.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
