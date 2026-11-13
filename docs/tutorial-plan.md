@@ -31,7 +31,7 @@ Chỉ hướng dẫn những gì game đang có; mục nào không có trong mã
 | Nhiều phòng | Nút ◀ ▶ và "đổi phòng ▾" khi có từ 2 phòng | `#roomnav` | Mẹo khi có phòng thứ hai |
 | Quản lý mèo | Lọc theo phòng, sắp xếp, đổi phòng (ô chọn, kéo thả), chọn nhiều | `PANEL.cats` | Mẹo khi mở lần đầu |
 | Phòng chờ | Hết chỗ thì bé mới vào Phòng chờ, bị trừ 10 vui | `freeRoom` | Mẹo khi có bé vào Phòng chờ |
-| Phóng sinh | Nhận xu theo sao (20 → 1.000), 5★ thêm 1 vé; 4★–5★ hỏi lại lần hai; giữ lại ít nhất 1 bé | `askRelease`, `rehome` | Mẹo khi mở lần đầu |
+| Phóng sinh | Nhận xu theo sao (10 → 500, giảm một nửa ngày 2026-11-13), 5★ thêm 1 vé; 4★–5★ hỏi lại lần hai; giữ lại ít nhất 1 bé | `askRelease`, `rehome` | Mẹo khi mở lần đầu |
 | Sưu tập | Nhóm Giống thật, Anime, Phim, Meme & Đặc biệt, Màu hiếm; màu lông đã gặp; xem lại intro 5★ | `PANEL.album` | Luồng chính |
 | Cài đặt | Chủ đề Trầm dịu / Tối; cỡ hạt cườm; độ tối nền phòng; tua nhanh 10 phút; chơi lại từ đầu | `openSettings` | Mẹo khi mở lần đầu; thêm Sổ tay |
 | Chơi qua máy chủ chung | Khi chạy `server.py`: hỏi tên, đồng bộ bản lưu, quà và thông báo của quản trị viên | `js/net.js` | Sổ tay (chỉ hiện khi đang chạy máy chủ) |

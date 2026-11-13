@@ -1,11 +1,11 @@
 "use strict";
 /* ============ ĐỘ HIẾM ============ */
 const STAR=[null,
- {n:'Phổ thông',c:'#5d6470',g:'#c3c8d0',m:1,p:50,good:.45,sell:20},
- {n:'Không phổ biến',c:'#22714a',g:'#5fd08a',m:1.3,p:30,good:.55,sell:40},
- {n:'Hiếm',c:'#2464aa',g:'#5aa9ff',m:1.7,p:14,good:.65,sell:100},
- {n:'Sử thi',c:'#7a4ccc',g:'#b98bff',m:2.3,p:5,good:.75,sell:300},
- {n:'Huyền thoại',c:'#855a05',g:'#ffd24a',m:3.2,p:1,good:.88,sell:1000}];
+ {n:'Phổ thông',c:'#5d6470',g:'#c3c8d0',m:1,p:50,good:.45,sell:10},
+ {n:'Không phổ biến',c:'#22714a',g:'#5fd08a',m:1.3,p:30,good:.55,sell:20},
+ {n:'Hiếm',c:'#2464aa',g:'#5aa9ff',m:1.7,p:14,good:.65,sell:50},
+ {n:'Sử thi',c:'#7a4ccc',g:'#b98bff',m:2.3,p:5,good:.75,sell:150},
+ {n:'Huyền thoại',c:'#855a05',g:'#ffd24a',m:3.2,p:1,good:.88,sell:500}]; // sell: xu khi phóng sinh (giảm một nửa ngày 2026-11-13 để quay gacha rồi phóng sinh không còn quá rẻ; 5★ thêm 1 vé, xem releaseGift)
 const GACHA_COST=100, PITY=10, PITY5=40, TICKET_COST=100; // TICKET_COST: giá mua một vé gacha bằng xu (bằng giá một lượt nên không lời lỗ)
 
 /* ============ GIỐNG MÈO ============ */

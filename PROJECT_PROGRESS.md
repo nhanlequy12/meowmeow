@@ -150,6 +150,9 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Kết quả chính: luật mới ăn khoảng 12,6% tổng xu kiếm được (nước 5,3%, bệnh viện 3,2%, thuốc 2%, thiết bị 1,6%, sạc 0,5%); Phòng hoàng gia 160 → 189,5 giờ, đủ nội thất 184 → 232 giờ. Gacha rồi phóng sinh: một bé 5★ tốn ròng khoảng 870 xu thay vì 2.900.
 - Chờ người dùng quyết: có chỉnh giá hay tiền phóng sinh không.
 
+## Đợt 2026-11-13: giảm tiền phóng sinh
+- Theo lựa chọn của người dùng sau khi xem số đo: xu phóng sinh giảm một nửa (10, 20, 50, 150, 500; 5★ vẫn thêm 1 vé). Một bé 5★ săn bằng quay rồi phóng sinh nay tốn ròng khoảng 1.900 xu (trước 870). Chi tiết ở `CLAUDE.md` mục 41.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:

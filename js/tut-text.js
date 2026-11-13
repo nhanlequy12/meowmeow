@@ -352,7 +352,7 @@ const TUT_TEXT={
       {id:'cats',ic:'🐈',t:'Quản lý mèo và phóng sinh',p:[
         'Tab Mèo: lọc theo phòng, sắp xếp, đổi phòng bằng ô chọn hoặc kéo thả thẻ vào ô phòng.',
         'Hết chỗ thì bé mới vào Phòng chờ (không giới hạn nhưng bị trừ 10 vui).',
-        'Phóng sinh: nhận xu theo sao (1★ 20 xu tới 5★ 1.000 xu và 1 vé). Bé 4★–5★ được hỏi lại lần hai. Luôn giữ lại ít nhất một bé.']},
+        'Phóng sinh: nhận xu theo sao ('+[1,2,3,4,5].map(n=>n+'★ '+STAR[n].sell.toLocaleString('vi-VN')+' xu').join(', ')+'; bé 5★ thêm 1 vé). Bé 4★–5★ được hỏi lại lần hai. Luôn giữ lại ít nhất một bé.']},
       {id:'album',ic:'📖',t:'Sưu tập',p:[
         'Ghi lại mọi giống và mèo trang phục bạn từng gặp, chia nhóm Giống thật, Anime, Phim, Meme & Đặc biệt, Esports, Game, Dễ thương, Màu hiếm.',
         'Chạm vào một giống đã gặp để xem các màu lông. Bé 5★ có nút xem lại intro.']},

@@ -76,11 +76,13 @@ Mèo Xu là game nuôi mèo chạy trên trình duyệt, kiểu idle. Vòng chơ
 ### Bậc sao (`STAR`)
 | Sao | Tên | Tỉ lệ gacha | Hệ số xu | Tỉ lệ trait tốt | Xu khi phóng sinh |
 |---|---|---|---|---|---|
-| 1 | Phổ thông | 50% | ×1 | 45% | 20 |
-| 2 | Không phổ biến | 30% | ×1,3 | 55% | 40 |
-| 3 | Hiếm | 14% | ×1,7 | 65% | 100 |
-| 4 | Sử thi | 5% | ×2,3 | 75% | 300 |
-| 5 | Huyền thoại | 1% | ×3,2 | 88% | 1.000 (và 1 vé gacha) |
+| 1 | Phổ thông | 50% | ×1 | 45% | 10 |
+| 2 | Không phổ biến | 30% | ×1,3 | 55% | 20 |
+| 3 | Hiếm | 14% | ×1,7 | 65% | 50 |
+| 4 | Sử thi | 5% | ×2,3 | 75% | 150 |
+| 5 | Huyền thoại | 1% | ×3,2 | 88% | 500 (và 1 vé gacha) |
+
+Xu phóng sinh giảm một nửa ngày 2026-11-13 (trước là 20, 40, 100, 300, 1.000), xem mục 41.
 
 ### Gacha
 - 100 xu hoặc 1 vé một lượt. Bảo hiểm 10 lượt (`PITY=10`, đổi từ 30 ngày 2026-11-10 theo yêu cầu người dùng): sau 9 lượt liên tiếp không ra 4★ trở lên thì lượt thứ 10 chắc chắn từ 4★. Bản lưu cũ đang đếm quá 10 thì lượt kế tiếp được bảo đảm.
@@ -881,4 +883,4 @@ Số đo (5 lượt, 240 giờ, 4 giờ chơi mỗi ngày, nhìn tab Phòng 30% 
 - Chi cho luật mới, tính theo phần trăm tổng xu kiếm được: nước 5,3% (610 xu mỗi giờ), bệnh viện 3,2%, thuốc 2%, thiết bị và ổ điện 1,6%, sạc điện 0,5%; tổng khoảng 12,6%. Nguồn thu gần như không đổi (viễn chinh 45%, vuốt ve 19%, cảm ơn bữa ăn 16%, nhiệm vụ ngày 11%).
 - Mèo (nhà tới khoảng 150 bé): 3 lần bệnh mỗi giờ, 0,5 lần nhập viện mỗi giờ, 2,2 lần bỏ nhà đi mỗi lượt 240 giờ dù được chăm đều, độ vui trung bình 82; phòng có mèo quá lạnh 8% và quá nóng 8% số lần ghé. Bệnh nhiều nhất trong một lượt: cảm lạnh 195, sốt 160 (phần lớn từ cảm lạnh để tự khỏi quá 2 giờ), kiệt sức vì nóng 88, căng thẳng 49, viêm da 49, dị ứng 46, hạ thân nhiệt 45, viêm mắt 44.
 - Gacha rồi phóng sinh (200.000 lượt, `node tools/gachaloop.js`): giữ bé 5★, phóng sinh phần còn lại thì mỗi lượt hoàn trung bình 70 xu trên giá 100, một bé 5★ tốn ròng khoảng 870 xu thay vì khoảng 2.900 xu khi không phóng sinh. Giữ từ 4★: hoàn 32 xu mỗi lượt, mỗi bé tốn ròng khoảng 420 xu thay vì 620. Tiền phóng sinh hiện tại (`STAR[n].sell`): 20, 40, 100, 300, 1.000 xu, 5★ thêm 1 vé.
-- Chờ người dùng quyết: giữ nhịp chậm hơn này hay hạ giá phòng, nội thất lại; có giảm tiền phóng sinh hay không.
+- Người dùng chọn "Giảm tiền phóng sinh": `STAR[n].sell` nay là 10, 20, 50, 150, 500 xu (giảm một nửa), 5★ vẫn thêm 1 vé. Đo lại bằng `tools/gachaloop.js`: giữ 5★ thì mỗi lượt hoàn 35 xu, một bé 5★ tốn ròng khoảng 1.900 xu (trước 870, không phóng sinh khoảng 2.900); giữ từ 4★ thì mỗi bé tốn ròng khoảng 520 xu (trước 420). Sổ tay chương Quản lý mèo đọc số từ `STAR`. Giá phòng, nội thất giữ nguyên. Trọng tài máy chủ (`tools/guard.js`) dùng chung `releaseGift` nên tự theo số mới.
