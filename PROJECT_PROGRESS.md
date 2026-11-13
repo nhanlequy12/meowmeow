@@ -151,7 +151,7 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Chờ người dùng quyết: có chỉnh giá hay tiền phóng sinh không.
 
 ## Đợt 2026-11-13: giảm tiền phóng sinh
-- Theo lựa chọn của người dùng sau khi xem số đo: xu phóng sinh giảm một nửa (10, 20, 50, 150, 500; 5★ vẫn thêm 1 vé). Một bé 5★ săn bằng quay rồi phóng sinh nay tốn ròng khoảng 1.900 xu (trước 870). Chi tiết ở `CLAUDE.md` mục 41.
+- Commit `da86a56`. Theo lựa chọn của người dùng sau khi xem số đo: xu phóng sinh giảm một nửa (10, 20, 50, 150, 500; 5★ vẫn thêm 1 vé). Một bé 5★ săn bằng quay rồi phóng sinh nay tốn ròng khoảng 1.900 xu (trước 870). Chi tiết ở `CLAUDE.md` mục 41.
 
 ## Quyết định kỹ thuật quan trọng
 
