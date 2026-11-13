@@ -2,7 +2,7 @@
 
 File này để một phiên làm việc mới biết ngay đang dở việc gì. Ngữ cảnh đầy đủ của dự án nằm ở `CLAUDE.md`; file này chỉ ghi trạng thái hiện tại. Mỗi phiên cập nhật mục của mình trước khi kết thúc và sau mỗi lần push.
 
-Cập nhật lần cuối: 2026-11-11, tối.
+Cập nhật lần cuối: 2026-11-12, đêm.
 
 ## Mục tiêu tổng thể
 
@@ -133,6 +133,12 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 
 ## Đợt 2026-11-12: thông báo hiện nguyên thẻ HTML
 - Commit `9babc08`: người dùng chụp thông báo cho ăn hiện nguyên chữ `<b>1</b>`. `toast()` tự `esc()` nội dung nên không được chèn thẻ HTML hay `esc()` trước. Sửa `js/meal-ui.js` (bỏ `<b>`, tên bé trong câu "Món khoái khẩu của…" không còn bị mã hóa hai lần) và `js/pw-ui.js` (thông báo "Điện năng lúc bạn vắng" ghép bằng ` · ` thay cho `<br>`). Đã rà mọi lời gọi `toast`, `notify` khác: không còn chỗ nào chèn thẻ. Đã xem trong trình duyệt (đổ bát cho bé tên `Tí & <Bơ>`): chữ hiện đúng; mealtest, pwtest đạt.
+
+## Đợt 2026-11-12: gợi ý tương thích và bổ sung hướng dẫn tân thủ
+- Commit `4151975`: module tương thích dùng chung `CP` (`js/compat.js`, số và chữ ở `js/compat-data.js`), icon mặt mèo có đệm (`js/face.js`), gợi ý ở tab Phòng kèm nút Xếp gợi ý có xem trước (`js/compat-room.js`), ở bảng Cho ăn, Cho uống (`js/compat-meal.js`), ở màn chi tiết (`js/compat-cat.js`), bộ lọc ở tab Mèo và Sưu tập (`js/compat-album.js`); hướng dẫn tân thủ 39 bước (thêm cho uống, thẻ dấu tương thích, khung Hợp với bé, tab Mèo, thẻ còn gì phía trước), thẻ ba mèo khởi đầu có phòng, đồ ăn, nước uống hợp; 11 mẹo lần đầu và hai chương Sổ tay (`js/tut-more.js`, `js/tut-more-text.js`). Chi tiết ở `CLAUDE.md` mục 39 và `docs/tutorial-plan.md` (ba mục cuối: khảo sát, bảng quy tắc, kết quả và các điểm cần chủ game quyết).
+- Kiểm thử: `node tools/compattest.js` và `node tools/facetest.js` (mới) cùng `catcheck` 150/150 và 8 bộ cũ đều đạt. Playwright: bot chơi hết 39 bước từ ván mới ở 1280×800, 844×390, 667×375 với cả ba mèo khởi đầu; bỏ qua (trước và sau khi chọn mèo), thoát giữa chừng rồi vào lại, chơi lại từ Sổ tay, người chơi cũ; không lỗi JS. Ảnh ở `preview/tut/`.
+- Chưa kiểm tra: điện thoại thật (nhấn giữ icon), Firefox, người chơi thật.
+- Thấy khi thử, chưa sửa (có từ trước): ô Nhiệm vụ đang nhấp nháy (`.qchip.ready`) làm trang cuộn ngang ở 1280px khi dòng chỉ số xuống hai hàng; `tools/straytest.js` hỏng 1 lần trong 14 lần chạy liên tiếp (không tái hiện được, bộ này không nạp file nào của đợt này).
 
 ## Quyết định kỹ thuật quan trọng
 
