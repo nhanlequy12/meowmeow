@@ -140,6 +140,11 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Chưa kiểm tra: điện thoại thật (nhấn giữ icon), Firefox, người chơi thật.
 - Thấy khi thử, chưa sửa (có từ trước): ô Nhiệm vụ đang nhấp nháy (`.qchip.ready`) làm trang cuộn ngang ở 1280px khi dòng chỉ số xuống hai hàng; `tools/straytest.js` hỏng 1 lần trong 14 lần chạy liên tiếp (không tái hiện được, bộ này không nạp file nào của đợt này).
 
+## Đợt 2026-11-13: gợi ý ăn uống theo phòng và các điểm còn mở của đợt gợi ý
+- Commit `16b5efb`: tab Phòng có dòng "Nên cho phòng này ăn … uống …", bảng Cho ăn, Cho uống xếp món và chọn sẵn món hợp với các bé đang ở phòng đang xem (`CP.roomMenu`, `CP.roomPick`); nước khoái khẩu theo loài (+6 vui, +3 thoải mái khi uống đúng); thuộc tính Thích ở trong nhà (+8 vui); giống không lông, lông dài cảm nhận nhiệt độ lệch −3°C, +2°C; Xếp gợi ý trừ 2 điểm mỗi bé phải chuyển; ô Nhiệm vụ không còn làm trang cuộn ngang; straytest hết chập chờn. Chi tiết ở `CLAUDE.md` mục 40.
+- Kiểm thử: compattest (thêm 4 phần), facetest, catcheck 150/150 và 8 bộ cũ đạt; Playwright 39 bước ở 3 cỡ màn, bỏ qua, vào lại, chơi lại, người chơi cũ, không lỗi JS.
+- Giữ nguyên theo quyết định cũ: lượt gacha đầu chắc chắn 4★; loài chưa gặp hiện bóng đen.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
