@@ -16,17 +16,18 @@ const mlU=k=>k==='f'?'suất':'chai';
 const mlXu=n=>Math.round(n).toLocaleString('vi-VN');
 const mlOn=()=>$('modal').style.display==='flex'&&!!$('mbox').querySelector('.ml');
 const mlItem=(k,id)=>k==='f'?FOOD[id]:DRINK[id];
-const mlItems=k=>k==='f'?FOODS.slice().sort((a,b)=>locked(a)-locked(b)):DRINKS;
+// đang cho một bé ăn/uống (ML.cat) thì js/compat-meal.js xếp món hợp với bé lên đầu
+const mlItems=k=>{const L=k==='f'?FOODS.slice().sort((a,b)=>locked(a)-locked(b)):DRINKS;return typeof cpfSort==='function'?cpfSort(k,L):L};
 const mlTut=()=>typeof TUT!=='undefined'&&TUT.active&&TUT.active();
 // tình trạng các bát (cả phòng, hoặc một bát khi có iid): sức chứa, còn lại (suất nguyên + phần ăn dở), chỗ trống
 function mlStat(k,rid,iid){
   const all=mBowls(k,rid),bs=iid!=null?all.filter(b=>b.iid===iid):all;
   return {all,bs,cap:bs.reduce((a,b)=>a+MK[k].cap(b),0),have:bs.reduce((a,b)=>a+mHave(k,b)+mPartN(k,b),0),free:bs.reduce((a,b)=>a+mFree(k,b),0)};
 }
-// món mặc định: món dùng lần trước; hướng dẫn tân thủ luôn là Hạt khô
+// món mặc định: món dùng lần trước; hướng dẫn tân thủ chọn sẵn món đã mở khóa hợp nhất với bé khởi đầu (CP.tutFood, js/compat.js), không có thì Hạt khô
 function mlDef(k){
   const P=S.mealPick||{};let id=P[k];
-  if(k==='f'){if(mlTut()||!FOOD[id]||locked(FOOD[id]))id='kibble'}
+  if(k==='f'){if(mlTut()){const c=typeof CP!=='undefined'&&S.tut&&catBy(S.tut.cat);id=c?CP.tutFood(c):'kibble'}else if(!FOOD[id]||locked(FOOD[id]))id='kibble'}
   else if(!DRINK[id])id=typeof medS==='function'&&DRINK[medS().wd]?medS().wd:'w_plain';
   return id;
 }
@@ -54,7 +55,7 @@ function openMeal(k,iid){
   const F=k==='f',all=mBowls(k,cur),any=F?bowlsIn(cur).length:wbowls(cur).length;
   if(!all.length){toast(any?(F?'Bát ăn':'Bát nước')+' trong phòng đang hỏng. Sửa bát trước rồi mới đổ được.':F?'Phòng này chưa có bát ăn. Mua ở Cửa hàng, mục Bát ăn.':'Phòng này chưa có bát nước. Mua ở Cửa hàng, mục 💧 Tiện nghi.',
     {type:'warn',icon:F?'🍚':'💧',title:F?'Cho ăn':'Nước uống'});return}
-  ML.k=k;ML.iid=iid!=null&&all.some(b=>b.iid===iid)?iid:null;ML.id=mlDef(k);ML.cus=0;ML.mode='even';ML.per={};ML.msg='';ML.n=mlSugN();
+  ML.k=k;ML.iid=iid!=null&&all.some(b=>b.iid===iid)?iid:null;ML.id=mlDef(k);ML.cat=null;if(typeof cpfOpen==='function')cpfOpen(k);ML.cus=0;ML.mode='even';ML.per={};ML.msg='';ML.n=mlSugN();
   modal(mlHtml());
   // chú thích (data-tip) của nút trên thanh không được nằm đè lên bảng; bộ chú thích bật lại sau cú bấm nên ẩn ở nhịp sau
   if(typeof hideTip==='function'){hideTip();setTimeout(()=>{if(mlOn())hideTip()},40)}
@@ -92,17 +93,19 @@ function mlHd(){
     (pw?' · <button class="ml-lk" onclick="openPw('+it.iid+')">🔋 Pin máy</button>':'')+'</div></div>';
 }
 function mlLs(){
-  const k=ML.k,F=k==='f',cats=homeCats(cur);
-  return mlItems(k).map(f=>{
-    const lk=F&&locked(f),on=f.id===ML.id,fav=F&&cats.some(c=>favs(c).includes(f.id)),n=mInvN(k,f.id);
-    return '<button class="ml-it'+(on?' on':'')+(lk?' lk':'')+'" role="option" aria-selected="'+(on?'true':'false')+'" onclick="mlPick(\''+f.id+'\')">'+
-      '<span class="ic">'+f.ic+'</span><span class="nm">'+f.n+(fav?'<i title="Khoái khẩu">❤</i>':'')+'</span>'+
+  const k=ML.k,F=k==='f',cats=homeCats(cur),X=typeof cpfItem==='function';
+  // X: js/compat-meal.js vẽ icon mặt các bé hợp món (thay dấu ❤), dấu mức hợp và dòng "Hợp nhất với <bé>"
+  return (X?cpfHead(k):'')+mlItems(k).map(f=>{
+    const lk=F&&locked(f),on=f.id===ML.id,fav=!X&&F&&cats.some(c=>favs(c).includes(f.id)),n=mInvN(k,f.id),x=X?cpfItem(k,f,cats):{cls:'',mk:'',fans:''};
+    return '<button class="ml-it'+(on?' on':'')+(lk?' lk':'')+x.cls+'" role="option" aria-selected="'+(on?'true':'false')+'" onclick="mlPick(\''+f.id+'\')">'+
+      '<span class="ic">'+f.ic+'</span><span class="nm">'+f.n+(fav?'<i title="Khoái khẩu">❤</i>':'')+'</span>'+x.mk+x.fans+
       (lk?'<span class="pr">🔒 Cấp '+f.ul+'</span>':'<span class="kh">kho <b>'+n+'</b></span><span class="pr">🪙'+f.price+(F?'<small>/8</small>':'')+'</span>')+'</button>';
   }).join('');
 }
 function mlSel(){
-  const k=ML.k,f=mlItem(k,ML.id),lv=k==='f'?homeCats(cur).filter(c=>favs(c).includes(f.id)).map(c=>esc(c.name)):[];
-  return '<b>'+f.ic+' '+f.n+'</b> <span class="dim">· '+f.price+' xu '+(k==='f'?'cho 8 suất':'một chai')+'</span><small>'+f.d+(lv.length?' <span class="ml-fav">❤ Khoái khẩu của '+lv.join(', ')+'</span>':'')+'</small>';
+  // có js/compat-meal.js thì câu "❤ Khoái khẩu của…" thành hàng icon các bé hợp và không hợp món (cpfSel), nằm ngoài <small> vì <small> bị cắt còn hai dòng
+  const k=ML.k,f=mlItem(k,ML.id),X=typeof cpfSel==='function',lv=!X&&k==='f'?homeCats(cur).filter(c=>favs(c).includes(f.id)).map(c=>esc(c.name)):[];
+  return '<b>'+f.ic+' '+f.n+'</b> <span class="dim">· '+f.price+' xu '+(k==='f'?'cho 8 suất':'một chai')+'</span><small>'+f.d+(lv.length?' <span class="ml-fav">❤ Khoái khẩu của '+lv.join(', ')+'</span>':'')+'</small>'+(X?cpfSel(k,f):'');
 }
 // vì sao gợi ý số này
 function mlWhy(){

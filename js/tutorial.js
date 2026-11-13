@@ -45,7 +45,13 @@ const TUT=(()=>{
   const starter=()=>catBy(st().cat)||S.cats[0];
   const gcat=()=>catBy(st().gcat)||rpCat||S.cats[S.cats.length-1];
   function fill(s,o){o=o||{};const a=starter(),b=gcat();
-    return String(s).replace(/\{cat\}/g,o.cat||(a?a.name:'bé')).replace(/\{new\}/g,o.new||(b?b.name:'bé')).replace(/\{breed\}/g,o.breed||'')}
+    return String(s).replace(/\{cat\}/g,o.cat||(a?a.name:'bé')).replace(/\{new\}/g,o.new||(b?b.name:'bé')).replace(/\{breed\}/g,o.breed||'')
+      .replace(/\{food\}/g,()=>FOOD[tutFood()].n).replace(/\{fav\}/g,()=>a?FOOD[favs(a)[0]].n:'')}
+  // món hướng dẫn chọn sẵn ở bước cho ăn: món đã mở khóa hợp nhất với bé khởi đầu (module tương thích, js/compat.js); foodFav: món đó có phải món khoái khẩu không
+  const tutFood=()=>typeof CP!=='undefined'&&starter()?CP.tutFood(starter()):'kibble';
+  const foodFav=()=>!!starter()&&favs(starter()).includes(tutFood());
+  const waterOK=()=>typeof mlStat==='function'&&homeCats(cur).length>0&&mlStat('w',cur).all.length>0;
+  const waterFull=()=>mlStat('w',cur).free<=0;
   // tách câu thành từng "ký tự" để chạy chữ; emoji có icon thì thành một ảnh
   function toks(s){const out=[];let last=0;s=esc(s);s.replace(EMO_RE,(m,k,i)=>{for(const ch of s.slice(last,i))out.push(ch);out.push(icoTag(EMO_IC[k]));last=i+m.length;return m});
     for(const ch of s.slice(last))out.push(ch);return out}
@@ -55,6 +61,7 @@ const TUT=(()=>{
   const modalOn=()=>$('modal').style.display==='flex';
   const isCat=()=>modalOn()&&$('mbox').querySelector('.cd-head');
   const cdSec=i=>()=>QA('#mbox .cd-sec')[i];
+  const cdTraits=()=>{const e=Q('#mbox .cd-tags');return e&&e.closest('.cd-sec')};
   function ensureTab(t){if(tab!==t)setTab(t)}
   function catRect(){
     const c=starter();if(!c||tab!=='home')return null;
@@ -71,8 +78,13 @@ const TUT=(()=>{
     {id:'poses',say:'poses',card:'poses'},
     {id:'view',say:'view',tab:'home',target:['#roomwrap','#zoomb'],pass:1,enter(){if(fol)unfollow(true)}},
     {id:'feed',say:'feed',tab:'home',target:'#panel button[onclick="openFeed()"]',act:'openFeed',done:()=>modalOn(),skip:()=>!bowlReady(cur)||!homeCats(cur).length},
-    {id:'food',say:'food',target:'#mbox button[onclick="doFeed(\'kibble\')"]',act:'doFeed',enter(){if(!modalOn())openFeed()},skip:()=>!bowlReady(cur)||!homeCats(cur).length,close:1},
+    {id:'food',say:()=>foodFav()?'food':'foodLock',target:'#mbox .ml-go',act:'doFeed',enter(){if(!modalOn())openFeed()},skip:()=>!bowlReady(cur)||!homeCats(cur).length,close:1},
     {id:'fed',say:'fed',tab:'home',target:'#panel > .feedbar',enter(){if(modalOn())closeModal()}},
+    // cho uống: nước lọc tặng sẵn trong kho nên không tốn xu. Bát nước đang đầy (ván mới: 8/8) thì bước rót chỉ xem, không bắt bấm (view)
+    {id:'water',say:'water',tab:'home',target:'#panel button[onclick="openWater()"]',act:'openWater',done:()=>modalOn(),enter(){if(modalOn())closeModal()},skip:()=>!waterOK()},
+    {id:'wpour',say:()=>waterFull()?'wfull':'wpour',target:'#mbox .ml-go',act:'mlGo',view:waterFull,done:()=>!modalOn(),enter(){if(!modalOn())openWater()},skip:()=>!waterOK(),close:1},
+    {id:'wdone',say:'wdone',tab:'home',target:'#panel > .feedbar',enter(){if(modalOn())closeModal()},skip:()=>!waterOK()},
+    {id:'compat',say:'compat',card:'compat',enter(){if(modalOn())closeModal()}},
     {id:'ticket',say:'ticket',replayOff:1,enter(){grant('ticket')}},
     {id:'gtab',say:'gtab',target:tabBtn('gacha'),act:'setTab',done:()=>tab==='gacha',enter(){if(modalOn())closeModal()}},
     {id:'stars',say:'stars',card:'stars',tab:'gacha'},
@@ -81,7 +93,8 @@ const TUT=(()=>{
       skip:()=>!$('gz').classList.contains('on'),leave(){const c=catBy(st().gcat);if(c)delete c.isNew}},
     {id:'dhead',say:'dhead',target:'#mbox .cd-head',enter(){if(!isCat())openCat(gcat().uid)}},
     {id:'dprof',say:'dprof',target:cdSec(0),enter(){if(!isCat())openCat(gcat().uid)}},
-    {id:'dtrait',say:'dtrait',target:cdSec(2),pass:1,enter(){if(!isCat())openCat(gcat().uid)}},
+    {id:'dtrait',say:'dtrait',target:cdTraits,pass:1,enter(){if(!isCat())openCat(gcat().uid)}},
+    {id:'dlike',say:'dlike',target:'#mbox .cp-sec',enter(){if(!isCat())openCat(gcat().uid)},skip:()=>typeof cpCatSec!=='function'},
     {id:'atab',say:'atab',target:tabBtn('album'),act:'setTab',done:()=>tab==='album',enter(){if(modalOn())closeModal()}},
     {id:'album',say:'album',tab:'album',target:'#panel > .row.wrap',enter(){if(albumG!=='breed'){albumG='breed';renderPanel()}}},
     {id:'rare',say:'rare',tab:'album',target:'#panel button[onclick*="albumG=\'rare\'"]'},
@@ -91,7 +104,10 @@ const TUT=(()=>{
     {id:'tinfo',say:'tinfo',tab:'trip',target:()=>Q('#panel > .card'),enter(){if(modalOn())closeModal()}},
     {id:'stab',say:'stab',target:tabBtn('shop'),act:'setTab',done:()=>tab==='shop'},
     {id:'shop',say:'shop',tab:'shop',target:['#panel > .row.wrap','#panel > .dim'],enter(){if(shopT!=='rooms'){shopT='rooms';renderPanel()}}},
+    {id:'mtab',say:'mtab',target:tabBtn('cats'),act:'setTab',done:()=>tab==='cats',enter(){if(modalOn())closeModal()}},
+    {id:'arrange',say:'arrange',tab:'cats',target:()=>Q('#panel .cp-arr')||Q('#panel > .rchips')},
     {id:'level',say:'level',target:'#top .chip.xp'},
+    {id:'more',say:'more',card:'more'},
     {id:'gift',say:'gift',tab:'home',card:'gift',act:'gift',enter(){if(modalOn())closeModal()},skip:()=>!rp&&!!(st().got&&st().got.gift)},
     {id:'next',say:'next',card:'next'},
     {id:'bye',say:'bye',guide:1}
@@ -183,8 +199,8 @@ const TUT=(()=>{
     const s=cs;if(!s)return;if(s.leave)s.leave();
     const i=SX[s.id]+1;go(i<ST.length?ST[i].id:null);
   }
-  const isAct=()=>!!(cs&&cs.act&&!rp);
-  const lines=()=>{const L=(TX.steps[cs.say]||['']).map(x=>fill(x));return rp&&cs.id==='hi'?L.slice(0,2):L};
+  const isAct=()=>!!(cs&&cs.act&&!rp&&!(cs.view&&cs.view()));   // view(): bước bấm tạm thành bước xem (vd bát nước đang đầy)
+  const lines=()=>{const L=(TX.steps[typeof cs.say==='function'?cs.say():cs.say]||['']).map(x=>fill(x));return rp&&cs.id==='hi'?L.slice(0,2):L};
   function say(){
     const L=lines(),txt=L[Math.min(line,L.length-1)],tk=toks(txt);let n=0;
     clearInterval(typ);E.say.style.display='';
@@ -224,6 +240,17 @@ const TUT=(()=>{
       const got=st().got&&st().got.gift;
       h='<h3>'+TX.gift.title+'</h3><div class="tut-gift">'+giftRows().map(r=>'<div>'+r+'</div>').join('')+'</div>'+
         (rp||got?'<div class="dim">'+TX.gift.got+'</div>':'<button class="go tut-giftbtn" onclick="TUT._gift()">🎁 '+TX.gift.btn+'</button>');
+    }else if(k==='compat'){
+      // chú giải bốn mức tương thích, dùng icon mặt của chính bé khởi đầu (js/face.js)
+      const a=starter(),key=a?lk(a):TX.guide.key,X=TX.compat,fc=typeof faceChip==='function',sz=innerHeight<520?'s':'m';
+      h='<h3>'+X.title+'</h3><div class="tut-cp">'+[2,1,0,-1].map(v=>'<div class="r">'+(fc?faceChip({key,lv:v,sz}):'')+
+        '<span class="l">'+(fc?cpLabel(v):CP_LV[v].n)+'</span><span class="d">'+esc(X.rows[v])+'</span></div>').join('')+
+        '<div class="r">'+(fc?'<span class="two">'+faceChip({key,lv:0,sz,dim:1})+faceChip({key,lv:0,sz,unk:1})+'</span>':'')+'<span class="d w">'+esc(X.foot)+'</span></div></div>';
+    }else if(k==='more'){
+      // tính năng mở theo cấp đọc từ FEATS (js/data.js) nên thêm tính năng mới là thẻ này tự có
+      const X=TX.more,F=(typeof FEATS!=='undefined'?FEATS:[]).filter(f=>f.lv>1).sort((a,b)=>a.lv-b.lv);
+      h='<h3>'+X.title+'</h3><ul class="tut-next"><li><b>'+X.nowL+'</b></li>'+X.now.map(x=>'<li>'+esc(x)+'</li>').join('')+
+        F.map(f=>'<li><b>'+X.lvL.replace('{v}',f.lv)+'</b> · '+esc(f.ic+' '+f.n)+'</li>').join('')+'</ul>';
     }else if(k==='next'){
       h='<h3>'+TX.nextTitle+'</h3><ul class="tut-next">'+TX.nextList.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
     }
@@ -417,7 +444,7 @@ const TUT=(()=>{
     if(cs.done&&!cs.done())return;
     next();
   }
-  ['petCat','openFeed','doFeed','setTab','openPicker','doTrip','gachaDone'].forEach(n=>{subs['@'+n]=1;on(n,(a,r)=>act(n,a,r))});
+  ['petCat','openFeed','doFeed','setTab','openPicker','doTrip','gachaDone','openWater','mlGo'].forEach(n=>{subs['@'+n]=1;on(n,(a,r)=>act(n,a,r))});
   on('gReveal',()=>{if(cs&&cs.wait==='gReveal'&&waiting){waiting=false;line=0;scrolled=false;scrollN=0;say()}});
   // lượt gacha đầu tiên: dùng vé, chắc chắn ra 4★ (vẫn có thể là mèo trang phục hoặc màu hiếm)
   hook('doGacha');

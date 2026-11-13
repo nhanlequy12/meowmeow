@@ -72,7 +72,8 @@ document.addEventListener('focusin',e=>{const t=tipOf(e);if(t)showTip(t)});
 document.addEventListener('focusout',hideTip);
 document.addEventListener('click',e=>{const t=tipOf(e);if(t)showTip(t);else hideTip()}); // chạm trên điện thoại: chạm vào thẻ để xem, chạm ra ngoài để tắt
 document.addEventListener('scroll',hideTip,true);addEventListener('resize',hideTip);
-setInterval(()=>{if(tipFor&&!tipFor.isConnected)hideTip()},400);
+// phần tử mang tooltip bị vẽ lại (tab Phòng vẽ lại mỗi giây): nếu có data-tk thì bám sang phần tử mới cùng khóa, không thì ẩn
+setInterval(()=>{if(tipFor&&!tipFor.isConnected){const k=tipFor.dataset.tk,n=k&&[...document.querySelectorAll('[data-tk]')].find(e=>e.dataset.tk===k);if(n)showTip(n);else hideTip()}},400);
 
 // lock = hộp thoại bắt buộc trả lời: ẩn nút ✕ và không đóng bằng phím Esc
 /* ---------- icon riêng của game thay cho emoji: vẽ bằng Art.icon, cùng kiểu hạt cườm với mèo ---------- */
@@ -82,7 +83,9 @@ const icoTag=n=>'<img class="px ico" alt="" src="'+(ICO[n]||(ICO[n]=cvURL(bufCan
 // đổi emoji trong phần chữ của một đoạn HTML thành icon; không đụng vào bên trong thẻ, thuộc tính hay <option>
 function emo(h){const a=String(h).split(/(<[^>]*>)/);return a.map((p,i)=>p[0]==='<'||(i>0&&/^<option/i.test(a[i-1]))?p:p.replace(EMO_RE,(m,k)=>icoTag(EMO_IC[k]))).join('')}
 function emoEl(el){const h=el.innerHTML,n=emo(h);if(n!==h)el.innerHTML=n}
-function modal(html,lock){$('mbox').innerHTML=emo(html);$('mbox').scrollTop=0;$('modal').classList.toggle('lock',!!lock);$('modal').style.display='flex'}
+function modal(html,lock){$('mbox').innerHTML=emo(html);$('mbox').scrollTop=0;$('modal').classList.toggle('lock',!!lock);$('modal').style.display='flex';
+  // nút có data-tip mà mở hộp thoại: bộ tooltip bật lại sau cú bấm nên ẩn ở nhịp sau, kẻo tooltip của nút nằm đè lên hộp thoại
+  setTimeout(()=>{if(tipFor&&!$('mbox').contains(tipFor))hideTip()},0)}
 function closeModal(){$('modal').style.display='none'}
 /* thông báo nhỏ: trượt từ trên xuống, mỗi loại một icon và màu nhấn, số xu đếm chạy lên */
 const TT={pet:['🤚','#e88aa2'],feed:['🍖','#e39a4a'],coin:['🪙','#d1a02a'],shop:['🛋','#5fb3a1'],room:['🚪','#6fa3d6'],level:['🎉','#9a78d8'],trip:['🎒','#6fb486'],cat:['🐱','#e88aa2'],warn:['⚠️','#d97070'],fix:['🔧','#5fb3a1'],info:['🐾','#a07654']};
@@ -1604,7 +1607,9 @@ function renderTop(){
 function openRooms(){
   modal('<h3>Chọn phòng</h3>'+ownedRooms().map(r=>'<div class="card tap" onclick="closeModal();setRoom(\''+r.id+'\')"><div style="font-size:24px">'+(r.id===cur?'📍':'🚪')+'</div><div class="g"><b>'+r.n+'</b> <small>· '+catsIn(r.id).length+'/'+r.cap+' mèo'+(catsIn(r.id).length>=r.cap?' · <span style="color:var(--bad)">đầy</span>':'')+'</small><br><small>'+r.d+'</small></div></div>').join(''));
 }
-function renderPanel(){$('panel').innerHTML=emo(PANEL[tab]())}
+// soft (nhịp vẽ lại mỗi giây): nội dung không đổi thì giữ nguyên DOM, để tooltip, focus và cú bấm đang dở không bị mất
+let panelKey='';
+function renderPanel(soft){const h=emo(PANEL[tab]()),k=tab+'|'+h.replace(/--d:-\d+ms/g,'');if(soft===true&&k===panelKey)return;panelKey=k;$('panel').innerHTML=h}
 function render(){renderTop();renderPanel()}
 const nm=c=>c.star===5?'<b class="n5">'+esc(c.name)+'</b>':'<b>'+esc(c.name)+'</b>'; // mèo 5★ có khung tên vàng kim
 const catCard=c=>'<div class="card tap" onclick="openCat('+c.uid+')">'+catTag(lk(c),1)+'<div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+' <small>'+kind(c)+(onTrip(c.uid)?' · '+awayTxt(c):'')+'</small><br>'+stats(c)+'</div><div class="dim" style="font-size:20px">›</div></div>';
@@ -1696,15 +1701,15 @@ const PANEL={
   // đếm mèo mỗi phòng một lần; ô chọn phòng trên thẻ chỉ có phòng hiện tại, đủ danh sách khi chạm vào (mgOpts) để 150 thẻ không phải dựng 2.700 dòng
   const rooms=ownedRooms().concat([ROOM.wait]),N=mgCount(),cnt=r=>N[r.id]||0,full=r=>cnt(r)>=r.cap,cap=r=>r.wait?'∞':r.cap,opt=(r,on)=>mgOpt(r,on,N);
   const SORT={star:['Sao',(a,b)=>b.star-a.star],breed:['Giống',(a,b)=>SP[a.sp].n.localeCompare(SP[b.sp].n,'vi')],room:['Phòng',(a,b)=>ROOM[a.room].n.localeCompare(ROOM[b.room].n,'vi')],full:['Đói nhất',(a,b)=>a.full-b.full],hp:['Buồn nhất',(a,b)=>a.hp-b.hp]};
-  const list=S.cats.filter(c=>mg.room==='all'||c.room===mg.room).sort(SORT[mg.sort][1]);
+  const base=S.cats.filter(c=>mg.room==='all'||c.room===mg.room),cx=typeof cpaCats==='function'?cpaCats(base,SORT):null,list=cx?cx.list:base.sort((SORT[mg.sort]||SORT.star)[1]);
   return '<div class="dim" style="margin-bottom:6px">Chạm một ô phòng để lọc. Đổi phòng bằng ô chọn trên mỗi thẻ, hoặc kéo thẻ mèo thả vào ô phòng (trên máy tính).</div>'+
    '<div class="rchips">'+rooms.map(r=>'<div class="rchip'+(full(r)?' full':'')+(mg.room===r.id?' on':'')+'" onclick="mg.room=mg.room===\''+r.id+'\'?\'all\':\''+r.id+'\';renderPanel()" ondragover="event.preventDefault();this.classList.add(\'over\')" ondragleave="this.classList.remove(\'over\')" ondrop="event.preventDefault();mgMove(+event.dataTransfer.getData(\'text\'),\''+r.id+'\')"><b>'+r.n+'</b><br>'+cnt(r)+'/'+cap(r)+(full(r)?' · <span style="color:var(--bad)">ĐẦY</span>':'')+'</div>').join('')+'</div>'+
-   '<div class="row wrap" style="margin:8px 0"><button class="sm '+(mg.multi?'on':'')+'" onclick="mg.multi=!mg.multi;mg.sel={};renderPanel()">☑ Chọn nhiều</button>'+(mg.multi?'<button class="sm" onclick="list_all()">Chọn hết danh sách</button><button class="sm bad" '+(Object.keys(mg.sel).length?'':'disabled')+' onclick="askRelease(Object.keys(mg.sel).map(Number))">🕊 Phóng sinh '+Object.keys(mg.sel).length+' bé</button>':'')+'</div>'+
-   '<div class="row wrap" style="margin:8px 0"><b>Sắp xếp:</b>'+Object.keys(SORT).map(k=>'<button class="sm '+(mg.sort===k?'on':'')+'" onclick="mg.sort=\''+k+'\';renderPanel()">'+SORT[k][0]+'</button>').join('')+'</div>'+
+   '<div class="row wrap" style="margin:8px 0"><button class="sm '+(mg.multi?'on':'')+'" onclick="mg.multi=!mg.multi;mg.sel={};renderPanel()">☑ Chọn nhiều</button>'+(cx?cx.btn:'')+(mg.multi?'<button class="sm" onclick="list_all()">Chọn hết danh sách</button><button class="sm bad" '+(Object.keys(mg.sel).length?'':'disabled')+' onclick="askRelease(Object.keys(mg.sel).map(Number))">🕊 Phóng sinh '+Object.keys(mg.sel).length+' bé</button>':'')+'</div>'+
+   (cx?cx.bar:'')+'<div class="row wrap'+(cx&&cx.on?' cpa-off':'')+'" style="margin:8px 0"><b>Sắp xếp:</b>'+Object.keys(SORT).map(k=>'<button class="sm '+(mg.sort===k?'on':'')+'" onclick="mg.sort=\''+k+'\';renderPanel()">'+SORT[k][0]+'</button>').join('')+'</div>'+
    (list.length?list.map(c=>{const away=onTrip(c.uid);
-     return '<div class="card'+(mg.multi&&mg.sel[c.uid]?' sel':'')+'" '+(mg.multi&&!away?'onclick="mgSel('+c.uid+')" ':'')+'draggable="'+(!away&&!mg.multi)+'" ondragstart="event.dataTransfer.setData(\'text\',\''+c.uid+'\')">'+(mg.multi?'<div style="font-size:24px">'+(away?'🎒':mg.sel[c.uid]?'☑':'☐')+'</div>':'')+'<div class="tap" onclick="'+(mg.multi?'':'openCat('+c.uid+')')+'">'+catTag(lk(c),1.5)+'</div><div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+'<br><small>'+kind(c)+'</small><br>'+stats(c)+'<div>'+coatTags(c)+c.traits.map(t=>tagOf(t)).join('')+'</div>'+
+     return '<div class="card'+(mg.multi&&mg.sel[c.uid]?' sel':'')+'" '+(mg.multi&&!away?'onclick="mgSel('+c.uid+')" ':'')+'draggable="'+(!away&&!mg.multi)+'" ondragstart="event.dataTransfer.setData(\'text\',\''+c.uid+'\')">'+(mg.multi?'<div style="font-size:24px">'+(away?'🎒':mg.sel[c.uid]?'☑':'☐')+'</div>':'')+'<div class="tap" onclick="'+(mg.multi?'':'openCat('+c.uid+')')+'">'+catTag(lk(c),1.5)+'</div><div class="g">'+nm(c)+' '+sexIc(c)+' '+starsC(c)+(cx?cx.tag(c):'')+'<br><small>'+kind(c)+'</small><br>'+stats(c)+'<div>'+coatTags(c)+c.traits.map(t=>tagOf(t)).join('')+'</div>'+
        '<div class="row" style="margin-top:6px" onclick="event.stopPropagation()"><select style="flex:1" aria-label="Phòng của '+esc(c.name)+'" '+(away?'disabled':'')+' onpointerdown="mgOpts(this)" onfocus="mgOpts(this)" onchange="mgMove('+c.uid+',this.value)">'+opt(ROOM[c.room],true)+'</select>'+(away?'<small>'+awayTxt(c)+'</small>':'')+'</div></div></div>'}).join('')
-     :'<div class="dim">Không có bé nào ở '+ROOM[mg.room].n+'.</div>');
+     :cx&&cx.none||'<div class="dim">Không có bé nào ở '+ROOM[mg.room].n+'.</div>');
  },
  album(){
   const of=g=>g==='breed'?BREEDS:VARIANTS.filter(v=>v.g===g),sc=S.seenCoat||{},sr=S.seenRare||{};
@@ -1713,17 +1718,17 @@ const PANEL={
   if(albumG==='rare')return tabs+'<div class="dim" style="margin-bottom:8px">Màu hiếm có thể rơi vào bất kỳ giống nào, khoảng '+Math.round(RARE_P*100)+'% mỗi lượt gacha, luôn là 4★.</div><div class="grid">'+RARES.map(r=>
     sr[r.id]?'<div class="cell">'+catTag(sr[r.id]+'~'+r.id,1.5)+'<br><b style="color:'+scol(4)+'">'+r.n+'</b><br>'+starsOf(4,1)+'<br><span class="dim" style="font-size:11px">gặp lần đầu ở '+SP[sr[r.id]].n+'<br>'+tagOf(r.tr)+'</span></div>'
              :'<div class="cell" style="opacity:.75"><div style="font-size:44px;line-height:80px;color:var(--dim)">?</div><b style="color:'+scol(4)+'">???</b></div>').join('')+'</div>';
-  const all=of(albumG).slice().sort((a,b)=>a.r-b.r);
-  return tabs+'<div class="dim" style="margin-bottom:8px">'+(albumG==='breed'?'Chạm vào một giống đã gặp để xem các màu lông của giống đó.':'Chạm vào một bé đã gặp để xem các trang phục và thông tin của bé.')+'</div><div class="grid">'+all.map(s=>
-    S.seen[s.id]?'<div class="cell tap" onclick="openBreed(\''+s.id+'\')">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">'+s.n+'</b><br>'+starsOf(s.r)+(s.coats?'<br><b>'+(s.xt?'Trang phục':'Màu')+': '+nCoat(s)+'/'+s.coats.length+'</b>':'')+'<br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span>'+(s.r===5?'<br><button class="sm" onclick="event.stopPropagation();replayIntro(\''+s.id+'\')">▶ Xem lại intro</button>':'')+'</div>'
-               :'<div class="cell unk">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">???</b><br>'+starsOf(s.r)+'</div>').join('')+'</div>';
+  const ax=typeof cpaAlbum==='function'?cpaAlbum(of(albumG)):null,all=ax&&ax.list?ax.list:of(albumG).slice().sort((a,b)=>a.r-b.r);
+  return tabs+(ax?ax.bar:'')+'<div class="dim" style="margin-bottom:8px">'+(albumG==='breed'?'Chạm vào một giống đã gặp để xem các màu lông của giống đó.':'Chạm vào một bé đã gặp để xem các trang phục và thông tin của bé.')+'</div><div class="grid">'+all.map(s=>
+    S.seen[s.id]?'<div class="cell tap" onclick="openBreed(\''+s.id+'\')">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">'+s.n+'</b><br>'+starsOf(s.r)+(ax?ax.tag(s):'')+(s.coats?'<br><b>'+(s.xt?'Trang phục':'Màu')+': '+nCoat(s)+'/'+s.coats.length+'</b>':'')+'<br><span class="dim" style="font-size:11px">'+s.d+(s.xt?'<br>'+tagOf(s.xt):'')+'</span>'+(s.r===5?'<br><button class="sm" onclick="event.stopPropagation();replayIntro(\''+s.id+'\')">▶ Xem lại intro</button>':'')+'</div>'
+               :'<div class="cell unk">'+catTag(s.id,1.5)+'<br><b style="color:'+scol(s.r)+'">???</b><br>'+starsOf(s.r)+(ax?ax.tag(s):'')+'</div>').join('')+'</div>';
  }
 };
 // xem một giống hoặc một mèo trang phục trong Sưu tập: các màu lông (giống thật) hoặc các trang phục (mèo trang phục).
 // Mèo trang phục không có trang phục hiếm thì chỉ có một ô là trang phục thường
 function openBreed(id){
   const b=SP[id],sc=S.seenCoat||{},th=themeOf(b);
-  const head='<h3>'+b.n+' '+starsOf(b.r)+'</h3>'+(th?'<div style="margin-bottom:4px"><b>'+th+'</b></div>':'')+'<div class="dim">'+b.d+(b.short?' Giống chân ngắn.':'')+'</div>'+(b.xt?'<div style="margin-top:6px">'+tagOf(b.xt)+'</div>':'');
+  const head='<h3>'+b.n+' '+starsOf(b.r)+'</h3>'+(th?'<div style="margin-bottom:4px"><b>'+th+'</b></div>':'')+'<div class="dim">'+b.d+(b.short?' Giống chân ngắn.':'')+'</div>'+(b.xt?'<div style="margin-top:6px">'+tagOf(b.xt)+'</div>':'')+(typeof cpaBreed==='function'?cpaBreed(id):'');
   if(!b.coats){modal(head+'<div class="grid" style="grid-template-columns:1fr;margin:10px 0"><div class="cell">'+catTag(id,2)+'<br><b>Trang phục thường</b><br><span class="dim">Bé này chỉ có một kiểu trang phục.</span></div></div>'+
     (b.r===5?'<button class="sm" onclick="replayIntro(\''+id+'\')">▶ Xem lại intro</button>':''));return}
   modal(head+'<div class="grid" style="grid-template-columns:repeat(2,1fr);margin:10px 0">'+b.coats.map(k=>{const ct=COATS[k];
@@ -1843,7 +1848,7 @@ setInterval(()=>{
   const n=now();tick((n-lastTick)/1000);lastTick=n;sec++;
   renderTop();if(fol)showFol();
   if($('modal').style.display==='flex')return;
-  if((tab==='home'&&!edit)||tab==='trip')renderPanel();
+  if((tab==='home'&&!edit)||tab==='trip')renderPanel(true);
   if(sec%10===0)save();
 },1000);
 

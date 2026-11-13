@@ -110,3 +110,11 @@ html[data-theme=dark] .tut-hole{outline-color:#f4cc66}
   .tut-next{gap:3px}.tut-next li{padding:3px 8px;font-size:12.5px}
   .tut-gift{gap:3px;margin:4px 0 6px}.tut-gift>div{padding:3px 8px}
 }
+
+/* thẻ chú giải dấu tương thích (bước compat) */
+.tut-cp{display:grid;gap:7px;text-align:left}
+.tut-cp .r{display:grid;grid-template-columns:auto 96px minmax(0,1fr);gap:9px;align-items:center}
+.tut-cp .r .d{font-size:13px;line-height:1.35}
+.tut-cp .r .d.w{grid-column:2 / 4;color:var(--dim)}
+.tut-cp .two{display:inline-flex;gap:4px}
+@media (max-height:519px){.tut-cp{gap:4px}.tut-cp .r .d{font-size:12px}}

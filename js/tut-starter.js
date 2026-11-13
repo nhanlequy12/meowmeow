@@ -30,8 +30,16 @@ function tutPickCSS() {
 .tsp-detail>.tsp-label {display:block;margin-bottom:1px}
 .tsp-traits {display:flex;flex-wrap:wrap;gap:3px;align-items:center}
 .tsp-traits [data-tip] {margin:0;padding:2px 5px;font-size:11.5px;line-height:1.25}
-.tsp-fav {display:flex;flex-wrap:wrap;align-items:center;gap:3px 5px}
 .tsp-pick .ico {width:20px;height:20px;vertical-align:middle}
+.tsp-fitrows {display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;align-items:center;margin-top:2px}
+.tsp-fitrow {display:contents}
+.tsp-fitk {color:var(--dim);font-size:.92em;white-space:nowrap}
+.tsp-fitv {display:flex;flex-wrap:wrap;align-items:center;gap:3px 6px}
+.tsp-chip {display:inline-flex;align-items:center;gap:4px;border-radius:9px;cursor:help}
+.tsp-chip .ico {flex:none}
+.tsp-lv {color:var(--dim);font-size:11px;white-space:nowrap}
+.tsp-any[data-tip] {cursor:help;text-decoration:underline dotted var(--dim);text-underline-offset:3px}
+.tsp-chip:focus-visible,.tsp-any:focus-visible {outline:3px solid var(--gold);outline-offset:2px}
 .tsp-confirm {display:grid;grid-template-columns:minmax(150px,.8fr) minmax(0,1.2fr);gap:clamp(12px,3vw,32px);align-items:center;width:100%;max-width:760px;min-height:0;margin:auto;flex:1;max-height:650px}
 .tsp-preview {display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
 .tsp-preview .tsp-sprite {height:clamp(120px,24vh,220px);width:100%}
@@ -67,6 +75,9 @@ function tutPickCSS() {
   .tsp-role {font-size:12px}
   .tsp-style {padding:2px 5px;font-size:11.5px}
   .tsp-card .tsp-pers {display:none}
+  .tsp-card .tsp-fit>.tsp-label,.tsp-card .tsp-fitk,.tsp-card .tsp-any {display:none}
+  .tsp-card .tsp-fitrows {display:flex;flex-wrap:wrap;gap:3px 6px;margin:0}
+  .tsp-card .tsp-fitv {display:contents}
   .tsp-detail {font-size:12px;line-height:1.3}
   .tsp-traits [data-tip] {font-size:11px;padding:2px 4px}
   .tsp-confirm {grid-template-columns:1fr;gap:10px;max-width:400px;max-height:700px;flex:0 1 auto}
@@ -101,7 +112,7 @@ function tutPickCSS() {
   .tsp-starters {grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:8px;max-height:none}
   .tsp-card {display:flex;gap:5px;padding:8px;justify-content:center}
   .tsp-card .tsp-sprite {height:70px}
-  .tsp-card .tsp-pers,.tsp-card .tsp-strong,.tsp-card .tsp-fav {display:none}
+  .tsp-card .tsp-pers,.tsp-card .tsp-strong {display:none}
   .tsp-info {gap:4px}
   .tsp-name {font-size:16px}
   .tsp-role {font-size:12px}
@@ -113,10 +124,22 @@ function tutPickCSS() {
   .tsp-facts {gap:4px}
   .tsp-detail {font-size:12px;line-height:1.25}
   .tsp-facts .tsp-detail>.tsp-label {display:inline;margin-right:5px}
+  .tsp-card .tsp-fit>.tsp-label,.tsp-card .tsp-fitk,.tsp-card .tsp-any {display:none}
+  .tsp-card .tsp-fitrows {display:flex;flex-wrap:wrap;gap:3px 6px;margin:0}
+  .tsp-card .tsp-fitv {display:contents}
+  .tsp-facts .tsp-traits {display:inline-flex;vertical-align:middle}
+  .tsp-facts .tsp-fit {display:flex;flex-wrap:wrap;align-items:center;gap:3px 12px}
+  .tsp-facts .tsp-fit>.tsp-label {display:none}
+  .tsp-facts .tsp-fitrows {display:contents}
+  .tsp-facts .tsp-fitrow {display:inline-flex;align-items:center;gap:5px}
   .tsp-poses {height:calc(100vh - 175px);padding:8px;gap:5px}
   .tsp-pose-grid {gap:4px}
   .tsp-pose-cell {padding:4px 2px;gap:2px}
   .tsp-pose-label {font-size:11px}
+}
+@media (max-height:340px) {
+  .tsp-card .tsp-fit {display:none}
+  .tsp-facts .tsp-pers,.tsp-facts .tsp-strong {display:none}
 }
 `;
   document.head.appendChild(tspStyle);
@@ -124,14 +147,36 @@ function tutPickCSS() {
 
 tutPickCSS();
 
+/* Chữ riêng của file này; phần còn lại lấy từ TUT_TEXT.pick và CP_TEXT.ui. */
+const TSP_TEXT = {lv:'cấp {v}'};
+
+/* Một mục hợp với bé: nhãn có dấu của mức, lý do nằm trong data-tip (rê chuột, focus hoặc chạm). Còn khóa theo cấp thì ghi thêm "cấp N". */
+function tutPickChip(tspRes, tspDef, tspIcon) {
+  const tspNeed = tspDef && tspDef.ul > S.level ? tspDef.ul : 0;
+  const tspTip = tspRes.tip + (tspNeed ? ' (' + CP.ft(CP_TEXT.ui.foodLocked, {v:tspNeed}) + ')' : '');
+  return '<span class="tsp-chip" tabindex="0" data-tip="' + esc(tspTip) + '">' + (tspIcon ? '<span aria-hidden="true">' + esc(tspIcon) + '</span>' : '') +
+    cpLabel(tspRes.lv, tspRes.n) + (tspNeed ? '<small class="tsp-lv">' + esc(CP.ft(TSP_TEXT.lv, {v:tspNeed})) + '</small>' : '') + '</span>';
+}
+
+/* Khối "Hợp với bé": phòng và đồ ăn đọc từ module tương thích (đúng thuộc tính khởi đầu của bé), không viết tay. Game chưa có sở thích nước theo giống nên dòng nước luôn là câu chung. */
+function tutPickFit(tspStarter) {
+  const tspText = TUT_TEXT.pick;
+  const tspInfo = CP.spInfo(tspStarter.sp, {traits:tspStarter.traits, exact:1});
+  const tspRow = (tspLabel, tspValue) => '<div class="tsp-fitrow"><span class="tsp-fitk">' + esc(tspLabel) + '</span><span class="tsp-fitv">' + tspValue + '</span></div>';
+  const tspFoods = tspInfo.foods.map(tspRes => tutPickChip(tspRes, FOOD[tspRes.id], FOOD[tspRes.id].ic)).join('');
+  return '<div class="tsp-detail tsp-fit"><span class="tsp-label">' + esc(tspText.fitL) + '</span><div class="tsp-fitrows">' +
+    tspRow(tspText.roomL, tspInfo.rooms.map(tspRes => tutPickChip(tspRes, ROOM[tspRes.rid])).join('') || '<span class="tsp-any">' + esc(tspText.anyRoom) + '</span>') +
+    (tspFoods ? tspRow(tspText.foodL, tspFoods) : '') +
+    tspRow(tspText.drinkL, '<span class="tsp-any" tabindex="0" data-tip="' + esc(CP_TEXT.ui.drinkNote) + '">' + esc(tspText.anyDrink) + '</span>') + '</div></div>';
+}
+
 /* Các nhãn thuộc tính giữ nguyên data-tip và tabindex của tagOf để dùng tooltip chung. */
 function tutPickFacts(tspStarter) {
   const tspText = TUT_TEXT.pick;
-  const tspFood = FOOD[SP[tspStarter.sp].fav];
   return '<p class="tsp-detail tsp-pers"><span class="tsp-label">' + esc(tspText.persL) + '</span>' + esc(tspStarter.pers) + '</p>' +
     '<p class="tsp-detail tsp-strong"><span class="tsp-label">' + esc(tspText.strongL) + '</span>' + esc(tspStarter.strong) + '</p>' +
     '<div class="tsp-detail"><span class="tsp-label">' + esc(tspText.traitL) + '</span><div class="tsp-traits">' + tspStarter.traits.map(tspId => tagOf(tspId)).join('') + '</div></div>' +
-    '<p class="tsp-detail tsp-fav"><span class="tsp-label">' + esc(tspText.favL) + '</span><span>' + esc(tspFood.ic + ' ' + tspFood.n) + '</span></p>';
+    tutPickFit(tspStarter);
 }
 
 function tutPickProfile(tspStarter) {

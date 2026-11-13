@@ -813,3 +813,38 @@ Người dùng chọn gợi ý số 7. Mở từ cấp 4 (`GD_LV`, dòng trong `
 - Mục cửa hàng (`FCATS`) xếp theo bảng chữ cái tiếng Việt, bỏ biểu tượng đầu tên (`Intl.Collator('vi')`), ở cuối `js/garden-data.js` vì đây là file dữ liệu cuối cùng thêm mục; món trong từng mục giữ thứ tự cũ, nút 🚪 Phòng vẫn đứng đầu. Thêm mục ở file nạp sau thì chuyển dòng sắp xếp xuống theo.
 - `tools/guard.js` và `server.py` nạp, theo dõi thêm `js/garden-data.js` (thiếu thì trọng tài từ chối mọi bản lưu có chậu, hồ).
 - Đã thử: gardentest (kể cả trọng tài thật nhận bản lưu có vườn và vẫn bắt gian lận xu), straytest, wxtest, medtest, lvtest, pwtest, mealtest, pitytest đều đạt; Playwright PC 1280×800, ngang 844×390, 667×375: mua ở cửa hàng, cất kho khi sai phòng, chạm chậu, gieo, khát, chín, thu hoạch, giỏ, nấu, hồ cá, đóng băng, bát mồi rau vườn, Sổ tay, Admin, Lộ trình; không lỗi JS, không tràn ngang. Chưa thử: người chơi thật, cân bằng xu lâu dài (bot ecobot chưa nạp vườn), điện thoại thật.
+
+## 39. Gợi ý tương thích và bổ sung hướng dẫn tân thủ (2026-11-12)
+
+Mục tiêu: người chơi lúc nào cũng biết bé nào hợp phòng nào, món nào, nước nào mà không phải nhớ thuộc tính. Khảo sát, đối chiếu yêu cầu và bảng quy tắc đầy đủ ở `docs/tutorial-plan.md` (ba mục cuối file). Không đổi luật chơi: module chỉ ĐỌC thuộc tính có sẵn; thứ duy nhất nó ghi là phòng của mèo khi người chơi bấm Áp dụng.
+
+### Lõi
+- `js/compat-data.js` (nạp sau garden-data.js): `CPC` (ngưỡng và điểm), `CP_LV` (bốn mức: 2 Rất hợp ♥ xanh lục, 1 Hợp ✓ xanh biển, 0 Bình thường, −1 Không hợp ! đỏ), `CP_TEXT` (chữ chung) và chữ riêng của từng màn (`CPR_TX`, `CPF_TX`, `CPD_TX`, `CPA_TX`). Đổi số hay chữ thì sửa ở đây.
+- `js/compat.js` (nạp sau garden.js, trước ui.js; không đụng DOM, chạy được trong Node): đối tượng `CP`. API ghi ở đầu file: `room`, `rooms`, `misfit`, `fitCats`, `fitSpecies`, `food`, `foods`, `foodFans`, `drink`, `drinks`, `drinkFans`, `likes`, `pals`, `spRoom`, `spFood`, `spInfo`, `tutFood`, `plan`, `apply`. Mọi màn hình gọi module này, không màn nào tự viết luật.
+  - Mèo × phòng: điểm lấy đúng số game cộng vào độ vui (Tắm nắng × phòng ngoài trời +12, thích/sợ nước × Hồ bơi ±10, nội thất bé thích đang có trong phòng, bạn thân cùng phòng, Hay ghen ở phòng từ 6 mèo −10, Phòng chờ −10), cộng hai quy tắc "cùng điều kiện" điểm nhỏ (xu chuyến đêm × Tầng hầm, mau đói × Bếp và Nhà kính: +4, chỉ lên mức Hợp). `tools/compattest.js` so điểm này với `happyTarget` thật.
+  - Aura của bạn cùng phòng nằm ở `amb`/`total`, KHÔNG vào mức, để một bé như Bánh mì không kéo cả đàn vào dòng "hợp phòng"; cảnh báo (`misfit`) và bộ xếp dùng `total`.
+  - Món ăn: khoái khẩu +20; Kén ăn × Hạt khô −25 (thắng cả khoái khẩu); theo tình trạng lúc đó (mệt, buồn, đói, kiệt sức). Nước uống: CHỈ theo tình trạng (nóng, sức khỏe thấp, kém thoải mái, rất khát) vì game không có sở thích nước theo giống.
+  - Theo loài (bé chưa có): thuộc tính chắc chắn (`xt`, `bt`) tính đủ; thuộc tính "hay có" (trường `t`) tính một nửa, tối đa mức Hợp, có cờ `maybe`.
+  - `CP.plan()`: tìm kiếm cục bộ, mỗi bé phải chuyển bị trừ `CPC.moveCost`, không vượt sức chứa phòng, không dồn thêm bé vào phòng quá số suất bát ăn (bé ở Phòng chờ thì vẫn được vào), bé vắng nhà giữ nguyên; giới hạn `CPC.planMs` 600 ms. `CP.apply(plan)` từ chối khi nhà đã đổi so với lúc lập.
+- `js/face.js` (nạp ngay sau ui.js): icon mặt mèo cắt ô 52×52 ô mịn (cột 14–65, hàng 7–58) từ khung ngồi CatKit, khóa là `lk(c)` hoặc id loài; đệm theo khóa và cỡ (`FACE_B`, `FACE_S`). `faceTag`, `faceChip` (icon bấm được có dấu mức; `dim` bé chưa có, `unk` chưa gặp, `here` đang ở đây), `faceRow` (quá `max` thì nút "+N", trạng thái mở ở `FACE_OPEN`), `cpMark`, `cpLabel`. Nhấn giữ icon trên màn cảm ứng hiện lý do mà không kích hoạt nút. Cỡ `s` trên màn 1 điểm ảnh mỗi px hiển thị nửa cỡ có làm mượt (26px).
+- `js/ui.js`: `renderPanel(true)` (nhịp vẽ lại mỗi giây) giữ nguyên DOM khi HTML không đổi; phần tử có `data-tk` giữ được tooltip qua các lần vẽ lại; `modal()` ẩn tooltip của nút vừa bấm. `PANEL.cats`, `PANEL.album`, `openBreed` có chỗ gọi sang `cpaCats`, `cpaAlbum`, `cpaBreed`.
+
+### Màn hình
+- `js/compat-room.js`: tab Phòng có dòng `.cp-room` "Mèo hợp với phòng này" (bé đang có: sáng, bấm là đặt nhanh `cpPut`; loài chưa có: mờ; chưa gặp: bóng đen và không lộ lý do), ô cảnh báo `.cp-warn` cho bé ở phòng không hợp hoặc có phòng hợp hơn (nút Chuyển sang), dấu trên thẻ mèo, nút `.cp-arr` ✨ Xếp gợi ý. `openArrange()` mở bản xem trước, chỉ `cprGo()` mới áp dụng. Kết quả đệm theo `cprKey()`.
+- `js/compat-meal.js` (và bốn chỗ gọi trong `js/meal-ui.js`): mỗi món trong bảng Cho ăn, Cho uống có icon mặt các bé hợp (`.cp-fans`); `openMealFor(k, uid)` mở bảng cho một bé: món hợp bé đó lên đầu, có dấu, chọn sẵn món hợp nhất.
+- `js/compat-cat.js`: `cpCatSec(c)` là khung `.cp-sec` "Hợp với bé" trong màn chi tiết (cảnh báo, phòng, đồ ăn, nước uống, đồ bé thích, bạn thân), chèn SAU khung Thuộc tính; bấm là tới đúng chỗ.
+- `js/compat-album.js`: tab Mèo có nút Xếp gợi ý, thanh lọc `.cp-filter` (Hợp phòng, Thích món, Cần nước) và sắp xếp "Hợp nhất"; Sưu tập lọc theo phòng và món ở mức loài; hộp thoại loài có khối "Hợp với loài này".
+- Các lớp `cp-room`, `cp-warn`, `cp-arr`, `cp-sec`, `cp-fans`, `cp-filter` và hàm `cpCatSec`, `openArrange`, `openMealFor` là mốc mà hướng dẫn và mẹo trỏ vào: đổi tên thì sửa cả `js/tutorial.js`, `js/tut-more.js`.
+
+### Hướng dẫn tân thủ
+- Luồng chính nay 39 bước. Bước mới: `water`, `wpour`, `wdone` (cho uống; bát nước đang đầy thì `wpour` chỉ xem, thuộc tính `view` của bước), `compat` (thẻ chú giải bốn mức), `dlike` (khung Hợp với bé), `mtab`, `arrange` (tab Mèo, nút Xếp gợi ý), `more` (thẻ "Còn gì phía trước", đọc `FEATS`). Bước `food` chọn sẵn món đã mở khóa hợp nhất với bé khởi đầu (`CP.tutFood`: Mướp ta Hạt khô, Mèo vàng Pate, Mèo trắng Hạt khô vì Súp thưởng mở ở cấp 2) và khoanh nút `#mbox .ml-go`.
+- `js/tutorial.js`: bước nhận `say` là hàm, `view()` (bước bấm tạm thành bước xem); `fill` có thêm `{food}`, `{fav}`; thẻ `compat`, `more`. Bước `dtrait` tìm khung Thuộc tính qua `.cd-tags` (không theo số thứ tự nữa).
+- `js/tut-starter.js`: thẻ ba mèo khởi đầu và màn xác nhận có khối "Hợp với bé" (phòng, đồ ăn, nước uống) đọc từ `CP.spInfo(sp,{traits,exact:1})`.
+- `js/tut-more-text.js` (chữ) và `js/tut-more.js` (logic): mẹo lần đầu cho gợi ý tương thích, ổ ngủ, nhiệm vụ, thành tựu, ước muốn, vườn, bé giận dỗi; Sổ tay thêm chương "Gợi ý tương thích" và "Ổ ngủ".
+- Người chơi cũ không bị chạy lại hướng dẫn và không thấy mẹo (như cũ), nhưng thấy mọi gợi ý tương thích.
+
+### Kiểm thử
+- `node tools/compattest.js`: quy tắc từng loại, khớp `happyTarget` cho 40 bé ngẫu nhiên × 17 phòng, món, nước, theo loài, bộ xếp (kể cả 150 bé). `node tools/facetest.js [--png]`: icon cho 1.178 ngoại hình (mọi giống × màu lông × màu hiếm, mọi trang phục), cùng khung, mắt mũi trong khung; `--png` xuất `preview/tut/faces.png`.
+- Playwright trên máy này: gói `playwright-core` nằm trong `C:/Users/FPT SHOP/AppData/Roaming/npm/node_modules/openclaw/node_modules/`, trình duyệt ở `%LOCALAPPDATA%/ms-playwright`. Máy chủ tĩnh `python -m http.server` hay rớt yêu cầu khi nhiều trang tải cùng lúc (trang thiếu script, lỗi kiểu "CatKit is not defined"): chạy lại, đừng coi là lỗi game.
+- Chưa kiểm tra: điện thoại thật (nhấn giữ icon), Firefox, người chơi thật; bot kinh tế chưa mô phỏng việc người chơi xếp mèo theo gợi ý (độ vui cao hơn làm tăng nhẹ xu viễn chinh).
+- Việc còn lại đã biết: ô Nhiệm vụ đang nhấp nháy (`.qchip.ready`) làm trang cuộn ngang ở màn 1280px khi dòng chỉ số xuống hai hàng (có từ trước đợt này).

@@ -47,10 +47,20 @@ const TUT_TEXT={
       'Trên máy tính giữ Ctrl rồi lăn chuột; trên điện thoại chụm 2 ngón cũng được.'
     ],
     feed:['Bé hơi đói rồi. Bấm Cho ăn nào!'],
-    food:['Hạt khô rẻ mà no lâu. Chọn Hạt khô nhé!'],
+    // {food}: món đã mở khóa hợp nhất với bé khởi đầu; {fav}: món khoái khẩu của bé. foodLock dùng khi món khoái khẩu còn khóa (Mèo trắng)
+    food:['Món có ❤ kèm mặt {cat} là món bé khoái nhất. Tớ chọn sẵn {food} rồi, bấm Đổ nhé!'],
+    foodLock:['Món {cat} khoái nhất là {fav}, lên cấp nữa mới mở. Giờ đổ {food} cho bé đã nhé!'],
     fed:[
       'Bé tự đi tới bát. Ăn hết một suất thì bát mới vơi, rồi bé cảm ơn bạn 4 xu.',
       'Đổ thêm lúc nào cũng được. Bé đói dưới 20 thì không đi viễn chinh được đâu.'
+    ],
+    water:['Ăn xong thì phải uống. Bấm 💧 Cho uống nào!'],
+    wpour:['Tớ để sẵn Nước lọc trong kho rồi. Bấm Đổ để rót vào bát nước.'],
+    wfull:['Bát nước đang đầy nên chưa cần rót. Khi bát vơi, bạn mở bảng này rồi bấm Đổ, nước lấy từ kho trước.'],
+    wdone:['Khát là bé tự ra bát uống. Hết nước trong kho thì mua thêm ngay trong bảng Cho uống.'],
+    compat:[
+      'Bí kíp của tớ đây: dấu trên mặt mèo cho biết bé hợp tới đâu với một căn phòng, một món ăn hay một loại nước.',
+      'Bạn sẽ gặp các dấu này dưới mỗi phòng, trong bảng Cho ăn và ở màn thông tin của bé. Rê chuột hoặc nhấn giữ để xem lý do.'
     ],
     ticket:['Giờ tới phần vui nhất: hộp quà mèo! Tớ tặng bạn 1 vé 🎟 để mở thử.'],
     gtab:['Bấm vào tab Gacha nào.'],
@@ -67,6 +77,7 @@ const TUT_TEXT={
       'Thuộc tính là tài lẻ của bé, số thuộc tính bằng số sao. Xanh là tốt, hồng là tật xấu, vàng là độc quyền.',
       'Chạm vào một thuộc tính để đọc nó làm được gì.'
     ],
+    dlike:['Khung Hợp với bé gom sẵn phòng, món ăn và nước uống tốt nhất cho {new}. Bấm vào một ô là tới ngay chỗ đó.'],
     atab:['Giờ ghé Sưu tập xem nào.'],
     album:['Giống nào bạn từng gặp đều sáng lên ở đây. Chạm vào để xem các màu lông, bé 5★ còn xem lại được intro.'],
     rare:['Có 9 màu lông hiếm, mỗi lượt khoảng 4% cơ hội. Bé màu hiếm luôn 4★ và có thuộc tính riêng của màu.'],
@@ -82,6 +93,12 @@ const TUT_TEXT={
       'Ở đây bán phòng mới và nội thất. Đồ đạc làm mèo vui hơn, hồi sức nhanh hơn, có món còn tăng xu cho cả nhà.',
       'Món có ổ khóa 🔒 sẽ mở khi bạn lên đủ cấp.'
     ],
+    mtab:['Còn một chỗ hay nữa. Bấm tab Mèo nào!'],
+    arrange:[
+      'Đây là nơi quản lý cả đàn: lọc theo phòng, đổi phòng, tìm bé hợp một căn phòng hay một món ăn.',
+      'Nhà đông lên thì bấm ✨ Xếp gợi ý. Tớ tính giúp bé nào nên ở phòng nào, bạn xem trước rồi mới quyết.'
+    ],
+    more:['Còn nhiều thứ hay sẽ mở dần theo cấp. Tới lúc đó tớ lại chỉ cho, bạn chưa cần nhớ đâu!'],
     level:[
       'Đây là cấp của bạn. Viễn chinh, cho ăn, vuốt ve, gacha hay mua sắm đều cho kinh nghiệm.',
       'Lên cấp sẽ mở thêm ô viễn chinh, điểm đến, phòng và món mới.'
@@ -98,7 +115,13 @@ const TUT_TEXT={
     persL:'Tính cách',
     strongL:'Điểm mạnh',
     traitL:'Thuộc tính',
-    favL:'Khoái khẩu',
+    // khối "Hợp với bé" trên thẻ mèo khởi đầu: đọc từ module tương thích (CP.spInfo), chữ ở đây
+    fitL:'Hợp với bé',
+    roomL:'Phòng',
+    foodL:'Đồ ăn',
+    drinkL:'Nước uống',
+    anyRoom:'Ở đâu cũng vui',
+    anyDrink:'Loại nào cũng uống',
     confirm:'Đón {breed} về nhà?',
     nameL:'Đặt tên cho bé',
     namePh:'Tên của bé',
@@ -146,10 +169,24 @@ const TUT_TEXT={
     got:'Đã nhận quà tân thủ',
     ticketToast:'Xoài tặng 1 vé gacha'
   },
+  /* ---------- thẻ chú giải dấu tương thích (bước compat) ---------- */
+  compat:{
+    title:'Dấu tương thích',
+    rows:{'2':'Bé thích hẳn: món khoái khẩu, phòng có thứ bé mê.','1':'Có lợi nhẹ, ví dụ món giúp bé đang mệt.','0':'Không có dấu: ở đâu, ăn gì cũng được.','-1':'Bé kém vui hoặc chịu thiệt, nên đổi.'},
+    foot:'Icon mờ là bé bạn chưa có, bóng đen là bé chưa từng gặp.'
+  },
+  /* ---------- thẻ "còn gì phía trước" (bước more); phần mở theo cấp đọc từ FEATS ---------- */
+  more:{
+    title:'Còn gì phía trước',
+    nowL:'Có ngay sau hướng dẫn',
+    now:['📜 Nhiệm vụ trong giờ, nhiệm vụ hôm nay và khách lạ ghé phòng','📅 Điểm danh 7 ngày · 🏆 Thành tựu · 💭 Ước muốn của mèo'],
+    lvL:'Cấp {v}'
+  },
   nextTitle:'Việc nên làm tiếp',
   nextList:[
     '🎒 Khi bé viễn chinh về, vào tab Viễn chinh bấm Nhận quà.',
     '🍚 Cứ 10 phút cho cả phòng ăn một lần, và vuốt ve từng bé.',
+    '❤ Để ý dấu ❤ trên mặt mèo: đó là phòng và món ăn hợp nhất với từng bé.',
     '🎟 Dùng vé vừa nhận để mở thêm bạn mới ở tab Gacha.',
     '🧶 Đặt Chuột đồ chơi vào phòng: bấm ✏ Sắp xếp đồ, chọn trong Kho đồ.',
     '🚪 Gom xu mua Phòng ngủ khi lên cấp 2, nhà sẽ rộng hơn.'
