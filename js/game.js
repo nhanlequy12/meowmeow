@@ -117,11 +117,12 @@ function newCat(sp,star,coatId){
 }
 const coatOf=c=>{const sp=SP[c.sp];return sp.coats?(ALLCOAT[c.coat]||COATS[sp.coats[0]]):null};
 const isRare=c=>!!RARE[c.coat];
-const lk=c=>SP[c.sp].coats?c.sp+'~'+(c.coat||SP[c.sp].coats[0]):c.sp;
+const lk0=c=>SP[c.sp].coats?c.sp+'~'+(c.coat||SP[c.sp].coats[0]):c.sp;
+const lk=c=>lk0(c)+(typeof accSfx==='function'?accSfx(c):'');   // hậu tố phụ kiện đang đeo (js/acc.js); lk0 là khóa ngoại hình gốc
 function markSeen(c){
   S.seen[c.sp]=1;S.seenCoat=S.seenCoat||{};S.seenRare=S.seenRare||{};
   if(!SP[c.sp].coats)return;
-  if(isRare(c)){if(!S.seenRare[c.coat])S.seenRare[c.coat]=c.sp}else S.seenCoat[lk(c)]=1;
+  if(isRare(c)){if(!S.seenRare[c.coat])S.seenRare[c.coat]=c.sp}else S.seenCoat[lk0(c)]=1;
 }
 function favs(c){const f=[];if(SP[c.sp].fav)f.push(SP[c.sp].fav);c.traits.forEach(t=>{const x=TRAITS[t].e.fav;if(x&&!f.includes(x))f.push(x)});return f}
 const buffOf=c=>(c.buff&&c.buff.until>now())?c.buff:{};
@@ -387,7 +388,7 @@ function gachaCore(opt){
   }else{
     const vs=VARIANTS.filter(v=>v.r===star),bs=BREEDS.filter(b=>b.r===star);
     const sp=(vs.length&&Math.random()<.45)?pick(vs):pick(bs);
-    c=newCat(sp,star);c.isNew=!S.seen[sp.id]||(sp.coats&&!(S.seenCoat||{})[lk(c)]);
+    c=newCat(sp,star);c.isNew=!S.seen[sp.id]||(sp.coats&&!(S.seenCoat||{})[lk0(c)]);
   }
   if(star>=4)S.pity=0;
   if(star===5)S.pity5=0;

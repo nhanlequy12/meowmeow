@@ -1815,7 +1815,7 @@ function admCoins(v){
 function admInf(){S.adm.inf=!S.adm.inf;if(S.adm.inf)S.coins=MAXC;admDone('Xu vô hạn: '+(S.adm.inf?'bật':'tắt'),1)}
 function admCat(){
   const sp=SP[$('asp').value],av=$('act').value,rc=sp.coats&&(sp.coats.includes(av)||(RARE[av]&&!sp.noRare))?av:'',star=+$('ast').value||(RARE[rc]?4:sp.r),show=$('aintro').checked;
-  const c=newCat(sp,star,rc||undefined);c.room=freeRoom();c.isNew=!S.seen[sp.id]||!!(sp.coats&&!RARE[rc]&&!(S.seenCoat||{})[lk(c)]);S.cats.push(c);markSeen(c);
+  const c=newCat(sp,star,rc||undefined);c.room=freeRoom();c.isNew=!S.seen[sp.id]||!!(sp.coats&&!RARE[rc]&&!(S.seenCoat||{})[lk0(c)]);S.cats.push(c);markSeen(c);
   const st=$('ast').value,R=(S.adm.recent||[]).filter(r=>!(r.sp===sp.id&&r.ct===av&&r.st===st));R.unshift({sp:sp.id,ct:av,st});S.adm.recent=R.slice(0,8);save();
   if(show){closeModal();render();playGacha(c)}else{delete c.isNew;syncEnts();admDone('Đã nhận '+sp.n+' '+star+'★',1)} // không xem hoạt ảnh thì bảng vẫn mở để nhận tiếp
 }

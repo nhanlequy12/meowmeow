@@ -1,0 +1,34 @@
+/* ============ PHỤ KIỆN ĐỘI (js/acc-ui.js) ============ */
+.acc-slots{display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:6px}
+.acc-slot{display:flex;align-items:center;gap:6px;background:var(--panel2);border:2px dotted var(--line);border-radius:12px;padding:6px 8px;min-width:0}
+.acc-slot .g{flex:1;min-width:0;line-height:1.25}
+.acc-slot b{font-size:14px}
+.acc-slot button{min-height:44px}
+.acc-ic{font-size:24px;width:30px;text-align:center;flex:0 0 auto}
+.acc-hd{align-items:center;gap:8px;margin-bottom:6px}
+.acc-hd .g{flex:1;min-width:0;font-size:16px}
+.acc-tabs{margin-bottom:8px}
+.acc-tabs button{min-height:44px;flex:1 1 0}
+.acc-hid{margin:0 0 8px;padding:6px 8px;border-radius:10px;background:var(--panel2)}
+.acc-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.acc-c{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center;background:var(--panel);border:3px dotted var(--line);border-radius:14px;padding:6px;min-width:0}
+.acc-c.on{border-style:solid;border-color:var(--gold,#e0b040);background:var(--panel2)}
+.acc-c.lk .acc-pv{opacity:.55}
+.acc-c b{font-size:13.5px;line-height:1.2}
+.acc-c small{color:var(--dim);font-weight:600;font-size:12px}
+.acc-c button{width:100%;min-height:44px;margin-top:auto}
+.acc-pv{display:flex;align-items:flex-end;justify-content:center;min-height:62px;font-size:30px}
+.acc-shop .acc-pv{min-width:58px}
+.acc-shop.lk .acc-pv,.acc-shop.lk .g{opacity:.6}
+.acc-btns{display:flex;flex-direction:column;gap:4px;flex:0 0 auto}
+.acc-btns button{min-height:44px;white-space:nowrap}
+.acc-intro{grid-column:1/-1;margin-bottom:8px}
+.acc-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;max-height:60vh;overflow:auto}
+.acc-cat{display:flex;align-items:center;gap:6px;min-height:52px;padding:4px 6px;text-align:left;border-radius:12px}
+.acc-cat span{display:flex;flex-direction:column;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.acc-cat small{color:var(--dim);font-size:11.5px;font-weight:600}
+@media (max-height:520px) and (orientation:landscape){
+  .acc-g{grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+  .acc-pv{min-height:50px}
+}
+
