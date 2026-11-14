@@ -980,3 +980,24 @@ Nguồn mèo thứ hai ngoài gacha, kiểu Neko Atsume. Mở từ cấp 5 (dòn
 ### Gộp đợt B (2026-11-14)
 - `tools/guard.js` nạp thêm `js/event-data.js` (món độc quyền của sự kiện) và `js/visit-data.js` (`visGen`); `server.py` theo dõi thêm hai file này để trọng tài tự khởi động lại.
 - `visGen` làm tròn tuổi tới 0,001 ngày: `newCat` đọc đồng hồ nên hai lần gọi cùng mã có thể lệch 1 ms (kiểm thử `visittest` từng chập chờn vì điều này).
+
+## 48. Chơi với bé và nhạc nền (2026-11-14)
+
+### Chơi với bé
+- File: `js/play.js` (luật, không đụng DOM; nạp sau garden.js), `js/play-ui.js` (nạp ngay sau garden-ui.js), `css/play.css`, kiểm thử `node tools/playtest.js` (39 phần). Hằng cấu hình là `PLAYC` (tên `PLAY` đã dùng trong data.js cho chỗ mèo chơi đồ chơi).
+- Mở từ cấp 2 (dòng trong `FEATS`). Tab Phòng có nút 🪶 trên hàng nút dưới phòng, sau Cho uống, trước Sắp xếp đồ (màn rộng ghi "Chơi với bé", dưới 1180px ghi "Chơi", dưới 800px chỉ còn biểu tượng để ba nút kia không xuống hai dòng). Bấm mở bảng chọn trò (`openPlay`): hai trò và danh sách bé trong phòng chia ba nhóm Sẵn sàng, Vừa chơi (còn mấy phút), Không chơi được (lý do).
+- Hai trò, mỗi lượt `PLAYC.dur` 20 giây: cần câu lông vũ (lông vũ treo dây đung đưa theo chuột khi rê, theo ngón tay khi kéo; để yên thì tự đung đưa; con trỏ sát mép thì cuộn phòng) và đèn laser (chấm đỏ tự chạy, dừng nghỉ, 15% lên chân tường; chạm hoặc kéo để chỉ chỗ). Trên khung phòng có thanh `#plbar` ở góc dưới trái: tên trò, giây còn lại, nút Dừng; nút 🪶 cũng thành ⏹ Dừng. Lượt dừng khi hết giờ, bấm Dừng, đổi phòng, đổi tab, bật Sắp xếp đồ, ẩn trang.
+- Trong lúc chơi, `#roomwrap` chặn sự kiện con trỏ của canvas ở pha capture (kéo là vẫy đồ chơi, không cuộn phòng, không vuốt mèo). Không sửa ui.js: bọc `stepEnt`, `choose`, `critStep`, `critDraw`, `setRoom`, `PANEL.home`, `openAdmin`.
+- Mèo: mỗi 0,4 giây chọn tối đa `PLAYC.max` 6 bé gần đồ chơi nhất (trong `PLAYC.near` 170 ô, đang idle, walk, run hoặc groom) gắn `e.pl`. Bé chạy tới cạnh đồ chơi (nhanh hơn 10%, laser 30%), đủ gần và đồ chơi trong tầm với (không cao quá 44 ô trên sàn) thì vồ bằng trạng thái `jump` sẵn có; tiếp đất mà đồ chơi còn dưới chân trước là trúng: tim, hạt lông hồng hoặc tia đỏ, lông vũ giật lên. Đồ chơi treo quá cao thì bé ngồi chờ bên dưới. Phân thân của Naruto không chơi.
+- Luật `playReward(c, kind)`: mỗi bé `PLAYC.cd` 10 phút được thưởng một lần: +8 vui (lông vũ) hoặc +6 (laser), +1 kinh nghiệm, −3 năng lượng, `onAct('play',1)`. Trong lúc chờ bé vẫn vồ, có tim nhưng không cộng gì. Không cho xu. `playWhy(c)`: nằm viện, đi lạc, đi vắng, đang ngủ trong ổ, đang ăn/uống (`c.meal`), đau chân (bong gân, gãy chân), mệt (năng lượng dưới 25) thì không chơi; bé đang ngủ trưa trong phòng (trạng thái `nap`) cũng không nhập cuộc.
+- Nhiệm vụ ngày `play` ("Chơi với bé 3 lần", chỉ bốc khi đã mở; bọc `qRoll`), 3 thành tựu nhóm Chăm sóc (1, 50, 300 lần), chương Sổ tay `play` sau `bed`, mẹo lần đầu `play` trỏ vào nút, thẻ Admin "🪶 Chơi với bé" (chơi ngay kể cả chưa đủ cấp, xóa thời gian chờ, cho bé đầy năng lượng).
+
+### Nhạc nền
+- `js/bgm.js` (nạp sau pwa.js và tut-text.js; đặt ngay sau play-ui.js), kiểm thử `node tools/bgmtest.js` (Playwright, OfflineAudioContext, 33 phần). Không dùng file âm thanh, không dùng chung `AC` của intro.
+- Sáu bản ngắn lặp lại trong `BGM_T` (ký hiệu nốt "C5", "F#4", "." nghỉ, "-" ngân, "A3+C4+E4" hợp âm): Nắng trong phòng (`day`), Chiều tà lười biếng (`eve`, 17–21 giờ), Đêm yên giấc (`night`, 21–5 giờ), Mưa rơi bên cửa (`rain`, có tiếng giọt mưa), Tuyết đầu mùa (`snow`, tiếng chuông), Lễ hội nhà mèo (`fest`). Mỗi vòng 7,6–13,3 giây. `bgmPick()`: Admin ép, `bgmHook` (cho tính năng khác như sự kiện), tuyết/bão tuyết → snow, mưa/giông/sương → rain, đêm → night, thời tiết lý tưởng → fest, trời lạnh hoặc mùa đông → snow, 17–21 giờ → eve, còn lại day. Thời tiết chỉ tính khi đã mở (`wxOpen`). Đổi bản ở cuối vòng lặp.
+- Mặc định tắt. Cài đặt có thẻ 🎵 Nhạc nền (sau Sổ tay, trước Ứng dụng và thông báo, qua bọc `pwaCard`): Bật/Tắt `S.set.bgm`, âm lượng `S.set.bgmv` (0,05–1, mặc định 0,6). `BGM_VOLK=1.2`: đỉnh 0,09–0,14 ở mức mặc định, 0,15–0,24 ở mức tối đa.
+- AudioContext riêng chỉ tạo trong cú bấm nút Bật hoặc cú chạm, bấm phím đầu tiên sau khi tải lại (chính sách tự phát). Lịch nốt xếp trước 0,3 giây, 60 ms một lần. Tạm dừng (giảm âm lượng rồi `suspend`) khi tab ẩn, khi lớp gacha `#gz` đang mở (hộp quà, intro, xem lại intro), khi điện thoại đang dọc; hết lý do thì phát tiếp. Nhạc phát ở mọi tab, không riêng tab Phòng.
+- Chương Sổ tay "Cài đặt" có thêm một dòng về nhạc nền. Admin có thẻ "🎵 Nhạc nền" để nghe thử từng bản.
+- CHƯA AI NGHE THỬ: kiểm thử chỉ chắc không lỗi, không im lặng, đỉnh âm lượng trong khoảng; hay dở, to nhỏ có hợp tai không thì người dùng phải tự nghe.
+
+- Nối với sự kiện (cuối `js/bgm.js`): đang có sự kiện theo mùa (`evList()` không rỗng) thì phát bản lễ hội `fest`.
