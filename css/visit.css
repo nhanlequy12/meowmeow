@@ -1,0 +1,40 @@
+/* ============ MÈO GHÉ CHƠI (js/visit-ui.js) ============ */
+.vschip{border-color:#d0889c;background:#ffeef2;color:#7a2a40;font-weight:800}
+.vschip.ready{animation:vsPulse 1.8s ease-in-out infinite}
+html[data-theme=dark] .vschip{background:#5a2e3a;color:#ffe0e8}
+@keyframes vsPulse{50%{box-shadow:0 0 0 4px rgba(240,136,156,.3)}}
+.vsline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:6px 10px;border:3px dotted #d0889c;border-radius:12px;background:#fff3f5;font-size:13.5px;line-height:1.4}
+html[data-theme=dark] .vsline{background:#43262e}
+.vsline .g{flex:1 1 220px;min-width:0}
+.vsline .sm{min-height:44px}
+.vs-rd{color:#c0405e}
+html[data-theme=dark] .vs-rd{color:#ff9ab2}
+.vs-card{text-align:left}
+.vs-hd{display:flex;align-items:center;gap:10px;padding-bottom:6px;border-bottom:3px dotted var(--line)}
+.vs-hd img{flex:none;opacity:.92}
+.vs-hd h3{margin:0 0 2px;font-size:17px}
+.vs-tag{display:inline-block;font-size:11.5px;font-weight:800;padding:1px 7px;border-radius:9px;border:2px solid #9c7a5c;background:var(--panel2);color:var(--ink);vertical-align:2px}
+.vs-fr{margin:8px 0;font-size:13.5px}
+.vs-fr .row{justify-content:space-between}
+.vs-bar{height:8px;margin:4px 0}
+.vs-like{font-size:13px;line-height:1.45;margin:6px 0;padding:6px 8px;border-radius:10px;background:var(--panel2)}
+.vs-act,.vs-ask{margin-top:8px;font-size:13.5px;line-height:1.4}
+.vs-ask{padding:8px;border:3px solid #e090a8;border-radius:12px;background:#fff0f4}
+html[data-theme=dark] .vs-ask{background:#4a2a34}
+.vs-ask .row{margin:8px 0 4px;gap:8px}
+.vs-ask button{min-height:44px;flex:1 1 120px}
+.vs-row{margin:6px 0}
+.vs-row .sm{min-height:44px}
+.vs-pick{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.vs-pick .sm{min-height:44px;padding:4px 9px;font-size:12.5px}
+.vs-foot{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:flex-end}
+.vs-foot .sm{min-height:44px}
+.vs-away{margin:10px 0;font-size:13px}
+.vs-sub{font-size:12.5px;margin:4px 0 8px;line-height:1.4}
+.vs-list{display:flex;flex-direction:column;gap:6px}
+.vs-it{display:flex;align-items:center;gap:8px;padding:6px 8px;border:3px dotted var(--line);border-radius:12px;background:var(--panel);cursor:pointer;min-height:44px}
+.vs-it.rd{border-style:solid;border-color:#e090a8}
+.vs-it img{flex:none;opacity:.92}
+.vs-it .g{flex:1;min-width:0;font-size:13.5px}
+.vs-it .sm{min-height:44px;flex:none}
+@media (prefers-reduced-motion:reduce){.vschip.ready{animation:none}}

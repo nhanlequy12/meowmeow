@@ -1,0 +1,50 @@
+/* ============ THĂM NHÀ BẠN VÀ BẢNG XẾP HẠNG (js/friend.js) ============ */
+.frchip{cursor:pointer;user-select:none}
+.frchip.new{border-style:solid;border-color:#7fb0d8}
+#modal.frw .mwrap,#modal.frw .box{max-width:min(940px,100%)}
+#modal.frw .box{text-align:left}
+#modal.frw h3{text-align:center}
+.fr-tabs,.fr-bk,.fr-rooms,.fr-swap{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:6px 0 8px}
+.fr-tabs .sm,.fr-bk .sm,.fr-rooms .sm,.fr-swap .sm{min-height:44px}
+.fr-note,.fr-host,.fr-rew{font-size:13.5px;line-height:1.45;margin:6px 0;padding:8px 10px;border-radius:12px;background:var(--panel2);border:2px solid var(--line)}
+.fr-rew{background:#fff1d6;border-color:#d9a640;color:#5a3a08}
+html[data-theme=dark] .fr-rew{background:#4a3a1c;color:#ffe9bc}
+.fr-err{margin:10px 0;color:var(--bad);text-align:center}
+.fr-wait,.fr-empty{text-align:center;padding:14px 0}
+.fr-pl,.fr-row{align-items:center;gap:8px}
+.fr-pl .g,.fr-row .g{flex:1;min-width:0;overflow-wrap:anywhere}
+.fr-pl.vis{opacity:.85}
+.fr-pl .sm,.fr-row .sm{min-height:44px;flex:none}
+.fr-face{flex:none;width:40px;display:flex;align-items:center;justify-content:center}
+.fr-noface{font-size:26px}
+.fr-row.me{border-color:#d9a640;background:#fff6dc}
+html[data-theme=dark] .fr-row.me{background:#4a3a1c}
+.fr-rk{display:inline-block;min-width:22px;text-align:center}
+.fr-v{flex:none;white-space:nowrap}
+.fr-vh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fr-vh h3{flex:1;margin:0;min-width:0}
+.fr-vh .sm{min-height:44px}
+.fr-view{width:100%;overflow-x:auto;overflow-y:hidden;border:3px solid var(--line);border-radius:12px;background:var(--panel2);line-height:0}
+.fr-view canvas{width:100%;height:auto;display:block;image-rendering:pixelated}
+.fr-view.zoom canvas{width:250%;max-width:none}
+.fr-vbar{justify-content:space-between;gap:6px;margin:6px 0;flex-wrap:wrap}
+.fr-vbar small{flex:1;min-width:160px}
+.fr-vbar .sm{min-height:44px}
+.fr-sec{margin:10px 0 4px}
+.fr-cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.fr-cat{display:flex;align-items:center;gap:6px;padding:4px 8px 4px 4px;border-radius:12px;background:var(--panel);border:2px solid var(--line);font-size:12.5px;line-height:1.3;max-width:100%}
+.fr-cat img{flex:none}
+.fr-stamps{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0}
+/* tem: viền răng cưa bằng các chấm tròn nền trong suốt */
+.fr-stamp{position:relative;width:92px;padding:10px 6px 8px;text-align:center;font-size:12px;line-height:1.25;background:#fff8ea;color:#4e3026;
+  border:2px solid #b07a5a;outline:4px dotted #fff8ea;outline-offset:2px;box-shadow:0 0 0 7px var(--bg),0 0 0 9px #c99a7a;transform:rotate(-1.5deg)}
+.fr-stamp:nth-child(2n){transform:rotate(1.5deg);background:#eef6ff;outline-color:#eef6ff}
+.fr-stamp:nth-child(3n){background:#f1fbe9;outline-color:#f1fbe9}
+.fr-stamp b{display:block;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-stamp i{position:absolute;top:-8px;right:-8px;font-style:normal;font-weight:800;background:#e58aa0;color:#fff;border-radius:10px;padding:1px 6px;font-size:12px}
+html[data-theme=dark] .fr-stamp{filter:brightness(.92)}
+@media (orientation:landscape) and (max-height:520px){
+  .frchip b{display:none}
+  #modal.frw .box{padding:8px 10px}
+  .fr-note,.fr-host,.fr-rew{padding:6px 8px;font-size:12.5px}
+}

@@ -1,0 +1,89 @@
+/* ============ CHỤP ẢNH PHÒNG, ALBUM VÀ STICKER (2026-11-14, js/photo-ui.js) ============ */
+/* cột nút 📷 🖼️: ngay bên trái cột ＋ − (#zoomb: right 12px, rộng 44px) */
+#photobar{position:absolute;right:62px;top:12px;display:flex;flex-direction:column;gap:6px;z-index:3}
+#photobar button{min-height:44px;width:44px;padding:0;font-size:20px;opacity:.92;display:flex;align-items:center;justify-content:center}
+#photobar button:disabled{opacity:.45;cursor:not-allowed}
+#app:not([data-tab=home]) #photobar{display:none}
+/* chớp màn trập */
+.ph-flash{position:absolute;inset:4px;border-radius:12px;background:#fff;z-index:4;pointer-events:none;animation:phFlash .6s ease-out forwards;box-shadow:inset 0 0 0 10px #2a1a10}
+@keyframes phFlash{0%{opacity:0}12%{opacity:.95}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.ph-flash{animation-duration:.3s;background:#f4ecdf}}
+/* ảnh nhỏ vừa chụp */
+.ph-thumb{position:absolute;right:14px;bottom:14px;z-index:4;width:min(150px,32%);padding:5px 5px 18px;background:#fff8ec;border:2px solid #5a3a28;border-radius:6px;box-shadow:0 6px 16px rgba(40,24,12,.35);animation:phDrop .45s cubic-bezier(.34,1.56,.64,1) both;transform:rotate(-4deg);cursor:pointer;min-height:44px}
+.ph-thumb>img{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid #3a2a20}
+.ph-thumb span{position:absolute;left:0;right:0;bottom:1px;font-size:12px;text-align:center;color:#523828}
+.ph-thumb.out{transition:opacity .35s,transform .35s;opacity:0;transform:rotate(-4deg) translateY(12px)}
+@keyframes phDrop{from{opacity:0;transform:translateY(-30px) rotate(8deg) scale(1.2)}to{opacity:1;transform:rotate(-4deg)}}
+/* album */
+#phalb{position:fixed;inset:0;z-index:19;display:none;align-items:center;justify-content:center;padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));background:rgba(60,36,20,.55)}
+#phalb.on{display:flex}
+html.need-land #phalb{visibility:hidden}
+.ph-book{background:var(--bg);border:4px dotted var(--line);border-radius:18px;width:min(980px,100%);max-height:min(92vh,var(--vvh,100vh));max-height:min(92dvh,var(--vvh,100dvh));display:flex;flex-direction:column;min-width:0;box-shadow:0 10px 30px rgba(30,18,10,.4)}
+.ph-hd{display:flex;align-items:center;gap:8px;padding:10px 10px 6px;border-bottom:3px dotted color-mix(in srgb,var(--line) 50%,transparent)}
+.ph-tabs{display:flex;gap:6px;flex:1;min-width:0;flex-wrap:wrap}
+.ph-tabs button{min-height:44px}.ph-tabs small{opacity:.8}
+.ph-x{min-height:44px;min-width:44px;padding:0;font-size:18px}
+.ph-body{overflow:auto;padding:10px;min-height:0}
+.ph-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.ph-cap{font-size:13px;color:var(--dim);min-width:0}
+.ph-fil{display:flex;gap:6px}
+.ph-warn{color:var(--bad,#a02a1a);font-size:12.5px}
+.ph-empty{padding:30px 10px;text-align:center;color:var(--dim);line-height:1.6}
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;padding:4px}
+.ph-pol{position:relative;display:flex;flex-direction:column;gap:4px;padding:7px 7px 8px;background:#fff8ec;color:#523828;border:2px solid #5a3a28;border-bottom-width:2px;border-radius:5px;box-shadow:0 4px 10px rgba(40,24,12,.25);transform:rotate(var(--r,0deg));transition:transform .15s;min-width:0;text-align:left}
+.ph-pol:hover,.ph-pol:focus-visible{transform:rotate(0) scale(1.03);z-index:1}
+.ph-pol>img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border:1px solid #3a2a20;background:#3a2a20}
+.ph-pc{font-size:12.5px;line-height:1.25;display:flex;flex-direction:column;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ph-pc small{font-size:11px;color:#725b4a}
+.ph-fv{position:absolute;top:-8px;right:-6px;font-style:normal;font-size:20px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.ph-sk{position:absolute;left:10px;top:10px;font-style:normal;font-size:14px;background:#fff8ec;border:1px solid #5a3a28;border-radius:999px;padding:0 5px}
+/* xem lớn */
+.ph-view{display:flex;flex-direction:column;gap:10px;align-items:center;min-width:0}
+.ph-vbar{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%}
+.ph-nav{display:flex;align-items:center;gap:6px}
+.ph-big{margin:0;background:#fff8ec;color:#523828;border:3px solid #5a3a28;border-radius:6px;padding:10px 10px 12px;box-shadow:0 6px 16px rgba(40,24,12,.3);max-width:100%;min-width:0;box-sizing:border-box}
+.ph-big>img{display:block;max-width:100%;width:auto;max-height:min(56vh,calc(var(--vvh,100vh) - 300px));height:auto;image-rendering:pixelated;border:2px solid #3a2a20;margin:0 auto}
+.ph-big figcaption{display:flex;flex-wrap:wrap;gap:2px 12px;align-items:baseline;margin-top:8px;font-size:14px}
+.ph-big figcaption span{font-size:13px;color:#725b4a}
+.ph-big .ph-nm{flex-basis:100%;overflow-wrap:anywhere}
+.ph-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.ph-chip{font-size:12.5px;padding:3px 9px;border-radius:999px;background:var(--panel2);border:2px solid color-mix(in srgb,var(--line) 50%,transparent)}
+.ph-chip.nw{border-color:var(--gold);background:color-mix(in srgb,#ffd24a 30%,var(--panel))}
+.ph-chip b{color:var(--gold)}
+.ph-act{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.ph-act button{min-height:44px}
+/* biểu tượng hạt cườm (emo() đổi emoji thành ảnh .ico) */
+.ph-sk .ico,.ph-thumb span .ico{width:16px;height:16px;vertical-align:-3px}
+.ph-sk{white-space:nowrap;max-width:calc(100% - 20px);overflow:hidden}
+.ph-big figcaption .ico,.ph-chip .ico,.ph-cap .ico{width:18px;height:18px;vertical-align:-4px}
+.ph-fv .ico{width:22px;height:22px}
+.ph-sic .ico{width:40px;height:40px;vertical-align:middle}
+/* sổ sticker */
+.ph-pgs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.ph-pgs small{opacity:.8}
+.ph-stg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;padding:4px;background:repeating-linear-gradient(0deg,transparent 0 27px,color-mix(in srgb,var(--line) 14%,transparent) 27px 28px);border-radius:12px}
+.ph-st{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 6px;min-height:128px;border-radius:14px;text-align:center;min-width:0;font:inherit;color:var(--ink)}
+.ph-st b{font-size:13.5px;line-height:1.2}.ph-st small{font-size:11.5px;line-height:1.3;color:var(--dim);overflow-wrap:anywhere}
+.ph-sic{font-style:normal;font-size:38px;line-height:1;width:64px;height:64px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.ph-st.got{background:var(--panel);border:2px solid var(--line);border-bottom-width:4px;transform:rotate(var(--r,0deg));cursor:pointer}
+.ph-st.got .ph-sic{background:#fff8ec;box-shadow:0 0 0 4px #fff,0 0 0 6px #5a3a28,0 4px 8px 4px rgba(40,24,12,.25)}
+.ph-st.no{background:color-mix(in srgb,var(--panel) 60%,transparent);border:2px dashed color-mix(in srgb,var(--line) 70%,transparent)}
+.ph-st.no .ph-sic{filter:brightness(0);opacity:.22;border:3px dashed var(--line)}
+html[data-theme=dark] .ph-st.no .ph-sic{filter:brightness(0) invert(1);opacity:.18}
+.ph-foot{margin-top:12px;font-size:13px;color:var(--dim);text-align:center}
+/* điện thoại ngang thấp: gọn lại */
+@media (orientation:landscape) and (max-height:520px){
+  .ph-hd{padding:6px 8px 4px}.ph-body{padding:8px}
+  .ph-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+  .ph-view{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,210px);gap:8px;align-items:start;justify-items:stretch}
+  .ph-big{grid-column:1;grid-row:1/span 3;padding:6px 6px 7px;justify-self:center}
+  .ph-big>img{max-height:calc(var(--vvh,100vh) - 205px)}
+  .ph-big figcaption{margin-top:4px;font-size:13px}.ph-big figcaption span{font-size:12px}
+  .ph-vbar,.ph-chips,.ph-act{grid-column:2}
+  .ph-vbar{flex-wrap:wrap;justify-content:flex-start}
+  .ph-act{order:1;display:grid;grid-template-columns:1fr 1fr;gap:6px}.ph-act button{padding:4px 6px;font-size:13px}.ph-act button:last-child:nth-child(odd){grid-column:1/-1}
+  .ph-chips{order:2;justify-content:flex-start}.ph-chip{font-size:11.5px;padding:2px 7px}
+  .ph-stg{grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px}
+  .ph-st{min-height:110px;padding:6px 4px}.ph-sic{width:50px;height:50px;font-size:30px}.ph-sic .ico{width:32px;height:32px}
+  .ph-thumb{width:min(120px,26%)}
+}

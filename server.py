@@ -60,6 +60,17 @@ LIM_XFAIL_ALL = (40, 900)  # cả máy chủ: quá 40 lần sai trong 15 phút t
 LIM_XNEW = (10, 3600)      # tối đa 10 lần tạo mã (chuyển máy, khôi phục) mỗi giờ mỗi người chơi
 XF_TTL = 600               # giây: mã chuyển máy hết hạn sau 10 phút
 XF_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'   # không có I, O, 0, 1 cho khỏi nhầm khi gõ
+# ---- thăm nhà bạn và bảng xếp hạng (js/friend.js) ----
+FR_LV = 3                  # mở từ cấp 3 (cấp lấy từ bản lưu hợp lệ máy chủ đang giữ, không tin số máy người chơi gửi)
+LIM_FR = (60, 60)          # tối đa 60 yêu cầu thăm nhà, bảng xếp hạng mỗi phút mỗi người chơi
+FR_HOST_MAX = 8            # chủ nhà nhận xu tối đa 8 lượt khách mỗi ngày (chống lập nhiều hồ sơ để tự thăm mình)
+FR_SET = 5                 # 5 tem đổi một lần thưởng
+FR_CACHE = 20              # giây: danh sách người chơi và bảng xếp hạng tính lại sau mỗi khoảng này
+FR_TOP = 20                # mỗi bảng xếp hạng trả 20 người đầu
+FR_TZ = 7 * 3600           # ngày thăm tính theo giờ Việt Nam
+fr_guest_xu = lambda lv: 15 + 5 * min(max(lv, 1), 18)        # khách: 30 xu ở cấp 3, 105 xu ở cấp 18, mỗi nhà một lần mỗi ngày
+fr_host_xu = lambda lv: 10 + 3 * min(max(lv, 1), 18)         # chủ nhà mỗi lượt khách: 19 xu ở cấp 3, 64 xu ở cấp 18
+FR_SWAP = {'mix': {'xu': 50, 've': 1, 'n': 'Bộ 5 tem bất kỳ'}, 'set': {'xu': 100, 've': 2, 'n': 'Bộ 5 tem của 5 nhà khác nhau'}}
 
 
 class Rate:
@@ -93,7 +104,7 @@ RATE = Rate()
 
 class Judge:
     """Trọng tài tools/guard.js chạy nền bằng Node; tự khởi động lại khi mã game hoặc trọng tài đổi."""
-    FILES = ('js/data.js', 'js/wx-data.js', 'js/pw-data.js', 'js/med-data.js', 'js/garden-data.js', 'js/game.js', 'tools/guard.js')
+    FILES = ('js/data.js', 'js/wx-data.js', 'js/pw-data.js', 'js/med-data.js', 'js/garden-data.js', 'js/event-data.js', 'js/visit-data.js', 'js/game.js', 'tools/guard.js')
 
     def __init__(self):
         self.node = shutil.which('node')
@@ -441,6 +452,130 @@ def public(p, full=False):
     return o
 
 
+# ---- thăm nhà bạn và bảng xếp hạng ----
+FR_C = {'t': 0, 'rows': []}         # bộ nhớ đệm: mỗi người chơi có bản lưu một dòng số liệu (không có bản lưu thô)
+
+
+def fr_day(t=None):
+    return time.strftime('%Y-%m-%d', time.gmtime((t or now()) + FR_TZ))
+
+
+def fr_of(p):
+    fr = p.get('fr')
+    if not isinstance(fr, dict):
+        fr = p['fr'] = {}
+    return fr
+
+
+def fr_load(p):
+    """Bản lưu hợp lệ máy chủ đang giữ (đã qua trọng tài), hoặc None."""
+    try:
+        sv = json.loads(p.get('save') or 'null')
+    except ValueError:
+        return None
+    return sv if isinstance(sv, dict) else None
+
+
+def fr_int(v, d=0):
+    return v if isinstance(v, int) and not isinstance(v, bool) else d
+
+
+def fr_cup(sv):
+    """Điểm bài dự thi hôm nay của Cuộc thi mèo (js/contest.js: S.ct = {d: 'năm-tháng-ngày' giờ máy, không có số 0 đầu, e: {b: điểm lúc gửi}}).
+    Chưa gửi bài hôm nay thì None. Chỉ để xếp hạng cho vui, máy chủ không phát thưởng theo điểm này."""
+    ct = sv.get('ct')
+    if not isinstance(ct, dict) or not isinstance(ct.get('e'), dict):
+        return None
+    t = time.localtime()
+    v = ct['e'].get('b')
+    if ct.get('d') != '%d-%d-%d' % (t.tm_year, t.tm_mon, t.tm_mday) or not isinstance(v, (int, float)) or isinstance(v, bool):
+        return None
+    return int(max(0, min(v, 1000)))
+
+
+def fr_mascot(sv):
+    """Bé đại diện của nhà (in lên tem): bé nhiều sao nhất, cùng sao thì bé màu hiếm, rồi bé về sớm nhất."""
+    cats = [c for c in (sv.get('cats') or []) if isinstance(c, dict) and isinstance(c.get('sp'), str)]
+    if not cats:
+        return {'sp': '', 'coat': ''}
+    c = max(cats, key=lambda c: (fr_int(c.get('star')), str(c.get('coat') or '').startswith('r_'), -fr_int(c.get('uid'))))
+    return {'sp': c['sp'][:40], 'coat': str(c.get('coat') or '')[:40]}
+
+
+def fr_row(p):
+    sv = fr_load(p)
+    if not sv:
+        return None
+    cats = [c for c in (sv.get('cats') or []) if isinstance(c, dict)]
+    ach = sv.get('ach') if isinstance(sv.get('ach'), dict) else {}
+    seen = sv.get('seen') if isinstance(sv.get('seen'), dict) else {}
+    m = fr_mascot(sv)
+    return {'id': p['id'], 'name': p['name'], 'last': p.get('last', 0), 'lv': fr_int(sv.get('level'), 1), 'xp': fr_int(int(sv.get('xp') or 0) if isinstance(sv.get('xp'), (int, float)) else 0),
+            'ncat': len(cats), 'n5': sum(1 for c in cats if c.get('star') == 5), 'seen': len(seen), 'ach': len(ach), 'cup': fr_cup(sv),
+            'sp': m['sp'], 'coat': m['coat'], 'nr': len(sv.get('rooms') or {}) if isinstance(sv.get('rooms'), dict) else 0}
+
+
+def fr_rows():
+    t = now()
+    if t - FR_C['t'] >= FR_CACHE:
+        FR_C['rows'] = [r for r in (fr_row(p) for p in pall()) if r]
+        FR_C['t'] = t
+    return FR_C['rows']
+
+
+FR_ITEM_KEYS = ('iid', 'fid', 'room', 'x', 'y', 'flip', 'broken', 'left', 'food', 'fl', 'fp', 'w', 'wl', 'off', 'gd', 'bat')
+
+
+def fr_small(v, depth=0):
+    """Chỉ giữ số, chữ ngắn, mảng và đối tượng nhỏ (trạng thái vẽ của nội thất: mức đầy bát, chậu cây, hồ cá)."""
+    if isinstance(v, bool) or v is None or isinstance(v, (int, float)):
+        return v
+    if isinstance(v, str):
+        return re.sub(r'[<>\x00-\x1f]', '', v)[:24]
+    if depth > 1:
+        return None
+    if isinstance(v, list):
+        return [fr_small(x, depth + 1) for x in v[:16]]
+    if isinstance(v, dict):
+        return {str(k)[:8]: fr_small(x, depth + 1) for k, x in list(v.items())[:12]}
+    return None
+
+
+def fr_home(p):
+    """Phần bản lưu của một nhà đủ để vẽ: phòng, nội thất đang đặt, mèo. Không có xu, vé, khóa, mã, nhật ký hay bản lưu thô."""
+    sv = fr_load(p) or {}
+    rooms = [r for r in (sv.get('rooms') or {}) if isinstance(r, str)][:30] if isinstance(sv.get('rooms'), dict) else []
+    away = set()
+    for tr in (sv.get('trips') or []):
+        if isinstance(tr, dict) and isinstance(tr.get('uid'), int):
+            away.add(tr['uid'])
+    for k in ('hosp', 'stray'):
+        o = sv.get(k)
+        if isinstance(o, dict):
+            away.update(int(u) for u in o if str(u).isdigit())
+    items = []
+    for it in (sv.get('items') or [])[:1500]:
+        if isinstance(it, dict) and isinstance(it.get('room'), str) and it['room'] in rooms and isinstance(it.get('fid'), str) \
+                and isinstance(it.get('x'), (int, float)) and isinstance(it.get('y'), (int, float)):
+            items.append({k: fr_small(it[k]) for k in FR_ITEM_KEYS if k in it})
+    cats = []
+    for c in (sv.get('cats') or [])[:1500]:
+        if not isinstance(c, dict) or not isinstance(c.get('sp'), str):
+            continue
+        cats.append({'uid': fr_int(c.get('uid')), 'sp': c['sp'][:40], 'coat': str(c.get('coat') or '')[:40] or None, 'star': fr_int(c.get('star'), 1),
+                     'sex': 'f' if c.get('sex') == 'f' else 'm', 'name': clean_name(c.get('name'))[:20], 'room': str(c.get('room') or '')[:20],
+                     'born': fr_int(c.get('born')), 'away': 1 if c.get('uid') in away else 0})
+    return {'id': p['id'], 'name': p['name'], 'lv': fr_int(sv.get('level'), 1), 'rooms': rooms, 'items': items, 'cats': cats,
+            'online': now() - p.get('last', 0) < ONLINE}
+
+
+def fr_cmd(p, typ, amt, text):
+    """Xếp quà vào hàng lệnh chờ đúng như lệnh "coins"/"tickets" của quản trị viên: máy người chơi nhận ở lần đồng bộ sau,
+    trọng tài tính là phần biết trước (gift) nên không từ chối bản lưu."""
+    p['nn'] = p.get('nn', 0) + 1
+    p.setdefault('cmds', []).append({'type': typ, 'amt': int(amt), 'src': 'fr', 'text': text[:120], 'n': p['nn']})
+
+
 class H(SimpleHTTPRequestHandler):
     server_version = 'MeoXu'
     sys_version = ''
@@ -581,6 +716,8 @@ class H(SimpleHTTPRequestHandler):
                 return self.xfer(ep[5:], b)
             if ep.startswith('push/'):
                 return self.push_api(ep[5:], b)
+            if ep.startswith('friend/'):
+                return self.friend(ep[7:], b)
             if not ep.startswith('admin/'):
                 return self.send_json({'err': 'Không có'}, 404)
             g = self.admin_gate()
@@ -617,6 +754,21 @@ class H(SimpleHTTPRequestHandler):
                 log(p, 'Quản trị viên tạo mã chuyển máy')
                 psave(p)
                 return self.send_json({'ok': 1, 'code': code, 'exp': p['xf']['e'], 'now': now()})
+            if ep == 'admin/friend':        # thử tính năng thăm nhà: xóa ngày thăm hôm nay, hoặc tặng tem thử
+                fr = fr_of(p)
+                if b.get('op') == 'reset':
+                    fr['vd'] = {}
+                    fr['hd'], fr['hn'] = '', 0
+                elif b.get('op') == 'stamps':
+                    tm = fr.setdefault('tm', {})
+                    for i in range(5):
+                        k = 'thu%d' % i
+                        tm.setdefault(k, {'n': 0, 'nm': 'Nhà thử %d' % (i + 1), 'sp': '', 'coat': ''})['n'] += 1
+                else:
+                    return self.send_json({'err': 'Lệnh không hợp lệ'}, 400)
+                log(p, 'Quản trị ' + ('đặt lại ngày thăm nhà bạn' if b.get('op') == 'reset' else 'tặng 5 tem thử'))
+                psave(p)
+                return self.send_json({'ok': 1})
             if ep == 'admin/delete':
                 os.remove(ppath(p['id']))
                 return self.send_json({'ok': 1})
@@ -815,6 +967,115 @@ class H(SimpleHTTPRequestHandler):
             return self.send_json({'err': 'Không có'}, 404)
         psave(p)
         self.send_json({'ok': 1})
+
+    def friend(self, ep, b):
+        """Thăm nhà bạn và bảng xếp hạng. Mọi lệnh cần khóa người chơi và cấp >= FR_LV (theo bản lưu hợp lệ trên máy chủ)."""
+        p = pload(str(b.get('id') or ''))
+        k = tok_check(p, b.get('tok')) if p else 'bad'
+        if k:
+            return self.tok_fail(p, k)
+        if not RATE.hit(('fr', p['id']), LIM_FR):
+            return self.send_json({'err': 'Gửi yêu cầu quá nhanh, đợi một chút'}, 429)
+        lv = fr_int((p.get('sum') or {}).get('level'), 1)
+        if lv < FR_LV:
+            return self.send_json({'err': 'lv', 'lv': lv, 'need': FR_LV}, 403)
+        fr, day, t = fr_of(p), fr_day(), now()
+        vd = {h: d for h, d in (fr.get('vd') or {}).items() if d == day}     # chỉ giữ ngày thăm của hôm nay
+        fr['vd'] = vd
+        tm = fr.setdefault('tm', {})
+        if ep == 'list':
+            rows = [r for r in fr_rows() if r['id'] != p['id']]
+            rows.sort(key=lambda r: (-(t - r['last'] < ONLINE), r['id'] in vd, -r['lv'], r['name']))
+            out = [{'id': r['id'], 'name': r['name'], 'lv': r['lv'], 'ncat': r['ncat'], 'n5': r['n5'], 'nr': r['nr'], 'sp': r['sp'], 'coat': r['coat'],
+                    'online': t - r['last'] < ONLINE, 'last': r['last'], 'vis': r['id'] in vd, 'st': fr_int((tm.get(r['id']) or {}).get('n'))} for r in rows[:200]]
+            return self.send_json({'ok': 1, 'now': t, 'day': day, 'players': out, 'stamps': self.fr_stamps(fr), 'guest': fr_guest_xu(lv),
+                                   'host': {'n': fr_int(fr.get('vt')), 'today': fr_int(fr.get('hn')) if fr.get('hd') == day else 0, 'max': FR_HOST_MAX,
+                                            'who': (fr.get('who') or [])[-12:]}})
+        if ep == 'visit':
+            hid = str(b.get('host') or '')
+            if hid == p['id']:
+                return self.send_json({'err': 'Đây là nhà của bạn'}, 400)
+            h = pload(hid)
+            if not h or not h.get('save'):
+                return self.send_json({'err': 'Không tìm thấy nhà này'}, 404)
+            home = fr_home(h)
+            rew = None
+            if hid not in vd:                     # lần đầu hôm nay: một tem cho khách, ít xu cho cả hai bên
+                vd[hid] = day
+                m = fr_mascot(fr_load(h) or {})
+                st = tm.setdefault(hid, {'n': 0})
+                st.update(n=fr_int(st.get('n')) + 1, nm=h['name'], sp=m['sp'], coat=m['coat'], t=t)
+                xu = fr_guest_xu(lv)
+                fr_cmd(p, 'coins', xu, 'Ghé thăm nhà %s: +%d xu và 1 tem' % (h['name'], xu))
+                fr['nv'] = fr_int(fr.get('nv')) + 1
+                hr = fr_of(h)
+                if hr.get('hd') != day:
+                    hr['hd'], hr['hn'] = day, 0
+                hx = 0
+                if hr['hn'] < FR_HOST_MAX:
+                    hr['hn'] += 1
+                    hx = fr_host_xu(fr_int((h.get('sum') or {}).get('level'), 1))
+                    fr_cmd(h, 'coins', hx, '%s ghé thăm nhà bạn: +%d xu' % (p['name'], hx))
+                hr['vt'] = fr_int(hr.get('vt')) + 1
+                hr['who'] = (hr.get('who') or [])[-19:] + [{'nm': p['name'], 't': t}]
+                log(h, '%s ghé thăm nhà%s' % (p['name'], ' (+%d xu)' % hx if hx else ''))
+                psave(h)
+                log(p, 'Ghé thăm nhà %s (+%d xu, 1 tem)' % (h['name'], xu))
+                rew = {'xu': xu, 'stamp': st['n']}
+            psave(p)
+            return self.send_json({'ok': 1, 'home': home, 'rew': rew, 'stamps': self.fr_stamps(fr)})
+        if ep == 'board':
+            rows = fr_rows()
+            keys = [('lv', 'xp'), ('seen', 'n5'), ('n5', 'seen'), ('ach', 'lv')]
+            if any(r['cup'] is not None for r in rows):
+                keys.append(('cup', 'lv'))
+            boards = {}
+            for a, z in keys:
+                src = [r for r in rows if r['cup'] is not None] if a == 'cup' else rows   # bảng cuộc thi: chỉ người đã gửi bài hôm nay
+                srt = sorted(src, key=lambda r: (-(r[a] or 0), -(r[z] or 0), r['name']))
+                top = [{'id': r['id'], 'name': r['name'], 'v': r[a] or 0, 'lv': r['lv'], 'sp': r['sp'], 'coat': r['coat']} for r in srt[:FR_TOP]]
+                me = next((i + 1 for i, r in enumerate(srt) if r['id'] == p['id']), 0)
+                boards[a] = {'top': top, 'me': me, 'mv': (srt[me - 1][a] or 0) if me else 0, 'n': len(srt)}
+            return self.send_json({'ok': 1, 'boards': boards, 'at': FR_C['t'], 'every': FR_CACHE})
+        if ep == 'swap':                          # đổi 5 tem lấy vé và xu
+            kind = b.get('kind')
+            if kind not in FR_SWAP:
+                return self.send_json({'err': 'Kiểu đổi không hợp lệ'}, 400)
+            have = sorted(((h, fr_int(s.get('n'))) for h, s in tm.items() if fr_int(s.get('n')) > 0), key=lambda x: -x[1])
+            spend = {}
+            if kind == 'set':
+                if len(have) < FR_SET:
+                    return self.send_json({'err': 'Cần tem của %d nhà khác nhau' % FR_SET}, 400)
+                for h, n in have[:FR_SET]:
+                    spend[h] = 1
+            else:
+                left = FR_SET
+                if sum(n for h, n in have) < FR_SET:
+                    return self.send_json({'err': 'Cần ít nhất %d tem' % FR_SET}, 400)
+                for h, n in have:                 # dùng tem trùng nhiều nhất trước
+                    u = min(n, left)
+                    spend[h] = u
+                    left -= u
+                    if not left:
+                        break
+            for h, u in spend.items():
+                tm[h]['n'] = fr_int(tm[h].get('n')) - u
+            r = FR_SWAP[kind]
+            fr_cmd(p, 'coins', r['xu'], 'Đổi %s: +%d xu' % (r['n'].lower(), r['xu']))
+            fr_cmd(p, 'tickets', r['ve'], 'Đổi %s: +%d vé gacha' % (r['n'].lower(), r['ve']))
+            fr['sw'] = fr_int(fr.get('sw')) + 1
+            log(p, 'Đổi %s lấy %d xu, %d vé' % (r['n'].lower(), r['xu'], r['ve']))
+            psave(p)
+            return self.send_json({'ok': 1, 'rew': {'xu': r['xu'], 've': r['ve']}, 'stamps': self.fr_stamps(fr)})
+        self.send_json({'err': 'Không có'}, 404)
+
+    @staticmethod
+    def fr_stamps(fr):
+        tm = fr.get('tm') or {}
+        L = [{'id': h, 'nm': s.get('nm', ''), 'n': fr_int(s.get('n')), 'sp': s.get('sp', ''), 'coat': s.get('coat', '')} for h, s in tm.items()]
+        L.sort(key=lambda s: (-s['n'], s['nm']))
+        return {'list': L, 'total': sum(s['n'] for s in L), 'kinds': sum(1 for s in L if s['n'] > 0), 'set': FR_SET, 'swaps': fr_int(fr.get('sw')),
+                'visits': fr_int(fr.get('nv')), 'rew': FR_SWAP}
 
     def admin_cmd(self, b):
         cmd = b.get('cmd')

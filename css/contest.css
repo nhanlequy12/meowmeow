@@ -1,0 +1,48 @@
+/* ============ CUỘC THI MÈO HẰNG NGÀY (js/contest-ui.js) ============ */
+.ct-card{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 12px;border:3px solid #d9a441;border-radius:14px;background:#fff5d6;cursor:pointer;text-align:left}
+html[data-theme=dark] .ct-card{background:#4a3c1c;border-color:#b78e2e}
+.ct-card.ready{animation:ctPulse 1.8s ease-in-out infinite}
+@keyframes ctPulse{50%{box-shadow:0 0 0 4px rgba(224,170,40,.3)}}
+.ct-card .g{flex:1;min-width:0;line-height:1.35}
+.ct-card .g b{font-size:15.5px}
+.ct-ic{font-size:30px;flex:none}
+.ct-go{min-height:44px;flex:none;white-space:nowrap}
+.ct-lock{cursor:default;opacity:.8;border-color:var(--line);background:var(--panel2);display:block;font-size:13.5px}
+.ct h3{margin:0 0 4px}
+.ct-res,.ct-board,.ct-hist,.ct-entry,.ct-none{text-align:left}
+.ct-d{font-size:13.5px;line-height:1.45}
+.ct-time{margin:8px 0;padding:7px 9px;border-radius:10px;background:var(--panel2);font-size:13px;line-height:1.45}
+.ct-act{gap:6px;margin:8px 0}
+.ct-act .sm,.ct-act .go{min-height:44px}
+.ct-send{flex:1;min-width:150px}
+.ct-sum{font-size:14px}
+.ct-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;margin-top:6px}
+.ct-c{display:flex;align-items:center;gap:7px;min-height:52px;padding:4px 8px;border:2px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);text-align:left;position:relative;font:inherit;min-width:0}
+.ct-c .g{flex:1;min-width:0;line-height:1.25;overflow-wrap:anywhere}
+.ct-c.on{border-color:#d9a441;background:#fff1c2;box-shadow:0 0 0 2px rgba(217,164,65,.35)}
+html[data-theme=dark] .ct-c.on{background:#5a4718}
+.ct-c i{font-style:normal;font-weight:900;color:#3f8a3a;font-size:18px}
+.ct-c img{flex:none}
+.ct-entry{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0}
+.ct-faces{display:flex;gap:8px}
+.ct-f{display:flex;flex-direction:column;align-items:center;font-size:12px}
+.ct-res{display:flex;align-items:center;gap:10px;margin:6px 0;padding:8px 10px;border-radius:12px;border:3px solid var(--line);background:var(--panel2)}
+.ct-res.m-g{border-color:#d9a441;background:#fff1c2}.ct-res.m-s{border-color:#a9b4c2;background:#eef2f7}.ct-res.m-b{border-color:#c98b5a;background:#fbe6d6}
+html[data-theme=dark] .ct-res.m-g{background:#5a4718}html[data-theme=dark] .ct-res.m-s{background:#3c4450}html[data-theme=dark] .ct-res.m-b{background:#553a28}
+.ct-medal{font-size:36px}
+.ct-board{list-style:none;margin:6px 0;padding:0;font-size:13.5px}
+.ct-board li{display:flex;align-items:center;gap:8px;padding:5px 6px;border-bottom:1px solid var(--line)}
+.ct-board li.me{background:rgba(240,196,80,.25);font-weight:800;border-radius:8px}
+.ct-board .rk{width:26px;text-align:center;flex:none}
+.ct-board .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.ct-claim{width:100%;min-height:46px;margin-top:6px}
+.ct-got{margin-top:6px;font-weight:700}
+.ct-none{margin:10px 0;line-height:1.45}
+.ct-hist{margin-top:10px;font-size:13px}
+.ct-hist summary{cursor:pointer;min-height:36px;display:flex;align-items:center;font-weight:700}
+.ct-hr{padding:4px 0;border-bottom:1px dashed var(--line);line-height:1.4}
+.ct-tag{background:#fff1c2;border-color:#d9a441;color:#6a4a08}
+html[data-theme=dark] .ct-tag{background:#5a4718;color:#ffe9a8}
+@media (max-width:560px){.ct-list{grid-template-columns:1fr}}
+@media (orientation:landscape) and (max-height:520px){.ct-card{padding:7px 10px}.ct-ic{font-size:24px}}
+@media (prefers-reduced-motion:reduce){.ct-card.ready{animation:none}}

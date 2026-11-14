@@ -5,17 +5,18 @@
      1. Cấu trúc và giới hạn: số hợp lệ, giống mèo, thuộc tính, nội thất, phòng có thật; không bật "xu vô hạn".
      2. Mèo đã có không được đổi giống, sao, màu, giới tính, thuộc tính, ngày sinh.
      3. Lượt gacha phải dùng đúng thứ tự hàng lượt máy chủ phát (issued); mỗi mèo gacha phải giống hệt kết quả chạy lại gachaCore với cùng hạt giống.
-        Mèo mới không qua gacha chỉ được là quà của quản trị viên (gift.cats) hoặc bé khởi đầu 1★ của hướng dẫn tân thủ.
+        Mèo mới không qua gacha chỉ được là quà của quản trị viên (gift.cats), bé khởi đầu 1★ của hướng dẫn tân thủ,
+        hoặc bé nhận nuôi từ mèo ghé chơi (c.vq = mã khách; phải giống hệt visGen(mã), mã trong hạn, mỗi 'ngày.lượt' nhận nuôi một lần, ghi trong S.vis.ad).
      4. Tổng tài sản V = xu + giá vé × vé + giá mỗi món nội thất + giá phòng + giá một lượt gacha × số mèo chỉ được tăng trong "ngân sách":
         quỹ xu nạp dần theo thời gian thật (theo cấp), cộng thêm phần biết trước (quà quản trị, tiền phóng sinh, bát tặng kèm phòng, quà tân thủ).
         Mua đồ, quay gacha, mua vé không làm V tăng; bán đồ, sửa đồ, cho ăn làm V giảm. Kinh nghiệm cũng có quỹ riêng.
-   Yêu cầu: {old, neu, dt (giây), issued:[{q,s}], ack, pity, gift:{coins,tickets,cats:[{sp,star}]}, first, trust, budget:{c,x}}
+   Yêu cầu: {old, neu, dt (giây), issued:[{q,s}], ack, pity, gift:{coins,tickets,cats:[{sp,star}]}, first, trust, budget:{c,x}, now? (chỉ công cụ kiểm thử truyền; mặc định giờ máy chủ)}
    Kết quả: {ok:1, used, ack, pity, budget} | {ok:0, why, fresh?, restore?} */
 const fs=require('fs'),path=require('path'),readline=require('readline');
 const ROOT=path.join(__dirname,'..');
 globalThis.localStorage={getItem(){return null},setItem(){},removeItem(){}};
-const src=['js/data.js','js/wx-data.js','js/pw-data.js','js/med-data.js','js/garden-data.js','js/game.js'].map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n;\n')+
-  '\n;globalThis.G={getS:()=>S,setS:v=>{S=v},gachaCore,prng,releaseGift,SP,FURN,ROOM,STAR,TRAITS,ALLCOAT,RARE,GACHA_COST,TICKET_COST,MAX_LV,PITY,SUP,FOOD};';
+const src=['js/data.js','js/wx-data.js','js/pw-data.js','js/med-data.js','js/garden-data.js','js/event-data.js','js/visit-data.js','js/game.js'].filter(f=>f!=='js/visit-data.js'||fs.existsSync(path.join(ROOT,f))).map(f=>fs.readFileSync(path.join(ROOT,f),'utf8')).join('\n;\n')+
+  '\n;globalThis.G={nicePrice,getS:()=>S,setS:v=>{S=v},gachaCore,prng,releaseGift,SP,FURN,ROOM,STAR,TRAITS,ALLCOAT,RARE,GACHA_COST,TICKET_COST,MAX_LV,PITY,SUP,FOOD,visGen:typeof visGen=="function"?visGen:null,visParse:typeof visParse=="function"?visParse:null,visDay:typeof visDay=="function"?visDay:null,visSlot:typeof visSlot=="function"?visSlot:null,VIS:typeof VIS!="undefined"?VIS:null};';
 (0,eval)(src);
 const {SP,FURN,ROOM,TRAITS,ALLCOAT,GACHA_COST,TICKET_COST,MAX_LV,PITY}=G;
 
@@ -33,6 +34,7 @@ function value(sv){
   let v=sv.coins+TICKET_COST*sv.tickets+GACHA_COST*sv.cats.length;
   sv.items.forEach(i=>{v+=FURN[i.fid].price});
   for(const r in sv.rooms)v+=ROOM[r].price||0;
+  for(const r in sv.rup||{})if(sv.rooms[r])for(let n=1;n<=Math.min(3,sv.rup[r]|0);n++)v+=G.nicePrice(Math.max(2000,ROOM[r].price||0)*[.2,.4,.8][n-1]); // nâng cấp phòng (js/roomup.js: RUP.k, RUP.base0, RUP.max)
   const sup=(id,q)=>{const s=G.SUP[id];if(s&&q>0)v+=s.price*q};               // vật phẩm sinh tồn trong túi đồ và đang mang theo trong chuyến đi
   Object.entries(sv.inv||{}).forEach(([id,q])=>sup(id,+q||0));
   sv.trips.forEach(p=>{if(p&&p.kit)Object.entries(p.kit).forEach(([id,q])=>sup(id,+q||0))});
@@ -55,12 +57,14 @@ function bad(sv){
     if(!int(c.star,1,5))return 'Số sao không hợp lệ';
     if(!Array.isArray(c.traits)||c.traits.length>6||c.traits.some(t=>!TRAITS[t]))return 'Thuộc tính không hợp lệ';
     if(c.coat!=null&&!ALLCOAT[c.coat])return 'Màu lông không có trong game';
+    if(c.vq!=null&&(typeof c.vq!=='string'||c.vq.length>16))return 'Mã nhận nuôi không hợp lệ';
     if(!num(c.full,0,100.5)||!num(c.en,0,100.5)||!num(c.hp,0,100.5))return 'Chỉ số mèo không hợp lệ';
     if((c.he!=null&&!num(c.he,0,100.5))||(c.wa!=null&&!num(c.wa,0,100.5))||(c.cf!=null&&!num(c.cf,0,100.5)))return 'Chỉ số sức khỏe, nước, thoải mái không hợp lệ';
   }
   const iid=new Set();
   for(const i of sv.items){if(!i||!FURN[i.fid]||iid.has(i.iid))return 'Nội thất không hợp lệ';iid.add(i.iid)}
   for(const r in sv.rooms)if(!ROOM[r])return 'Phòng không có trong game';
+  if(sv.rup!=null&&(typeof sv.rup!=='object'||Object.entries(sv.rup).some(([r,n])=>!ROOM[r]||!int(n,0,3))))return 'Cấp phòng không hợp lệ';
   if(sv.fdinv!=null&&(typeof sv.fdinv!=='object'||Object.entries(sv.fdinv).some(([id,q])=>!G.FOOD[id]||!int(q,0,1e5))))return 'Kho thức ăn không hợp lệ';
   if(sv.inv!=null&&(typeof sv.inv!=='object'||Object.entries(sv.inv).some(([id,q])=>!G.SUP[id]||!int(q,0,1e5))))return 'Túi đồ không hợp lệ';
   return '';
@@ -100,11 +104,20 @@ function judge(o){
   // mèo đã có không được đổi giống, sao, màu, giới tính, thuộc tính, ngày sinh (trừ lúc game tự nâng cấp bản lưu)
   const mig=['mig5','mig6','mig7'].some(k=>!!O[k]!==!!N[k]);
   const om=new Map(O.cats.map(c=>[c.uid,c])),nm=new Set(N.cats.map(c=>c.uid));
-  if(!mig)for(const c of N.cats){const p=om.get(c.uid);if(p&&(!sameCat(p,c)||(p.born||0)!==(c.born||0)||(p.q||0)!==(c.q||0)))return {ok:0,why:'Mèo "'+String(c.name).slice(0,16)+'" bị đổi giống, sao, màu, giới tính hoặc thuộc tính'}}
+  if(!mig)for(const c of N.cats){const p=om.get(c.uid);if(p&&(!sameCat(p,c)||(p.born||0)!==(c.born||0)||(p.q||0)!==(c.q||0)||(p.vq||'')!==(c.vq||'')))return {ok:0,why:'Mèo "'+String(c.name).slice(0,16)+'" bị đổi giống, sao, màu, giới tính hoặc thuộc tính'}}
   // mèo mới: gacha thì phải khớp kết quả chạy lại; ngoài gacha chỉ có quà quản trị viên và bé khởi đầu
   const gifts=(gift.cats||[]).slice();let starter=tutOpen?1:0,nfree=0;
+  // mèo ghé chơi (js/visit.js): mã đã nhận nuôi trong hạn không được biến mất khỏi S.vis.ad (để không nhận nuôi lại cùng một bé)
+  const V=G.VIS,today=V?G.visDay(o.now||Date.now()):0,oad=new Set((O.vis&&Array.isArray(O.vis.ad))?O.vis.ad:[]),nad=new Set((N.vis&&Array.isArray(N.vis.ad))?N.vis.ad:[]),vsl=new Set();
+  if(V){for(const id of oad){const p=G.visParse(id);if(p&&p.d>=today-V.keep&&!nad.has(id))return {ok:0,why:'Bản lưu xóa dấu bé đã nhận nuôi'};if(p)vsl.add(G.visSlot(id))}}
   for(const c of N.cats){
     if(om.has(c.uid))continue;
+    if(c.vq!=null&&!c.q){const p=V&&G.visParse(c.vq);
+      if(!p)return {ok:0,why:'Mèo nhận nuôi có mã khách sai'};
+      if(p.d>today+1||p.d<today-V.keep)return {ok:0,why:'Mèo nhận nuôi quá hạn hoặc chưa tới ngày'};
+      const sl=G.visSlot(c.vq);if(oad.has(c.vq)||vsl.has(sl)||!nad.has(c.vq))return {ok:0,why:'Mèo nhận nuôi bị trùng hoặc không ghi trong danh sách nhận nuôi'};
+      const e=G.visGen(c.vq);if(!e||!sameCat(e,c))return {ok:0,why:'Mèo nhận nuôi khác bé đã ghé chơi ('+(SP[c.sp]?SP[c.sp].n:c.sp)+' '+c.star+'★)'};
+      vsl.add(sl);nfree++;continue}
     if(c.q){const e=exp.get(c.q);if(!e)return {ok:0,why:'Mèo gacha không có lượt hợp lệ'};
       if(!sameCat(e,c))return {ok:0,why:'Mèo gacha khác kết quả máy chủ ('+(SP[c.sp]?SP[c.sp].n:c.sp)+' '+c.star+'★)'};exp.delete(c.q);continue}
     const gi=gifts.findIndex(g=>g.sp===c.sp&&(!g.star||g.star===c.star));

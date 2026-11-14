@@ -1,0 +1,47 @@
+/* ============ SỰ KIỆN THEO MÙA (js/event-ui.js) ============
+   --evc: màu chủ đạo của sự kiện (EVENTS[].col), gán trên ô và bảng. */
+.evchip{border-color:var(--evc,#d8443c);background:color-mix(in srgb,var(--evc,#d8443c) 16%,var(--panel));font-weight:800}
+.evchip.ready{animation:evPulse 1.8s ease-in-out infinite}
+.evchip .evc{white-space:nowrap}
+@keyframes evPulse{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--evc,#d8443c) 30%,transparent)}}
+/* tên sự kiện chỉ hiện ở màn rất rộng: thanh trên cùng đã chật (ở 1280px ô Nhiệm vụ suýt tràn), tên vẫn có trong tooltip và bảng sự kiện */
+.evchip .evnm{display:none}
+@media (min-width:1500px){.evchip .evnm{display:inline}}
+
+.ev .ev-hd{display:flex;align-items:center;gap:10px;padding:10px;margin:-2px 0 8px;border:3px solid var(--evc);border-radius:16px;background:color-mix(in srgb,var(--evc) 14%,var(--panel))}
+.ev .ev-ic,.ev-ban .ev-ic{font-size:34px;line-height:1;flex:none}
+.ev .ev-t{font-size:18px}
+.ev .ev-bal{flex:none;text-align:center;padding:4px 10px;border-radius:12px;background:var(--panel);border:2px solid var(--evc)}
+.ev .ev-bal small{display:block;font-size:11px;opacity:.75}
+.ev .ev-bal b{font-size:17px;white-space:nowrap}
+.ev .ev-tabs,.ev .ev-sw{gap:6px;margin-bottom:8px}
+.ev .ev-tabs .sm,.ev .ev-sw .sm{min-height:44px}
+.ev .ev-bar{height:8px;margin:2px 2px 6px}
+.ev .ev-bar i{background:var(--evc)}
+.ev .ev-earn,.ev .ev-note{font-size:12.5px;line-height:1.45;margin:4px 2px 8px}
+.ev .ev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px}
+.ev .ev-it{margin:0;align-items:center}
+.ev .ev-it .g{min-width:0}
+.ev .ev-it .sm{min-height:44px;white-space:nowrap}
+.ev .ev-im{flex:none;width:92px;min-height:56px;display:flex;align-items:center;justify-content:center}
+.ev .ev-big{font-size:36px;line-height:1}
+.ev .ev-big .ico,.ev .ev-hd .ev-ic .ico,.ev-ban .ev-ic .ico{width:36px;height:36px}
+.ev .ev-info,.ev .ev-earn,.ev .ev-note{text-align:left}
+.ev .ev-info p{margin:4px 2px 6px;line-height:1.45}
+.ev .ev-info ul{margin:0 0 6px;padding-left:20px;line-height:1.45;font-size:13.5px}
+.ev-cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:5px;margin-bottom:4px}
+.ev-cr{display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:center;padding:6px 8px;border:2px solid var(--line);border-radius:12px;background:var(--panel2)}
+.ev-cr span{grid-row:span 2;font-size:22px}
+.ev-cr small{opacity:.8}
+.ev-cr.on{border-color:var(--evc);background:color-mix(in srgb,var(--evc) 14%,var(--panel))}
+.ev-ban{border:3px solid var(--evc);background:color-mix(in srgb,var(--evc) 12%,var(--panel));align-items:center}
+.ev-ban .sm{min-height:44px;white-space:nowrap}
+@media (max-width:560px),(orientation:landscape) and (max-height:520px){
+  .ev .ev-grid{grid-template-columns:1fr 1fr}
+  .ev .ev-it{flex-direction:column;align-items:stretch;gap:4px}
+  .ev .ev-im{width:auto;min-height:48px}
+  .ev .ev-it .sm{flex:1 1 100%}
+  .ev .ev-ic{font-size:28px}
+}
+@media (max-width:420px){.ev .ev-grid{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.evchip.ready{animation:none}}
