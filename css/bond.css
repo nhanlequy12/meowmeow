@@ -1,0 +1,15 @@
+/* Độ thân thiết (js/bond-ui.js) */
+.bd-tag{display:inline-block;font-size:11px;font-weight:800;color:#c2416b;background:color-mix(in srgb,#f59ab5 22%,var(--panel));border:1.5px solid color-mix(in srgb,#c2416b 45%,var(--line));border-radius:9px;padding:0 5px;margin:2px 3px 0 0;line-height:16px}
+.bd-hearts{display:inline-flex;gap:1px;color:#d4547e;font-size:15px;letter-spacing:0}
+.bd-hearts i{font-style:normal;opacity:.35}.bd-hearts i.on{opacity:1;text-shadow:0 0 4px #ffc2d6}
+.bd-hearts.big{font-size:22px}
+.bd-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bd-bar{height:10px;border-radius:6px;background:var(--panel2);border:1.5px solid var(--line);overflow:hidden;margin:6px 0 3px}
+.bd-bar i{display:block;height:100%;background:linear-gradient(90deg,#f7a8c2,#e0628c)}
+.bd-ben{margin-top:6px}.bd-how{margin-top:4px;font-size:12px}
+.bd-dup{margin-top:8px;border-top:1.5px dashed var(--line);padding-top:8px}
+.bd-h{font-weight:800;margin-bottom:2px}
+.bd-row{display:flex;align-items:center;gap:8px;margin-top:6px}.bd-row .g{flex:1;min-width:0}.bd-row button{min-height:44px;white-space:nowrap}
+.bd-ask{display:flex;align-items:center;justify-content:center;gap:14px;margin:8px 0;text-align:center}.bd-ask b{font-size:22px}
+.bd-hint{margin-top:8px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,#f59ab5 14%,var(--panel));border:1.5px solid color-mix(in srgb,#c2416b 35%,var(--line));text-align:left}
+.bd-hint button{margin-left:6px}
