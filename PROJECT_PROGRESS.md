@@ -153,6 +153,15 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 ## Đợt 2026-11-13: giảm tiền phóng sinh
 - Commit `da86a56`. Theo lựa chọn của người dùng sau khi xem số đo: xu phóng sinh giảm một nửa (10, 20, 50, 150, 500; 5★ vẫn thêm 1 vé). Một bé 5★ săn bằng quay rồi phóng sinh nay tốn ròng khoảng 1.900 xu (trước 870). Chi tiết ở `CLAUDE.md` mục 41.
 
+### 2026-11-14: đợt B, làm hết danh sách đề xuất
+Người dùng bảo "còn làm gì nữa làm luôn". Claude tự làm độ thân thiết, 7 agent làm song song các phần còn lại; Claude gộp, sửa và chơi thử lại toàn bộ.
+- `75beec3`: độ thân thiết từng bé (0–5 tim) và kết thân mèo trùng loài (`CLAUDE.md` mục 42).
+- `edf2d0e`: chụp ảnh phòng và sổ sticker, sự kiện theo lịch thật, thăm nhà bạn và bảng xếp hạng (chỉ khi chơi qua `server.py`), mèo ghé chơi rồi nhận nuôi, nâng cấp phòng, cuộc thi mèo hằng ngày (mục 43–47); trọng tài nạp dữ liệu sự kiện, mèo ghé và tính phần nâng cấp phòng.
+- `babe1c8`: chơi với bé (cần câu lông vũ, đèn laser) và nhạc nền (mục 48).
+- `cf90478`: phụ kiện đội cho mọi bé (mục 49); `game.js` tách `lk0`.
+- Commit sửa sau khi gộp: bỏ khai báo `lk0` trùng trong `js/visit-ui.js` (lỗi cú pháp làm file không nạp, bot hướng dẫn tân thủ bắt được).
+- Đã kiểm tra: 21 bộ kiểm thử Node đều đạt, `catcheck` 150/150; bot chơi hết 39 bước hướng dẫn ở 1280×800, 844×390, 667×375 không lỗi JS; vòng thử mọi màn mới với bản lưu cấp 12 ở ba cỡ không tràn ngang, không lỗi JS. Chưa kiểm tra: người chơi thật, điện thoại thật, nghe nhạc nền, `server.py` chạy thật với nhiều máy, bot kinh tế chưa tính các nguồn xu mới.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:

@@ -92,7 +92,7 @@ function openGuest(id){
     (lk.length?'<div class="vs-like">Bé thích: <b>'+esc(lk.join(', '))+'</b>. Đặt những thứ này trong phòng (món ăn để trong bát) để bé ghé nhiều và vào đúng phòng đó.</div>':'')+
     act+(ready?'':'<div class="vs-foot"><button class="sm" onclick="doVisLetGo(\''+id+'\')">👋 Để bé đi</button>'+(here&&tab!=='home'||here&&cur!==cu.rid?'<button class="sm" onclick="vsGo()">🚪 Tới '+ROOM[cu.rid].n+'</button>':'')+'</div>')+'</div>');
 }
-const lk0=c=>lk(c);
+// lk0 (khóa ngoại hình gốc, không có hậu tố phụ kiện) nay khai báo trong js/game.js
 function vsGo(){const cu=vsCur();if(!cu)return;closeModal();if(tab!=='home')setTab('home');if(cur!==cu.rid)setRoom(cu.rid)}
 function doVisPet(){const n=visPet(),cu=vsCur();if(n){const e=ents.find(x=>x.guest===cu.id);if(e)e.emoT=1.5;toast('rụt rè dụi đầu vào tay bạn ❤️ +'+n+' làm quen',{type:'pet',icon:'🐾',title:visCat(cu.id).name+' (khách)',key:'vspet'})}render();if(cu)openGuest(cu.id)}
 function doVisFeed(fid){const cu=vsCur();const r=visFeed(fid);if(r.err){toast(r.err,{type:'warn'});return}
