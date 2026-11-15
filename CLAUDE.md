@@ -1016,3 +1016,11 @@ Mũ, nơ, kính (ô đầu) và vòng cổ, khăn (ô cổ) cho mọi bé, mở 
 
 - Đã gộp: `js/game.js` có `lk0` (khóa ngoại hình gốc) và `lk` = `lk0` + hậu tố phụ kiện (`accSfx`); `markSeen`, `gachaCore` và nút Admin tạo mèo dùng `lk0` để `S.seenCoat` không lẫn hậu tố. Mọi ảnh thẻ giao diện nay có phụ kiện. Đoạn nào cần so khóa ngoại hình gốc (bộ sưu tập, màu đã gặp) thì dùng `lk0`.
 - Lưu ý khi thử bằng `python -m http.server`: trình duyệt có thể giữ bản cũ của file JS trong bộ nhớ đệm HTTP (máy chủ tĩnh không gửi `no-cache` như `server.py`) và service worker lưu lại bản đó. Gỡ service worker, xóa `caches`, rồi `fetch(…,{cache:'reload'})` từng file trước khi tải lại.
+
+## 50. Sổ tay dễ đọc (2026-11-15, chưa commit)
+
+- `js/hb-key.js` (nạp CUỐI, sau `js/tut-med.js`, để lớp bọc `THB_BOOK.open` ở ngoài cùng): mục lục chia 9 nhóm (`HB_GRP`), mỗi chương có một dòng mô tả ngắn; ô tìm kiếm (bỏ dấu, tìm cả trong nội dung); nhãn MỚI cho chương chưa đọc (localStorage `meoxu_hbread`; lần đầu mở Sổ tay mọi chương đang có coi như đã thấy, nên chỉ chương mở khóa về sau mới có nhãn).
+- Mỗi chương có khung "⭐ Điều cần nhớ" (2–3 ý, `HB_KEY[id].k`, `**chữ**` để in đậm) ở đầu; phần chi tiết dài hơn 500 ký tự thì gập lại sau nút "📄 Đọc chi tiết đầy đủ". Đoạn chi tiết tự in đậm nhãn đầu đoạn ("Phòng lạnh (dưới 20°C): …") và các con số có đơn vị.
+- Thêm chương mới thì thêm một dòng vào `HB_KEY` (`g` nhóm, `h` mô tả, `k` ý chính); thiếu thì chương vào nhóm "Khác", không có khung Điều cần nhớ. Ý chính ghi số cứng: đổi luật thì sửa cả ở đây.
+- Sửa lỗi cũ: `THB_BOOK.chapter` gọi thẳng hàm `open` bên trong nên bỏ qua mọi lớp bọc (chương Nước uống, Bệnh, Nhà thuốc mở từ mục lục bị trống); nay gọi `THB_BOOK.open`.
+- Chữ cũ đã sửa: điểm đến có thêm Rừng núi, Đồi cát; "111 thành tựu" thành "hơn 100"; màn thông tin mèo có thêm các khung mới; bảng xếp hạng có Cuộc thi.

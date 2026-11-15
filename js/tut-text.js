@@ -262,10 +262,10 @@ const TUT_TEXT={
         'Chạm vào nhãn để đọc tác dụng. Khi bé viễn chinh về, popup ghi rõ thuộc tính nào vừa cộng hay trừ xu.']},
       {id:'detail',ic:'🐱',t:'Màn thông tin mèo',p:[
         'Chạm vào thẻ mèo để mở: ảnh, sao, bậc hiếm; Hồ sơ (giống, màu lông, tuổi, nơi ở, khoái khẩu); Chỉ số; Thuộc tính.',
-        'Ở cuối có Đổi tên, Chuyển phòng và Phóng sinh.']},
+        'Tiếp theo là các khung Hợp với bé, Thân thiết, Phụ kiện (khi đã mở), rồi Đổi tên, Chuyển phòng và Phóng sinh.']},
       {id:'trip',ic:'🎒',t:'Viễn chinh',p:[
         'Chọn một ô trống, chọn điểm đến rồi chạm vào bé để lên đường. Bé cần no trên 20 và đủ năng lượng.',
-        'Điểm đến: Quanh xóm, Công viên (cấp 1), Chợ cá (cấp 2), Bờ hồ (cấp 3), Bến cảng (cấp 5). Chuyến dài tiện hơn, chuyến ngắn nhiều xu mỗi phút hơn.',
+        'Điểm đến: Quanh xóm, Công viên (cấp 1), Chợ cá (cấp 2), Bờ hồ (cấp 3), Bến cảng (cấp 5), Rừng núi (cấp 7), Đồi cát (cấp 9). Chuyến dài tiện hơn, chuyến ngắn nhiều xu mỗi phút hơn.',
         'Thẻ đông người, gần nước, thiên nhiên và giờ ban đêm (19h–5h) làm thuộc tính của bé cộng hoặc trừ xu.',
         'Hết giờ bấm Nhận quà: xu, kinh nghiệm, món đồ ngậm về, đôi khi có vé. Ô viễn chinh mở thêm ở cấp 3, 5, 7, 9.']},
       {id:'level',ic:'⭐',t:'Cấp và mở khóa',p:[
@@ -283,7 +283,7 @@ const TUT_TEXT={
         'Mỗi ngày mở bảng 📜 Nhiệm vụ và bấm Điểm danh. Ngày đầu tiên vào game trong ngày, bảng tự mở để nhắc.',
         'Thưởng tăng dần qua 7 ngày, ngày 3 và 5 có vé, ngày 7 có 3 vé. Bỏ lỡ một ngày thì quay về Ngày 1.']},
       {id:'ach',ic:'🏆',t:'Thành tựu',p:[
-        'Có 111 thành tựu, chia bốn mức: Dễ, Vừa, Khó, Rất khó. Mỗi thành tựu đạt được thưởng ngay 30 xu, không cần bấm nhận.',
+        'Có hơn 100 thành tựu, chia bốn mức: Dễ, Vừa, Khó, Rất khó. Mỗi thành tựu đạt được thưởng ngay 30 xu, không cần bấm nhận.',
         'Xem ở tab 🏆 Thành tựu trên thanh điều hướng: mỗi dòng ghi việc cần làm, mức khó và thanh tiến độ.',
         'Thành tựu tính theo số lần viễn chinh, cho ăn, vuốt ve, quay gacha, bắt khách lạ, làm nhiệm vụ, và theo những gì bạn đang có: cấp, số mèo, giống đã gặp, phòng, nội thất, xu.']},
       {id:'weather',ic:'🌦',t:'Thời tiết và mùa',p:[

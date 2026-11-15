@@ -201,7 +201,7 @@ function frSwap(kind){
     'Bấm Ghé thăm để xem nhà của bạn: các phòng, nội thất và đàn mèo, đúng như bản lưu trên máy chủ. Chỉ xem được, không chạm hay cho ăn được.',
     'Mỗi ngày ghé mỗi nhà một lần thì bạn được ít xu và một tem in hình bé đại diện của nhà đó; chủ nhà cũng được ít xu (tối đa 8 lượt khách mỗi ngày). Xu tới ở lần đồng bộ kế tiếp, sau vài giây.',
     'Gom 5 tem bất kỳ đổi được 1 vé gacha và 50 xu; bộ 5 tem của 5 nhà khác nhau đổi được 2 vé và 100 xu.',
-    'Bảng xếp hạng so cấp, số loài mèo đã gặp, số bé 5★ và số thành tựu của mọi người, tính từ bản lưu hợp lệ trên máy chủ.']})})();
+    'Bảng xếp hạng so cấp, số loài mèo đã gặp, số bé 5★, số thành tựu và điểm cuộc thi hôm nay của mọi người, tính từ bản lưu hợp lệ trên máy chủ.']})})();
 
 /* ---------- mẹo lần đầu ---------- */
 setInterval(()=>{
