@@ -64,6 +64,7 @@ Phiên A không biết chi tiết việc đang làm của phiên này; phiên B 
 - Lúc ghi checkpoint, thư mục làm việc có các thay đổi chưa commit không phải của phiên A: `js/art.js`, `js/wx-data.js`, `tools/wxprev.js`, `tools/mkwxtasks.js`, `tools/run_codex_wx.sh`, `docs/tasks/wx-01.md` tới `wx-06.md`. Phiên A không đụng tới và không commit các file này.
 - Đã push `631958f`: hệ thống thời tiết (`CLAUDE.md` mục 29 và 29b): 11 kiểu thời tiết đổi mỗi 5 giờ, khí hậu phòng, cửa sổ, thiết bị (có loại chạy pin), vật phẩm sinh tồn, viễn chinh theo thời tiết, mục thời tiết trong Admin. Kiểm tra: `node tools/wxtest.js`.
 - Đã push `f734965`: Sổ tay thêm hai chương giải thích chỉ số khí hậu, độ thoải mái và cách xử lý.
+- Đã push `1a33791`: Sổ tay dễ đọc (mục lục chia nhóm, tìm kiếm, nhãn MỚI, khung Điều cần nhớ, chi tiết gập lại); sửa chương Nước uống, Bệnh, Nhà thuốc bị trống; cập nhật chữ cũ.
 
 ## Đợt 2026-11-12: sách khí hậu, mở khóa cấp 2, bảo hiểm 5★, Phục Ma Ngự Trù Tử
 
