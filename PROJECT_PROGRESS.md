@@ -169,6 +169,8 @@ Người dùng bảo "còn làm gì nữa làm luôn". Claude tự làm độ th
 
 - 2026-11-19: sửa `tools/visittest.js` phần "Bé vào phòng hút nhất". Không phải lỗi game: bé lạ của mỗi ngày khác nhau, ngày nào bé có thuộc tính thích thùng carton thì Phòng khách (có sẵn thùng carton) hút hơn Phòng ngủ chỉ có bát món khoái khẩu. Bài kiểm tra nay chỉ so phần bát ăn và thêm phần kiểm `visBest` luôn trả phòng hút nhất; đạt ở mọi ngày đã thử.
 
+- `59ce80b` (2026-11-19): commit phần sửa `tools/ecobot.js` còn treo từ phiên trước: chế độ `--b=1` (mặc định) đo thêm thân thiết và kết thân, cuộc thi, sự kiện, nâng cấp phòng, `--fr` thăm nhà bạn. Đã chạy thử 20 giờ một lượt, không lỗi; chưa chạy đo đủ 240 giờ nhiều lượt.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
