@@ -28,11 +28,21 @@
        không mang vật phẩm sinh tồn khi đi viễn chinh, không trồng vườn.
      Ở chế độ này mỗi lần ghé tua 10 bước 1 phút như lúc đang mở game (không phải chế độ bù vắng mặt), nên bệnh và thời tiết chạy đủ.
      --full=0: như bot cũ (chỉ data.js, game.js, meal.js; tua theo chế độ bù vắng mặt), để so với số đo cũ.
+   --b=1 (mặc định, 2026-11-14, cần --full=1) nạp thêm các tính năng đợt B (CLAUDE.md mục 42–49) có ảnh hưởng tới xu:
+       độ thân thiết (js/bond.js: thêm xu viễn chinh, vuốt ve, độ vui); --merge=1 thì mỗi lần ghé kết thân mọi bé trùng loài vào bé nhiều sao nhất
+         (chỗ trống mới lại được lấp bằng gacha như thường);
+       cuộc thi hằng ngày (js/contest.js): đầu mỗi ngày chơi gửi đội ctBest, cuối ngày nhận thưởng; ngày thi tính theo ngày chơi của bot;
+       sự kiện (js/event.js): mỗi ngày chơi của bot ứng với một ngày lịch cách nhau --evstep ngày (mặc định 6, nên 60 ngày chơi đi hết một năm và
+         tỉ lệ ngày có sự kiện đúng như lịch thật); nhận quà, nhiệm vụ, đổi vé trước, rồi món bộ mùa chưa có; tiền còn lại tự quy đổi khi hết đợt;
+       nâng cấp phòng (js/roomup.js): khi không để dành mua phòng thì nâng cấp rẻ nhất, tối đa 2 cấp mỗi lần ghé, chừa 200 xu;
+       --fr=N số nhà bạn bè ghé mỗi ngày chơi (chỉ khi chơi qua server.py; mặc định 0): khách nhận 15 + 5 × cấp xu (tối đa 105),
+         chủ nhà nhận 10 + 3 × cấp mỗi lượt khách (tối đa 8), 5 tem đổi 1 vé + 50 xu (bot giả định có đúng N nhà ghé lại mình).
+     Không mô phỏng: ảnh và sticker (thưởng một lần, tổng tối đa 640 xu + 6 vé), mèo ghé nhận nuôi, phụ kiện (chỉ tiêu xu, trang trí), chơi với bé (không cho xu).
    Không mô phỏng: ghép đôi (tốn xu chứ không sinh xu), thời gian vắng mặt giữa các ngày, món ăn có buff. */
 const fs=require('fs'),path=require('path'),repo=path.join(__dirname,'..');
-const A={h:240,runs:3,new:1,full:1,watch:.3,day:4,catch:.85,wish:.75};
+const A={h:240,runs:3,new:1,full:1,b:1,merge:1,fr:0,evstep:6,watch:.3,day:4,catch:.85,wish:.75};
 process.argv.slice(2).forEach(a=>{const m=/^--(\w+)(?:=(.*))?$/.exec(a);if(m)A[m[1]]=m[2]==null?1:isNaN(+m[2])?m[2]:+m[2]});
-const CYC=Math.round(A.h*6),NEW=!!A.new,FULL=!!A.full;
+const CYC=Math.round(A.h*6),NEW=!!A.new,FULL=!!A.full,B=FULL&&!!A.b;
 globalThis.localStorage={getItem(){return null},setItem(){}};
 globalThis.setTimeout=()=>0;globalThis.setInterval=()=>0;globalThis.clearTimeout=()=>{};   // hẹn giờ của giao diện không chạy; bot tự gọi các bước cần thiết
 globalThis.BOT={min:0,dayH:A.day,dis:{}};
@@ -42,7 +52,15 @@ let data=rd('data.js');
 {const re=/const ROOM_K0=([\d.]+),ROOM_K1=([\d.]+),FURN_K0=([\d.]+),FURN_KS=([\d.]+),BOWL_K=([\d.]+);/,m=re.exec(data);if(!m)throw new Error('ecobot: không thấy dòng hệ số giá trong data.js');
   A.k0=A.k0==null?+m[1]:A.k0;A.k1=A.k1==null?+m[2]:A.k1;A.f0=A.f0==null?+m[3]:A.f0;A.ks=A.ks==null?+m[4]:A.ks;
   data=data.replace(re,'const ROOM_K0='+A.k0+',ROOM_K1='+A.k1+',FURN_K0='+A.f0+',FURN_KS='+A.ks+',BOWL_K='+m[5]+';')}
-let src=FULL?[data,rd('wx-data.js'),rd('pw-data.js'),rd('med-data.js'),rd('game.js'),rd('wx.js'),rd('pw.js'),rd('med.js'),rd('meal.js'),rd('stray.js')].join('\n;')+'\n;save=()=>{};\n'
+// đợt B: sự kiện theo ngày chơi của bot (BOT.evT), cuộc thi theo ngày chơi của bot, sự kiện vẫn tính tiền khi đang tua (TOFF của bot luôn khác 0)
+function bsrc(){
+  let ev=rep(rd('event.js'),"const evNow=()=>EVO?EVO.t+(Date.now()-EVO.at):now();","const evNow=()=>BOT.evT;");
+  ev=rep(ev,"if(TOFF||!evOpen())return;","if(!evOpen())return;");
+  let ct=rep(rd('contest.js'),"const ctDay=t=>{const d=new Date(t==null?now():t);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};","const ctDay=t=>'2026-1-'+(1+Math.floor(BOT.min/(BOT.dayH*60)));");
+  ct=rep(ct,"const ctClosed=()=>{const c=ctS();return now()>=ctCloseAt(c.d)||!!(c.ov&&c.ov.d===c.d&&c.ov.cl)};","const ctClosed=()=>BOT.min%(BOT.dayH*60)>=BOT.dayH*60-10;");
+  return [rd('garden.js'),rd('bond.js'),ev,rd('roomup.js'),ct,rd('compat.js')];
+}
+let src=FULL?[data,rd('wx-data.js'),rd('pw-data.js'),rd('med-data.js'),...(B?[rd('garden-data.js'),rd('event-data.js'),rd('compat-data.js')]:[]),rd('game.js'),rd('wx.js'),rd('pw.js'),rd('med.js'),rd('meal.js'),rd('stray.js'),...(B?bsrc():[])].join('\n;')+'\n;save=()=>{};\n'
   :data+'\n'+rd('game.js')+'\n;'+rd('meal.js')+'\n;save=()=>{};\n';
 // đếm từng loại bệnh, chấn thương phát sinh (bọc medAdd của js/med.js)
 if(FULL)src+=`;{const _ma=medAdd;medAdd=function(c,k,q){const e=_ma(c,k,q);if(e)BOT.dis[k]=(BOT.dis[k]||0)+1;return e}}
@@ -62,22 +80,26 @@ const document={hidden:false,createElement:()=>({setAttribute(){},style:{}})};\n
   catchOne(){const tot=Object.values(CRIT).reduce((a,c)=>a+c.wt,0);let r=Math.random()*tot,kind='mouse';for(const k in CRIT){r-=CRIT[k].wt;if(r<0){kind=k;break}}crits=[{id:1,kind,x:0,y:0}];return critHit(0,0)},
   wishOne(c){cur=c.room;wish={uid:c.uid,rid:c.room,k:'pet',end:now()+1e9};wishDone()}};\n`;
 }
+if(B)src+=';evHook();\n';
 src+=`;globalThis.G={get S(){return S},fresh,tick,feedRoom:(r,f)=>feedRoom(r,f),petCat:c=>petCat(c),bowlsIn,bowlCap,homeCats,catsIn,ownedRooms,totalCap,gachaRoll,ROOMS,ROOM,FURNS,FURN,DESTS,
   get AWAY(){return AWAY},mealGain,mPrice,`+(FULL?`
   wxOpen,roomClimate,wxDirty,WXC,devOk,medOpen,ills,DIS,MED,medCan,medUse,buyMed,hospPlan,hospAdmit,inHosp,mSuggest,mealBuy,mealPour,mealPlan,invN,
-  pwCur,pwCap,pwStartCharge,pwOutletWhy,pwWet,strayList,happyTarget,`:'')+`now:()=>now(),feedAct:()=>{addXp(5);onAct('feed',1)},tripInfo,startTrip,claimTrip,buyRoom,buyItem,locked,onTrip,newCat,SP,markSeen,setOff(v){TOFF=v},setNotify(f){notify=f}};`;
+  pwCur,pwCap,pwStartCharge,pwOutletWhy,pwWet,strayList,happyTarget,`:'')+(B?`
+  bondMerge,bondLv,bondPts,evSync,evGiftReady,evGift,evClaim,evShop,evBuy,evBought,evSt,evOpen,ctOpen,ctSync,ctBest,ctEnter,ctClaim,ctS,ctClosed,rupOpen,rupLv,rupPrice,rupBuy,RUP,`:'')+`now:()=>now(),feedAct:()=>{addXp(5);onAct('feed',1)},tripInfo,startTrip,claimTrip,buyRoom,buyItem,locked,onTrip,newCat,SP,markSeen,rehome,setOff(v){TOFF=v},setNotify(f){notify=f}};`;
 (0,eval)(src);
 const G=globalThis.G,N=globalThis.N;G.setNotify(()=>{});
 const CRIT_GAP=115;                                   // giây giữa hai vị khách khi đang nhìn tab Phòng: 70–150 giây chờ, cộng lúc khách còn trên màn hình
 const WISH_GAP=225+A.wish*45+(1-A.wish)*240;          // giây cho một vòng ước muốn: 150–300 giây chờ, cộng lúc làm (hoặc lúc chờ hết giờ nếu không kịp)
 const rndN=x=>Math.floor(x+Math.random());            // làm tròn ngẫu nhiên để số lần trung bình đúng bằng x
-const FALL=G.FURNS.filter(f=>!f.bowl);
+const FALL=G.FURNS.filter(f=>!f.bowl&&f.cat!=='event'); // món độc quyền của sự kiện chỉ đổi bằng tiền sự kiện
 
 function run(){
   G.fresh();const S=G.S;let off=0,cyc=0;globalThis.BOT.dis={};
   // trạng thái ngay sau hướng dẫn tân thủ: bé khởi đầu 1★ ở Phòng khách, quà 300 xu và 3 vé
   {const c=G.newCat(G.SP.muop,1);c.room='living';S.cats.push(c);G.markSeen(c);S.tut={done:1,old:1,hints:{all:1},got:{}};S.coins+=300;S.tickets+=3}
-  const inc={trip:0,feed:0,pet:0,quest:0,daily:0,checkin:0,crit:0,wish:0,ach:0},tix={quest:0,daily:0,checkin:0,crit:0},spent={gacha:0,room:0,furn:0,water:0,dev:0,power:0,med:0,hosp:0};
+  const inc={trip:0,feed:0,pet:0,quest:0,daily:0,checkin:0,crit:0,wish:0,ach:0,contest:0,event:0,fr:0,rel:0},tix={quest:0,daily:0,checkin:0,crit:0,contest:0,event:0,fr:0},spent={gacha:0,room:0,furn:0,water:0,dev:0,power:0,med:0,hosp:0,rup:0};
+  const bx={merge:0,medal:{g:0,s:0,b:0,k:0},ctDays:0,evFurn:0,evDays:0,rupAt:null,stamps:0};
+  const EV0=Date.UTC(2026,0,1)-7*3600000;
   const ev={sick:0,hosp:0,stray:0,hpSum:0,hpN:0,cold:0,hot:0,roomN:0};
   const pay=(k,f)=>{const c0=S.coins,r=f();spent[k]+=c0-S.coins;return r};
   const its=rid=>S.items.filter(i=>i.room===rid);
@@ -126,6 +148,8 @@ function run(){
   const buyF=f=>{const rs=G.ownedRooms(),c0=S.coins,it=G.buyItem(f.id,rs[rr++%rs.length].id,100+(rr*37)%280);if(it){spent.furn+=c0-S.coins;own.add(f.id)}return it};
   for(cyc=0;cyc<CYC;cyc++){
     globalThis.BOT.min=cyc*10;const T=Date.now()+off;
+    const bday=Math.floor(cyc*10/(A.day*60)),bfirst=cyc%(A.day*6)===0;
+    if(B){globalThis.BOT.evT=EV0+((bday*A.evstep)%365)*864e5+(8*60+cyc*10%(A.day*60))*60000;earn('event',()=>G.evSync())}
     if(NEW){earn('quest',()=>N.qSync());if(N.ciReady())earn('checkin',()=>N.ciClaim())}
     // 1) nhận viễn chinh
     S.trips.forEach((p,i)=>{if(p&&T>=p.end)earn('trip',()=>G.claimTrip(i))});
@@ -153,6 +177,24 @@ function run(){
       q.d.forEach((x,i)=>{if(x.p>=x.n&&!x.got)earn('daily',()=>N.qClaim('d',i))});
       if(q.d.every(x=>x.got)&&!q.all)earn('daily',()=>N.qClaim('all'));
     }
+    // 5b) đợt B: sự kiện, cuộc thi, bạn bè, kết thân mèo trùng
+    if(B){
+      if(G.evOpen()){const L=G.evSync();if(L.length&&bfirst)bx.evDays++;
+        L.forEach(x=>{const k=x.key;if(G.evGiftReady(k))G.evGift(k);
+          const st=G.evSt(k);(st.q||[]).forEach((q,i)=>{if(q.p>=q.n&&!q.got)G.evClaim(k,i)});if(st.q&&st.q.length&&st.q.every(q=>q.got)&&!st.qa)G.evClaim(k,'all');
+          const sh=G.evShop(x.E.id);
+          sh.filter(e=>e.k==='tk').forEach(e=>{while(G.evBought(k,e.sid)<e.lim&&G.evSt(k).c>=e.p)earn('event',()=>G.evBuy(k,e.sid))});
+          sh.filter(e=>(e.k==='f'||e.k==='x')&&!own.has(e.fid)).forEach(e=>{if(G.evBought(k,e.sid)<e.lim&&G.evSt(k).c>=e.p){const r=G.evBuy(k,e.sid,G.ownedRooms()[0].id,200);if(r&&r.fid){own.add(r.fid);bx.evFurn+=G.FURN[r.fid].price}}})})}
+      if(G.ctOpen()){earn('contest',()=>G.ctSync());const c=G.ctS();
+        if(!G.ctClosed()&&!c.e){const L=G.ctBest(c.th);if(L.length&&!G.ctEnter(L.map(x=>x.uid)).err)bx.ctDays++}
+        if(G.ctClosed()&&c.e&&!(c.r&&c.r.got)){const r=earn('contest',()=>G.ctClaim());if(r&&r.m)bx.medal[r.m]++}}
+      if(A.fr&&S.level>=3&&bfirst){const L=Math.min(S.level,18);earn('fr',()=>{S.coins+=A.fr*Math.min(105,15+5*L)+Math.min(8,A.fr)*(10+3*L)});bx.stamps+=A.fr;
+        while(bx.stamps>=5){bx.stamps-=5;earn('fr',()=>{S.coins+=50;S.tickets+=1})}}
+      if(A.rel){const g={};S.cats.forEach(c=>{if(!G.onTrip(c.uid))(g[c.sp]=g[c.sp]||[]).push(c)});   // --rel=1 --merge=0: phóng sinh bé trùng thay cho kết thân (để so)
+        Object.values(g).forEach(L=>{if(L.length<2)return;L.sort((a,b)=>b.star-a.star);L.slice(1).forEach(o=>{if(S.cats.length>1&&earn('rel',()=>G.rehome(o.uid)))bx.merge++})})}
+      if(A.merge){const g={};S.cats.forEach(c=>{if(!G.onTrip(c.uid))(g[c.sp]=g[c.sp]||[]).push(c)});
+        Object.values(g).forEach(L=>{if(L.length<2)return;L.sort((a,b)=>b.star-a.star||G.bondPts(b)-G.bondPts(a));L.slice(1).forEach(o=>{if(!G.bondMerge(L[0].uid,o.uid).err)bx.merge++})})}
+    }
     // 6) tiêu xu: bát cho đủ suất, phòng mới khi nhà gần đầy, gacha khi còn chỗ, còn dư thì nội thất
     G.ownedRooms().forEach(r=>{const n=G.catsIn(r.id).length;let guard=0;
       while(G.bowlCap(r.id)<n&&guard++<4){const f=['bowlsteel','bowl'].map(id=>G.FURN[id]).find(f=>!G.locked(f)&&S.coins>=f.price);if(!f)break;const c0=S.coins;G.buyItem(f.id,r.id,100);spent.furn+=c0-S.coins}});
@@ -160,12 +202,16 @@ function run(){
     const free=G.totalCap()-S.cats.filter(c=>c.room!=='wait').length,want=next&&!G.locked(next)&&free<=2;
     if(want&&S.coins>=next.price){const c0=S.coins;if(G.buyRoom(next.id)){spent.room+=c0-S.coins;roomAt.push({id:next.id,c:cyc,lv:S.level})}}
     for(let g=0;g<8&&S.cats.length<G.totalCap();g++){if(S.tickets>0)G.gachaRoll(true);else if(S.coins>=120){G.gachaRoll(false);spent.gacha+=100}else break}
-    if(!(want&&!S.rooms[next.id])){for(let k=0;k<4;k++){const f=FALL.filter(f=>!own.has(f.id)&&!G.locked(f)).sort((a,b)=>a.price-b.price)[0];if(!f||S.coins<f.price+200||!buyF(f))break}}
+    if(!(want&&!S.rooms[next.id])){for(let k=0;k<4;k++){const f=FALL.filter(f=>!own.has(f.id)&&!G.locked(f)).sort((a,b)=>a.price-b.price)[0];if(!f||S.coins<f.price+200||!buyF(f))break}
+      // nâng cấp phòng (đợt B): cấp rẻ nhất trước, tối đa 2 cấp mỗi lần ghé
+      if(B&&G.rupOpen())for(let k=0;k<2;k++){const o=G.ownedRooms().filter(r=>G.rupLv(r.id)<G.RUP.max).map(r=>({id:r.id,p:G.rupPrice(r.id,G.rupLv(r.id)+1)})).sort((a,b)=>a.p-b.p)[0];
+        if(!o||S.coins<o.p+200)break;const c0=S.coins;if(G.rupBuy(o.id).err)break;spent.rup+=c0-S.coins}}
+    if(B&&bx.rupAt==null&&G.ownedRooms().length>=17&&G.ownedRooms().every(r=>G.rupLv(r.id)>=G.RUP.max))bx.rupAt=cyc;
     if(furnAt==null&&FALL.every(f=>own.has(f.id)))furnAt=cyc;
     if(NEW)earn('ach',()=>N.achCheck());
     if(!lvAt[S.level])lvAt[S.level]=cyc;
     if(cyc%6===5)hist.push(Object.values(inc).reduce((a,b)=>a+b,0));
-    if(furnAt!=null&&roomAt.length>=16&&S.level>=18&&cyc>furnAt+60)break;
+    if(furnAt!=null&&roomAt.length>=16&&S.level>=18&&cyc>furnAt+60&&(!B||bx.rupAt!=null))break;
     if(FULL){const M=S.med;if(M&&M.n!=null)ev.sick=M.n-1;ev.stray=S.cats.reduce((a,c)=>a+(c.strayN||0),0)}
     // 7) trôi 10 phút
     //    mèo đi tới bát và ăn trong lúc tua: xu cảm ơn đến lúc này, tính vào "cảm ơn bữa ăn"
@@ -174,7 +220,8 @@ function run(){
   }
   const tot=Object.values(inc).reduce((a,b)=>a+b,0),hrs=hist.length,last=hrs>10?(hist[hrs-1]-hist[hrs-11])/10:0;
   const h6=Math.min(cyc,36); // 6 giờ đầu: đo riêng để so với luật cũ (lúc này nhà còn ít mèo nên nhìn rõ nhịp cho ăn)
-  return {dis:Object.assign({},globalThis.BOT.dis),lvAt,roomAt,furnAt,inc,tix,spent,ev,tot,hours:cyc/6,feedH:inc.feed/(cyc/6),feedCost,meals,
+  const hearts=B?S.cats.map(c=>G.bondLv(c)):[];bx.h5=hearts.filter(h=>h>=5).length;bx.hAvg=hearts.length?hearts.reduce((a,b)=>a+b,0)/hearts.length:0;
+  return {bx,dis:Object.assign({},globalThis.BOT.dis),lvAt,roomAt,furnAt,inc,tix,spent,ev,tot,hours:cyc/6,feedH:inc.feed/(cyc/6),feedCost,meals,
     perMeal:meals?inc.feed/meals:0,level:S.level,cats:S.cats.length,rooms:G.ownedRooms().length,perHour:Math.round(last)};
 }
 const rs=[];for(let i=0;i<A.runs;i++)rs.push(run());
@@ -184,6 +231,7 @@ const out={args:A,level:{},room:{},furnAll:hh(med(rs.map(r=>r.furnAt))),perHourE
   feedH:Math.round(med(rs.map(r=>r.feedH))),perMeal:Math.round(med(rs.map(r=>r.perMeal))*100)/100,mealsH:Math.round(med(rs.map(r=>r.meals/r.hours)))};
 [5,9,13,18].forEach(l=>out.level[l]=hh(med(rs.map(r=>r.lvAt[l]))));
 [[4,'Phòng thứ 5 (Phòng chơi)'],[8,'Phòng thứ 9 (Thư viện)'],[15,'Phòng hoàng gia']].forEach(([k,n])=>out.room[n]=roomH(k));
+out.rupAll=hh(med(rs.map(r=>r.bx.rupAt)));
 const T=rs.reduce((a,r)=>a+r.tot,0);Object.keys(rs[0].inc).forEach(k=>out.inc[k]=Math.round(rs.reduce((a,r)=>a+r.inc[k],0)/T*1000)/10);
 Object.keys(rs[0].tix).forEach(k=>out.tix[k]=Math.round(rs.reduce((a,r)=>a+r.tix[k],0)/rs.length));
 // chi tiêu cho luật mới: xu mỗi giờ chơi (trung bình các lượt) và phần trăm trên tổng xu kiếm được
@@ -198,7 +246,11 @@ console.log('Cấp 5: '+f(out.level[5])+' · cấp 9: '+f(out.level[9])+' · c�
 Object.entries(out.room).forEach(([n,v])=>console.log(n+': '+f(v)));
 console.log('Đủ mọi món nội thất: '+f(out.furnAll));
 console.log('Thu nhập cuối game: khoảng '+(out.perHourEnd||0).toLocaleString('vi-VN')+' xu mỗi giờ');
-const NM={trip:'viễn chinh',feed:'cảm ơn bữa ăn (đã trừ tiền hạt)',pet:'vuốt ve',quest:'nhiệm vụ trong giờ',daily:'nhiệm vụ ngày',checkin:'điểm danh',crit:'khách lạ',wish:'ước muốn',ach:'thành tựu'};
+const NM={trip:'viễn chinh',feed:'cảm ơn bữa ăn (đã trừ tiền hạt)',pet:'vuốt ve',quest:'nhiệm vụ trong giờ',daily:'nhiệm vụ ngày',checkin:'điểm danh',crit:'khách lạ',wish:'ước muốn',ach:'thành tựu',contest:'cuộc thi',event:'sự kiện (quy đổi)',fr:'bạn bè',rel:'phóng sinh bé trùng'};
+if(B){const av=k=>rs.reduce((a,r)=>a+k(r),0)/rs.length;
+  console.log('[đợt B] Nâng cấp hết 17 phòng: '+f(out.rupAll)+' · tiền nâng cấp '+Math.round(av(r=>r.spent.rup/r.hours)).toLocaleString('vi-VN')+' xu/giờ · kết thân '+Math.round(av(r=>r.bx.merge))+' bé mỗi lượt · cuối lượt '+Math.round(av(r=>r.bx.h5))+' bé 5 tim, trung bình '+String(Math.round(av(r=>r.bx.hAvg)*10)/10).replace('.',',')+' tim');
+  console.log('[đợt B] Cuộc thi '+Math.round(av(r=>r.bx.ctDays))+' ngày: Vàng '+Math.round(av(r=>r.bx.medal.g))+', Bạc '+Math.round(av(r=>r.bx.medal.s))+', Đồng '+Math.round(av(r=>r.bx.medal.b))+', Khuyến khích '+Math.round(av(r=>r.bx.medal.k))+
+    ' · sự kiện '+Math.round(av(r=>r.bx.evDays))+' ngày chơi, đổi được món nội thất trị giá '+Math.round(av(r=>r.bx.evFurn)).toLocaleString('vi-VN')+' xu · vé thêm: cuộc thi '+out.tix.contest+', sự kiện '+out.tix.event+', bạn bè '+out.tix.fr)}
 console.log('Cho ăn: lãi khoảng '+out.feedH.toLocaleString('vi-VN')+' xu mỗi giờ chơi, '+out.mealsH.toLocaleString('vi-VN')+' suất ăn có cảm ơn mỗi giờ, lãi '+String(out.perMeal).replace('.',',')+' xu mỗi suất (đã trừ tiền hạt)');
 console.log('Tỉ trọng xu kiếm được: '+Object.entries(out.inc).filter(([k,v])=>v).map(([k,v])=>NM[k]+' '+String(v).replace('.',',')+'%').join(', '));
 if(FULL){const C=out.cost,x=k=>C[k].h.toLocaleString('vi-VN')+' xu/giờ ('+String(C[k].pct).replace('.',',')+'%)';
