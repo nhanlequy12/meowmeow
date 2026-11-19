@@ -12,7 +12,13 @@
    - Tạm dừng (giảm dần âm lượng rồi suspend) khi: tab ẩn, đang mở lớp gacha #gz (hộp quà và intro có âm thanh riêng), điện thoại
      đang dọc (màn nhắc xoay ngang). Hết lý do thì phát tiếp đúng chỗ cũ.
    - bgmRender(ctx, id, giây, âm lượng): xếp lịch một bản vào một BaseAudioContext bất kỳ, dùng để kiểm thử bằng OfflineAudioContext.
-   Ký hiệu nốt: "C5" (đô quãng 5), "F#4", "Bb2"; "." là nghỉ; "-" là ngân thêm một nhịp con; "A3+C4+E4" là hợp âm. */
+   Ký hiệu nốt: "C5" (đô quãng 5), "F#4", "Bb2"; "." là nghỉ; "-" là ngân thêm một nhịp con; "A3+C4+E4" là hợp âm.
+   CẬP NHẬT 2026-11-19: nhạc nền có ba nguồn (S.set.bgms): 'nang' bài hát "Nắng trên đệm mèo" (audio/nang-tren-dem-meo.mp3,
+   MẶC ĐỊNH), 'auto' sáu bản chiptune ở trên, 'mine' một file nhạc người chơi tự chọn (lưu trong IndexedDB 'meoxu_bgm', chỉ ở máy đó).
+   Bài hát phát bằng thẻ <audio> nối vào cùng AudioContext (createMediaElementSource → BGM.out) nên âm lượng, tắt dần, tạm dừng khi
+   ẩn trang, mở gacha, điện thoại dọc dùng chung một đường. File lỗi (máy chủ tĩnh thiếu audio/, mất mạng) thì tự quay về chiptune.
+   Nhạc nay BẬT sẵn cho người chơi chưa từng chỉnh (S.set.bgm chưa có); phát từ cú chạm đầu tiên. Nút 🎵 cạnh nút Cài đặt (#bgmq)
+   bật tắt nhanh ở mọi tab. Thêm bài: thêm một mục vào BGM_SONGS và một file trong audio/. */
 const BGM_T={
   day:{n:'Nắng trong phòng',bpm:104,sub:2,parts:[
     {w:'triangle',v:.072,r:1.1,notes:'E5 . G5 . C6 - B5 A5  A5 - E5 . C5 . E5 D5  F5 . A5 . C6 - A5 F5  G5 - - . D5 E5 F5 D5'},
@@ -108,8 +114,34 @@ function bgmPick(){
 }
 
 /* ---------- phát trực tiếp ---------- */
-const BGM={ac:null,out:null,cur:null,pos:0,t:0,run:0,force:null,off:0,offT:0};
+const BGM={ac:null,out:null,cur:null,pos:0,t:0,run:0,force:null,off:0,offT:0,el:null,elSrc:null,err:{},mine:null,mineName:''};
 const bgmVolOf=()=>{const v=S&&S.set&&S.set.bgmv;return typeof v==='number'?clamp(v,.05,1):.6};
+// bài hát (file). Âm lượng thật = S.set.bgmv × BGM_SONGK.
+const BGM_SONGS={nang:{n:'Nắng trên đệm mèo',src:'audio/nang-tren-dem-meo.mp3'}};
+const BGM_SONGK=.85;
+const bgmSrc=()=>{const s=S&&S.set&&S.set.bgms;return s==='auto'||s==='mine'||BGM_SONGS[s]?s:'nang'};
+const bgmSongMode=()=>{if(BGM.force)return false;const s=bgmSrc();return s!=='auto'&&!BGM.err[s]&&(s!=='mine'||!!BGM.mine)};
+const bgmGain=()=>bgmVolOf()*(bgmSongMode()?BGM_SONGK:BGM_VOLK);
+const bgmSrcName=()=>{const s=bgmSrc();return s==='auto'?'Nhạc tự động theo giờ và thời tiết':s==='mine'?(BGM.mineName||'Bài của bạn'):BGM_SONGS[s].n};
+if(S&&S.set&&S.set.bgm===undefined)S.set.bgm=true;   // người chơi chưa từng chỉnh: bật sẵn (phát từ cú chạm đầu tiên)
+// phát hay dừng thẻ <audio> theo trạng thái chung của nhạc nền
+function bgmSongSync(){
+  const ac=BGM.ac;if(!ac)return;
+  const song=bgmSongMode();
+  if(song&&BGM.run&&!BGM.off){
+    const s=bgmSrc(),url=s==='mine'?BGM.mine:BGM_SONGS[s].src;
+    if(!BGM.el){
+      const el=new Audio();el.loop=true;el.preload='auto';
+      el.addEventListener('error',()=>{if(!BGM.elSrc)return;BGM.err[bgmSrc()]=1;BGM.elSrc=null;BGM.cur=null;bgmGainNow();bgmQuickDraw()});
+      try{ac.createMediaElementSource(el).connect(BGM.out)}catch(e){BGM.err[s]=1;return}
+      BGM.el=el;
+    }
+    if(BGM.elSrc!==url){BGM.elSrc=url;BGM.el.src=url}
+    if(BGM.el.paused&&ac.state==='running')BGM.el.play().catch(()=>{});
+  }else if(BGM.el&&!BGM.el.paused&&(!song||!BGM.run||(BGM.off&&performance.now()-BGM.offT>600)))BGM.el.pause();
+}
+// đặt ngay âm lượng đích (đổi nguồn nhạc làm đổi hệ số)
+function bgmGainNow(){if(BGM.ac&&BGM.run&&!BGM.off){const g=BGM.out.gain;g.cancelScheduledValues(BGM.ac.currentTime);g.setTargetAtTime(bgmGain(),BGM.ac.currentTime,.05)}}
 const bgmGz=()=>{const g=document.getElementById('gz');return !!(g&&g.classList.contains('on'))};
 const bgmWant=()=>!!(S&&S.set&&S.set.bgm)&&!document.hidden&&!bgmGz()&&!(typeof needLandscape==='function'&&needLandscape());
 // tạo AudioContext (chỉ gọi trong một cú chạm, bấm phím của người chơi)
@@ -120,6 +152,7 @@ function bgmEnsure(){
 }
 function bgmTick(){
   const ac=BGM.ac;if(!ac||!BGM.run||ac.state!=='running')return;
+  if(bgmSongMode()){bgmSongSync();return}   // đang phát bài hát: không xếp lịch chiptune
   if(!BGM.cur){BGM.cur=bgmPick();BGM.pos=0;BGM.t=ac.currentTime+.1}
   if(BGM.t<ac.currentTime)BGM.t=ac.currentTime+.05;   // vừa chạy tiếp sau khi máy chậm: không dồn nốt
   while(BGM.t<ac.currentTime+.3){
@@ -133,7 +166,7 @@ function bgmCheck(){
   const on=!!(S&&S.set&&S.set.bgm),want=bgmWant(),g=BGM.out.gain,t=ac.currentTime;
   if(want){
     if(ac.state==='suspended')ac.resume().catch(()=>{});
-    if(!BGM.run||BGM.off){BGM.run=1;BGM.off=0;g.cancelScheduledValues(t);g.setTargetAtTime(bgmVolOf()*BGM_VOLK,t,.25)}
+    if(!BGM.run||BGM.off){BGM.run=1;BGM.off=0;g.cancelScheduledValues(t);g.setTargetAtTime(bgmGain(),t,.25)}
   }else if(BGM.run&&!BGM.off){
     BGM.off=1;BGM.offT=performance.now();g.cancelScheduledValues(t);g.setTargetAtTime(0,t,.12);
   }
@@ -146,31 +179,89 @@ function bgmTimers(){
   if(need&&!BGM_IV.ck){BGM_IV.tk=setInterval(bgmTick,60);BGM_IV.ck=setInterval(bgmCheck,250)}
   else if(!need&&BGM_IV.ck){clearInterval(BGM_IV.tk);clearInterval(BGM_IV.ck);BGM_IV.tk=BGM_IV.ck=0}
 }
-{const C0=bgmCheck;bgmCheck=function(){C0();bgmTimers()}}
+{const C0=bgmCheck;bgmCheck=function(){C0();bgmSongSync();bgmTimers()}}
 bgmTimers();
 document.addEventListener('visibilitychange',bgmCheck);
 // cú chạm, bấm phím đầu tiên sau khi nhạc đã bật: mở âm thanh (chính sách tự phát của trình duyệt)
 ['pointerdown','keydown','touchend'].forEach(n=>addEventListener(n,()=>{if(S&&S.set&&S.set.bgm&&(!BGM.ac||BGM.ac.state!=='running')&&bgmWant()){bgmEnsure();bgmCheck()}},true));
 
 /* ---------- Cài đặt ---------- */
+const bgmReSettings=()=>{const mb=$('mbox');if(!mb||!mb.querySelector('.bgm-card'))return;const y=mb.scrollTop;openSettings();$('mbox').scrollTop=y};
 function bgmSet(on){
   S.set.bgm=!!on;if(S.set.bgmv==null)S.set.bgmv=.6;save();
   if(on){bgmEnsure();BGM.cur=null;bgmCheck()}else bgmCheck();
-  const y=$('mbox').scrollTop;openSettings();$('mbox').scrollTop=y;
+  bgmQuickDraw();bgmReSettings();
 }
-function bgmVol(v){S.set.bgmv=clamp(+v,.05,1);if(BGM.ac&&BGM.run&&!BGM.off){const g=BGM.out.gain;g.cancelScheduledValues(BGM.ac.currentTime);g.setTargetAtTime(bgmVolOf()*BGM_VOLK,BGM.ac.currentTime,.05)}}
+function bgmVol(v){S.set.bgmv=clamp(+v,.05,1);bgmGainNow();const o=$('bgmvn');if(o)o.textContent=Math.round(S.set.bgmv*100)+'%'}
+// đổi nguồn nhạc: 'nang' (bài hát), 'auto' (chiptune theo giờ, thời tiết), 'mine' (file của người chơi)
+function bgmUse(s){
+  S.set.bgms=s;BGM.err[s]=0;BGM.cur=null;if(!S.set.bgm)S.set.bgm=true;save();
+  bgmEnsure();bgmCheck();bgmGainNow();bgmQuickDraw();bgmReSettings();
+}
+// nút 🎵 bật tắt nhanh (cạnh nút Cài đặt, mọi tab)
+function bgmQuick(){bgmSet(!(S.set&&S.set.bgm));toast(S.set.bgm?'Đang phát: '+bgmSrcName():'Đã tắt nhạc nền',{icon:S.set.bgm?'🎵':'🔇',title:'Nhạc nền',key:'bgmq',ms:2500})}
+function bgmQuickDraw(){
+  const h=document.querySelector('.hdr');if(!h)return;let b=$('bgmq');
+  if(!b){b=document.createElement('button');b.id='bgmq';b.className='sm bgmq';b.setAttribute('onclick','bgmQuick()');const st=h.querySelector('button');h.insertBefore(b,st||null)}
+  const on=!!(S.set&&S.set.bgm);
+  b.innerHTML='<span class="bq" aria-hidden="true">'+(on?'🎵':'🔇')+'</span><span class="bt">Nhạc</span>';
+  b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');
+  b.setAttribute('aria-label',on?'Tắt nhạc nền':'Bật nhạc nền');b.dataset.tip=on?'Nhạc đang bật · bấm để tắt':'Nhạc đang tắt · bấm để bật';
+}
+// nhạc của người chơi: lưu file trong IndexedDB (chỉ ở máy này), tối đa 30 MB
+const BGM_MAXF=30*1024*1024;
+function bgmDb(){return new Promise(r=>{try{const q=indexedDB.open('meoxu_bgm',1);q.onupgradeneeded=()=>q.result.createObjectStore('f');q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)}catch(e){r(null)}})}
+async function bgmDbGet(){const db=await bgmDb();if(!db)return null;return new Promise(r=>{try{const g=db.transaction('f').objectStore('f').get('mine');g.onsuccess=()=>r(g.result||null);g.onerror=()=>r(null)}catch(e){r(null)}})}
+async function bgmDbPut(v){const db=await bgmDb();if(!db)return false;return new Promise(r=>{try{const t=db.transaction('f','readwrite');v?t.objectStore('f').put(v,'mine'):t.objectStore('f').delete('mine');t.oncomplete=()=>r(true);t.onerror=()=>r(false)}catch(e){r(false)}})}
+function bgmSetMine(blob,name){if(BGM.mine)URL.revokeObjectURL(BGM.mine);BGM.mine=blob?URL.createObjectURL(blob):null;BGM.mineName=name||'';BGM.err.mine=0;if(bgmSrc()==='mine')BGM.elSrc=null}
+bgmDbGet().then(v=>{if(v&&v.blob){bgmSetMine(v.blob,v.name);if(bgmSrc()==='mine'){BGM.elSrc=null;bgmCheck()}}});
+async function bgmPickFile(inp){
+  const f=inp.files&&inp.files[0];inp.value='';if(!f)return;
+  if(!/^audio\//.test(f.type)&&!/\.(mp3|m4a|aac|ogg|oga|opus|wav|flac|webm)$/i.test(f.name)){toast('File này không phải nhạc',{type:'bad',icon:'⚠️'});return}
+  if(f.size>BGM_MAXF){toast('File quá lớn (tối đa 30 MB)',{type:'bad',icon:'⚠️'});return}
+  bgmSetMine(f,f.name.replace(/\.[^.]+$/,''));
+  const ok=await bgmDbPut({blob:f,name:BGM.mineName});
+  if(!ok)toast('Trình duyệt không cho lưu: bài này chỉ phát tới khi tải lại trang',{icon:'⚠️'});
+  bgmUse('mine');
+}
+async function bgmDelMine(){await bgmDbPut(null);bgmSetMine(null,'');if(bgmSrc()==='mine')bgmUse('nang');else bgmReSettings()}
 function bgmCard(){
-  const on=!!(S.set&&S.set.bgm),v=Math.round(bgmVolOf()*100),cur=BGM_T[(on&&BGM.cur)||bgmPick()];
+  const on=!!(S.set&&S.set.bgm),v=Math.round(bgmVolOf()*100),s=bgmSrc(),E=x=>String(x).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+  const opt=(id,ic,n,sub)=>'<button class="bgm-o'+(s===id?' on':'')+'" onclick="bgmUse(\''+id+'\')" aria-pressed="'+(s===id)+'"><span class="bgm-oi">'+ic+'</span><span class="bgm-on">'+n+(sub?'<small>'+sub+'</small>':'')+'</span></button>';
+  const auto=BGM_T[(on&&s==='auto'&&BGM.cur)||bgmPick()];
   return '<div class="card bgm-card" style="flex-direction:column;align-items:stretch"><b>🎵 Nhạc nền</b>'+
     '<div class="row"><button style="flex:1" class="'+(on?'on':'')+'" onclick="bgmSet(1)">🎵 Bật</button><button style="flex:1" class="'+(on?'':'on')+'" onclick="bgmSet(0)">🔇 Tắt</button></div>'+
-    '<label class="row" style="align-items:center;gap:8px"><span style="flex:none">Âm lượng</span><input type="range" min="5" max="100" value="'+v+'" oninput="bgmVol(this.value/100)" onchange="save()" style="flex:1;min-width:0" aria-label="Âm lượng nhạc nền"></label>'+
-    '<small>Nhạc chiptune nhẹ nhàng, đổi theo giờ trong ngày'+(typeof wxOpen==='function'&&wxOpen()?' và thời tiết':'')+'. '+(on?'Đang phát':'Bật lên sẽ phát')+': <b>'+cur.n+'</b>. Nhạc tự tạm dừng khi bạn ẩn trang và khi mở hộp gacha.</small></div>';
+    '<label class="row" style="align-items:center;gap:8px"><span style="flex:none">Âm lượng</span><input type="range" min="5" max="100" value="'+v+'" oninput="bgmVol(this.value/100)" onchange="save()" style="flex:1;min-width:0" aria-label="Âm lượng nhạc nền"><b id="bgmvn" style="flex:none;min-width:3.2em;text-align:right">'+v+'%</b></label>'+
+    '<div class="bgm-ol">'+
+      Object.keys(BGM_SONGS).map(id=>opt(id,'🎶',BGM_SONGS[id].n,BGM.err[id]?'không tải được file, đang phát nhạc tự động':'bài hát của Mèo Xu')).join('')+
+      opt('auto','🎹','Nhạc tự động','đổi theo giờ'+(typeof wxOpen==='function'&&wxOpen()?' và thời tiết':'')+' · bây giờ: '+auto.n)+
+      (BGM.mine?opt('mine','🎧',E(BGM.mineName||'Bài của bạn'),'bài bạn tự chọn, chỉ lưu ở máy này'):'')+
+    '</div>'+
+    '<div class="row wrap" style="gap:6px"><button class="sm" onclick="$(\'bgmf\').click()">📁 '+(BGM.mine?'Đổi bài của bạn':'Chọn bài của bạn')+'</button><input type="file" id="bgmf" accept="audio/*" onchange="bgmPickFile(this)" hidden>'+
+      (BGM.mine?'<button class="sm" onclick="bgmDelMine()">🗑 Bỏ bài của bạn</button>':'')+'</div>'+
+    '<small>'+(on?'Đang phát':'Bật lên sẽ phát')+': <b>'+E(bgmSrcName())+'</b>. Nút 🎵 cạnh Cài đặt bật tắt nhạc nhanh. Nhạc tự tạm dừng khi bạn ẩn trang và khi mở hộp gacha.</small></div>';
 }
+// CSS của nút nhanh và bảng chọn nhạc
+(()=>{const st=document.createElement('style');st.textContent=
+  '.hdr .bgmq{margin-left:auto;min-width:44px;justify-content:center;gap:4px}.hdr .bgmq .bq{font-size:18px;line-height:1}'+
+  '.bgm-ol{display:flex;flex-direction:column;gap:6px}.bgm-o{display:flex;align-items:center;gap:10px;text-align:left;justify-content:flex-start;min-height:48px}'+
+  '.bgm-oi{font-size:22px;flex:none}.bgm-on{display:flex;flex-direction:column;line-height:1.25}.bgm-on small{font-weight:400;opacity:.85}'+
+  '.bgm-up{display:inline-flex;align-items:center;gap:4px;cursor:pointer}'+
+  '@media (orientation:landscape) and (max-height:520px){.hdr{gap:6px}#app #top,#app:not([data-tab=home]) #top{margin-right:166px}}'+
+  '@media (orientation:landscape) and (max-height:400px) and (max-width:1023px){.hdr .bgmq .bt{display:none}#app #top,#app:not([data-tab=home]) #top{margin-right:104px}}';
+  document.head.appendChild(st)})();
+bgmQuickDraw();
+// lúc hướng dẫn tân thủ phủ lớp chặn (#tut .tut-blk/.tut-dim), cú bấm rơi đúng nút 🎵 vẫn bật tắt được nhạc
+addEventListener('click',ev=>{
+  const t=ev.target;if(!t||!t.classList||!(t.classList.contains('tut-blk')||t.classList.contains('tut-dim')))return;
+  const b=$('bgmq');if(!b)return;const r=b.getBoundingClientRect();
+  if(r.width&&ev.clientX>=r.left&&ev.clientX<=r.right&&ev.clientY>=r.top&&ev.clientY<=r.bottom){ev.stopImmediatePropagation();ev.preventDefault();bgmQuick()}
+},true);
 if(typeof pwaCard==='function'){const P0=pwaCard;pwaCard=function(){return bgmCard()+P0.apply(this,arguments)}}else window.pwaCard=bgmCard;
 
 /* ---------- Sổ tay: một dòng trong chương Cài đặt ---------- */
 (()=>{if(typeof TUT_TEXT==='undefined'||!TUT_TEXT.book)return;const pg=TUT_TEXT.book.pages.find(p=>p.id==='settings');
-  if(pg&&!pg.p.some(s=>/Nhạc nền/.test(s)))pg.p.splice(1,0,'Nhạc nền 🎵 (mặc định tắt): bật trong Cài đặt, chỉnh âm lượng. Có sáu bản nhạc ngắn đổi theo giờ (ngày, chiều tà, đêm) và theo thời tiết (mưa, tuyết, ngày đẹp trời). Nhạc tạm dừng khi bạn ẩn trang hoặc mở hộp gacha.')})();
+  if(pg&&!pg.p.some(s=>/Nhạc nền/.test(s)))pg.p.splice(1,0,'Nhạc nền 🎵 (bật sẵn, phát từ lần chạm đầu): nút 🎵 cạnh Cài đặt bật tắt nhanh. Trong Cài đặt chỉnh âm lượng và chọn nhạc: bài hát "Nắng trên đệm mèo", nhạc tự động đổi theo giờ và thời tiết, hoặc một file nhạc của bạn (chỉ lưu ở máy này). Nhạc tự động có sáu bản nhạc ngắn đổi theo giờ (ngày, chiều tà, đêm) và theo thời tiết (mưa, tuyết, ngày đẹp trời). Nhạc tạm dừng khi bạn ẩn trang hoặc mở hộp gacha.')})();
 
 /* ---------- Admin: nghe thử từng bản ---------- */
 {const A0=openAdmin;openAdmin=function(){A0.apply(this,arguments);const mb=$('mbox');if(!mb||!$('axu'))return;const rb=mb.querySelector('button.bad'),row=rb&&rb.parentElement;
@@ -178,7 +269,7 @@ if(typeof pwaCard==='function'){const P0=pwaCard;pwaCard=function(){return bgmCa
   d.innerHTML='<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>🎵 Nhạc nền</b><div class="dim">'+(S.set.bgm?'Đang bật':'Đang tắt')+' · theo giờ, thời tiết: '+BGM_T[bgmPick()].n+(BGM.force?' · đang ép: '+BGM_T[BGM.force].n:'')+'</div>'+
     '<div class="row wrap">'+Object.values(BGM_T).map(T=>B('admBgm(\''+T.id+'\')',T.n,BGM.force===T.id)).join('')+B('admBgm(null)','Theo giờ và thời tiết',!BGM.force)+'</div></div>';
   const el=d.firstElementChild;if(row&&row.parentElement)row.parentElement.insertBefore(el,row);else mb.appendChild(el)}}
-function admBgm(id){BGM.force=id;if(!S.set.bgm){S.set.bgm=true;if(S.set.bgmv==null)S.set.bgmv=.6}bgmEnsure();if(BGM.ac){BGM.cur=null;bgmCheck()}admDone(id?'Nhạc nền: '+BGM_T[id].n:'Nhạc nền chọn theo giờ và thời tiết',1)}
+function admBgm(id){BGM.force=id;if(!S.set.bgm){S.set.bgm=true;if(S.set.bgmv==null)S.set.bgmv=.6}bgmEnsure();if(BGM.ac){BGM.cur=null;bgmCheck();bgmGainNow()}admDone(id?'Nhạc nền: '+BGM_T[id].n:'Nhạc nền chọn theo giờ và thời tiết',1)}
 
 // nối với sự kiện theo mùa (js/event.js): đang có sự kiện thì phát bản lễ hội
 if(typeof evList==='function'&&typeof evOpen==='function')bgmHook(()=>{try{return evOpen()&&evList().length?'fest':''}catch(e){return ''}});

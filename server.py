@@ -45,7 +45,8 @@ PLAN_AT = {}           # id người chơi -> thời điểm của việc sớm 
 EP_OF = {}             # địa chỉ đăng ký đẩy -> id người chơi
 RQ_N = 30              # số lượt gacha phát sẵn cho mỗi người chơi
 STATIC_FILES = {'', 'index.html', 'manifest.json', 'sw.js'}
-STATIC_DIRS = ('js/', 'css/', 'icons/')
+STATIC_DIRS = ('js/', 'css/', 'icons/', 'audio/')
+AUDIO_MIME = {'.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.m4a': 'audio/mp4', '.wav': 'audio/wav'}
 CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
        "media-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; "
        "object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
@@ -737,8 +738,40 @@ class H(SimpleHTTPRequestHandler):
                     data = f.read()
         except OSError:
             return self.send_error(404)
+        ext = os.path.splitext(fp)[1].lower()
+        ctype = AUDIO_MIME.get(ext) or self.guess_type(fp)
+        if ext in AUDIO_MIME:
+            # nhạc: trình duyệt tải từng đoạn (Range) để tua và lặp lại bài
+            rng = self.headers.get('Range', '')
+            m = re.match(r'^bytes=(\d*)-(\d*)$', rng.strip())
+            if m and (m.group(1) or m.group(2)):
+                n = len(data)
+                if m.group(1):
+                    a = int(m.group(1))
+                    b = min(int(m.group(2)), n - 1) if m.group(2) else n - 1
+                else:
+                    a, b = max(0, n - int(m.group(2))), n - 1
+                if a >= n or a > b:
+                    self.send_response(416)
+                    self.send_header('Content-Range', 'bytes */%d' % n)
+                    self.send_header('Content-Length', '0')
+                    self.end_headers()
+                    return
+                part = data[a:b + 1]
+                self.send_response(206)
+                self.send_header('Content-Type', ctype)
+                self.send_header('Content-Range', 'bytes %d-%d/%d' % (a, b, n))
+                self.send_header('Content-Length', str(len(part)))
+                self.send_header('Accept-Ranges', 'bytes')
+                self.send_header('ETag', tag)
+                self.end_headers()
+                if body:
+                    self.wfile.write(part)
+                return
         self.send_response(200)
-        self.send_header('Content-Type', self.guess_type(fp))
+        self.send_header('Content-Type', ctype)
+        if ext in AUDIO_MIME:
+            self.send_header('Accept-Ranges', 'bytes')
         self.send_header('Content-Length', str(len(data)))
         self.send_header('ETag', tag)
         self.send_header('Last-Modified', self.date_time_string(int(st.st_mtime)))

@@ -25,6 +25,7 @@ async function netFirst(rq){
 self.addEventListener('fetch',e=>{
   const rq=e.request,u=new URL(rq.url);
   if(rq.method!=='GET'||u.origin!==self.location.origin||u.pathname.includes('/api/')||u.pathname.includes('/preview/'))return;
+  if(u.pathname.includes('/audio/')||rq.headers.has('range'))return;   // nhạc phát theo từng đoạn (Range, 206): để trình duyệt tự tải, không lưu vào bộ đệm
   e.respondWith(netFirst(rq));
 });
 self.addEventListener('push',e=>{e.waitUntil((async()=>{

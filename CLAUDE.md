@@ -1001,6 +1001,7 @@ Nguồn mèo thứ hai ngoài gacha, kiểu Neko Atsume. Mở từ cấp 5 (dòn
 - CHƯA AI NGHE THỬ: kiểm thử chỉ chắc không lỗi, không im lặng, đỉnh âm lượng trong khoảng; hay dở, to nhỏ có hợp tai không thì người dùng phải tự nghe.
 
 - Nối với sự kiện (cuối `js/bgm.js`): đang có sự kiện theo mùa (`evList()` không rỗng) thì phát bản lễ hội `fest`.
+- Cập nhật 2026-11-19: nhạc nền nay BẬT sẵn (người chơi chưa từng chỉnh), nguồn mặc định là bài hát "Nắng trên đệm mèo" `audio/nang-tren-dem-meo.mp3` (2 MB, tạo bằng ffmpeg từ file WAV của người dùng; WAV gốc không đưa vào git). Ba nguồn `S.set.bgms`: `nang`, `auto` (sáu bản chiptune), `mine` (file người chơi tự chọn, lưu IndexedDB `meoxu_bgm`, tối đa 30 MB). Bài hát phát bằng `<audio>` nối vào AudioContext nên dùng chung âm lượng, tắt dần, tạm dừng; file lỗi thì tự về chiptune. Nút 🎵 `#bgmq` cạnh nút Cài đặt bật tắt nhanh, bấm được cả khi đang hướng dẫn tân thủ. `server.py` phục vụ thêm thư mục `audio/` có hỗ trợ Range; `sw.js` không lưu nhạc vào bộ đệm. Thêm bài: một mục trong `BGM_SONGS` và một file trong `audio/`.
 
 ## 49. Phụ kiện đội cho mọi bé (2026-11-14)
 

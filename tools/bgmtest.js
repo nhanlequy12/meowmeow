@@ -17,7 +17,7 @@ srv.listen(0,'127.0.0.1',async()=>{
   const port=srv.address().port,br=await chromium.launch({executablePath:findExe()});
   try{
     const page=await br.newPage(),errs=[];page.on('pageerror',e=>errs.push(e.message));
-    await page.setContent('<!doctype html><meta charset="utf-8"><div id="gz"></div><div id="mbox"></div><script>'+STUB+'</script><script src="http://127.0.0.1:'+port+'/js/bgm.js"></script>');
+    await page.setContent('<!doctype html><meta charset="utf-8"><div class="hdr"><h1>MÈO XU</h1><button class="sm">Cài đặt</button></div><div id="gz"></div><div id="mbox"></div><script>'+STUB+'</script><script src="http://127.0.0.1:'+port+'/js/bgm.js"></script>');
     await page.waitForFunction(()=>typeof bgmRender==='function');
     const R=await page.evaluate(async()=>{const out=[];
       for(const id of Object.keys(BGM_T))for(const vol of [.6,1]){
@@ -38,7 +38,9 @@ srv.listen(0,'127.0.0.1',async()=>{
     Object.keys(exp).forEach(k=>ok('Chọn bản: '+k+' → '+exp[k],P[k]===exp[k],P[k]));
     const H=await page.evaluate(()=>{bgmHook(()=>'fest');const a=bgmPick();BGM_HOOKS.length=0;BGM.force='rain';const b=bgmPick();BGM.force=null;return [a,b]});
     ok('Tính năng khác chọn bản qua bgmHook',H[0]==='fest');ok('Admin ép bản',H[1]==='rain');
-    ok('Mặc định tắt, chưa tạo AudioContext',await page.evaluate(()=>!S.set.bgm&&!BGM.ac));
+    // từ 2026-11-19: bật sẵn, nguồn mặc định là bài hát; AudioContext chỉ tạo khi có cú chạm (chưa chạm thì chưa có)
+    ok('Mặc định bật, nguồn là bài hát, chưa tạo AudioContext khi chưa chạm',await page.evaluate(()=>S.set.bgm===true&&bgmSrc()==='nang'&&!BGM.ac));
+    ok('Nút 🎵 bật tắt nhanh nằm cạnh nút Cài đặt',await page.evaluate(()=>{const b=document.getElementById('bgmq');return !!b&&b.parentElement.classList.contains('hdr')&&b.getAttribute('aria-pressed')===String(!!S.set.bgm)}));
     ok('Không lỗi JS',!errs.length,errs.join(' | '));
   }finally{await br.close();srv.close()}
   console.log(fail?'\n'+fail+' phần HỎNG':'\nTất cả đều ĐẠT');process.exit(fail?1:0);
