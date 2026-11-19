@@ -163,6 +163,8 @@ Người dùng bảo "còn làm gì nữa làm luôn". Claude tự làm độ th
 - Commit sửa sau khi gộp: bỏ khai báo `lk0` trùng trong `js/visit-ui.js` (lỗi cú pháp làm file không nạp, bot hướng dẫn tân thủ bắt được).
 - Đã kiểm tra: 21 bộ kiểm thử Node đều đạt, `catcheck` 150/150; bot chơi hết 39 bước hướng dẫn ở 1280×800, 844×390, 667×375 không lỗi JS; vòng thử mọi màn mới với bản lưu cấp 12 ở ba cỡ không tràn ngang, không lỗi JS. Chưa kiểm tra: người chơi thật, điện thoại thật, nghe nhạc nền, `server.py` chạy thật với nhiều máy, bot kinh tế chưa tính các nguồn xu mới.
 
+- `0f52dd9` (2026-11-19): tối ưu và đánh bóng giao diện (sao 5★ chỉ đổi opacity, ảnh thẻ mèo dựng sẵn, `tick` đệm theo phòng, bộ đệm canvas giới hạn 40 MB, thanh trên chỉ vẽ lại khi đổi, điện thoại ngang gọn hơn, vùng chạm 40px, emoji thiếu font Win10, `server.py` gzip và HTTP/1.1); thêm bài nhạc `Nang-tren-dem-meo.wav` (game chưa phát bài này). Mọi bộ kiểm thử đạt trừ `visittest` hỏng sẵn phần "Bé vào phòng hút nhất". Chưa thử điện thoại thật.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
