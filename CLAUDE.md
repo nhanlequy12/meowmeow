@@ -1025,3 +1025,23 @@ Mũ, nơ, kính (ô đầu) và vòng cổ, khăn (ô cổ) cho mọi bé, mở 
 - Thêm chương mới thì thêm một dòng vào `HB_KEY` (`g` nhóm, `h` mô tả, `k` ý chính); thiếu thì chương vào nhóm "Khác", không có khung Điều cần nhớ. Ý chính ghi số cứng: đổi luật thì sửa cả ở đây.
 - Sửa lỗi cũ: `THB_BOOK.chapter` gọi thẳng hàm `open` bên trong nên bỏ qua mọi lớp bọc (chương Nước uống, Bệnh, Nhà thuốc mở từ mục lục bị trống); nay gọi `THB_BOOK.open`.
 - Chữ cũ đã sửa: điểm đến có thêm Rừng núi, Đồi cát; "111 thành tựu" thành "hơn 100"; màn thông tin mèo có thêm các khung mới; bảng xếp hạng có Cuộc thi.
+
+## 51. Bot kinh tế đo đủ mọi tính năng (2026-11-19)
+
+- `tools/ecobot.js` chế độ `--b=1` (mặc định) nay mô phỏng thêm: mèo ghé chơi (vuốt ve, mời ăn bé lạ lúc đang nhìn; nhận nuôi khi nhà còn chỗ), chơi với bé (lông vũ, tối đa 6 bé ở phòng đông nhất, làm TRƯỚC khi cho ăn vì bé đang đi tới bát thì game không cho chơi), phụ kiện (đủ nội thất đang mở thì mua mỗi món một cái, đeo cho bé nhiều sao nhất), sticker (15% lần ghé có nhìn thì chụp; trạng thái từng bé bốc ngẫu nhiên, chấm bằng đúng `phMatch`, `photoAward`).
+- Sửa bot: ở chế độ kết thân, bé trùng bị gộp liên tục nên nhà luôn còn chỗ; trước đây bot vì thế không bao giờ mua Phòng hoàng gia. Nay bot để dành mua phòng kế tiếp đã mở khóa, lúc để dành chỉ quay gacha bằng vé.
+- Số đo (5 lượt, 240 giờ, 4 giờ chơi mỗi ngày, nhìn tab Phòng 30%):
+
+| Mốc | Không có đợt B (`--b=0`) | Đủ đợt B (`--b=1`) |
+|---|---|---|
+| Cấp 18 | 41 giờ | 55,3 giờ |
+| Phòng thứ 5 (Phòng chơi) | 4,7 giờ | 5 giờ |
+| Phòng thứ 9 (Thư viện) | 19,2 giờ | 20,8 giờ |
+| Phòng hoàng gia | 182 giờ | 156,2 giờ |
+| Đủ mọi món nội thất | 222 giờ | 198,8 giờ |
+| Nâng cấp hết 17 phòng | | chưa tới trong 240 giờ |
+| Thu nhập cuối game | khoảng 19.800 xu/giờ | khoảng 36.900 xu/giờ |
+
+- Đợt B làm cuối game nhanh hơn khoảng 10–14% (chủ yếu nhờ độ thân thiết: cuối lượt 115 bé 5 tim, +20% xu viễn chinh và thêm xu vuốt ve), nhưng cấp 18 chậm hơn (bot tiêu xu vào kết thân và nâng cấp phòng thay vì quay gacha, ít mèo hơn nên ít kinh nghiệm hơn). Nâng cấp phòng là chỗ tiêu xu lâu dài như thiết kế (khoảng 6.400 xu mỗi giờ).
+- Mỗi lượt 240 giờ: nhận nuôi 7 bé lạ, chơi với bé khoảng 2.500 lần, 12 phụ kiện (7.140 xu), 71 ảnh được 26/32 sticker, cuộc thi 55 Vàng trên 60 ngày (thưởng nhỏ: 0,4% tổng xu), sự kiện 12 ngày chơi.
+- Chưa mô phỏng: thăm nhà bạn (chỉ khi chơi qua `server.py`, dùng `--fr=N`), vườn, vật phẩm sinh tồn. Bot luôn kết thân mọi bé trùng nên số lần kết thân rất cao (khoảng 4.500 mỗi lượt); người chơi thật có thể kết thân ít hơn.

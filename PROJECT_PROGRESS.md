@@ -171,6 +171,8 @@ Người dùng bảo "còn làm gì nữa làm luôn". Claude tự làm độ th
 
 - `59ce80b` (2026-11-19): commit phần sửa `tools/ecobot.js` còn treo từ phiên trước: chế độ `--b=1` (mặc định) đo thêm thân thiết và kết thân, cuộc thi, sự kiện, nâng cấp phòng, `--fr` thăm nhà bạn. Đã chạy thử 20 giờ một lượt, không lỗi; chưa chạy đo đủ 240 giờ nhiều lượt.
 
+- 2026-11-19: bot kinh tế đo đủ (mèo ghé chơi, chơi với bé, phụ kiện, sticker; sửa lỗi bot không mua Phòng hoàng gia ở chế độ kết thân). Số đo ở `CLAUDE.md` mục 51: Phòng hoàng gia 182 → 156 giờ, đủ nội thất 222 → 199 giờ, cấp 18 41 → 55 giờ.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:

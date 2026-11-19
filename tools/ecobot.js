@@ -37,7 +37,12 @@
        nâng cấp phòng (js/roomup.js): khi không để dành mua phòng thì nâng cấp rẻ nhất, tối đa 2 cấp mỗi lần ghé, chừa 200 xu;
        --fr=N số nhà bạn bè ghé mỗi ngày chơi (chỉ khi chơi qua server.py; mặc định 0): khách nhận 15 + 5 × cấp xu (tối đa 105),
          chủ nhà nhận 10 + 3 × cấp mỗi lượt khách (tối đa 8), 5 tem đổi 1 vé + 50 xu (bot giả định có đúng N nhà ghé lại mình).
-     Không mô phỏng: ảnh và sticker (thưởng một lần, tổng tối đa 640 xu + 6 vé), mèo ghé nhận nuôi, phụ kiện (chỉ tiêu xu, trang trí), chơi với bé (không cho xu).
+       mèo ghé chơi (js/visit.js, lượt ghé chạy trong tick): lúc đang nhìn (--watch) thì vuốt ve và mời ăn bé lạ (món khoái khẩu nếu mở, không thì hạt khô),
+         bé muốn ở lại thì nhận nuôi khi nhà còn chỗ (thay cho một lượt gacha), hết chỗ thì để bé đi;
+       chơi với bé (js/play.js): lúc đang nhìn, chơi lông vũ với tối đa 6 bé ở phòng đông nhất (thêm vui, kinh nghiệm, nhiệm vụ "chơi");
+       phụ kiện (js/acc.js): khi đã mua đủ nội thất đang mở, mua mỗi món phụ kiện đã mở một cái và đeo cho các bé nhiều sao nhất;
+       sticker (js/photo.js): lúc đang nhìn, 15% số lần ghé chụp một tấm ở phòng đông nhất; trạng thái từng bé trong ảnh (ngủ, ăn, nhảy, ổ, tầng...)
+         bốc ngẫu nhiên theo chỉ số của bé, thời tiết và giờ lấy thật, rồi chấm bằng đúng phMatch, photoAward của game.
    Không mô phỏng: ghép đôi (tốn xu chứ không sinh xu), thời gian vắng mặt giữa các ngày, món ăn có buff. */
 const fs=require('fs'),path=require('path'),repo=path.join(__dirname,'..');
 const A={h:240,runs:3,new:1,full:1,b:1,merge:1,fr:0,evstep:6,watch:.3,day:4,catch:.85,wish:.75};
@@ -58,9 +63,9 @@ function bsrc(){
   ev=rep(ev,"if(TOFF||!evOpen())return;","if(!evOpen())return;");
   let ct=rep(rd('contest.js'),"const ctDay=t=>{const d=new Date(t==null?now():t);return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};","const ctDay=t=>'2026-1-'+(1+Math.floor(BOT.min/(BOT.dayH*60)));");
   ct=rep(ct,"const ctClosed=()=>{const c=ctS();return now()>=ctCloseAt(c.d)||!!(c.ov&&c.ov.d===c.d&&c.ov.cl)};","const ctClosed=()=>BOT.min%(BOT.dayH*60)>=BOT.dayH*60-10;");
-  return [rd('garden.js'),rd('bond.js'),ev,rd('roomup.js'),ct,rd('compat.js')];
+  return [rd('garden.js'),rd('bond.js'),ev,rd('roomup.js'),ct,rd('compat.js'),rd('visit.js'),rd('play.js'),rd('acc.js'),rd('photo.js')];
 }
-let src=FULL?[data,rd('wx-data.js'),rd('pw-data.js'),rd('med-data.js'),...(B?[rd('garden-data.js'),rd('event-data.js'),rd('compat-data.js')]:[]),rd('game.js'),rd('wx.js'),rd('pw.js'),rd('med.js'),rd('meal.js'),rd('stray.js'),...(B?bsrc():[])].join('\n;')+'\n;save=()=>{};\n'
+let src=FULL?[data,rd('wx-data.js'),rd('pw-data.js'),rd('med-data.js'),...(B?[rd('garden-data.js'),rd('event-data.js'),rd('compat-data.js'),rd('visit-data.js'),rd('acc-data.js'),rd('photo-data.js')]:[]),rd('game.js'),rd('wx.js'),rd('pw.js'),rd('med.js'),rd('meal.js'),rd('stray.js'),...(B?bsrc():[])].join('\n;')+'\n;save=()=>{};\n'
   :data+'\n'+rd('game.js')+'\n;'+rd('meal.js')+'\n;save=()=>{};\n';
 // đếm từng loại bệnh, chấn thương phát sinh (bọc medAdd của js/med.js)
 if(FULL)src+=`;{const _ma=medAdd;medAdd=function(c,k,q){const e=_ma(c,k,q);if(e)BOT.dis[k]=(BOT.dis[k]||0)+1;return e}}
@@ -85,7 +90,8 @@ src+=`;globalThis.G={get S(){return S},fresh,tick,feedRoom:(r,f)=>feedRoom(r,f),
   get AWAY(){return AWAY},mealGain,mPrice,`+(FULL?`
   wxOpen,roomClimate,wxDirty,WXC,devOk,medOpen,ills,DIS,MED,medCan,medUse,buyMed,hospPlan,hospAdmit,inHosp,mSuggest,mealBuy,mealPour,mealPlan,invN,
   pwCur,pwCap,pwStartCharge,pwOutletWhy,pwWet,strayList,happyTarget,`:'')+(B?`
-  bondMerge,bondLv,bondPts,evSync,evGiftReady,evGift,evClaim,evShop,evBuy,evBought,evSt,evOpen,ctOpen,ctSync,ctBest,ctEnter,ctClaim,ctS,ctClosed,rupOpen,rupLv,rupPrice,rupBuy,RUP,`:'')+`now:()=>now(),feedAct:()=>{addXp(5);onAct('feed',1)},tripInfo,startTrip,claimTrip,buyRoom,buyItem,locked,onTrip,newCat,SP,markSeen,rehome,setOff(v){TOFF=v},setNotify(f){notify=f}};`;
+  bondMerge,bondLv,bondPts,evSync,evGiftReady,evGift,evClaim,evShop,evBuy,evBought,evSt,evOpen,ctOpen,ctSync,ctBest,ctEnter,ctClaim,ctS,ctClosed,rupOpen,rupLv,rupPrice,rupBuy,RUP,
+  visOpen,visS,visPet,visFeed,visAdopt,visLetGo,visCat,favs,FOOD,playOpen,playReward,accOpen,accBuy,accWear,accOwn,accOf,ACCS,photoOpen,phMatch,photoAward,phCount,wxAt,wxHour,ageStage,`:'')+`now:()=>now(),feedAct:()=>{addXp(5);onAct('feed',1)},tripInfo,startTrip,claimTrip,buyRoom,buyItem,locked,onTrip,newCat,SP,markSeen,rehome,setOff(v){TOFF=v},setNotify(f){notify=f}};`;
 (0,eval)(src);
 const G=globalThis.G,N=globalThis.N;G.setNotify(()=>{});
 const CRIT_GAP=115;                                   // giây giữa hai vị khách khi đang nhìn tab Phòng: 70–150 giây chờ, cộng lúc khách còn trên màn hình
@@ -97,8 +103,8 @@ function run(){
   G.fresh();const S=G.S;let off=0,cyc=0;globalThis.BOT.dis={};
   // trạng thái ngay sau hướng dẫn tân thủ: bé khởi đầu 1★ ở Phòng khách, quà 300 xu và 3 vé
   {const c=G.newCat(G.SP.muop,1);c.room='living';S.cats.push(c);G.markSeen(c);S.tut={done:1,old:1,hints:{all:1},got:{}};S.coins+=300;S.tickets+=3}
-  const inc={trip:0,feed:0,pet:0,quest:0,daily:0,checkin:0,crit:0,wish:0,ach:0,contest:0,event:0,fr:0,rel:0},tix={quest:0,daily:0,checkin:0,crit:0,contest:0,event:0,fr:0},spent={gacha:0,room:0,furn:0,water:0,dev:0,power:0,med:0,hosp:0,rup:0};
-  const bx={merge:0,medal:{g:0,s:0,b:0,k:0},ctDays:0,evFurn:0,evDays:0,rupAt:null,stamps:0};
+  const inc={trip:0,feed:0,pet:0,quest:0,daily:0,checkin:0,crit:0,wish:0,ach:0,contest:0,event:0,fr:0,rel:0,photo:0},tix={quest:0,daily:0,checkin:0,crit:0,contest:0,event:0,fr:0,photo:0},spent={gacha:0,room:0,furn:0,water:0,dev:0,power:0,med:0,hosp:0,rup:0,acc:0,visit:0};
+  const bx={merge:0,medal:{g:0,s:0,b:0,k:0},ctDays:0,evFurn:0,evDays:0,rupAt:null,stamps:0,adopt:0,letgo:0,photos:0,play:0,accN:0};
   const EV0=Date.UTC(2026,0,1)-7*3600000;
   const ev={sick:0,hosp:0,stray:0,hpSum:0,hpN:0,cold:0,hot:0,roomN:0};
   const pay=(k,f)=>{const c0=S.coins,r=f();spent[k]+=c0-S.coins;return r};
@@ -153,6 +159,10 @@ function run(){
     if(NEW){earn('quest',()=>N.qSync());if(N.ciReady())earn('checkin',()=>N.ciClaim())}
     // 1) nhận viễn chinh
     S.trips.forEach((p,i)=>{if(p&&T>=p.end)earn('trip',()=>G.claimTrip(i))});
+    // 1b) chơi với bé (đợt B): lúc đang nhìn, lông vũ cho tối đa 6 bé ở phòng đông nhất; làm trước khi cho ăn vì bé đang đi tới bát thì không chơi
+    const look=Math.random()<A.watch;   // lần ghé này người chơi có nhìn tab Phòng không
+    if(B&&look&&G.playOpen()){const b=G.ownedRooms().map(r=>({id:r.id,L:G.homeCats(r.id)})).sort((a,b)=>b.L.length-a.L.length)[0];
+      if(b)b.L.filter(c=>c.en>=25).slice(0,6).forEach(c=>{const r=G.playReward(c,'feather');if(r&&r.hp)bx.play++})}
     // 2) cho mọi phòng ăn hạt khô
     //    (luật mới: không còn chờ 10 phút giữa hai lần đổ; feedRoom tự mua số suất gợi ý còn thiếu, không bé nào cần thì trả null)
     if(A.old)G.ownedRooms().forEach(r=>{const bs=G.bowlsIn(r.id).filter(b=>!b.broken),cs=G.homeCats(r.id).sort((a,b)=>a.full-b.full),st=S.rooms[r.id];
@@ -194,14 +204,36 @@ function run(){
         Object.values(g).forEach(L=>{if(L.length<2)return;L.sort((a,b)=>b.star-a.star);L.slice(1).forEach(o=>{if(S.cats.length>1&&earn('rel',()=>G.rehome(o.uid)))bx.merge++})})}
       if(A.merge){const g={};S.cats.forEach(c=>{if(!G.onTrip(c.uid))(g[c.sp]=g[c.sp]||[]).push(c)});
         Object.values(g).forEach(L=>{if(L.length<2)return;L.sort((a,b)=>b.star-a.star||G.bondPts(b)-G.bondPts(a));L.slice(1).forEach(o=>{if(!G.bondMerge(L[0].uid,o.uid).err)bx.merge++})})}
+      const busy=()=>G.ownedRooms().map(r=>({id:r.id,L:G.homeCats(r.id)})).sort((a,b)=>b.L.length-a.L.length)[0];
+      // mèo ghé chơi: vuốt ve, mời ăn khi đang nhìn; nhận nuôi khi bé muốn ở lại và nhà còn chỗ
+      if(G.visOpen()){const V=G.visS();
+        if(look&&V.cur){G.visPet();const c=G.visCat(V.cur.id),fv=c&&G.favs(c).find(f=>!G.locked(G.FOOD[f]));pay('visit',()=>G.visFeed(fv||'kibble'))}
+        Object.keys(V.g).forEach(id=>{if(V.g[id].st!=='ready')return;
+          if(S.cats.filter(c=>c.room!=='wait').length<G.totalCap()){if(!G.visAdopt(id).err)bx.adopt++}else{G.visLetGo(id);bx.letgo++}})}
+      // chơi với bé: lông vũ cho tối đa 6 bé ở phòng đông nhất
+      // sticker: 15% lần ghé có nhìn thì chụp một tấm ở phòng đông nhất
+      if(look&&G.photoOpen()&&Math.random()<.15){const b=busy();if(b&&b.L.length){bx.photos++;
+        const t=G.now(),wo=G.wxOpen(),w=wo?G.wxAt(t):null,R=G.ROOM[b.id],ch=p=>Math.random()<p;
+        const cats=b.L.slice(0,12).map(c=>{const sl=c.bed!=null||ch(c.en<60?.35:.12),j=!sl&&ch(.12),run=!sl&&!j&&ch(.15);
+          return {uid:c.uid,sp:c.sp,star:c.star,v:!!(G.SP[c.sp]&&G.SP[c.sp].xt),rare:c.star>=4&&ch(.1),form:false,age:G.ageStage(c),
+            st:sl?'nap':j?'jump':run?'run':'idle',sleep:sl,bed:c.bed!=null,groom:!sl&&ch(.1),eat:!!(c.meal&&c.meal.k==='f'),drink:!!(c.meal&&c.meal.k==='w'),
+            jump:j,run,lv:ch(.15)?1:-1,heart:ch(.3),chase:ch(.05),sig:c.star>=5&&ch(.08),md:c.star>=5&&ch(.15),clone:false,wx:Object.keys(c.wxs||{}).filter(k=>c.wxs[k])}});
+        const snap={room:b.id,out:!!R.outdoor,wx:w?w.type:null,hr:G.wxHour(t),crit:ch(.2),cats};
+        earn('photo',()=>G.photoAward(G.phMatch(snap),null,t))}}
+      // phụ kiện: đủ nội thất đang mở rồi thì mua mỗi món một cái, đeo cho bé nhiều sao nhất
+      if(G.accOpen()&&FALL.filter(f=>!G.locked(f)).every(f=>own.has(f.id))){
+        const top=S.cats.filter(c=>!G.onTrip(c.uid)).sort((a,b)=>b.star-a.star);
+        G.ACCS.forEach(a=>{if(G.locked(a)||S.level<a.ul||(S.acc&&S.acc.n&&S.acc.n[a.id])||S.coins<a.price+500)return;
+          if(pay('acc',()=>G.accBuy(a.id,1)).err)return;bx.accN++;const c=top.find(c=>!G.accOf(c,a.sl));if(c)G.accWear(c.uid,a.id)})}
     }
     // 6) tiêu xu: bát cho đủ suất, phòng mới khi nhà gần đầy, gacha khi còn chỗ, còn dư thì nội thất
     G.ownedRooms().forEach(r=>{const n=G.catsIn(r.id).length;let guard=0;
       while(G.bowlCap(r.id)<n&&guard++<4){const f=['bowlsteel','bowl'].map(id=>G.FURN[id]).find(f=>!G.locked(f)&&S.coins>=f.price);if(!f)break;const c0=S.coins;G.buyItem(f.id,r.id,100);spent.furn+=c0-S.coins}});
     const next=G.ROOMS.filter(r=>r.price&&!S.rooms[r.id]).sort((a,b)=>a.price-b.price)[0];
-    const free=G.totalCap()-S.cats.filter(c=>c.room!=='wait').length,want=next&&!G.locked(next)&&free<=2;
+    const free=G.totalCap()-S.cats.filter(c=>c.room!=='wait').length,MG=B&&A.merge,want=next&&!G.locked(next)&&(free<=2||MG);
+    // chế độ kết thân: bé trùng bị gộp liên tục nên nhà luôn còn chỗ; bot để dành mua phòng kế tiếp đã mở khóa, lúc để dành chỉ quay bằng vé
     if(want&&S.coins>=next.price){const c0=S.coins;if(G.buyRoom(next.id)){spent.room+=c0-S.coins;roomAt.push({id:next.id,c:cyc,lv:S.level})}}
-    for(let g=0;g<8&&S.cats.length<G.totalCap();g++){if(S.tickets>0)G.gachaRoll(true);else if(S.coins>=120){G.gachaRoll(false);spent.gacha+=100}else break}
+    for(let g=0;g<8&&S.cats.length<G.totalCap();g++){if(S.tickets>0)G.gachaRoll(true);else if(S.coins>=120&&!(MG&&want&&S.coins<next.price+120)){G.gachaRoll(false);spent.gacha+=100}else break}
     if(!(want&&!S.rooms[next.id])){for(let k=0;k<4;k++){const f=FALL.filter(f=>!own.has(f.id)&&!G.locked(f)).sort((a,b)=>a.price-b.price)[0];if(!f||S.coins<f.price+200||!buyF(f))break}
       // nâng cấp phòng (đợt B): cấp rẻ nhất trước, tối đa 2 cấp mỗi lần ghé
       if(B&&G.rupOpen())for(let k=0;k<2;k++){const o=G.ownedRooms().filter(r=>G.rupLv(r.id)<G.RUP.max).map(r=>({id:r.id,p:G.rupPrice(r.id,G.rupLv(r.id)+1)})).sort((a,b)=>a.p-b.p)[0];
@@ -220,8 +252,8 @@ function run(){
   }
   const tot=Object.values(inc).reduce((a,b)=>a+b,0),hrs=hist.length,last=hrs>10?(hist[hrs-1]-hist[hrs-11])/10:0;
   const h6=Math.min(cyc,36); // 6 giờ đầu: đo riêng để so với luật cũ (lúc này nhà còn ít mèo nên nhìn rõ nhịp cho ăn)
-  const hearts=B?S.cats.map(c=>G.bondLv(c)):[];bx.h5=hearts.filter(h=>h>=5).length;bx.hAvg=hearts.length?hearts.reduce((a,b)=>a+b,0)/hearts.length:0;
-  return {bx,dis:Object.assign({},globalThis.BOT.dis),lvAt,roomAt,furnAt,inc,tix,spent,ev,tot,hours:cyc/6,feedH:inc.feed/(cyc/6),feedCost,meals,
+  const hearts=B?S.cats.map(c=>G.bondLv(c)):[];bx.h5=hearts.filter(h=>h>=5).length;const stk=B?G.phCount().got:0;bx.hAvg=hearts.length?hearts.reduce((a,b)=>a+b,0)/hearts.length:0;
+  return {stk,bx,dis:Object.assign({},globalThis.BOT.dis),lvAt,roomAt,furnAt,inc,tix,spent,ev,tot,hours:cyc/6,feedH:inc.feed/(cyc/6),feedCost,meals,
     perMeal:meals?inc.feed/meals:0,level:S.level,cats:S.cats.length,rooms:G.ownedRooms().length,perHour:Math.round(last)};
 }
 const rs=[];for(let i=0;i<A.runs;i++)rs.push(run());
@@ -246,11 +278,14 @@ console.log('Cấp 5: '+f(out.level[5])+' · cấp 9: '+f(out.level[9])+' · c�
 Object.entries(out.room).forEach(([n,v])=>console.log(n+': '+f(v)));
 console.log('Đủ mọi món nội thất: '+f(out.furnAll));
 console.log('Thu nhập cuối game: khoảng '+(out.perHourEnd||0).toLocaleString('vi-VN')+' xu mỗi giờ');
-const NM={trip:'viễn chinh',feed:'cảm ơn bữa ăn (đã trừ tiền hạt)',pet:'vuốt ve',quest:'nhiệm vụ trong giờ',daily:'nhiệm vụ ngày',checkin:'điểm danh',crit:'khách lạ',wish:'ước muốn',ach:'thành tựu',contest:'cuộc thi',event:'sự kiện (quy đổi)',fr:'bạn bè',rel:'phóng sinh bé trùng'};
+const NM={trip:'viễn chinh',feed:'cảm ơn bữa ăn (đã trừ tiền hạt)',pet:'vuốt ve',quest:'nhiệm vụ trong giờ',daily:'nhiệm vụ ngày',checkin:'điểm danh',crit:'khách lạ',wish:'ước muốn',ach:'thành tựu',contest:'cuộc thi',event:'sự kiện (quy đổi)',fr:'bạn bè',rel:'phóng sinh bé trùng',photo:'sticker'};
 if(B){const av=k=>rs.reduce((a,r)=>a+k(r),0)/rs.length;
   console.log('[đợt B] Nâng cấp hết 17 phòng: '+f(out.rupAll)+' · tiền nâng cấp '+Math.round(av(r=>r.spent.rup/r.hours)).toLocaleString('vi-VN')+' xu/giờ · kết thân '+Math.round(av(r=>r.bx.merge))+' bé mỗi lượt · cuối lượt '+Math.round(av(r=>r.bx.h5))+' bé 5 tim, trung bình '+String(Math.round(av(r=>r.bx.hAvg)*10)/10).replace('.',',')+' tim');
   console.log('[đợt B] Cuộc thi '+Math.round(av(r=>r.bx.ctDays))+' ngày: Vàng '+Math.round(av(r=>r.bx.medal.g))+', Bạc '+Math.round(av(r=>r.bx.medal.s))+', Đồng '+Math.round(av(r=>r.bx.medal.b))+', Khuyến khích '+Math.round(av(r=>r.bx.medal.k))+
-    ' · sự kiện '+Math.round(av(r=>r.bx.evDays))+' ngày chơi, đổi được món nội thất trị giá '+Math.round(av(r=>r.bx.evFurn)).toLocaleString('vi-VN')+' xu · vé thêm: cuộc thi '+out.tix.contest+', sự kiện '+out.tix.event+', bạn bè '+out.tix.fr)}
+    ' · sự kiện '+Math.round(av(r=>r.bx.evDays))+' ngày chơi, đổi được món nội thất trị giá '+Math.round(av(r=>r.bx.evFurn)).toLocaleString('vi-VN')+' xu · vé thêm: cuộc thi '+out.tix.contest+', sự kiện '+out.tix.event+', bạn bè '+out.tix.fr);
+  console.log('[đợt B] Mèo ghé chơi: nhận nuôi '+Math.round(av(r=>r.bx.adopt))+' bé, để đi '+Math.round(av(r=>r.bx.letgo))+' bé, tiền mời ăn '+Math.round(av(r=>r.spent.visit)).toLocaleString('vi-VN')+' xu mỗi lượt'+
+    ' · chơi với bé '+Math.round(av(r=>r.bx.play))+' lần · phụ kiện '+Math.round(av(r=>r.bx.accN))+' món, '+Math.round(av(r=>r.spent.acc)).toLocaleString('vi-VN')+' xu'+
+    ' · chụp '+Math.round(av(r=>r.bx.photos))+' ảnh, '+String(Math.round(av(r=>r.stk)*10)/10).replace('.',',')+'/'+G.phCount().all+' sticker, vé từ sticker '+out.tix.photo)}
 console.log('Cho ăn: lãi khoảng '+out.feedH.toLocaleString('vi-VN')+' xu mỗi giờ chơi, '+out.mealsH.toLocaleString('vi-VN')+' suất ăn có cảm ơn mỗi giờ, lãi '+String(out.perMeal).replace('.',',')+' xu mỗi suất (đã trừ tiền hạt)');
 console.log('Tỉ trọng xu kiếm được: '+Object.entries(out.inc).filter(([k,v])=>v).map(([k,v])=>NM[k]+' '+String(v).replace('.',',')+'%').join(', '));
 if(FULL){const C=out.cost,x=k=>C[k].h.toLocaleString('vi-VN')+' xu/giờ ('+String(C[k].pct).replace('.',',')+'%)';
