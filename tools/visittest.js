@@ -49,7 +49,11 @@ const today=()=>T.visDay(T.now());
  const b=S.items.find(i=>i.room==='bedroom'&&T.FURN[i.fid].bowl);
  const a0=T.visAttract(id,'bedroom');b.fl=[fv||'kibble'];b.left=1;const a1=T.visAttract(id,'bedroom');
  ok('Bát có món khoái khẩu làm phòng hút bé hơn',a1>=a0+2.9,a0+' → '+a1+' ('+fv+')');
- ok('Bé vào phòng hút nhất',T.visBest(id).rid==='bedroom');
+ // bé lạ của hôm nay đổi theo ngày, có bé thích đồ sẵn có ở Phòng khách (thùng carton...): chỉ so phần bát ăn thì mới không phụ thuộc ngày chạy
+ {const keep=S.items;S.items=S.items.filter(i=>i.room!=='living'||T.FURN[i.fid].bowl);
+  ok('Bé vào phòng hút nhất (chỉ khác nhau ở bát có món khoái khẩu)',T.visBest(id).rid==='bedroom',JSON.stringify(T.visBest(id)));
+  const sc={};['living','bedroom'].forEach(r=>sc[r]=T.visAttract(id,r));S.items=keep;
+  const all=['living','bedroom'].map(r=>[r,T.visAttract(id,r)]).sort((a,b)=>b[1]-a[1]);ok('visBest luôn trả phòng có độ hút cao nhất',T.visBest(id).rid===all[0][0],JSON.stringify(all))}
  const r=T.visStart(null,null,false);ok('Lượt ghé chọn đúng phòng hút nhất',r&&r.rid===T.visBest(r.id).rid,r&&r.rid);
  // ứng viên được chọn là ứng viên bị nhà hút nhất
  const d=today(),sl=d+'.1';let best=-1,bk='';for(let k=0;k<3;k++){const x=T.visBest(sl+'.'+k).sc;if(x>best){best=x;bk=sl+'.'+k}}

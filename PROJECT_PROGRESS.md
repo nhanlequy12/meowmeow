@@ -167,6 +167,8 @@ Người dùng bảo "còn làm gì nữa làm luôn". Claude tự làm độ th
 
 - `47001ad` (2026-11-19): nhạc nền phát bài "Nắng trên đệm mèo" (`audio/nang-tren-dem-meo.mp3`), bật sẵn; Cài đặt chọn nguồn nhạc và âm lượng; nút 🎵 bật tắt nhanh cạnh Cài đặt; `server.py` phục vụ `audio/` có Range. Đã thử trong trình duyệt: phát từ cú chạm đầu, bật tắt nhanh kể cả lúc hướng dẫn, đổi nguồn, bài của người chơi, tạm dừng khi mở gacha, file hỏng tự về nhạc tự động, điện thoại ngang không đè. Chưa nghe bằng tai, chưa thử điện thoại thật.
 
+- 2026-11-19: sửa `tools/visittest.js` phần "Bé vào phòng hút nhất". Không phải lỗi game: bé lạ của mỗi ngày khác nhau, ngày nào bé có thuộc tính thích thùng carton thì Phòng khách (có sẵn thùng carton) hút hơn Phòng ngủ chỉ có bát món khoái khẩu. Bài kiểm tra nay chỉ so phần bát ăn và thêm phần kiểm `visBest` luôn trả phòng hút nhất; đạt ở mọi ngày đã thử.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
