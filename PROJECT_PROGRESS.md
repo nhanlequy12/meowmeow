@@ -165,6 +165,8 @@ Người dùng bảo "còn làm gì nữa làm luôn". Claude tự làm độ th
 
 - `0f52dd9` (2026-11-19): tối ưu và đánh bóng giao diện (sao 5★ chỉ đổi opacity, ảnh thẻ mèo dựng sẵn, `tick` đệm theo phòng, bộ đệm canvas giới hạn 40 MB, thanh trên chỉ vẽ lại khi đổi, điện thoại ngang gọn hơn, vùng chạm 40px, emoji thiếu font Win10, `server.py` gzip và HTTP/1.1); thêm bài nhạc `Nang-tren-dem-meo.wav` (game chưa phát bài này). Mọi bộ kiểm thử đạt trừ `visittest` hỏng sẵn phần "Bé vào phòng hút nhất". Chưa thử điện thoại thật.
 
+- `47001ad` (2026-11-19): nhạc nền phát bài "Nắng trên đệm mèo" (`audio/nang-tren-dem-meo.mp3`), bật sẵn; Cài đặt chọn nguồn nhạc và âm lượng; nút 🎵 bật tắt nhanh cạnh Cài đặt; `server.py` phục vụ `audio/` có Range. Đã thử trong trình duyệt: phát từ cú chạm đầu, bật tắt nhanh kể cả lúc hướng dẫn, đổi nguồn, bài của người chơi, tạm dừng khi mở gacha, file hỏng tự về nhạc tự động, điện thoại ngang không đè. Chưa nghe bằng tai, chưa thử điện thoại thật.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
