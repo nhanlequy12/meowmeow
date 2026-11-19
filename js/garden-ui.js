@@ -106,7 +106,7 @@ setInterval(()=>{if(!GDV||$('modal').style.display!=='flex'||!$('mbox').querySel
 {const A0=openAdmin;openAdmin=function(){A0.apply(this,arguments);const mb=$('mbox');if(!mb||!$('axu'))return;const rb=mb.querySelector('button.bad'),row=rb&&rb.parentElement;
   const B=(f,n)=>'<button class="sm" onclick="'+f+'">'+n+'</button>',d=document.createElement('div'),its=gdItems();
   d.innerHTML='<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>🌱 Vườn nhỏ</b><div class="dim">'+its.filter(i=>i.gd).length+' chậu, luống · '+its.filter(i=>i.fp).length+' hồ cá · giỏ '+gdN()+'</div>'+
-    '<div class="row wrap">'+B('admGd(1)','🪴 Đặt chậu, luống, hồ ở phòng đang xem')+B('admGd(2)','⏩ Cây chín ngay')+B('admGd(3)','🏜 Đất khô kiệt')+B('admGd(4)','🧺 +5 mỗi loại rau')+B('admGd(5)','🐟 Cá đẻ ngay')+'</div></div>';
+    '<div class="row wrap">'+B('admGd(1)','🌱 Đặt chậu, luống, hồ ở phòng đang xem')+B('admGd(2)','⏩ Cây chín ngay')+B('admGd(3)','🏜 Đất khô kiệt')+B('admGd(4)','🧺 +5 mỗi loại rau')+B('admGd(5)','🐟 Cá đẻ ngay')+'</div></div>';
   const el=d.firstElementChild;if(row&&row.parentElement)row.parentElement.insertBefore(el,row);else mb.appendChild(el)}}
 function admGd(k){
   if(k===1){if(!gdRoomOk(cur)){admDone('Sang phòng ngoài trời hoặc Nhà kính trước',1);return}

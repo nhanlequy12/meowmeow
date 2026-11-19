@@ -1,0 +1,33 @@
+/* css/fx.css: kiểu đi kèm các sửa hiệu năng và điện thoại trong js/ui.js (2026-11-19). Nạp sau css/mobile.css. */
+
+/* 1. Sao 5★ (.stars.s5): trước đây keyframe stGold đổi color và text-shadow làm trình duyệt tính lại bố cục cả trang mỗi khung.
+   Nay lớp nền tĩnh mang màu đầu nhịp (#ffd23a, viền nâu) và lớp sáng .s5g chồng khít mang màu giữa nhịp (#fff4b0, có quầng),
+   chỉ animate opacity cùng nhịp 1,5 s và cùng --d nên hình như cũ mà không tốn bố cục. Các tia ✦ (stTw) giữ nguyên. */
+.stars.s5{animation:none;color:#ffd23a}
+.stars.s5 .s5g{position:absolute;left:0;top:0;right:0;bottom:0;font-style:normal;font-weight:inherit;letter-spacing:inherit;white-space:nowrap;color:#fff4b0;
+  text-shadow:-1px 0 #4e3026,1px 0 #4e3026,0 -1px #4e3026,0 1px #4e3026,0 0 8px #ffe066,0 0 3px #fff;opacity:0;pointer-events:none;
+  animation:s5g 1.5s ease-in-out var(--d,0s) infinite}
+@keyframes s5g{0%,100%{opacity:0}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.stars.s5 .s5g{animation:none}}
+
+/* 2. Bản nháp của renderTopSoft (ui.js): không bao giờ hiện */
+#rtdraft{display:none!important}
+
+/* 3. Thông báo trên màn ngang thấp (điện thoại ngang): tối đa 2 cái (ui.js), thẻ hẹp hơn, nằm bên phải, nội dung tối đa 2 dòng */
+@media (max-height:520px){
+  #toast{align-items:flex-end;padding-right:max(10px,var(--sr,0px))}
+  .tst{width:min(46vw,340px);padding:5px 9px;gap:7px}
+  .tst .ic{width:32px;height:32px;font-size:18px}
+  .tst .bd{font-size:13px}
+  .tst .bd b{font-size:13.5px}
+  .tst .bd span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .tst .cn{font-size:19px}
+}
+
+/* 4. Hàng mục Cửa hàng (.shoptabs): điện thoại và màn ngang thấp dùng một hàng cuộn ngang, ẩn thanh cuộn; nút đang chọn được ui.js cuộn vào giữa */
+@media (max-height:520px),((pointer:coarse) and (max-width:900px)){
+  #panel .shoptabs{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding:2px 2px 4px;margin-left:-2px;margin-right:-2px}
+  #panel .shoptabs::-webkit-scrollbar{display:none;width:0;height:0}
+  #panel .shoptabs button{flex:none;white-space:nowrap;scroll-snap-align:center}
+}

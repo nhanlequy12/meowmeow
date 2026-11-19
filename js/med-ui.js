@@ -207,7 +207,7 @@ function mdAdmit(c){
   const short=p.err&&!p.charity;
   return '<div class="md-plan"><div class="md-pt"><div class="md-av">'+catTag(lk(c),1)+'</div><div class="g">'+mdName(c)+' <span class="md-st">'+mdDot(medStatus(c))+MEDST[medStatus(c)].n+'</span><small>Chữa khỏi mọi bệnh bé đang có trong một lần nằm viện.</small></div></div>'+
     '<div class="md-bill">'+p.list.map(x=>'<div><span>'+x.D.ic+' <b>'+x.D.n+'</b></span><span>'+(p.complex&&x.D.inj?'<span class="dim">gộp</span>':'<b>'+mdXu(x.cost)+'</b>')+'</span></div>').join('')+
-      (p.complex?'<div><span>🩻 Chấn thương phức tạp <small class="dim">(gộp các chấn thương)</small></span><span><b>'+mdXu(MED_COMPLEX)+'</b></span></div>':'')+
+      (p.complex?'<div><span>🦴 Chấn thương phức tạp <small class="dim">(gộp các chấn thương)</small></span><span><b>'+mdXu(MED_COMPLEX)+'</b></span></div>':'')+
       '<div class="tot"><span>Tổng viện phí</span><span><b>'+mdXu(p.total)+'</b></span></div>'+
       '<div class="tot"><span>Thời gian</span><span><b>'+p.min+' phút</b></span></div></div>'+
     (p.charity?'<div class="md-char">🤝 Quỹ cứu trợ mèo nhận ca này: bạn trả <b>'+mdXu(p.pay)+'</b> đang có, nằm viện <b>'+p.min+' phút</b>.</div>':'')+

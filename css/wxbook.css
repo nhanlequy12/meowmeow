@@ -13,7 +13,7 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 .wb-l{border-radius:10px 2px 2px 10px;box-shadow:inset -18px 0 22px -16px rgba(110,70,40,.45),inset 0 0 0 2px #e6d3a8}
 .wb-r{border-radius:2px 10px 10px 2px;box-shadow:inset 18px 0 22px -16px rgba(110,70,40,.45),inset 0 0 0 2px #e6d3a8;perspective:1100px}
 .wb-spine{flex:0 0 10px;background:linear-gradient(90deg,#c9ab78,#8a6a48 45%,#8a6a48 55%,#c9ab78)}
-.wb-x{position:absolute;top:-12px;right:-10px;z-index:3;width:44px;min-height:44px;padding:0;border-radius:50%;font-size:18px;background:var(--pink);color:#3a1020;border-color:#b85a70}
+.wb-x{position:absolute;top:-12px;right:-10px;z-index:3;width:44px;height:44px;min-height:44px;padding:0;border-radius:50%;font-size:18px;background:var(--pink);color:#3a1020;border-color:#b85a70}
 .wb-mark{position:absolute;top:-6px;left:44px;width:22px;height:54px;background:#d8504a;z-index:2;clip-path:polygon(0 0,100% 0,100% 100%,50% 78%,0 100%);box-shadow:inset 0 0 0 2px #a8302c}
 .wb-book h3{margin:0 0 6px;font-size:17px;text-align:center;color:#6e3a30;letter-spacing:.5px}
 .wb-book h3:after{content:"";display:block;height:3px;margin:5px auto 0;width:70%;border-bottom:3px dotted #c9ab78}
@@ -28,9 +28,11 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 .wb-now .n{font-weight:800;font-size:16px}
 .wb-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .wb-chip{background:var(--pg2);border:2px solid #d9c394;border-radius:10px;padding:2px 8px;font-size:12.5px;font-weight:700;white-space:nowrap}
-.wb-warn{margin-top:8px;padding:6px 10px;border-radius:10px;background:#ffe1d6;border:2px dashed #c0503a;color:#8a2a1a;font-weight:700;font-size:13px;animation:wbPulse 1.6s ease-in-out infinite}
-@keyframes wbPulse{50%{background:#ffd0c0}}
-.wb-fc{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding-right:2px}
+/* nhịp nhấp nháy: lớp nền đậm hơn vẽ sẵn ở ::after (dưới chữ), chỉ đổi opacity */
+.wb-warn{position:relative;isolation:isolate;margin-top:8px;padding:6px 10px;border-radius:10px;background:#ffe1d6;border:2px dashed #c0503a;color:#8a2a1a;font-weight:700;font-size:13px}
+.wb-warn::after{content:'';position:absolute;inset:0;z-index:-1;border-radius:8px;background:#ffd0c0;opacity:0;pointer-events:none;animation:wbPulse 1.6s ease-in-out infinite}
+@keyframes wbPulse{50%{opacity:1}}
+.wb-fc{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:5px;padding-right:2px}
 .wb-fr{display:flex;gap:8px;align-items:center;background:var(--pg2);border:2px solid #d9c394;border-radius:10px;padding:3px 8px;font-size:13px}
 .wb-fr.bad{border-color:#c0503a;background:#ffeadf}
 .wb-fr .wi{flex:none}
@@ -58,7 +60,9 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 .wb-flip.v .wb-cast.o{border-radius:8px 8px 2px 2px;background:linear-gradient(0deg,rgba(50,26,10,.55),rgba(50,26,10,.18) 45%,transparent 80%)}
 .wb-list{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px;overflow:hidden}
 .wb-room{display:flex;gap:8px;align-items:center;width:100%;min-height:62px;flex:0 0 auto;text-align:left;font:inherit;color:inherit;background:var(--pg2);border:2px solid #d9c394;border-radius:12px;padding:5px 9px;cursor:pointer}
-.wb-room:hover,.wb-room:focus-visible{border-color:#8a5a3a;background:#f7ecd0}
+.wb-room:focus-visible{border-color:#8a5a3a;background:#f7ecd0}
+@media (hover:hover) and (pointer:fine){.wb-room:hover{border-color:#8a5a3a;background:#f7ecd0}}
+.wb-room:active{transform:translateY(1px);background:#f7ecd0}
 .wb-room.cold{border-left:6px solid #6aa6e0}.wb-room.hot{border-left:6px solid #e8704a}.wb-room.ok{border-left:6px solid #5fbf7a}.wb-room.meh{border-left:6px solid #e8b83a}
 .wb-room .g{flex:1;min-width:0}
 .wb-room .nm{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -70,7 +74,7 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 .wb-nav{flex:none;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;font-weight:800}
 .wb-nav button{min-width:44px;min-height:40px;padding:0 10px}
 .wb-nav .pg{min-width:86px;text-align:center}
-.wb-det{flex:1 1 auto;min-height:0;overflow-y:auto;padding-right:3px;text-align:center}
+.wb-det{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-right:3px;text-align:center}
 .wb-det .card{background:var(--pg2)}
 .wb-det .cd-sec{background:var(--pg2)}
 .wb-bar{display:flex;gap:6px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:6px;flex:none}
@@ -99,7 +103,7 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 .wg-acts{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}
 .wg-a{display:inline-flex;align-items:center;gap:4px;background:var(--pg2);border-radius:9px;padding:2px 4px 2px 6px;max-width:100%}
 .wg-a small{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:9em}
-.wg-a .sm,.wg-acts .sm,.wg-dev .sm{min-height:32px;padding:0 9px;font-size:12.5px;white-space:nowrap}
+.wg-a .sm,.wg-acts .sm,.wg-dev .sm{min-height:40px;padding:0 9px;font-size:12.5px;white-space:nowrap}
 .wg-more{margin-left:auto}
 .wg-ok{text-align:left;margin:4px 0 6px;font-size:13px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .wg-btns{justify-content:center;margin:6px 0 2px}
@@ -109,7 +113,7 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 .wg-dev .g{flex:1;min-width:0}
 .wg-dev small{display:block;line-height:1.35;color:#6e5440}
 .wg-tabs{flex:none;display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin:0 0 6px}
-.wg-tabs .sm{flex:1 1 auto;min-height:34px;padding:0 5px;font-size:12px;white-space:nowrap}
+.wg-tabs .sm{flex:1 1 auto;min-height:40px;padding:0 5px;font-size:12px;white-space:nowrap}
 .wg-body{text-align:left}
 .wg-body.wg-in{animation:wgIn .22s ease-out}
 @keyframes wgIn{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -125,7 +129,7 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 .wg-fix .wg-ct{margin:0 0 5px}
 .wg-tip{font-size:12.5px;line-height:1.45;background:#fff6dc;border-left:4px solid #e8b83a;border-radius:8px;padding:5px 9px;margin:6px 0}
 .wg-gen{font-size:13px;line-height:1.5;padding:3px 2px;border-bottom:1px dotted #d9c394}
-.wb-help{white-space:nowrap}
+.wb-help{white-space:nowrap;min-width:44px;min-height:40px}
 @media (max-width:760px){
   .wg-st{grid-template-columns:minmax(0,1fr) auto;font-size:12.5px}
   .wg-st .v{grid-column:1/-1;grid-row:2}
@@ -135,7 +139,7 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 /* điện thoại (dọc hoặc ngang): 5 mục giải thích nằm gọn một hàng, biểu tượng trên chữ */
 @media (max-width:760px),(max-height:520px){
   .wg-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
-  .wg-tabs .sm{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:11px;line-height:1.1;padding:2px 1px;min-height:38px}
+  .wg-tabs .sm{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:11px;line-height:1.1;padding:2px 1px;min-height:40px}
 }
 @media (prefers-reduced-motion:reduce){.wg-body.wg-in{animation:none}}
 
@@ -168,7 +172,7 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
 @keyframes wiGust{0%{transform:translateX(-7px);opacity:0}40%{opacity:1}100%{transform:translateX(8px);opacity:0}}
 @keyframes wiFog{from{transform:translateX(-3px)}to{transform:translateX(3px)}}
 @keyframes wiCloud{from{transform:translateX(-1px)}to{transform:translateX(1.5px)}}
-@media (prefers-reduced-motion:reduce){.wi *,.wb-book,.wb-warn{animation:none!important}.wb-flip{display:none}}
+@media (prefers-reduced-motion:reduce){.wi *,.wb-book,.wb-warn::after{animation:none!important}.wb-flip{display:none}}
 
 /* chip thời tiết còn khóa */
 .wxchip.lock{opacity:.7;cursor:help}
@@ -188,17 +192,29 @@ html[data-theme=dark] .wb-book{--pg:#efe2c4;--pg2:#e2d2ae;--cover:#7a4038}
   .wb-fx{font-size:12px;margin-top:5px;padding:4px 8px}
   .wb-room{min-height:56px}
   .wb-fc{flex-direction:row;overflow-x:auto;overflow-y:hidden;flex:0 0 auto}
-  .wb-fr{flex:1 0 96px;flex-direction:column;gap:0;text-align:center;font-size:11.5px;line-height:1.25;padding:3px 4px;min-width:0}
-  .wb-l{overflow-y:auto}
+  .wb-fr{flex:1 0 96px;flex-direction:column;gap:0;text-align:center;font-size:12px;line-height:1.25;padding:3px 4px;min-width:0}
+  .wb-l{overflow-y:auto;overscroll-behavior:contain}
 }
 /* màn thấp (điện thoại ngang): vẫn hai trang trái phải, chữ gọn hơn */
 @media (max-height:520px) and (orientation:landscape){
   .wb-book{padding:8px 10px}.wb-page{padding:8px 12px 6px}.wb-now .t{font-size:24px}.wb-book h3{font-size:14px;margin-bottom:3px}
   .wb-room{min-height:50px;padding:3px 8px}
-  .wb-fc{flex-direction:row;overflow-x:auto;overflow-y:hidden;flex:0 0 auto}.wb-fr{flex:1 0 90px;flex-direction:column;gap:0;text-align:center;font-size:11.5px;line-height:1.2;padding:2px 4px;min-width:0}.wb-l{overflow-y:auto}.wb-fx{margin-top:4px;padding:3px 8px;font-size:12px}.wb-mark{height:36px}
+  .wb-fc{flex-direction:row;overflow-x:auto;overflow-y:hidden;flex:0 0 auto}.wb-fr{flex:1 0 96px;flex-direction:column;gap:0;text-align:center;font-size:12px;line-height:1.2;padding:2px 4px;min-width:0}.wb-l{overflow-y:auto;overscroll-behavior:contain}.wb-fx{margin-top:4px;padding:3px 8px;font-size:12px}.wb-mark{height:36px}
 }
 
 /* tab Gacha: khung bảo hiểm 5★ */
 .pity5{margin:8px 0 6px;padding:7px 10px;border:2px solid var(--line);border-radius:12px;background:var(--panel2);text-align:left;font-size:13.5px}
 .pity5 .bar{height:8px;margin:5px 0 3px}
 .pity5 .row{gap:8px;flex-wrap:wrap}
+
+/* điện thoại ngang: nút ✕ nằm trọn trong màn hình (không bị cắt mép), trang trái chừa đáy cho nút "⚡ Sách điện"
+   (nút do css/mobile.css đặt ở góc dưới trái) để cuộn hết vẫn thấy đủ ô dự báo và nhãn "nguy hiểm" */
+@media (orientation:landscape) and (max-height:520px){
+  .wb-x{top:-5px;right:-5px}
+  .wb-r .wb-bar{padding-right:22px}
+  #wxbook .wb-book .wb-l{padding-bottom:40px;scroll-padding-bottom:40px}
+}
+/* ô dự báo hẹp (dọc hoặc ngang thấp): nhãn "⚠ nguy hiểm" được xuống dòng thay vì tràn ra ngoài ô */
+@media (max-width:760px) and (orientation:portrait),(max-height:520px) and (orientation:landscape){
+  .wb-fr .wb-tag{max-width:100%;white-space:normal;line-height:1.25}
+}

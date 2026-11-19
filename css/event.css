@@ -1,9 +1,9 @@
 /* ============ SỰ KIỆN THEO MÙA (js/event-ui.js) ============
    --evc: màu chủ đạo của sự kiện (EVENTS[].col), gán trên ô và bảng. */
 .evchip{border-color:var(--evc,#d8443c);background:color-mix(in srgb,var(--evc,#d8443c) 16%,var(--panel));font-weight:800}
-.evchip.ready{animation:evPulse 1.8s ease-in-out infinite}
 .evchip .evc{white-space:nowrap}
-@keyframes evPulse{50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--evc,#d8443c) 30%,transparent)}}
+.evchip.ready{position:relative}.evchip.ready::after{content:'';position:absolute;inset:-3px;border-radius:inherit;box-shadow:0 0 0 4px color-mix(in srgb,var(--evc,#d8443c) 30%,transparent);opacity:0;pointer-events:none;animation:evPulse 1.8s ease-in-out infinite}
+@keyframes evPulse{50%{opacity:1}}
 /* tên sự kiện chỉ hiện ở màn rất rộng: thanh trên cùng đã chật (ở 1280px ô Nhiệm vụ suýt tràn), tên vẫn có trong tooltip và bảng sự kiện */
 .evchip .evnm{display:none}
 @media (min-width:1500px){.evchip .evnm{display:inline}}

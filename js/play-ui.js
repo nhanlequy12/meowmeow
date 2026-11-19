@@ -4,7 +4,7 @@
    sau meal-ent.js, wx-ui.js để bọc stepEnt, choose, entPos ở ngoài cùng; sau quest.js, achieve.js để thêm nhiệm vụ, thành tựu). CSS: css/play.css.
    Không sửa ui.js: chỉ bọc PANEL.home, stepEnt, choose, critStep, critDraw, setRoom, openAdmin, và chặn sự kiện chuột/chạm của
    khung phòng ở pha capture của #roomwrap trong lúc đang chơi (để kéo là vẫy đồ chơi chứ không cuộn phòng).
-   - Nút 🪶 Chơi nằm trên hàng nút dưới phòng (sau Cho uống, trước Sắp xếp đồ), chỉ hiện từ cấp PLAYC.lv. Bấm mở bảng chọn trò;
+   - Nút 🧶 Chơi nằm trên hàng nút dưới phòng (sau Cho uống, trước Sắp xếp đồ), chỉ hiện từ cấp PLAYC.lv. Bấm mở bảng chọn trò;
      đang chơi thì nút thành ⏹ Dừng. Trên khung phòng có thanh nhỏ #plbar ở góc dưới trái: tên trò, giây còn lại, nút Dừng.
    - PL giữ lượt chơi đang diễn ra (không lưu). Mèo đang chơi có e.pl = {off, cd, jmp, dir, ex}: off là khoảng đứng chờ cạnh đồ chơi,
      cd là giây chờ trước cú vồ kế tiếp, jmp là đang bay trong cú vồ.
@@ -68,7 +68,7 @@ function plCatch(e,T){
   if(PL.k==='feather'){PL.vx+=(e.flip?1:-1)*40;PL.vy-=60}   // lông vũ bị vồ trúng giật lên
   const r=playReward(c,PL.k);
   if(r&&r.hp>0){if(!PL.got.includes(c.name))PL.got.push(c.name);
-    toast('vồ trúng '+(PL.k==='laser'?'chấm đỏ':'lông vũ')+'! ❤️ +'+r.hp+' độ vui',{type:'pet',title:c.name,key:'play',mtitle:'Chơi với bé',icon:PL.k==='laser'?'🔴':'🪶'})}
+    toast('vồ trúng '+(PL.k==='laser'?'chấm đỏ':'lông vũ')+'! ❤️ +'+r.hp+' độ vui',{type:'pet',title:c.name,key:'play',mtitle:'Chơi với bé',icon:PL.k==='laser'?'🔴':'🧶'})}
 }
 
 /* ---------- đồ chơi chuyển động ---------- */
@@ -148,7 +148,7 @@ function plBtn(){
   if(!playOpen())return '';
   if(PL.on)return '<button class="plgo on" onclick="plStop(1)" data-tip="Dừng trò chơi">⏹ <span class="pl-l">Dừng chơi</span><span class="pl-sh">Dừng</span> <small>'+Math.max(0,Math.ceil(PL.t))+'s</small></button>';
   const r=playRoster(cur),n=r.ok.length;
-  return '<button class="plgo'+(n?' go':'')+'" onclick="openPlay()" aria-label="Chơi với bé" data-tip="Chơi với bé: cần câu lông vũ hoặc đèn laser. '+(n?n+' bé sẵn sàng được thưởng.':'Chưa bé nào được thưởng lúc này, nhưng vẫn chơi được.')+'">🪶 <span class="pl-l">Chơi với bé</span><span class="pl-sh">Chơi</span></button>';
+  return '<button class="plgo'+(n?' go':'')+'" onclick="openPlay()" aria-label="Chơi với bé" data-tip="Chơi với bé: cần câu lông vũ hoặc đèn laser. '+(n?n+' bé sẵn sàng được thưởng.':'Chưa bé nào được thưởng lúc này, nhưng vẫn chơi được.')+'">🧶 <span class="pl-l">Chơi với bé</span><span class="pl-sh">Chơi</span></button>';
 }
 {const H0=PANEL.home;PANEL.home=function(){
   const h=H0.apply(this,arguments);if(edit)return h;const b=plBtn();if(!b)return h;
@@ -162,7 +162,7 @@ function openPlay(){
   const nm=L=>L.map(o=>esc(o.c.name)).join(', ');
   const card=k=>{const K=PLAY_KIND[k];return '<div class="card pl-card"><div class="pl-big">'+K.ic+'</div><div class="g"><b>'+K.n+'</b><br><small>'+K.d+' Vồ trúng: +'+PLAYC.hp[k]+' vui.</small></div>'+
     '<button class="on" '+(can?'':'disabled ')+'onclick="closeModal();plStart(\''+k+'\')">▶ Chơi</button></div>'};
-  modal('<div class="pl"><h3>🪶 Chơi với bé · '+esc(R.n)+'</h3>'+
+  modal('<div class="pl"><h3>🧶 Chơi với bé · '+esc(R.n)+'</h3>'+
     '<div class="dim pl-intro">Một lượt '+PLAYC.dur+' giây. Các bé ở gần đuổi theo và nhảy vồ. Mỗi bé được thưởng '+Math.round(PLAYC.cd/60000)+' phút một lần: thêm độ vui và '+PLAYC.xp+' kinh nghiệm, mất '+PLAYC.cost+' năng lượng.</div>'+
     card('feather')+card('laser')+
     '<div class="pl-ros">'+
@@ -222,7 +222,7 @@ setInterval(()=>{if(PL.on&&(tab!=='home'||edit||document.hidden||cur!==PL.rid))p
 
 /* ---------- nhiệm vụ ngày và thành tựu ---------- */
 if(typeof Q_DEF!=='undefined'&&!Q_DEF.play){
-  Q_DEF.play={ic:'🪶',t:n=>'Chơi với bé '+n+' lần (bé vồ trúng đồ chơi)',d:()=>3};
+  Q_DEF.play={ic:'🧶',t:n=>'Chơi với bé '+n+' lần (bé vồ trúng đồ chơi)',d:()=>3};
   Q_DAY.push('play');
   const Q0=qRoll;qRoll=function(pool,n,kind){return Q0.call(this,playOpen()?pool:pool.filter(k=>k!=='play'),n,kind)};
 }
@@ -231,14 +231,14 @@ if(typeof achSer==='function')achSer('care','play',stv('play'),n=>'Chơi với m
 /* ---------- Sổ tay (file nạp trước tut-wx.js) ---------- */
 (()=>{if(typeof TUT_TEXT==='undefined'||!TUT_TEXT.book)return;const P=TUT_TEXT.book.pages;if(P.some(p=>p.id==='play'))return;
   let i=P.findIndex(p=>p.id==='bed');if(i<0)i=P.findIndex(p=>p.id==='room');
-  P.splice(i<0?P.length:i+1,0,{id:'play',ic:'🪶',t:'Chơi với bé',p:[
-    'Từ cấp '+PLAYC.lv+', tab Phòng có nút 🪶 Chơi ngay cạnh nút Cho uống. Chọn một trong hai trò, mỗi lượt '+PLAYC.dur+' giây; bấm ⏹ Dừng để thôi sớm.',
+  P.splice(i<0?P.length:i+1,0,{id:'play',ic:'🧶',t:'Chơi với bé',p:[
+    'Từ cấp '+PLAYC.lv+', tab Phòng có nút 🧶 Chơi ngay cạnh nút Cho uống. Chọn một trong hai trò, mỗi lượt '+PLAYC.dur+' giây; bấm ⏹ Dừng để thôi sớm.',
     PLAY_KIND.feather.ic+' Cần câu lông vũ: lông vũ bay theo chuột (máy tính) hoặc theo ngón tay khi bạn kéo trên khung phòng. Đưa lông vũ sát sàn để các bé với tới; giật lên đúng lúc để trêu bé.',
     PLAY_KIND.laser.ic+' Đèn laser: chấm đỏ tự chạy khắp phòng, các bé lao theo rất nhanh. Chạm vào phòng để chỉ chỗ cho chấm đỏ.',
     'Tối đa '+PLAYC.max+' bé ở gần nhất cùng chơi. Bé vồ trúng thì được thêm độ vui (lông vũ +'+PLAYC.hp.feather+', laser +'+PLAYC.hp.laser+') và '+PLAYC.xp+' kinh nghiệm, mất '+PLAYC.cost+' năng lượng. Mỗi bé được thưởng '+Math.round(PLAYC.cd/60000)+' phút một lần; trong lúc chờ bé vẫn chơi, chỉ không cộng gì.',
     'Bé không chơi: đang ngủ, đang ăn uống, mệt (năng lượng dưới '+PLAYC.en+'), đau chân, đi lạc, nằm viện hoặc đi vắng. Bảng chọn trò ghi rõ lý do từng bé.']})})();
 if(typeof TUT_TEXT!=='undefined'&&TUT_TEXT.hints)TUT_TEXT.hints.play=[
-  'Bấm 🪶 Chơi để chơi với các bé: cần câu lông vũ hoặc đèn laser.',
+  'Bấm 🧶 Chơi để chơi với các bé: cần câu lông vũ hoặc đèn laser.',
   'Bé vồ trúng đồ chơi thì vui hơn. Mỗi bé được thưởng 10 phút một lần.'];
 
 /* ---------- mẹo lần đầu (TUT nạp sau file này nên đợi trang nạp xong) ---------- */
@@ -260,8 +260,8 @@ addEventListener('load',()=>{
 /* ---------- Admin ---------- */
 {const A0=openAdmin;openAdmin=function(){A0.apply(this,arguments);const mb=$('mbox');if(!mb||!$('axu'))return;const rb=mb.querySelector('button.bad'),row=rb&&rb.parentElement;
   const B=(f,n)=>'<button class="sm" onclick="'+f+'">'+n+'</button>',d=document.createElement('div'),p=S.play||{};
-  d.innerHTML='<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>🪶 Chơi với bé</b><div class="dim">'+(p.s|0)+' lượt chơi · '+(p.n|0)+' lần được thưởng · '+Object.keys(p.at||{}).length+' bé đang chờ 10 phút</div>'+
-    '<div class="row wrap">'+B('admPlay(1)','🪶 Chơi lông vũ ngay')+B('admPlay(2)','🔴 Chơi laser ngay')+B('admPlay(3)','⏱ Xóa thời gian chờ')+B('admPlay(4)','⚡ Bé trong phòng đầy năng lượng')+'</div></div>';
+  d.innerHTML='<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>🧶 Chơi với bé</b><div class="dim">'+(p.s|0)+' lượt chơi · '+(p.n|0)+' lần được thưởng · '+Object.keys(p.at||{}).length+' bé đang chờ 10 phút</div>'+
+    '<div class="row wrap">'+B('admPlay(1)','🧶 Chơi lông vũ ngay')+B('admPlay(2)','🔴 Chơi laser ngay')+B('admPlay(3)','⏱ Xóa thời gian chờ')+B('admPlay(4)','⚡ Bé trong phòng đầy năng lượng')+'</div></div>';
   const el=d.firstElementChild;if(row&&row.parentElement)row.parentElement.insertBefore(el,row);else mb.appendChild(el)}}
 function admPlay(k){
   if(k===1||k===2){closeModal();plStart(k===1?'feather':'laser',1);return}

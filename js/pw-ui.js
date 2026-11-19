@@ -46,7 +46,7 @@ function pwVar(i){
 {const R0=renderTop;renderTop=function(){R0.apply(this,arguments);if(!pwOpen())return;
   const o=pwOut(),low=pwLow().length,el=document.createElement('div');el.className='chip tap pwchip'+(o?' out':'');el.setAttribute('onclick','openPower()');
   el.setAttribute('data-tip',o?'Mất điện vì sét đánh. Bấm để xem nguồn dự phòng.':'Sách điện: pin thiết bị, ổ điện, điện mặt trời, máy phát.');
-  el.innerHTML=o?'⚡ <b class="lbl">Mất điện</b> <b>'+mmss(o.e-now())+'</b>'+(genOn()?' <span class="dim">· 🔋</span>':''):'⚡ <b>Điện</b>'+(low?' <span style="color:var(--bad)">🪫'+low+'</span>':'');
+  el.innerHTML=o?'⚡ <b class="lbl">Mất điện</b> <b>'+mmss(o.e-now())+'</b>'+(genOn()?' <span class="dim">· 🔋</span>':''):'⚡ <b>Điện</b>'+(low?' <span style="color:var(--bad)">🔋'+low+'</span>':'');
   emoEl(el);const top=$('top'),ref=top.querySelector('.wxchip');top.insertBefore(el,ref?ref.nextSibling:top.querySelector('.xp'));
 }}
 
@@ -64,7 +64,7 @@ function openPw(iid){
     '<div class="k">Sạc đầy</div><div>'+P.chargingCost+' xu · '+P.chargingDuration+' phút ở ổ thường</div>'+
     (ol?'<div class="k">🔌 Đang cắm</div><div>'+FURN[ol.fid].n+(FURN[ol.fid].outlet.smart?' · còn '+fmtL(pwChargeLeft(i)):'')+'</div>':'')+
     '<div class="k">Phòng</div><div>'+ROOM[i.room].n+'</div></div></div>'+
-    (pwPct(i)<PWC.low&&!i.charge?'<div class="pw-warn">🪫 Pin dưới '+Math.round(PWC.low*100)+'%: sạc sớm để máy không ngừng chạy.</div>':'')+
+    (pwPct(i)<PWC.low&&!i.charge?'<div class="pw-warn">🔋 Pin dưới '+Math.round(PWC.low*100)+'%: sạc sớm để máy không ngừng chạy.</div>':'')+
     '<div class="row wrap" style="justify-content:center;margin-top:8px">'+
       (i.charge?'<button class="sm" onclick="doPwUnplug('+iid+')">⏏ Rút sạc</button>':'<button class="go pw-chg" '+(q.need?'':'disabled')+' onclick="pwPick('+iid+')">🔌 Sạc thiết bị'+(q.need?' · '+q.cost+' xu':' (đầy)')+'</button>')+
       (man&&!i.broken&&!pwDead(i)?'<button class="sm '+(i.off?'on':'')+'" onclick="wxToggle('+iid+',1)">'+(i.off?'▶ Bật':'⏸ Tắt')+'</button>':'')+
@@ -152,7 +152,7 @@ function pwShop(){closeModal();if(pwBookOn())closePower();shopT='power';shopSel=
   if(!pwOpen())return h;
   const L=pwElecIn(cur),low=L.filter(i=>pwPct(i)<PWC.low&&!i.charge),ch=L.filter(i=>i.charge),o=pwOut();
   if(!L.length&&!o)return h;
-  const line='<div class="wxline pwline"><div class="g tap" onclick="openPower()">'+(o?'⛈ <b style="color:var(--bad)">Mất điện · '+mmss(o.e-now())+'</b>'+(genOn()?' · 🔋 máy phát':pwDark(cur)?' · phòng tối':'')+' · ':'')+'🔌 '+L.length+' thiết bị điện'+(ch.length?' · ⚡ '+ch.length+' đang sạc':'')+(low.length?' · <b style="color:var(--bad)">🪫 '+low.length+' pin yếu</b>':'')+'</div>'+
+  const line='<div class="wxline pwline"><div class="g tap" onclick="openPower()">'+(o?'⛈ <b style="color:var(--bad)">Mất điện · '+mmss(o.e-now())+'</b>'+(genOn()?' · 🔋 máy phát':pwDark(cur)?' · phòng tối':'')+' · ':'')+'🔌 '+L.length+' thiết bị điện'+(ch.length?' · ⚡ '+ch.length+' đang sạc':'')+(low.length?' · <b style="color:var(--bad)">🔋 '+low.length+' pin yếu</b>':'')+'</div>'+
     (low.length?'<button class="sm" onclick="pwPick('+low[0].iid+')">🔌 Sạc '+FURN[low[0].fid].n+'</button>':'')+(o&&invN('flashlight')&&!pwTorch(cur)&&!genOn()?'<button class="sm" onclick="doPwTorch()">🔦 Đèn pin</button>':'')+'</div>';
   const wl=typeof wxLine==='function'?wxLine(cur):'',i=wl?h.indexOf(wl):-1;return i<0?line+h:h.slice(0,i+wl.length)+line+h.slice(i+wl.length)}}
 {const P0=PANEL.shop;PANEL.shop=function(){let h=P0.apply(this,arguments);
@@ -170,7 +170,7 @@ function pwShop(){closeModal();if(pwBookOn())closePower();shopT='power';shopSel=
   render()}}
 {const p0=doPlace;doPlace=function(iid){const it=S.items.find(i=>i.iid===iid);if(it&&!pwRoomOk(it.fid,cur)){toast(pwRoomWhy(it.fid),{type:'warn',title:FURN[it.fid].n});return}return p0.apply(this,arguments)}}
 // vuốt ve bé đang sợ: vỗ về
-{const p0=petCat;petCat=function(c){const calm=pwCalm(c),n=p0.apply(this,arguments);if(calm){save();toast(c.fr>0?'được vỗ về, bớt sợ hơn rồi':'đã hết sợ',{icon:'🫂',title:c.name,key:'pwcalm'})}return n}}
+{const p0=petCat;petCat=function(c){const calm=pwCalm(c),n=p0.apply(this,arguments);if(calm){save();toast(c.fr>0?'được vỗ về, bớt sợ hơn rồi':'đã hết sợ',{icon:'🤝',title:c.name,key:'pwcalm'})}return n}}
 
 /* ---------- vẽ trong phòng ---------- */
 const PWBOLT=[[0,0],[-3,8],[2,9],[-4,20],[1,21],[-3,32]];
@@ -274,7 +274,7 @@ function pwLeft(){
         (smart?'<div class="dim">Dự báo sản lượng: '+wxForecast(3).map(x=>x.w.ic+' ×'+String(PWC.solar.wx[x.type]!=null?PWC.solar.wx[x.type]:.5).replace('.',',')).join(' · ')+'</div>':'')
        :'<div class="dim">'+(S.level>=SOLAR_LV?'Chưa lắp tấm pin. Lắp ở Ban công hoặc Sân thượng (Cửa hàng › ⚡ Điện năng).':'🔒 Mở ở cấp '+SOLAR_LV+': tấm pin ở Ban công, Sân thượng giảm 50% phí sạc.')+'</div>')+
     '<h4>🔋 Máy phát dự phòng</h4>'+(gens.length?'<div class="pw-gl">'+gens.map(gRow).join('')+'</div>':'<div class="dim">'+(S.level<GEN_LV?'🔒 Mở ở cấp '+GEN_LV+' cùng Tầng hầm.':bas?'Chưa có máy phát ở Tầng hầm.':'Cần mở Tầng hầm trước, máy phát chỉ đặt ở đó.')+'</div>')+
-    (low.length?'<div class="wb-warn">🪫 '+low.length+' thiết bị sắp hết pin: '+low.slice(0,3).map(i=>FURN[i.fid].n+' ('+Math.round(pwPct(i)*100)+'%)').join(', ')+(low.length>3?'…':'')+'</div>':'')+
+    (low.length?'<div class="wb-warn">🔋 '+low.length+' thiết bị sắp hết pin: '+low.slice(0,3).map(i=>FURN[i.fid].n+' ('+Math.round(pwPct(i)*100)+'%)').join(', ')+(low.length>3?'…':'')+'</div>':'')+
     '<div class="row wrap pw-bk"><button class="sm" onclick="closePower();openClimate()">🌡 Sách khí hậu</button><button class="sm" onclick="pwShop()">🛒 Mua đồ điện</button>'+(typeof openHandbook==='function'?'<button class="sm" onclick="openHandbook(\'power\')">📖 Hướng dẫn</button>':'')+'</div>';
 }
 function pwRight(){
@@ -320,7 +320,7 @@ setInterval(()=>{if(pwBookOn()&&$('modal').style.display!=='flex')pwBookDraw()},
 /* ---------- lúc vắng mặt ---------- */
 setTimeout(()=>{if(!S||!pwOpen())return;const L=[];
   if(PWAWAY.strike)L.push('⚡ Sét đánh làm mất điện 15 phút'+(pwOut()?' (còn '+mmss(pwOut().e-now())+')':', nay đã có điện lại'));
-  if(PWAWAY.dead.length)L.push('🪫 Hết pin: '+[...new Set(PWAWAY.dead)].slice(0,4).join(', '));
+  if(PWAWAY.dead.length)L.push('🔋 Hết pin: '+[...new Set(PWAWAY.dead)].slice(0,4).join(', '));
   const low=pwLow().filter(i=>!pwDead(i));if(low.length)L.push('🔋 '+low.length+' thiết bị pin dưới '+Math.round(PWC.low*100)+'%');
   if(L.length)toast(L.join(' · '),{icon:'⚡',title:'Điện năng lúc bạn vắng',ms:9000,key:'pwaway'});PWAWAY.dead=[];PWAWAY.strike=0},2500);
 
@@ -332,7 +332,7 @@ function pwAdmBox(){
   return '<div class="card" style="flex-direction:column;align-items:stretch;gap:6px"><b>⚡ Điện năng</b>'+
     '<div class="dim">'+(o?'Đang mất điện, còn '+mmss(o.e-now()):'Có điện')+' · điện mặt trời '+Math.floor(pwSol())+'/'+pwSolarCap()+' · tiết kiệm '+(p.saved||0)+' xu'+(p.sch?' · sét định giờ lúc '+hhmm(p.sch.t):'')+'</div>'+
     '<div class="row wrap">'+B('admPwOut()','⛈ Gây mất điện (sét đánh)')+B('admPwEnd()','💡 Có điện lại ngay')+'</div>'+
-    '<div class="row wrap">'+B('admPwBat(1)','🔋 Sạc đầy mọi thiết bị')+B('admPwBat(0)','🪫 Xả pin về 0%')+B('admPwBat(.15)','Pin 15% (thử cảnh báo)')+'</div>'+
+    '<div class="row wrap">'+B('admPwBat(1)','🔋 Sạc đầy mọi thiết bị')+B('admPwBat(0)','🔋 Xả pin về 0%')+B('admPwBat(.15)','Pin 15% (thử cảnh báo)')+'</div>'+
     '<div class="row wrap">'+B('admPwSol()','☀️ Đầy bộ lưu trữ mặt trời')+B('admPwGen()','🔋 Sạc đầy máy phát')+B('admPwGive()','Nhận đủ đồ điện')+'</div>'+
     '<div class="dim">Gây mất điện chạy đúng như sét thật (mèo sợ, phòng tối, 15 phút). Sạc đầy và xả pin không trừ xu.</div></div>';
 }

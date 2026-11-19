@@ -30,7 +30,7 @@ const MEDC={
 /* ---------- nước uống ---------- wa: nước cộng cho bé mỗi lần uống; cool: giảm điểm phơi nóng; he: cộng sức khỏe; cf: cộng độ thoải mái */
 const DRINKS=[
   {id:'w_plain',n:'Nước lọc',ic:'💧',price:5,wa:20,d:'+20 nước.'},
-  {id:'w_mineral',n:'Nước khoáng',ic:'🫧',price:12,wa:35,d:'+35 nước.'},
+  {id:'w_mineral',n:'Nước khoáng',ic:'🥤',price:12,wa:35,d:'+35 nước.'},
   {id:'w_pure',n:'Nước tinh khiết cao cấp',ic:'💎',price:25,wa:50,d:'+50 nước.'},
   {id:'w_electro',n:'Nước điện giải cho thú cưng',ic:'🧃',price:40,wa:50,cool:40,d:'+50 nước, hạ nhiệt khi bé bị nóng.'},
   {id:'w_nutri',n:'Nước bổ sung dinh dưỡng cho mèo',ic:'🥛',price:60,wa:40,he:5,d:'+40 nước, +5 sức khỏe.'},
@@ -81,7 +81,7 @@ const GRP_N={resp:'đường hô hấp',fever:'sốt',ors:'mất nước, kiệt
    kind 'tool': dụng cụ; cure: danh sách bệnh chữa khỏi ngay; splint: cố định tạm; tonic: hỗ trợ phục hồi cho bé không bệnh. */
 const MEDS=[
   {id:'m_fever',n:'Thuốc giảm sốt',ic:'🌡️',price:20,kind:'sym',grp:['fever'],en:5,d:'Dịu cơn sốt.'},
-  {id:'m_digest',n:'Thuốc hỗ trợ tiêu hóa',ic:'🫚',price:20,kind:'sym',grp:['digest'],hp:5,d:'Êm bụng, đỡ mệt.'},
+  {id:'m_digest',n:'Thuốc hỗ trợ tiêu hóa',ic:'🍵',price:20,kind:'sym',grp:['digest'],hp:5,d:'Êm bụng, đỡ mệt.'},
   {id:'m_resp',n:'Thuốc hỗ trợ đường hô hấp',ic:'🌿',price:20,kind:'sym',grp:['resp'],en:5,d:'Dễ thở, bớt hắt hơi.'},
   {id:'m_itch',n:'Thuốc giảm ngứa',ic:'🧴',price:20,kind:'sym',grp:['itch','eye'],hp:5,d:'Dịu da, dịu mắt.'},
   {id:'m_recover',n:'Thuốc hỗ trợ hồi phục',ic:'🍵',price:25,kind:'sym',grp:['calm','fever','resp'],hp:5,en:5,d:'Thư giãn, lại sức.'},

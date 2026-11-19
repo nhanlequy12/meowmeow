@@ -130,12 +130,20 @@ const buffOf=c=>(c.buff&&c.buff.until>now())?c.buff:{};
 /* ---------- phòng & nội thất ---------- */
 const ownedRooms=()=>ROOMS.filter(r=>S.rooms[r.id]);
 const catsIn=rid=>S.cats.filter(c=>c.room===rid);
-const homeCats=rid=>S.cats.filter(c=>c.room===rid&&!onTrip(c.uid));
+// TICKC: bộ đệm theo phòng, chỉ sống trong vòng duyệt mèo của tick() (ở đó danh sách đồ, mèo ở nhà và hệ số phòng không đổi giữa các bé,
+// nhưng mỗi bé lại hỏi lại vài lần: 150 bé × 240 món là O(mèo × đồ) mỗi giây). Ngoài tick, TICKC=null nên mọi hàm tính như cũ.
+let TICKC=null;
+const tcache=(k,rid,f)=>{if(!TICKC)return f(rid);const m=TICKC[k]||(TICKC[k]={});return rid in m?m[rid]:(m[rid]=f(rid))};
+const homeCats0=rid=>S.cats.filter(c=>c.room===rid&&!onTrip(c.uid));
+const homeCats=rid=>tcache('h',rid,homeCats0);
 const totalCap=()=>ownedRooms().reduce((a,r)=>a+r.cap,0);
 const freeRoom=()=>{const r=roomsByBuy().find(r=>catsIn(r.id).length<r.cap);return r?r.id:'wait'}; // phòng mua trước được lấp trước (cùng thứ tự với fillWait); hết chỗ thì vào Phòng chờ
-const roomHunger=rid=>{let m=ROOM[rid].hunger||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].hunger;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.max(.5,m)};
-const roomRegen=rid=>{let m=ROOM[rid].regen||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].regen;if(h&&!i.broken&&!seen[i.fid]&&!(typeof pwOff==='function'&&pwOff(i))){seen[i.fid]=1;m*=h}});return Math.min(2,m)};
-const itemsIn=rid=>S.items.filter(i=>i.room===rid);
+const roomHunger0=rid=>{let m=ROOM[rid].hunger||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].hunger;if(h&&!i.broken&&!seen[i.fid]){seen[i.fid]=1;m*=h}});return Math.max(.5,m)};
+const roomRegen0=rid=>{let m=ROOM[rid].regen||1;const seen={};itemsIn(rid).forEach(i=>{const h=FURN[i.fid].regen;if(h&&!i.broken&&!seen[i.fid]&&!(typeof pwOff==='function'&&pwOff(i))){seen[i.fid]=1;m*=h}});return Math.min(2,m)};
+const roomHunger=rid=>tcache('hu',rid,roomHunger0);
+const roomRegen=rid=>tcache('rg',rid,roomRegen0);
+const itemsIn0=rid=>S.items.filter(i=>i.room===rid);
+const itemsIn=rid=>tcache('i',rid,itemsIn0);
 /* ---------- ổ ngủ: c.bed = iid của ổ, c.bk = chỗ nằm (chỉ số trong FURN[..].bed.at). Ngủ thì hồi năng lượng nhanh gấp bed.en lần, đầy thì tự dậy.
    Ổ bị cất, bán, hỏng, bé đổi phòng hay đi viễn chinh thì bé tự thôi ngủ (bedItem trả null, tick xóa c.bed). */
 const bedItem=c=>{if(c.bed==null)return null;const it=S.items.find(i=>i.iid===c.bed);return it&&it.room===c.room&&!it.broken&&FURN[it.fid].bed&&!onTrip(c.uid)?it:null};
@@ -156,11 +164,12 @@ function gEff(){
   S.items.forEach(i=>{if(!i.room||i.broken||seen[i.fid]||(typeof pwOff==='function'&&pwOff(i)))return;seen[i.fid]=1;const g=FURN[i.fid].g;if(g)for(const k in g)e[k]+=g[k]});
   return e;
 }
-function roomHappy(rid){
+function roomHappy0(rid){
   let h=0; const seen={};
   itemsIn(rid).forEach(i=>{if(i.broken||seen[i.fid]||(typeof pwOff==='function'&&pwOff(i)))return;seen[i.fid]=1;h+=FURN[i.fid].happy||0});
   return Math.min(HAPPY_CAP,h)+(ROOM[rid].happy||0)-(ROOM[rid].wait?10:0);
 }
+function roomHappy(rid){return tcache('hp',rid,roomHappy0)}
 function happyTarget(c){
   const fx=tE(c,'fixedHappy'); if(fx)return fx;
   let h=50+roomHappy(c.room)+tE(c,'self');
@@ -190,7 +199,8 @@ function tick(dt,sim){
   if(S.adm&&S.adm.inf)S.coins=999999999;
   const WXON=typeof wxCat==='function'&&wxOpen(); // thời tiết, khí hậu phòng, sức khỏe, nước uống (js/wx.js); thiếu file thì game chạy như cũ
   const MEDON=typeof medCat==='function'; // nước uống, bệnh tật, bệnh viện (js/med.js)
-  S.cats.forEach(c=>{
+  TICKC={}; // trong vòng này không bé nào đổi phòng, không món nào đổi chỗ, nên đệm theo phòng được (xem tcache); phần bát ăn và các *Tick phía sau tính tươi
+  try{S.cats.forEach(c=>{
     if(MEDON&&inHosp(c.uid)){medHospCat(c);return} // đang nằm viện: bệnh viện lo ăn uống, chỉ số không tụt
     if(typeof strayCat==='function'&&strayCat(c))return; // bỏ nhà đi (js/stray.js): chỉ số đứng yên tới khi bé về
     const away=onTrip(c.uid),bf=buffOf(c);
@@ -206,7 +216,7 @@ function tick(dt,sim){
       const t=happyTarget(c),step=tE(c,'fixedHappy')?100:dt/60;
       c.hp=Math.abs(t-c.hp)<=step?t:c.hp+Math.sign(t-c.hp)*step;
     }
-  });
+  })}finally{TICKC=null}
   // máy cho ăn tự đổ hạt khô cho đầy chỗ trống (trả xu trực tiếp, không qua kho); mèo đói được giao bát và tự đi tới ăn (js/meal.js)
   if(typeof mealCall==='function')ownedRooms().forEach(r=>{ // công cụ kiểm thử không nạp js/meal.js thì bỏ qua phần ăn
     const bs=bowlsIn(r.id); if(!bs.length)return;

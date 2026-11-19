@@ -58,22 +58,23 @@ function faceRow(items,o){
 
 if(typeof document!=='undefined'){
   document.head.insertAdjacentHTML('beforeend','<style id="face-css">'+
-  ':root{--cp2:#23804a;--cp1:#2a6fb5;--cpx:#c23b3b;--cp2b:#d9f1e0;--cp1b:#dceafa;--cpxb:#fbdada}'+
+  ':root{--cp2:#23804a;--cp1:#24609e;--cpx:#c23b3b;--cp2b:#d9f1e0;--cp1b:#dceafa;--cpxb:#fbdada}'+
   'html[data-theme=dark]{--cp2:#6fd79a;--cp1:#7fb9f2;--cpx:#ff8a8a;--cp2b:#1f3d2c;--cp1b:#1f3350;--cpxb:#4a2424}'+
   'img.face{display:block;border-radius:9px}img.face.px{image-rendering:pixelated}'+
   '.fcr{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;vertical-align:middle}'+
   '.fc{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;padding:2px;margin:0;min-height:0;min-width:0;width:auto;line-height:0;border:2px solid var(--soft,#d9c3a5);border-radius:11px;background:var(--panel);cursor:default;box-shadow:none}'+
-  'button.fc{cursor:pointer}button.fc:hover{background:var(--panel2)}.fc:focus-visible{outline:3px solid var(--gold);outline-offset:1px}'+
+  'button.fc{cursor:pointer}@media (hover:hover) and (pointer:fine){button.fc:hover{background:var(--panel2)}}.fc:focus-visible{outline:3px solid var(--gold);outline-offset:1px}'+
   '.fc.cp2{border-color:var(--cp2)}.fc.cp1{border-color:var(--cp1)}.fc.cpx{border-color:var(--cpx)}'+
   '.fc.here{box-shadow:0 0 0 2px var(--gold)}'+
   '.fc.dim{border-style:dashed}.fc.dim img{opacity:.5;filter:grayscale(.55)}'+
   '.fc.unk img{filter:brightness(0);opacity:.32}html[data-theme=dark] .fc.unk img{filter:brightness(0) invert(.6);opacity:.45}'+
-  '.cpm{position:absolute;right:-5px;bottom:-5px;min-width:15px;height:15px;padding:0 2px;border-radius:8px;font:900 10.5px/15px system-ui,sans-serif;font-style:normal;text-align:center;color:#fff;border:1.5px solid var(--panel)}'+
+  '.cpm{position:absolute;right:-5px;bottom:-5px;min-width:15px;height:15px;padding:0 2px;border-radius:8px;font:900 11px/15px system-ui,sans-serif;font-style:normal;text-align:center;color:#fff;border:1.5px solid var(--panel)}'+
   '.cpm.cp2{background:var(--cp2)}.cpm.cp1{background:var(--cp1)}.cpm.cpx{background:var(--cpx)}html[data-theme=dark] .cpm{color:#16100b}'+
   '.cpl{display:inline-flex;align-items:center;gap:2px;padding:1px 7px;border-radius:9px;font-size:12px;font-weight:700;line-height:1.5;white-space:nowrap;border:1.5px solid var(--soft,#d9c3a5);color:var(--ink)}'+
   '.cpl i{font-style:normal;font-weight:900}'+
   '.cpl.cp2{color:var(--cp2);border-color:var(--cp2);background:var(--cp2b)}.cpl.cp1{color:var(--cp1);border-color:var(--cp1);background:var(--cp1b)}.cpl.cpx{color:var(--cpx);border-color:var(--cpx);background:var(--cpxb)}'+
   '.fc-more{flex:none;min-height:30px;min-width:34px;width:auto;padding:2px 8px;margin:0;border-radius:11px;font-size:12.5px;font-weight:800;line-height:1.2}span.fc-more{display:inline-flex;align-items:center;color:var(--dim)}'+
+  '@media (pointer:coarse){button.fc{min-width:40px;min-height:40px}button.fc-more{min-width:40px;min-height:40px}}'+
   '</style>');
   // nhấn giữ trên màn cảm ứng: hiện lý do, và bỏ cú bấm ngay sau đó để không kích hoạt nút
   let hold=0,held=null,hx=0,hy=0;

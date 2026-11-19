@@ -38,7 +38,8 @@ html.need-land #app,html.need-land .tabs,html.need-land #toast,html.need-land #t
   #wxbook,#pwbook,#medbook{padding:max(5px,var(--st)) max(6px,var(--sr)) max(5px,var(--sb)) max(6px,var(--sl))}
   #modal{padding:max(6px,var(--st)) max(10px,var(--sr)) max(6px,var(--sb)) max(10px,var(--sl))}
   #modal .box{max-height:calc(var(--vvh,100dvh) - 14px);padding:10px 12px}
-  #mx{top:-4px;right:-2px}
+  #mx{top:6px;right:6px}  /* nằm trong hộp, không đè viền chấm */
+  #modal .mwrap,#modal .box{max-width:min(92vw,760px)}  /* màn ngang dư bề rộng: hộp rộng hơn, đỡ phải cuộn */
 }
 /* máy tính (thanh menu cạnh trái 150px) */
 @media (min-width:1024px){
@@ -79,5 +80,43 @@ html.need-land #app,html.need-land .tabs,html.need-land #toast,html.need-land #t
   .tabs button{min-height:0;overflow:hidden}
 }
 @media (orientation:landscape) and (max-height:400px) and (max-width:1023px){
-  .tabs{gap:2px}.tabs button{font-size:10px;line-height:1.1;padding:1px 0}
+  .tabs{gap:2px}.tabs button{font-size:11px;letter-spacing:-.3px;line-height:1.1;padding:1px 0}
 }
+
+/* ============ ĐÁNH BÓNG CẢM GIÁC ĐIỆN THOẠI (2026-11-19) ============ */
+/* không kéo xuống tải lại trang, không nảy cả trang; chạm không nháy ô xanh; chạm nhanh không chờ phóng to hai chạm (khung phòng vẫn touch-action:none) */
+html,body{overscroll-behavior:none}
+html{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+/* lớp phủ và vùng cuộn bên trong: cuộn tới cuối không kéo trang phía sau cuộn theo */
+#modal,#wxbook,#pwbook,#medbook,#phalb{overscroll-behavior:contain}
+#modal .box,#grev,.tut-card,.md-body,.wb-l,.wb-fc,.wb-det,.ml-ls,.ml-r{overscroll-behavior:contain}
+/* nhấn giữ nút, chip, thẻ không bôi đen chữ, không bật menu ảnh (ô mã chuyển máy giữ user-select:all trong style riêng) */
+button,.tap,.chip,.tabs,.card[onclick],.rchip,#roomwrap,#zoomb,#photobar{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button img,.tap img,.card img,img.px{-webkit-touch-callout:none;-webkit-user-drag:none}
+@media (pointer:coarse){
+  /* ô nhập 16px: Safari iOS không tự phóng to trang khi chạm vào ô */
+  input,select,textarea{font-size:16px}
+  /* khóa cuộn trang khi đang mở hộp thoại hoặc sách (chỉ màn cảm ứng: thanh cuộn ở đây nổi nên không làm xô bố cục) */
+  html:has(#modal[style*="flex"]),html:has(#wxbook.on),html:has(#pwbook.on),html:has(#medbook.on),html:has(#phalb.on){overflow:hidden}
+  /* vùng chạm tối thiểu 40px */
+  button.sm,.hdr button{min-height:40px}
+  #top>.chip:not(.xp){min-height:40px;display:flex;align-items:center;column-gap:.3em}
+}
+/* điện thoại ngang thấp (667×375, 844×390): hàng chỉ số gọn một dòng để khung phòng cao hơn.
+   Ô thu nhỏ đệm, bỏ chữ phụ; nút Cài đặt chỉ còn biểu tượng. Còn chật thì hàng cuộn ngang (ẩn thanh cuộn) chứ không xuống dòng. */
+@media (orientation:landscape) and (max-height:400px) and (max-width:1023px){
+  .hdr button{font-size:0;width:44px;padding:0;justify-content:center}.hdr button .ico{width:24px;height:24px;vertical-align:middle}
+  #app #top,#app:not([data-tab=home]) #top{margin-right:54px;flex-wrap:nowrap;gap:4px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+  #top::-webkit-scrollbar{display:none}
+  #top>.chip{flex:none;white-space:nowrap;padding:2px 7px;font-size:12.5px}
+  #top>.chip .ico{width:20px;height:20px;vertical-align:-5px}
+  #top>.chip.xp{flex:1 0 96px;min-width:96px}#top>.chip.xp .dim{display:none}
+  #top .wxchip .dim,#top .pwchip:not(.out)>b:first-of-type{display:none}
+}
+@media (orientation:landscape) and (max-height:400px) and (max-width:800px){
+  #app #top,#app:not([data-tab=home]) #top{gap:2px;margin-right:50px}
+  #top>.chip{padding:2px 4px;font-size:12px;column-gap:.2em}
+  #top>.chip .ico{width:18px;height:18px;vertical-align:-4px}
+  #top>.chip.xp{flex:1 0 58px;min-width:58px}
+}
+#roomnav button{min-width:40px}

@@ -235,6 +235,7 @@ document.head.insertAdjacentHTML('beforeend','<style>'+
 '.ml-q{display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px}.ml-why{flex:1 1 100%;font-size:12px}'+
 '.ml-big{font-size:24px;color:var(--mk);margin-left:3px}'+
 'button.ml-lk{background:none;border:0;padding:2px 2px;min-height:30px;color:var(--mk);text-decoration:underline dotted;text-underline-offset:3px;font-size:12.5px}'+
+'@media (pointer:coarse){button.ml-lk{min-height:40px}}'+
 '.ml-step{display:flex;align-items:center;gap:6px}'+
 '.ml-pm{min-width:40px;min-height:40px;padding:0;font-size:22px;line-height:1;flex:none}'+
 '.ml-step input{flex:none;width:58px;text-align:center;font-size:19px;padding:5px 4px}'+

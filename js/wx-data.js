@@ -171,7 +171,7 @@ const SUPPLY=[
  {id:'cooltowel',n:'Khăn làm mát',ic:'🧊',price:60,rare:1,on:'start',res:{heat:.3},max:1,d:'Giảm 30% tác động của nắng nóng trong một chuyến.'},
  {id:'electrolyte',n:'Bình nước điện giải',ic:'🧃',price:50,rare:1,on:'start',water:.5,max:2,home:{water:40,cure:'hot'},d:'Giảm một nửa lượng nước mất trên đường. Ở nhà: +40 nước, hết Nóng quá.'},
  {id:'heatmed',n:'Thuốc chống say nắng',ic:'💉',price:120,rare:2,on:'auto',exhaust:.6,max:1,d:'Tự dùng khi gặp nóng: giảm 60% khả năng kiệt sức.'},
- {id:'coolgel',n:'Gel làm mát',ic:'🫧',price:45,rare:1,on:'start',res:{heat:.2},max:2,home:{cure:'hot'},d:'Kháng nóng 20%. Ở nhà: hết Nóng quá.'},
+ {id:'coolgel',n:'Gel làm mát',ic:'❄️',price:45,rare:1,on:'start',res:{heat:.2},max:2,home:{cure:'hot'},d:'Kháng nóng 20%. Ở nhà: hết Nóng quá.'},
  {id:'raincoat',n:'Áo mưa dùng một lần',ic:'🧥',price:50,rare:1,on:'start',res:{rain:.4},max:1,d:'Giảm 40% khả năng bị ướt và sự cố khi mưa.'},
  {id:'drybag',n:'Túi chống nước',ic:'🎒',price:90,rare:2,on:'start',dry:.5,max:1,d:'Khi gặp mưa hoặc phải rút lui: giữ lại thêm một nửa phần thưởng bị mất.'},
  {id:'immunity',n:'Thuốc tăng sức đề kháng',ic:'🧪',price:100,rare:2,on:'start',sick:.3,max:1,home:{health:15},d:'Giảm 30% khả năng bị ốm trong chuyến. Ở nhà: +15 sức khỏe.'},
@@ -182,7 +182,7 @@ const SUPPLY=[
  {id:'recovery',n:'Thuốc hồi sức',ic:'⚗️',price:90,rare:1,on:'start',save:.2,max:1,d:'Chuyến đi tốn ít hơn 20% năng lượng (hoàn lại khi về).'},
  {id:'luckycharm',n:'Bùa may mắn',ic:'🍀',price:200,rare:3,on:'start',luck:.08,max:1,d:'+8% cơ hội nhặt vé và vật phẩm hiếm, +5% xu.'},
  {id:'compass',n:'La bàn dùng một chuyến',ic:'🧭',price:80,rare:1,on:'start',lost:.5,max:1,d:'Giảm 50% nguy cơ lạc đường.'},
- {id:'rescuekit',n:'Bộ dụng cụ cứu hộ',ic:'🛟',price:250,rare:3,on:'auto',rescue:1,max:1,d:'Tự dùng khi phải rút lui: về an toàn, giữ lại 75% phần thưởng thay vì 45%, không bị thương.'},
+ {id:'rescuekit',n:'Bộ dụng cụ cứu hộ',ic:'🧰',price:250,rare:3,on:'auto',rescue:1,max:1,d:'Tự dùng khi phải rút lui: về an toàn, giữ lại 75% phần thưởng thay vì 45%, không bị thương.'},
 ];
 const SUP=Object.fromEntries(SUPPLY.map(s=>[s.id,s]));
 

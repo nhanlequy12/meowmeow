@@ -31,7 +31,8 @@ html.need-land #phalb{visibility:hidden}
 .ph-empty{padding:30px 10px;text-align:center;color:var(--dim);line-height:1.6}
 .ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;padding:4px}
 .ph-pol{position:relative;display:flex;flex-direction:column;gap:4px;padding:7px 7px 8px;background:#fff8ec;color:#523828;border:2px solid #5a3a28;border-bottom-width:2px;border-radius:5px;box-shadow:0 4px 10px rgba(40,24,12,.25);transform:rotate(var(--r,0deg));transition:transform .15s;min-width:0;text-align:left}
-.ph-pol:hover,.ph-pol:focus-visible{transform:rotate(0) scale(1.03);z-index:1}
+@media (hover:hover) and (pointer:fine){.ph-pol:hover{transform:rotate(0) scale(1.03);z-index:1}}
+.ph-pol:focus-visible{transform:rotate(0) scale(1.03);z-index:1}
 .ph-pol>img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border:1px solid #3a2a20;background:#3a2a20}
 .ph-pc{font-size:12.5px;line-height:1.25;display:flex;flex-direction:column;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .ph-pc small{font-size:11px;color:#725b4a}

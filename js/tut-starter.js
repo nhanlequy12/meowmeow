@@ -16,7 +16,8 @@ function tutPickCSS() {
 .tsp-sub {margin:6px 0 0;font-size:clamp(12px,1.5vw,14px);line-height:1.35;color:var(--dim)}
 .tsp-starters {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1.6vw,16px);flex:1;min-height:0;max-height:680px;width:100%;margin:auto 0}
 .tsp-card {display:flex;flex-direction:column;justify-content:center;gap:10px;border:4px dotted var(--line);border-radius:16px;padding:clamp(10px,1.5vw,18px);background:var(--panel);cursor:pointer;text-align:left;outline-offset:-7px;touch-action:manipulation}
-.tsp-card:hover,.tsp-card:focus-visible {background:var(--panel2)}
+@media (hover:hover) and (pointer:fine){.tsp-card:hover{background:var(--panel2)}}
+.tsp-card:focus-visible {background:var(--panel2)}
 .tsp-card:focus-visible,.tsp-pick button:focus-visible,.tsp-pick input:focus-visible {outline:3px solid var(--gold);outline-offset:2px}
 .tsp-sprite {display:flex;align-items:flex-end;justify-content:center;flex:none;height:clamp(90px,18vh,160px);line-height:0}
 .tsp-sprite img {display:block;image-rendering:pixelated;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;object-position:center bottom}
@@ -243,7 +244,7 @@ function tutPickUI(host, done) {
       '<div class="tsp-confirm"><div class="tsp-preview"><div class="tsp-sprite" aria-hidden="true">' + TUT.pose(tspStarter.sp + '~' + tspStarter.coat, 'walk', tutPickK(3)) + '</div>' + tutPickProfile(tspStarter) + '</div>' +
       '<div class="tsp-confirm-body"><div class="tsp-facts">' + tutPickFacts(tspStarter) + '</div>' +
       '<form class="tsp-form" novalidate><label class="tsp-name-label" for="tsp-starter-name">' + esc(tspText.nameL) + '</label>' +
-      '<div class="tsp-input-row"><input id="tsp-starter-name" data-tut-name maxlength="16" autocomplete="off" aria-describedby="tsp-starter-error" placeholder="' + esc(tspText.namePh) + '" value="' + esc(tspNames[tspIndex]) + '">' +
+      '<div class="tsp-input-row"><input id="tsp-starter-name" data-tut-name maxlength="16" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-describedby="tsp-starter-error" placeholder="' + esc(tspText.namePh) + '" value="' + esc(tspNames[tspIndex]) + '">' +
       '<button class="tsp-dice" type="button" data-tut-dice aria-label="' + esc('🎲 ' + tspText.nameL) + '">🎲</button></div>' +
       '<p id="tsp-starter-error" class="tsp-error" role="status" aria-live="polite"></p><div class="tsp-actions"><button class="tsp-yes" type="submit" data-tut-confirm>' + esc(tspText.yes) + '</button>' +
       '<button class="tsp-no" type="button" data-tut-back>' + esc(tspText.no) + '</button></div></form></div></div>';

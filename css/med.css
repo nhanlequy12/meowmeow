@@ -4,7 +4,7 @@
 #medbook{position:fixed;inset:0;z-index:19;display:none;align-items:center;justify-content:center;padding:10px;background:rgba(30,50,48,.55)}
 #medbook.on{display:flex}
 .md-box{--ink:#3c2414;--dim:#6a5240;--panel:#fbf3df;--panel2:#f1e3c4;--line:#8a6a4a;--soft:#dccdb0;--good:#1c6340;--bad:#a02a1a;--gold:#6e4a02;--blue:#5f93c8;
-  --mc:#58b3a4;--mc2:#3d8c80;--pg:#fffaf0;--pg2:#f5ecd8;
+  --mc:#58b3a4;--mc2:#3d8c80;--mc3:#2f6f66;--pg:#fffaf0;--pg2:#f5ecd8;
   position:relative;display:flex;flex-direction:column;width:min(940px,100%);height:min(680px,100%);color:var(--ink);background:var(--pg);
   border:4px solid #2f6f66;border-radius:18px;overflow:hidden;box-shadow:0 0 0 3px #fff inset,0 14px 0 -4px rgba(20,40,36,.35),0 20px 40px rgba(20,40,36,.4);animation:mdOpen .28s cubic-bezier(.3,1.3,.6,1)}
 @keyframes mdOpen{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
@@ -19,17 +19,21 @@
 .md-cap:before,.md-cap:after{content:"";position:absolute;left:50%;top:50%;background:#e0483c}
 .md-cap:before{width:8px;height:2px;margin:-1px 0 0 -4px}.md-cap:after{width:2px;height:8px;margin:-4px 0 0 -1px}
 .md-ttl{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.2}
-.md-t1{font-weight:900;font-size:19px;text-shadow:0 2px 0 var(--mc2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* chữ trắng trên dải sọc xanh nhạt: viền chữ 8 hướng màu xanh đậm để đọc rõ (tương phản với viền ≥5,8:1) */
+.md-t1,.md-t2{text-shadow:1.5px 0 0 var(--mc3),-1.5px 0 0 var(--mc3),0 1.5px 0 var(--mc3),0 -1.5px 0 var(--mc3),1px 1px 0 var(--mc3),-1px 1px 0 var(--mc3),1px -1px 0 var(--mc3),-1px -1px 0 var(--mc3),0 2.5px 0 var(--mc3)}
+.md-t1{font-weight:900;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .md-t2{font-size:12.5px;font-weight:700;color:#eafff9}
 .md-coin{flex:none;background:#fff;color:#6e4a02;border:2px solid var(--mc2);border-radius:10px;padding:3px 9px;font-weight:800;font-size:13.5px;white-space:nowrap}
-.md-x{flex:none;min-width:40px}
+/* nút đóng tròn giống #mx và .wb-x */
+.md-x{flex:none;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border-radius:50%;font-size:18px;background:var(--pink);color:#3a1020;border-color:#b85a70}
 /* thanh mục */
-.md-tabs{flex:none;display:flex;gap:5px;padding:14px 10px 6px;overflow-x:auto;background:var(--pg2);border-bottom:3px dotted #c9b68f;scrollbar-width:none}
+.md-tabs{flex:none;display:flex;gap:5px;padding:14px 10px 6px;overflow-x:auto;overscroll-behavior-x:contain;background:var(--pg2);border-bottom:3px dotted #c9b68f;scrollbar-width:none}
 .md-tabs::-webkit-scrollbar{display:none}
-.md-tabs button{flex:1 0 auto;display:flex;align-items:center;justify-content:center;gap:5px;position:relative;white-space:nowrap;font-weight:700;font-size:13.5px;padding:6px 10px}
-.md-tabs button.on{background:var(--mc);color:#fff;border-color:var(--mc2)}
+.md-tabs button{flex:1 0 auto;display:flex;align-items:center;justify-content:center;gap:5px;position:relative;white-space:nowrap;font-weight:700;font-size:13.5px;padding:6px 10px;min-height:40px}
+/* mục đang chọn: nền xanh đậm để chữ trắng đạt ≥4,5:1 */
+.md-tabs button.on{background:var(--mc3);color:#fff;border-color:#1f524b}
 .md-tabs .n{font-style:normal;min-width:18px;height:18px;line-height:18px;padding:0 4px;border-radius:9px;background:#c8372a;color:#fff;font-size:11.5px;font-weight:800;text-align:center}
-.md-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:10px 12px 14px;-webkit-overflow-scrolling:touch}
+.md-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:10px 12px 14px;overscroll-behavior:contain}
 .md-body{font-weight:600}.md-body b{font-weight:900}
 .md-body .g{flex:1;min-width:0}
 .md-h{display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-weight:800;font-size:15px;margin:10px 0 6px;color:#2f6f66}
@@ -73,9 +77,9 @@
 .md-rate{display:inline-block;font-size:12px;font-weight:600;padding:0 6px;border-radius:8px;background:#dff3e4;border:2px solid #9fd3b0;color:#1c5a38;white-space:nowrap}
 .md-note{font-size:12px;color:var(--dim);text-align:center;font-style:italic;margin-top:6px;line-height:1.4}.md-note.l{text-align:left;font-style:normal}
 /* điều trị */
-.md-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:thin}
+.md-chips{display:flex;gap:6px;overflow-x:auto;overscroll-behavior-x:contain;padding:2px 0 8px;scrollbar-width:thin}
 .md-chip{flex:none;display:flex;align-items:center;gap:5px;padding:3px 10px 3px 6px;font-size:13px;white-space:nowrap}
-.md-chip.on{background:var(--mc);color:#fff;border-color:var(--mc2)}
+.md-chip.on{background:var(--mc3);color:#fff;border-color:#1f524b}
 .md-chip span{display:inline-flex;align-items:center}
 .md-eps{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:8px;align-items:start}
 .md-ep{background:var(--pg2);border:2px solid #d9c394;border-top:6px solid #d9a514;border-radius:12px;padding:7px 9px;min-width:0}
@@ -166,9 +170,11 @@
 /* điện thoại ngang: biển hiệu và thanh mục gọn lại để phần thân đủ cao */
 @media (max-height:520px){
   #medbook{padding:5px}
-  .md-sign{padding:3px 8px 7px 10px}.md-nurse{display:none}.md-t1{font-size:15px}.md-t2{display:none}.md-coin{padding:1px 8px}.md-x{min-height:34px}
+  .md-sign{padding:3px 8px 7px 10px}.md-nurse{display:none}.md-t1{font-size:15px}.md-t2{display:none}.md-coin{padding:1px 8px}.md-x{width:40px;height:40px;min-width:40px;min-height:40px;font-size:16px}
   .md-sign:after{height:6px;bottom:-9px}
-  .md-tabs{padding:9px 8px 4px}.md-tabs button{min-height:36px;padding:3px 10px}
+  .md-tabs{padding:9px 8px 4px}.md-tabs button{min-height:40px;padding:3px 10px}
   .md-body{padding:6px 10px 10px}
   .md-empty{padding:14px 10px}.md-empty .big{font-size:30px}
 }
+/* chủ đề tối: giấy kem cố định nên mục đang chọn vẫn chữ trắng trên nền xanh đậm (ghi đè html[data-theme=dark] button.on) */
+.md-box .md-tabs button.on,.md-box .md-chip.on{color:#fff}

@@ -34,7 +34,7 @@ function gdEnv(rid){
   if(sunny)dry*=1.2;
   if(rc.wind>=.4){dry*=1+rc.wind*.5;why.push(['y','💨 Gió: đất khô nhanh hơn'])}
   if(rc.rain>=.7&&rc.wind>=.5){dmg+=GDC.storm;grow*=.5;why.push(['r','⛈️ Mưa to gió lớn quật cây'])}
-  if(!rc.out&&rid==='greenhouse')why.push(['g','🪴 Nhà kính che mưa gió, nhưng phải tự tưới']);
+  if(!rc.out&&rid==='greenhouse')why.push(['g','🌱 Nhà kính che mưa gió, nhưng phải tự tưới']);
   return {rc,T,grow,dry,dmg,fill,why,day,sunny};
 }
 const gdStage=g=>!g.c?0:g.p>=1?3:g.p>=.34?2:1;

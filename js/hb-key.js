@@ -13,7 +13,7 @@ const HB_KEY={
   stats:{g:'start',h:'No, năng lượng, vui',k:['**No dưới 20**: bé đói, không đi viễn chinh được.','**Năng lượng** trả cho mỗi chuyến đi; ở nhà hồi khoảng 1 điểm/phút.','**Vui** nhân xu viễn chinh từ ×0,8 tới ×1,2.']},
   feed:{g:'start',h:'Mua vào kho, đổ vào bát',k:['Bấm **Cho ăn** → chọn món → game gợi ý số suất vừa đủ.','Bé ăn xong một suất thì **cảm ơn 4 xu**.','Thiếu suất thì có bé nhịn: **mua thêm bát**.']},
   water:{g:'start',h:'Rót nước cho bát nước',k:['Bấm **💧 Cho uống** cạnh nút Cho ăn; nước phải mua, mỗi chai một lượt.','Bé tự đi uống khi nước **dưới 60**.','Máy lọc nước chỉ rót nước **có sẵn trong kho**.']},
-  play:{g:'start',h:'Cần câu lông vũ, đèn laser',k:['Từ **cấp 2**, nút 🪶 Chơi trên tab Phòng, mỗi lượt 20 giây.','Bé vồ trúng: **+6 tới +8 vui**, 10 phút/bé một lần.','Bé mệt, đang ngủ, đang ăn thì không chơi.']},
+  play:{g:'start',h:'Cần câu lông vũ, đèn laser',k:['Từ **cấp 2**, nút 🧶 Chơi trên tab Phòng, mỗi lượt 20 giây.','Bé vồ trúng: **+6 tới +8 vui**, 10 phút/bé một lần.','Bé mệt, đang ngủ, đang ăn thì không chơi.']},
   bed:{g:'start',h:'Cho bé ngủ hồi sức',k:['**Chạm vào ổ** trong phòng → Cho ngủ.','Ngủ ổ hồi năng lượng **nhanh 2,5–5 lần**.','Cần bé dậy sớm: **Đuổi ra** hoặc Đánh thức.']},
   gacha:{g:'cats',h:'Tỉ lệ và bảo hiểm',k:['**100 xu hoặc 1 vé** một lượt; 5★ chỉ 1%.','**10 lượt** chắc chắn có từ 4★.','**40 lượt** chắc chắn có 5★; tab Gacha ghi còn bao nhiêu.']},
   trait:{g:'cats',h:'Nhãn xanh, hồng, vàng',k:['Số thuộc tính = số sao.','**Xanh** tốt, **hồng** tật xấu, **vàng** độc quyền.','Chạm vào nhãn để đọc tác dụng.']},

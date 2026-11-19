@@ -5,7 +5,7 @@
 .plgo.on{background:#ffe0e8;border-color:#d96b8a;color:#7a2440}
 html[data-theme=dark] .plgo.on{background:#5a2c3a;color:#ffd6e2}
 @media(max-width:1180px){.plgo .pl-l{display:none}.plgo .pl-sh{display:inline}}
-/* màn hẹp (điện thoại ngang): chỉ còn biểu tượng 🪶 để ba nút Cho ăn, Cho uống, Sắp xếp đồ không bị bóp xuống hai dòng */
+/* màn hẹp (điện thoại ngang): chỉ còn biểu tượng 🧶 để ba nút Cho ăn, Cho uống, Sắp xếp đồ không bị bóp xuống hai dòng */
 @media(max-width:800px){.fdbtns>button.plgo{flex:0 0 auto;min-width:52px;padding-left:8px;padding-right:8px}.plgo:not(.on) .pl-sh{display:none}.plgo.on .pl-sh{display:none}}
 /* thanh trên khung phòng lúc đang chơi: góc dưới trái, không đè nút phóng to (góc trên phải) và tên phòng (góc trên trái) */
 #plbar{display:none;position:absolute;left:10px;bottom:10px;z-index:3;align-items:center;gap:8px;max-width:calc(100% - 20px);

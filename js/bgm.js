@@ -139,7 +139,15 @@ function bgmCheck(){
   }
   if(BGM.off&&performance.now()-BGM.offT>600&&ac.state==='running'){ac.suspend().catch(()=>{});if(!on){BGM.run=0;BGM.cur=null}}
 }
-setInterval(bgmTick,60);setInterval(bgmCheck,250);
+// hai hẹn giờ chỉ chạy khi nhạc đang bật (S.set.bgm) hoặc còn đang tắt dần; tắt hẳn thì dừng, bật lại thì bgmTimers() khởi động lại
+const BGM_IV={tk:0,ck:0};
+function bgmTimers(){
+  const need=!!(S&&S.set&&S.set.bgm)||!!(BGM.run&&BGM.ac&&BGM.ac.state==='running');
+  if(need&&!BGM_IV.ck){BGM_IV.tk=setInterval(bgmTick,60);BGM_IV.ck=setInterval(bgmCheck,250)}
+  else if(!need&&BGM_IV.ck){clearInterval(BGM_IV.tk);clearInterval(BGM_IV.ck);BGM_IV.tk=BGM_IV.ck=0}
+}
+{const C0=bgmCheck;bgmCheck=function(){C0();bgmTimers()}}
+bgmTimers();
 document.addEventListener('visibilitychange',bgmCheck);
 // cú chạm, bấm phím đầu tiên sau khi nhạc đã bật: mở âm thanh (chính sách tự phát của trình duyệt)
 ['pointerdown','keydown','touchend'].forEach(n=>addEventListener(n,()=>{if(S&&S.set&&S.set.bgm&&(!BGM.ac||BGM.ac.state!=='running')&&bgmWant()){bgmEnsure();bgmCheck()}},true));

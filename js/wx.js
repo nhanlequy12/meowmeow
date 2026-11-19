@@ -245,7 +245,7 @@ function wxTripClaim(p,c,res,d){
   for(let i=0;i<p.cps.length;i++){
     const type=p.cps[i],w=WX[type],h=legRisk(c,p.dest,{type},fx);if(w.coin>1)idealN++;
     if(Math.random()<h*.25){ // sự cố lớn: rút lui sớm, giữ một phần phần thưởng
-      if(use('rescuekit')){mult*=.75;L.push('🛟 '+w.ic+' '+w.n+': phải rút lui, Bộ cứu hộ đưa bé về an toàn (giữ 75% phần thưởng).')}
+      if(use('rescuekit')){mult*=.75;L.push('🧰 '+w.ic+' '+w.n+': phải rút lui, Bộ cứu hộ đưa bé về an toàn (giữ 75% phần thưởng).')}
       else{mult*=1-(1-.45)*(1-fx.dry);inj+=20;L.push('⚠ '+w.ic+' '+w.n+': gặp sự cố, phải rút lui sớm (giữ '+Math.round((1-(1-.45)*(1-fx.dry))*100)+'% phần thưởng).')}
       out='retreat';break;
     }

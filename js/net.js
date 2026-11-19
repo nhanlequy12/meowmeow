@@ -29,7 +29,7 @@ function netInit(){
 function netAskName(){
   if($('modal').style.display==='flex'||$('gz').className||(typeof TUT!=='undefined'&&TUT.active())){setTimeout(netAskName,3000);return} // đang bận hộp thoại khác, đang quay gacha hoặc đang hướng dẫn tân thủ: hỏi sau
   modal('<h3>👋 Chào mừng tới Mèo Xu</h3><div class="dim">Game đang chạy trên máy chủ chung. Đặt một cái tên để quản trị viên nhận ra bạn (đổi sau được, nhờ quản trị viên).</div>'+
-    '<div class="row" style="margin-top:8px"><input id="npname" maxlength="20" placeholder="Tên của bạn" style="flex:1" onkeydown="if(event.key===\'Enter\')netJoin()"><button class="sm on" onclick="netJoin()">Vào chơi</button></div><div id="nperr" class="dim" style="color:var(--bad)"></div>'+
+    '<div class="row" style="margin-top:8px"><input id="npname" maxlength="20" autocapitalize="words" enterkeyhint="done" placeholder="Tên của bạn" style="flex:1" onkeydown="if(event.key===\'Enter\')netJoin()"><button class="sm on" onclick="netJoin()">Vào chơi</button></div><div id="nperr" class="dim" style="color:var(--bad)"></div>'+
     '<div class="row" style="justify-content:center;margin-top:6px"><button class="sm" onclick="xferEnter()">🔑 Đã chơi trên máy khác? Nhập mã chuyển máy</button></div>',true);
   setTimeout(()=>{const i=$('npname');if(i)i.focus()},50);
 }
@@ -160,7 +160,7 @@ function netPlayer(id){
         '<div class="dim">🔑 '+(p.rc?'Đã có mã khôi phục':'Chưa tạo mã khôi phục')+(p.mvat?' · chuyển máy gần nhất '+nday(p.mvat):'')+'</div>'+
         '<div class="dim">🛡 '+(p.trust?'<b>Đang tin tưởng: không kiểm tra chống gian lận</b>':'Chống gian lận đang bật')+(p.rej?' · <b style="color:var(--bad)">đã từ chối '+p.rej+' bản lưu</b> (xem nhật ký)':'')+'</div>')+
       netActs(id)+
-      box('Hồ sơ','<div class="row"><input id="nname" maxlength="20" value="'+esc(p.name)+'" style="flex:1"><button class="sm" onclick="netRename(\''+id+'\')">Đổi tên</button></div><div class="row wrap">'+(p.pending?'<button class="sm" onclick="netPost(\'uncmd\',\''+id+'\')">Hủy '+p.pending+' lệnh đang chờ</button>':'')+'<button class="sm" onclick="netPost(\'trust\',\''+id+'\',{on:'+(p.trust?0:1)+'})">'+(p.trust?'🛡 Bật lại kiểm tra chống gian lận':'Tin tưởng: bỏ kiểm tra chống gian lận')+'</button><button class="sm" onclick="netAdmXfer(\''+id+'\')">🔑 Tạo mã chuyển máy</button><button class="sm bad" onclick="netCmd(\''+id+'\',\'reset\')">Đặt lại dữ liệu</button><button class="sm bad" onclick="netDelete(\''+id+'\')">Xóa khỏi máy chủ</button></div>')+
+      box('Hồ sơ','<div class="row"><input id="nname" maxlength="20" autocapitalize="words" enterkeyhint="done" value="'+esc(p.name)+'" style="flex:1"><button class="sm" onclick="netRename(\''+id+'\')">Đổi tên</button></div><div class="row wrap">'+(p.pending?'<button class="sm" onclick="netPost(\'uncmd\',\''+id+'\')">Hủy '+p.pending+' lệnh đang chờ</button>':'')+'<button class="sm" onclick="netPost(\'trust\',\''+id+'\',{on:'+(p.trust?0:1)+'})">'+(p.trust?'🛡 Bật lại kiểm tra chống gian lận':'Tin tưởng: bỏ kiểm tra chống gian lận')+'</button><button class="sm" onclick="netAdmXfer(\''+id+'\')">🔑 Tạo mã chuyển máy</button><button class="sm bad" onclick="netCmd(\''+id+'\',\'reset\')">Đặt lại dữ liệu</button><button class="sm bad" onclick="netDelete(\''+id+'\')">Xóa khỏi máy chủ</button></div>')+
       box('Đàn mèo ('+cats.length+')','<div style="max-height:150px;overflow:auto;line-height:1.7">'+(cats.length?cats.map(cn).join(''):'<span class="dim">Chưa có dữ liệu</span>')+'</div>')+
       box('Nhật ký','<div style="max-height:190px;overflow:auto;font-size:13px">'+(lg||'<span class="dim">Chưa có gì</span>')+'</div>')+
       '<div class="row" style="justify-content:center"><button class="sm" onclick="netPlayer(\''+id+'\')">↻ Tải lại</button><button class="sm" onclick="netPlayers()">← Danh sách</button></div>');
@@ -184,7 +184,7 @@ function xferCard(){
   if(!NET.on)return box('<small>Chuyển tiến độ sang máy khác chỉ dùng được khi chơi qua máy chủ chung (<b>server.py</b>). Mở game bằng file hay máy chủ tĩnh thì tiến độ chỉ nằm trên máy này.</small>');
   if(!NET.pl)return box('<div class="row wrap"><button style="flex:1" onclick="xferEnter()">📥 Nhận tiến độ từ máy khác</button></div>');
   return box('<div class="row wrap"><button style="flex:1" class="on" onclick="xferNew()">📤 Chuyển sang máy khác</button><button style="flex:1" onclick="xferEnter()">📥 Nhận tiến độ từ máy khác</button></div>'+
-    '<div class="row wrap"><button style="flex:1" onclick="xferRec()">🛟 '+(NET.rcAt?'Tạo lại mã khôi phục':'Tạo mã khôi phục')+'</button></div>'+
+    '<div class="row wrap"><button style="flex:1" onclick="xferRec()">🗝️ '+(NET.rcAt?'Tạo lại mã khôi phục':'Tạo mã khôi phục')+'</button></div>'+
     '<small>Máy chủ giữ bản lưu của bạn. Xin mã ở máy này rồi nhập vào máy kia là chơi tiếp, đủ mèo, xu, đồ. Mỗi lúc chỉ một máy chơi được. '+
     (NET.rcAt?'Bạn đã có mã khôi phục (tạo lúc '+xfClock(NET.rcAt)+').':'<b>Chưa có mã khôi phục</b>: tạo một mã và ghi lại, phòng khi mất máy này.')+'</small>');
 }
@@ -219,7 +219,7 @@ function xferCancel(){clearInterval(XF.poll);api('xfer/cancel',{id:NET.pl.id,tok
 // máy mới: nhập mã
 function xfForm(){
   const has=S.level>1||S.cats.length>1||(S.tut&&S.tut.done);
-  return '<div class="row" style="margin-top:8px"><input id="xfcode" maxlength="16" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCD-EFGH" style="flex:1;font:700 20px ui-monospace,Consolas,monospace;letter-spacing:2px;text-transform:uppercase" onkeydown="if(event.key===\'Enter\')xferUse()"><button class="sm on" onclick="xferUse()">Nhận tiến độ</button></div>'+
+  return '<div class="row" style="margin-top:8px"><input id="xfcode" maxlength="16" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="ABCD-EFGH" style="flex:1;font:700 20px ui-monospace,Consolas,monospace;letter-spacing:2px;text-transform:uppercase" onkeydown="if(event.key===\'Enter\')xferUse()"><button class="sm on" onclick="xferUse()">Nhận tiến độ</button></div>'+
     '<div id="xferr" class="dim" style="color:var(--bad);min-height:1.2em"></div>'+
     (has?'<div class="dim">⚠ Tiến độ đang có trên máy này (cấp '+S.level+', '+S.cats.length+' mèo) sẽ bị thay bằng tiến độ của mã.</div>':'')+
     '<div class="dim" style="margin-top:4px">Mất máy cũ? Nhập mã khôi phục 12 ký tự bạn đã ghi lại, hoặc nhờ quản trị viên tạo mã.</div>';
@@ -249,10 +249,10 @@ function xferUse(){
 }
 // mã khôi phục: hiện đúng một lần
 function xferRec(sure){
-  if(NET.rcAt&&!sure){modal('<h3>🛟 Tạo lại mã khôi phục</h3><div>Bạn đã có mã khôi phục. Tạo mã mới thì mã cũ hết hiệu lực ngay.</div><div class="row" style="justify-content:center;margin-top:8px"><button class="sm on" onclick="xferRec(1)">Tạo mã mới</button><button class="sm" onclick="openSettings()">Thôi</button></div>');return}
+  if(NET.rcAt&&!sure){modal('<h3>🗝️ Tạo lại mã khôi phục</h3><div>Bạn đã có mã khôi phục. Tạo mã mới thì mã cũ hết hiệu lực ngay.</div><div class="row" style="justify-content:center;margin-top:8px"><button class="sm on" onclick="xferRec(1)">Tạo mã mới</button><button class="sm" onclick="openSettings()">Thôi</button></div>');return}
   api('xfer/rec',{id:NET.pl.id,tok:NET.pl.tok}).then(j=>{
     NET.rcAt=j.t;
-    modal('<h3>🛟 Mã khôi phục</h3><div>Ghi lại mã này ở nơi an toàn (giấy, ghi chú riêng). Mất máy thì nhập mã ở máy mới để lấy lại tiến độ.</div>'+xfBig(j.code)+
+    modal('<h3>🗝️ Mã khôi phục</h3><div>Ghi lại mã này ở nơi an toàn (giấy, ghi chú riêng). Mất máy thì nhập mã ở máy mới để lấy lại tiến độ.</div>'+xfBig(j.code)+
       '<div class="dim">Mã chỉ hiện một lần: máy chủ không giữ mã gốc nên không xem lại được, chỉ tạo lại được. Mã dùng được một lần; ai có mã là lấy được tiến độ của bạn, đừng gửi cho ai.</div>'+
       '<div class="row" style="justify-content:center;margin-top:8px"><button class="sm" onclick="xfCopy(\''+j.code+'\')">📋 Chép mã</button><button class="sm on" onclick="openSettings()">Tôi đã ghi lại</button></div>');
   }).catch(e=>{if(!NET.moved)toast('Không tạo được mã khôi phục: '+e.message,{type:'warn',title:'Chuyển máy'})});

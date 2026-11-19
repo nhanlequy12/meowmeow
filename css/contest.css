@@ -1,8 +1,9 @@
 /* ============ CUỘC THI MÈO HẰNG NGÀY (js/contest-ui.js) ============ */
 .ct-card{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 12px;border:3px solid #d9a441;border-radius:14px;background:#fff5d6;cursor:pointer;text-align:left}
 html[data-theme=dark] .ct-card{background:#4a3c1c;border-color:#b78e2e}
-.ct-card.ready{animation:ctPulse 1.8s ease-in-out infinite}
-@keyframes ctPulse{50%{box-shadow:0 0 0 4px rgba(224,170,40,.3)}}
+/* nhấp nháy: bóng vẽ sẵn ở lớp giả, chỉ đổi opacity (không vẽ lại box-shadow mỗi khung) */
+.ct-card.ready{position:relative}.ct-card.ready::after{content:'';position:absolute;inset:-3px;border-radius:inherit;box-shadow:0 0 0 4px rgba(224,170,40,.3);opacity:0;pointer-events:none;animation:ctPulse 1.8s ease-in-out infinite}
+@keyframes ctPulse{50%{opacity:1}}
 .ct-card .g{flex:1;min-width:0;line-height:1.35}
 .ct-card .g b{font-size:15.5px}
 .ct-ic{font-size:30px;flex:none}

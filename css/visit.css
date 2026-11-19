@@ -1,8 +1,8 @@
 /* ============ MÈO GHÉ CHƠI (js/visit-ui.js) ============ */
 .vschip{border-color:#d0889c;background:#ffeef2;color:#7a2a40;font-weight:800}
-.vschip.ready{animation:vsPulse 1.8s ease-in-out infinite}
 html[data-theme=dark] .vschip{background:#5a2e3a;color:#ffe0e8}
-@keyframes vsPulse{50%{box-shadow:0 0 0 4px rgba(240,136,156,.3)}}
+.vschip.ready{position:relative}.vschip.ready::after{content:'';position:absolute;inset:-3px;border-radius:inherit;box-shadow:0 0 0 4px rgba(240,136,156,.3);opacity:0;pointer-events:none;animation:vsPulse 1.8s ease-in-out infinite}
+@keyframes vsPulse{50%{opacity:1}}
 .vsline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:6px 10px;border:3px dotted #d0889c;border-radius:12px;background:#fff3f5;font-size:13.5px;line-height:1.4}
 html[data-theme=dark] .vsline{background:#43262e}
 .vsline .g{flex:1 1 220px;min-width:0}

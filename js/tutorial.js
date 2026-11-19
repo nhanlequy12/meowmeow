@@ -29,13 +29,16 @@ const TUT=(()=>{
   const frameSrc=(key,pose,k)=>{const n=kk(k),id=key+'|'+pose+'|'+n+'|tut';return CI[id]||(CI[id]=catCv(key,pose,n).toDataURL())};
   function anim(key,poses,fps,k,cls){
     const id='a'+(++anN),fr=poses.map(p=>frameSrc(key,p,k)),cv=catCv(key,poses[0],kk(k)),d=DPR();
-    AN[id]={fr,i:0,ms:1000/(fps||6),t:0,miss:0};
+    AN[id]={fr,i:0,ms:1000/(fps||6),t:0,miss:0};anStart();
     return '<img class="px tut-anim'+(cls?' '+cls:'')+'" data-a="'+id+'" alt="" draggable="false" width="'+cv.lw*kk(k)/d+'" height="'+cv.lh*kk(k)/d+'" src="'+fr[0]+'">';
   }
-  let anLast=performance.now();
-  setInterval(()=>{const t=performance.now(),dt=t-anLast;anLast=t;
+  // hẹn giờ 50 ms chỉ chạy khi AN có mục; hết mục thì tự dừng, anim() bật lại
+  let anLast=performance.now(),anIv=0;
+  function anStart(){if(anIv)return;anLast=performance.now();anIv=setInterval(anStep,50)}
+  function anStep(){const t=performance.now(),dt=t-anLast;anLast=t;
     for(const id in AN){const a=AN[id],els=QA('img[data-a="'+id+'"]');if(!els.length){if(++a.miss>30)delete AN[id];continue}a.miss=0;
-      a.t+=dt;if(a.t<a.ms)continue;a.t%=a.ms;a.i=(a.i+1)%a.fr.length;els.forEach(e=>{e.src=a.fr[a.i]})}},50);
+      a.t+=dt;if(a.t<a.ms)continue;a.t%=a.ms;a.i=(a.i+1)%a.fr.length;els.forEach(e=>{e.src=a.fr[a.i]})}
+    for(const id in AN)return;clearInterval(anIv);anIv=0}
   const SEQ={sit:['sit0s','sit0s','sit0s','sit0s','sit2s','sit0s'],tail:['sit0s','sit3s','sit3s','sit0s'],groom:['groom0s','groom1s','groom2s','groom3s','groom4s','groom5s'],
     sleep:['sleep0s','sleep1s','sleep2s','sleep3s'],walk:[0,1,2,3,4,5,6,7].map(i=>'walk'+i+'s'),run:[0,1,2,3,4,5,6,7].map(i=>'run'+i+'s'),jump:[0,1,2,3,4,5,6,7].map(i=>'jump'+i+'s')};
   const FPS={sit:3,tail:3,groom:6,sleep:2,walk:8,run:12,jump:8};

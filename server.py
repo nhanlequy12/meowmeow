@@ -20,7 +20,7 @@ Bảo mật: chỉ phục vụ file game (index.html, manifest.json, sw.js, js/,
 và chặn nội dung lạ (CSP), giới hạn số yêu cầu, số lần tạo hồ sơ và số lần nhập sai mã quản trị theo từng địa chỉ IP.
 Chỉ dùng thư viện chuẩn của Python 3.8+ (và Node cho trọng tài).
 """
-import base64, hashlib, hmac, http.client, json, os, queue, re, secrets, shutil, subprocess, sys, threading, time
+import base64, gzip, hashlib, hmac, http.client, json, os, queue, re, secrets, shutil, subprocess, sys, threading, time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs, unquote
 
@@ -576,10 +576,49 @@ def fr_cmd(p, typ, amt, text):
     p.setdefault('cmds', []).append({'type': typ, 'amt': int(amt), 'src': 'fr', 'text': text[:120], 'n': p['nn']})
 
 
+GZ_EXT = ('.js', '.css', '.html', '.json')   # file tĩnh được nén gzip khi trình duyệt nhận
+GZ_MIN = 512                                 # file nhỏ hơn thì gửi nguyên
+GZ_CACHE = {}                                # đường dẫn -> (mtime_ns, cỡ, bản nén): nén một lần, file đổi thì nén lại
+GZ_LOCK = threading.Lock()
+
+
+def gz_bytes(fp, st):
+    with GZ_LOCK:
+        c = GZ_CACHE.get(fp)
+        if c and c[0] == st.st_mtime_ns and c[1] == st.st_size:
+            return c[2]
+    with open(fp, 'rb') as f:
+        raw = f.read()
+    z = gzip.compress(raw, 6, mtime=0)
+    with GZ_LOCK:
+        GZ_CACHE[fp] = (st.st_mtime_ns, st.st_size, z)
+    return z
+
+
+def accepts_gzip(ae):
+    """Accept-Encoding có gzip (hoặc *) với q khác 0."""
+    for part in (ae or '').split(','):
+        name, _, params = part.strip().partition(';')
+        if name.strip().lower() not in ('gzip', '*'):
+            continue
+        q = 1.0
+        for prm in params.split(';'):
+            k, _, v = prm.strip().partition('=')
+            if k.strip().lower() == 'q':
+                try:
+                    q = float(v)
+                except ValueError:
+                    q = 0.0
+        if q > 0:
+            return True
+    return False
+
+
 class H(SimpleHTTPRequestHandler):
     server_version = 'MeoXu'
     sys_version = ''
-    timeout = 20                      # kết nối treo quá 20 giây thì đóng (chống giữ kết nối chậm)
+    protocol_version = 'HTTP/1.1'     # giữ kết nối: nhiều file trên một kết nối. Mọi phản hồi phải có Content-Length (hoặc đóng kết nối)
+    timeout = 20                      # kết nối treo quá 20 giây thì đóng (chống giữ kết nối chậm), kể cả kết nối giữ mà rảnh
 
     def ip(self):
         a = self.client_address[0]
@@ -594,7 +633,7 @@ class H(SimpleHTTPRequestHandler):
 
     def log_message(self, fmt, *args):
         # kết nối bị đóng vì quá 20 giây không gửi gì thì chưa có self.path: trước đây dòng này ném AttributeError và in cả một trang lỗi ra cửa sổ lệnh
-        if '/api/' not in (getattr(self, 'path', '') or ''):
+        if '/api/' not in (getattr(self, 'path', '') or '') or str(fmt).startswith('Request timed out'):
             return
         sys.stderr.write('%s %s\n' % (time.strftime('%H:%M:%S'), fmt % args))
 
@@ -662,21 +701,65 @@ class H(SimpleHTTPRequestHandler):
             return self.api_get(u.path[5:], parse_qs(u.query))
         if self.blocked():
             return self.send_error(404)
-        super().do_GET()
+        self.static(True)
 
     def do_HEAD(self):
         if self.path.startswith('/api/') or self.blocked():
             return self.send_error(404)
-        super().do_HEAD()
+        self.static(False)
+
+    def static(self, body):
+        """File tĩnh (đã qua danh sách cho phép): ETag theo mtime + cỡ, 304 khi If-None-Match khớp, gzip cho js/css/html/json."""
+        rel = unquote(urlparse(self.path).path).lstrip('/') or 'index.html'
+        fp = os.path.join(ROOT, *rel.split('/'))
+        try:
+            st = os.stat(fp)
+        except OSError:
+            return self.send_error(404)
+        if not os.path.isfile(fp):
+            return self.send_error(404)
+        comp = rel.lower().endswith(GZ_EXT) and st.st_size >= GZ_MIN and accepts_gzip(self.headers.get('Accept-Encoding'))
+        tag = '"%x-%x%s"' % (st.st_mtime_ns, st.st_size, '-gz' if comp else '')
+        vary = rel.lower().endswith(GZ_EXT)
+        inm = self.headers.get('If-None-Match')
+        if inm and (inm.strip() == '*' or tag in [t.strip().removeprefix('W/') for t in inm.split(',')]):
+            self.send_response(304)
+            self.send_header('ETag', tag)
+            if vary:
+                self.send_header('Vary', 'Accept-Encoding')
+            self.end_headers()
+            return
+        try:
+            if comp:
+                data = gz_bytes(fp, st)
+            else:
+                with open(fp, 'rb') as f:
+                    data = f.read()
+        except OSError:
+            return self.send_error(404)
+        self.send_response(200)
+        self.send_header('Content-Type', self.guess_type(fp))
+        self.send_header('Content-Length', str(len(data)))
+        self.send_header('ETag', tag)
+        self.send_header('Last-Modified', self.date_time_string(int(st.st_mtime)))
+        if comp:
+            self.send_header('Content-Encoding', 'gzip')
+        if vary:
+            self.send_header('Vary', 'Accept-Encoding')
+        self.end_headers()
+        if body:
+            self.wfile.write(data)
 
     def do_POST(self):
         u = urlparse(self.path)
         if not u.path.startswith('/api/'):
             return self.send_error(404)
         if not RATE.hit(('api', self.ip()), LIM_API):
+            self.close_connection = True   # thân yêu cầu chưa đọc: đóng kết nối để phần còn lại không bị hiểu là yêu cầu kế tiếp
             return self.send_json({'err': 'Gửi yêu cầu quá nhanh, đợi một chút'}, 429)
         b = self.body()
         if b is None:
+            self.close_connection = True   # có thể còn thân yêu cầu chưa đọc (quá lớn, độ dài sai)
             return self.send_json({'err': 'Dữ liệu gửi lên không hợp lệ'}, 400)
         self.api_post(u.path[5:], b)
 

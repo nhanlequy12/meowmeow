@@ -20,16 +20,52 @@ function bufCanvas(b,f){
 }
 const CC={},CI={},FC={},FI={};
 const fk=k=>Math.max(1,Math.round(k/2)); // điểm ảnh mỗi ô gốc -> điểm ảnh mỗi ô mịn
+// Bộ đệm canvas CC, FC dọn theo kiểu LRU: tổng điểm ảnh quá CV_MAX (~40 MB) thì bỏ canvas lâu không dùng nhất (đi qua 17 phòng ở nhiều mức zoom từng
+// giữ 79 MB). Chỉ bỏ canvas đã quá CV_OLD (3 giây) không dùng tới: hình của phòng đang xem được chạm mỗi khung nên không bao giờ bị bỏ rồi vẽ lại
+// (màn DPR 2 một phòng đã có thể hơn 40 MB; khi đó bộ đệm tạm vượt trần, không "đẩy ra vẽ lại" từng khung).
+// Canvas bị bỏ chỉ mất khỏi bộ đệm, lần sau cần thì vẽ lại; nơi khác đang giữ tham chiếu vẫn dùng được bình thường.
+const CV_MAX=40*1048576/4,CV_OLD=3000,CVL={m:new Map(),px:0,ev:0};
+function cvTouch(store,key,cv){const m=CVL.m,id=(store===CC?'c':'f')+key,e=m.get(id),t=Date.now();
+  if(e){e.t=t;m.delete(id);m.set(id,e);return}
+  const px=cv.width*cv.height;m.set(id,{store,key,px,t});CVL.px+=px;
+  for(const [k,v] of m){if(CVL.px<=CV_MAX||m.size<=1||t-v.t<CV_OLD)break;m.delete(k);CVL.px-=v.px;CVL.ev++;if(v.store[v.key])delete v.store[v.key]}}
 // old=1: vẽ kiểu cũ (không qua CatKit). Chỉ hoạt ảnh gacha dùng, để các cảnh intro giữ nguyên như trước
 const KITONLY=key=>{const s=SP[String(key).split(/[~!]/)[0]];return !!(s&&s.kit)}; // mèo mới (không có hình kiểu cũ): gacha cũng dùng hình CatKit
-const catCv=(sp,pose,k,old)=>{if(old&&KITONLY(sp))old=0;const f=fk(k||BS),key=sp+'|'+(pose||'sit')+'|'+f+(old?'|old':'');return CC[key]||(CC[key]=bufCanvas(Art.cat(look(sp),pose,old),f))};
-const furnCv=(id,v,k)=>{const f=fk(k||BS),key=id+'|'+(v||'')+'|'+f;return FC[key]||(FC[key]=bufCanvas(Art.furn(id,v),f))};
+const catCv=(sp,pose,k,old)=>{if(old&&KITONLY(sp))old=0;const f=fk(k||BS),key=sp+'|'+(pose||'sit')+'|'+f+(old?'|old':'');const cv=CC[key]||(CC[key]=bufCanvas(Art.cat(look(sp),pose,old),f));cvTouch(CC,key,cv);return cv};
+const furnCv=(id,v,k)=>{const f=fk(k||BS),key=id+'|'+(v||'')+'|'+f;const cv=FC[key]||(FC[key]=bufCanvas(Art.furn(id,v),f));cvTouch(FC,key,cv);return cv};
 // ảnh trong giao diện: phóng đúng bội số nguyên rồi hiển thị 1:1 với điểm ảnh màn hình
 const kk=k=>2*fk(k*DPR());
 // ảnh dựng từ canvas đưa vào thẻ <img> bằng đường dẫn blob ngắn thay cho chuỗi data URL dài: tab có hàng trăm biểu tượng (tab Mèo 150 bé)
 // dựng lại nhanh hơn nhiều vì trình duyệt không phải đọc lại chuỗi base64 cho từng thẻ. Ảnh được giữ trong bộ nhớ đệm suốt phiên chơi.
 const cvURL=cv=>{try{const b=atob(cv.toDataURL().slice(22)),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return URL.createObjectURL(new Blob([u],{type:'image/png'}))}catch(e){return cv.toDataURL()}};
 const catSrc=(sp,k,old)=>{const n=kk(k),key=sp+'|'+n+(old?'|old':'');return CI[key]||(CI[key]=cvURL(catCv(sp,'sit',n,old)))};
+/* Dựng sẵn ảnh thẻ mèo lúc rảnh: toDataURL (nén PNG đồng bộ) chiếm hơn nửa thời gian mở tab Mèo lần đầu (150 bé: 1,1–1,4 giây, điện thoại 2,7 giây).
+   Sau khi tải xong, cứ lúc trình duyệt rảnh (requestIdleCallback, không có thì setTimeout) dựng vài ảnh bằng canvas.toBlob (không chặn), theo thứ tự:
+   mèo đang có ở cỡ thẻ (kk(1)), rồi mọi giống và mèo trang phục ở cỡ Sưu tập (kk(1.5)). Ảnh cần ngay mà chưa có thì catSrc vẫn đi đường đồng bộ như cũ;
+   khi đó toBlob về sau thấy CI đã có sẽ bỏ kết quả của mình. */
+const PRE={p:{},t:0,on:false,cost:8,blk:0}; // cost: thời gian dựng một ảnh gần đây (ms, trung bình trượt), để chỉ dựng khi khe rảnh còn đủ chỗ (máy chậm: 30–40 ms một ảnh)
+// cỡ phải đúng cỡ các tab dùng: thẻ tab Mèo catTag(…,2), danh sách nhỏ catTag(…,1), Sưu tập catTag(…,1.5). Ở DPR 1 cả ba đều là 2, DPR 2 là 4, 2, 4.
+function preKeys(){const d=[],L=[];try{(S.cats||[]).forEach(c=>L.push(lk(c)))}catch(e){}
+  const n2=kk(2),n1=kk(1),n15=kk(1.5);
+  L.forEach(k=>d.push([k,n2]));if(n1!==n2)L.forEach(k=>d.push([k,n1]));
+  BREEDS.concat(VARIANTS).forEach(s=>d.push([s.id,n15]));
+  return d}
+function preRound(dl){
+  if(dl&&dl.didTimeout){PRE.on=false;PRE.t=setTimeout(preSched,2500);return} // máy đang bận (điện thoại yếu, hoạt ảnh nặng): không chen vào, đợi lúc rảnh thật
+  // khe rảnh giữa hai khung ở 60 fps chỉ 8–10 ms, PC dựng một ảnh 6–8 ms nên ngưỡng 5 ms là đủ. Máy chậm (một ảnh hơn 20 ms; CPU chậm 4 lần đo được ~30 ms)
+  // thì chỉ dựng khi không ở tab Phòng (không có drawRoom nên khe rảnh rộng hơn nhiều); đang xem phòng thì giữ nguyên nhịp cũ, không làm giật.
+  // Bị chặn thì cứ 5 lượt cho một ảnh "thăm dò" để đo lại chi phí (máy hết bận thì tự chạy tiếp, không kẹt mãi ở tab Phòng).
+  let ok=PRE.cost<=20||tab!=='home',probe=0;if(!ok&&++PRE.blk%5===0){ok=true;probe=1}
+  const L=preKeys();let done=0,left=0;const one=probe||PRE.cost>12,has=dl&&dl.timeRemaining?()=>ok&&(one?done<1:dl.timeRemaining()>5):()=>ok&&done<1; // máy chậm: một ảnh mỗi lượt rảnh
+  for(const [sp,n] of L){const key=sp+'|'+n;if(CI[key]||PRE.p[key])continue;if(!has()){left++;continue}
+    PRE.p[key]=1;done++;const t0=performance.now();
+    try{const cv=catCv(sp,'sit',n);cv.toBlob(b=>{delete PRE.p[key];if(b&&!CI[key])CI[key]=URL.createObjectURL(b)},'image/png')}catch(e){}
+    PRE.cost=.7*PRE.cost+.3*Math.min(40,performance.now()-t0)}
+  PRE.on=false;
+  if(done){if(PRE.cost>16)PRE.t=setTimeout(preSched,300);else preSched()} // máy chậm (một ảnh quá một khung): tối đa vài ảnh mỗi giây, không chen liên tục
+  else PRE.t=setTimeout(preSched,left?1200:8000); // còn việc mà chưa đủ khe rảnh: thử lại sau 1,2 giây; hết việc: 8 giây sau rà lại (mèo mới về, đổi DPR)
+}
+function preSched(){if(PRE.on)return;PRE.on=true;clearTimeout(PRE.t);if(typeof requestIdleCallback==='function')requestIdleCallback(preRound,{timeout:1500});else PRE.t=setTimeout(()=>preRound(null),250)}
 const catTag=(sp,k,old)=>{const n=kk(k),d=DPR();return '<img class="px'+(sp.indexOf('~r_')>0||(COATS[sp.split('~')[1]]||{}).form?' rareglow':'')+'" width="'+36*n/d+'" height="'+40*n/d+'" src="'+catSrc(sp,k,old)+'">'};
 function furnTag(id,v,mw,mh){
   const d=DPR(),sz=id==='gift'?[28,28]:FURN[id]?[FURN[id].w,FURN[id].h]:[16,16],fit=Math.min((mw||48)*d/sz[0],(mh||40)*d/sz[1]),n=2*Math.max(1,Math.floor(fit/2)),sh=Math.min(n,Math.max(1,Math.floor(fit)));
@@ -39,7 +75,9 @@ function furnTag(id,v,mw,mh){
 const sexIc=c=>c.sex==='f'?'<span class="f">♀</span>':'<span class="m">♂</span>';
 // sao theo độ hiếm: 1★ trắng, 2★ xanh lục, 3★ xanh biển, 4★ tím, 5★ vàng lấp lánh; rb = cầu vồng 7 màu lấp lánh (màu hiếm, ưu tiên hơn số sao).
 // --d là độ trễ âm theo đồng hồ thật, để hiệu ứng không chạy lại từ đầu mỗi lần giao diện vẽ lại (mọi chu kỳ đều là ước của 6 giây)
-const starsOf=(n,rb)=>'<span class="stars '+(rb?'rb':'s'+n)+'"'+(rb||n===5?' style="--d:-'+(Date.now()%6000)+'ms"':'')+'>'+'★'.repeat(n)+'</span>';
+// 5★: lớp sao vàng tĩnh + một lớp sáng (.s5g, css/fx.css) chồng khít chỉ animate opacity, thay cho keyframe đổi color và text-shadow
+// (đổi text-shadow bắt trình duyệt tính lại bố cục cả trang mỗi khung: tab Mèo 150 bé tốn 95 ms/s chỉ cho việc đó). Nhìn như cũ.
+const starsOf=(n,rb)=>'<span class="stars '+(rb?'rb':'s'+n)+'"'+(rb||n===5?' style="--d:-'+(Date.now()%6000)+'ms"':'')+'>'+'★'.repeat(n)+(!rb&&n===5?'<i class="s5g" aria-hidden="true" style="position:absolute;left:0;top:0;opacity:0">★★★★★</i>':'')+'</span>'; // style nội tuyến: lỡ thiếu css/fx.css thì lớp sáng ẩn, chỉ còn sao vàng tĩnh
 const isRb=c=>{const ct=coatOf(c)||{};return isRare(c)||!!ct.jewel||!!ct.form};   // màu lông hiếm, cặp mắt quý hiếm của Khao Manee, hoặc trang phục hiếm của Goku và Naruto
 const formOf=c=>c&&(coatOf(c)||{}).form;                 // bé đang mang trang phục hiếm (Siêu Saiyan God, Tiên nhân Cửu Vĩ, Hokage)
 const coatLbl=c=>SP[c.sp].xt||formOf(c)?'Trang phục':'Màu lông';          // mèo trang phục có "dạng", giống thật có "màu lông"
@@ -102,7 +140,9 @@ function toast(msg,o){
   d.innerHTML=emo('<div class="ic">'+(o.icon||t[0])+'</div><div class="bd">'+(o.title?'<b>'+esc(o.title)+'</b>':'')+'<span>'+esc(msg)+'</span></div>'+(o.coins?'<div class="cn">+<span class="num">0</span> 🪙</div>':''));
   // điện thoại dọc (đã xong hướng dẫn): thông báo hiện ở dưới, ngay trên thanh tab, tối đa 2 cái để không che xu, cấp và phòng
   const low=!!(S&&S.tut&&S.tut.done)&&matchMedia('(orientation:portrait) and (max-width:700px)').matches;
-  while(box.children.length>=(low?2:4))box.firstChild.remove();
+  // màn ngang thấp (điện thoại ngang): 4 thông báo che gần hết chiều cao 390px, nên chỉ giữ 2 (css/fx.css thu gọn thẻ)
+  const short=matchMedia('(max-height:520px)').matches;
+  while(box.children.length>=(low||short?2:4))box.firstChild.remove();
   box.classList.toggle('low',low);
   if(low){box.style.top='auto';box.style.bottom=($('tabs').offsetHeight+10)+'px'}
   else{box.style.bottom='';box.style.top=($('pop').classList.contains('on')?Math.round($('pop').getBoundingClientRect().bottom)+14:10)+'px'}
@@ -1447,7 +1487,7 @@ function gReveal(skipped){
     '<div class="cd-sec">'+(info?'<div class="cd-grid">'+info+'</div>':'')+'<div class="cd-desc'+(info?'':' solo')+'">'+sp.d+'</div></div>'+
     '<div class="cd-sec"><h4>Thuộc tính ('+c.traits.length+')</h4><div class="cd-tags">'+c.traits.map(t=>tagOf(t)).join('')+'</div></div>'+
     (c.replay?'<button class="on gv-btn" onclick="endReplay()">Đóng</button></div></div>':
-    '<div class="row gv-row"><input id="gname" maxlength="16" value="'+esc(c.name)+'" placeholder="Đặt tên cho bé" style="flex:1"><button class="sm" onclick="$(\'gname\').value=pick(NAMES)">🎲</button></div>'+
+    '<div class="row gv-row"><input id="gname" maxlength="16" autocapitalize="words" enterkeyhint="done" value="'+esc(c.name)+'" placeholder="Đặt tên cho bé" style="flex:1"><button class="sm" onclick="$(\'gname\').value=pick(NAMES)">🎲</button></div>'+
     '<button class="on gv-btn" onclick="gachaDone()">'+(more?'Đón về · bé tiếp theo ▸':'Đón về nhà')+'</button></div></div>');
   emoEl(rev);rev.style.display='block';
 }
@@ -1495,7 +1535,7 @@ function openCat(uid,back){
     // thuộc tính
     '<div class="cd-sec"><h4>Thuộc tính ('+c.traits.length+')</h4><div class="cd-tags">'+c.traits.map(t=>tagOf(t)).join('')+'</div></div>'+
     // đổi tên, chuyển phòng
-    '<div class="cd-sec"><h4>Đổi tên</h4><div class="row"><input id="cname" maxlength="16" value="'+esc(c.name)+'" style="flex:1"><button class="sm" onclick="$(\'cname\').value=pick(NAMES)">🎲</button><button class="sm on" onclick="doRename('+uid+')">Đổi tên</button></div></div>'+
+    '<div class="cd-sec"><h4>Đổi tên</h4><div class="row"><input id="cname" maxlength="16" autocapitalize="words" enterkeyhint="done" value="'+esc(c.name)+'" style="flex:1"><button class="sm" onclick="$(\'cname\').value=pick(NAMES)">🎲</button><button class="sm on" onclick="doRename('+uid+')">Đổi tên</button></div></div>'+
     (away?'':'<div class="cd-sec"><h4>Chuyển phòng</h4><div class="row wrap">'+ownedRooms().concat([ROOM.wait]).map(r=>'<button class="sm '+(r.id===c.room?'on':'')+'" '+(r.id!==c.room&&catsIn(r.id).length>=r.cap?'disabled':'')+' onclick="doMove('+uid+',\''+r.id+'\')">'+r.n+' '+catsIn(r.id).length+'/'+(r.wait?'∞':r.cap)+'</button>').join('')+'</div></div>')+
     '<div class="row" style="justify-content:center;margin-top:12px"><button class="sm bad" '+(away||S.cats.length<=1?'disabled':'')+' onclick="doRehome('+uid+')">🕊 Phóng sinh (+'+STAR[c.star].sell+' xu'+(c.star===5?', +1 vé':'')+')</button></div>');
 }
@@ -1584,6 +1624,9 @@ function shopGrid(items,sel){
     if(l.reduce((t,y)=>t+Math.min(shopSpan(y.w*k/d,y.h*k/d,L)[0],L.cols),0)<=L.cols)sp[1]=1;   // cả nhóm vừa một hàng: chung một hàng cao theo món cao nhất, không để ô trống bên dưới
     return '<div class="cell tap'+(x.id===sel?' sel':'')+'" style="grid-column:span '+Math.min(sp[0],L.cols)+';grid-row:span '+sp[1]+(locked(x)?';opacity:.55':'')+'" onclick="shopSel=\''+x.id+'\';renderPanel()"><div class="fi">'+shopImg(x.id,k)+'</div><div class="fn"><b>'+x.n+'</b><br>'+(locked(x)?'<span class="dim">🔒 Cấp '+x.ul+'</span>':'<span style="color:var(--gold)">🪙 '+x.price.toLocaleString('vi-VN')+'</span>')+'</div></div>'}).join('')+'</div>').join('');
 }
+// hàng mục cửa hàng đang cuộn ngang (điện thoại): đưa nút đang chọn vào giữa tầm nhìn, chỉ cuộn hàng đó, không cuộn trang
+function shopTabsScroll(){const p=document.querySelector('#panel .shoptabs'),b=p&&p.querySelector('button.on');if(!b||p.scrollWidth<=p.clientWidth+1)return;
+  p.scrollLeft=Math.max(0,b.offsetLeft-p.offsetLeft-(p.clientWidth-b.offsetWidth)/2)}
 // đổi cỡ cửa sổ hay xoay máy: tính lại khung thẻ theo số cột mới
 {let rt=0;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(tab==='shop'&&shopT!=='rooms')renderPanel()},200)})}
 let tab='home',albumG='breed',shopT='rooms',shopSel=null,mg={sort:'star',room:'all',multi:false,sel:{}};
@@ -1603,6 +1646,31 @@ function renderTop(){
   const o=ownedRooms();
   $('roomnav').innerHTML=(o.length>1?'<button onclick="navRoom(-1)" aria-label="Phòng trước">◀</button>':'')+'<button class="nm" onclick="openRooms()"><b>'+ROOM[cur].n+'</b> <span class="dim">· '+catsIn(cur).length+'/'+ROOM[cur].cap+' mèo'+(o.length>1?' · đổi phòng ▾':'')+'</span></button>'+(o.length>1?'<button onclick="navRoom(1)" aria-label="Phòng sau">▶</button>':'');
   $('tabs').innerHTML=TABS.map(t=>'<button class="'+(tab===t[0]?'on':'')+'" onclick="setTab(\''+t[0]+'\')"><span>'+t[1]+'</span>'+t[2]+(t[0]==='home'&&feedDue()?' ❗':'')+(t[0]==='trip'&&ready?' ❗':'')+(t[0]==='cats'&&wt?' ❗':'')+'</button>').join('');['top','roomnav','tabs'].forEach(i=>emoEl($(i)));
+}
+/* Nhịp mỗi giây: renderTop (và 12 lớp bọc ở quest, wx-ui, med-ui, event-ui… đều ghi vào #top, #roomnav, #tabs qua $(id) hay querySelector('#top …'))
+   ghi lại innerHTML của ba phần tử dù nội dung không đổi, làm hoạt ảnh nhấp nháy (qpulse, evPulse…) chạy lại từ đầu mỗi giây và mất hover, focus.
+   renderTopSoft: ba phần tử nháp ẩn nằm ở ĐẦU body tạm mang đúng id top, roomnav, tabs (getElementById và querySelector trả phần tử đứng trước trong cây),
+   chạy nguyên chuỗi renderTop (kể cả mọi lớp bọc) vào bản nháp, bỏ id nháp, rồi chỉ chép sang bản thật những con khác nhau (so outerHTML từng con).
+   Phần tử thật không bị đổi id nên kiểu CSS theo id không bị động tới. Nút, chip có onclick gán bằng thuộc tính JS (unlock.js) vẫn giữ: con giữ nguyên
+   thì không bị thay, con được thay thì mang theo node của bản nháp. Mọi lời gọi renderTop() trực tiếp ở nơi khác vẫn ghi thẳng như cũ. */
+const RT_IDS=['top','roomnav','tabs'];let rtDraft=null;
+function rtSync(real,draft){
+  const a=[...real.childNodes],b=[...draft.childNodes];
+  if(a.length!==b.length){real.replaceChildren(...b);return}
+  for(let i=0;i<b.length;i++){const x=a[i],y=b[i];
+    if(x.nodeType!==y.nodeType||(x.nodeType===1?x.outerHTML!==y.outerHTML:x.data!==y.data))real.replaceChild(y,x)}
+}
+function renderTopSoft(){
+  const R=RT_IDS.map(id=>$(id));
+  if(R.some(x=>!x))return renderTop();
+  if(!rtDraft){rtDraft=document.createElement('div');rtDraft.id='rtdraft';rtDraft.hidden=true;rtDraft.style.display='none';rtDraft.setAttribute('aria-hidden','true');
+    RT_IDS.forEach(()=>rtDraft.appendChild(document.createElement('div')))}
+  if(rtDraft!==document.body.firstElementChild)document.body.insertBefore(rtDraft,document.body.firstChild);
+  const D=[...rtDraft.children];
+  D.forEach((d,i)=>{d.className=R[i].className;d.id=RT_IDS[i]});
+  try{renderTop()}
+  finally{D.forEach(d=>d.removeAttribute('id'))}
+  D.forEach((d,i)=>{rtSync(R[i],d);d.replaceChildren()});
 }
 function openRooms(){
   modal('<h3>Chọn phòng</h3>'+ownedRooms().map(r=>'<div class="card tap" onclick="closeModal();setRoom(\''+r.id+'\')"><div style="font-size:24px">'+(r.id===cur?'📍':'🚪')+'</div><div class="g"><b>'+r.n+'</b> <small>· '+catsIn(r.id).length+'/'+r.cap+' mèo'+(catsIn(r.id).length>=r.cap?' · <span style="color:var(--bad)">đầy</span>':'')+'</small><br><small>'+r.d+'</small></div></div>').join(''));
@@ -1684,7 +1752,9 @@ const PANEL={
    '<small>Thêm: sau '+PITY+' lượt liền nhau chưa có 4★ thì lượt đó chắc chắn ra 4★ trở lên, vẫn có thể là 5★ (đã mở '+Math.min(S.pity,PITY)+'/'+PITY+'). Số trait bằng số sao. Mèo trang phục chỉ có ở 4★–5★; màu lông hiếm rơi khoảng '+Math.round(RARE_P*100)+'% mỗi lượt.</small></div>';
  },
  shop(){
-  const tabs='<div class="row wrap" style="margin-bottom:8px"><button class="sm '+(shopT==='rooms'?'on':'')+'" onclick="shopT=\'rooms\';renderPanel()">🚪 Phòng</button>'+FCATS.map(c=>'<button class="sm '+(shopT===c[0]?'on':'')+'" onclick="shopT=\''+c[0]+'\';shopSel=null;renderPanel()">'+c[1]+'</button>').join('')+'</div>';
+  // .shoptabs: trên điện thoại là một hàng cuộn ngang (css/fx.css), nút đang chọn được cuộn vào tầm nhìn sau khi vẽ
+  const tabs='<div class="row wrap shoptabs" style="margin-bottom:8px"><button class="sm '+(shopT==='rooms'?'on':'')+'" onclick="shopT=\'rooms\';renderPanel()">🚪 Phòng</button>'+FCATS.map(c=>'<button class="sm '+(shopT===c[0]?'on':'')+'" onclick="shopT=\''+c[0]+'\';shopSel=null;renderPanel()">'+c[1]+'</button>').join('')+'</div>';
+  setTimeout(shopTabsScroll,0);
   // dòng gợi ý: cấp kế tiếp có món mới sẽ mở những gì
   let nx=S.level+1;while(nx<=MAX_LV&&!unlocksAt(nx).length)nx++;
   const nu=nx<=MAX_LV?unlocksAt(nx):[],hint='<div class="dim" style="margin-bottom:8px">⭐ Bạn đang ở cấp '+S.level+'. '+(nu.length?'Lên cấp '+nx+' sẽ mở: <b>'+nu.slice(0,5).map(esc).join(', ')+'</b>'+(nu.length>5?' và '+(nu.length-5)+' món khác':'')+'.':'Bạn đã mở khóa toàn bộ cửa hàng.')+' Kinh nghiệm đến từ viễn chinh, cho ăn, vuốt ve, gacha và mua sắm.</div>';
@@ -1840,13 +1910,14 @@ addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('modal').style.display==
 load();applySet();$('app').dataset.tab=tab;fitCanvas();syncEnts();render();
 fitCanvas();camY=VH;clampCam(); // đo lại sau khi thanh trên, tên phòng và menu đã có nội dung (nếu không khung phòng lần đầu cao quá cửa sổ), rồi nhìn lại sát sàn
 if(AWAY.n)setTimeout(()=>toast(AWAY.n+' suất đã được các bé tự ra ăn'+(AWAY.cost?' · máy cho ăn tốn '+AWAY.cost+' xu':''),{type:'feed',title:'Lúc bạn vắng',coins:AWAY.coins,ms:5200}),600);
+setTimeout(preSched,1200); // dựng sẵn ảnh thẻ mèo lúc rảnh, sau khi trang đã ổn định
 let last=performance.now();
 function loop(t){const dt=Math.min(.1,(t-last)/1000);last=t;ents.forEach(e=>stepEnt(e,dt));if(ents.some(e=>e.dead))ents=ents.filter(e=>!e.dead);stepParts(dt);if(tab==='home'){stepCam(dt);critStep(dt);drawRoom()}requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 let lastTick=now(),sec=0;
 setInterval(()=>{
   const n=now();tick((n-lastTick)/1000);lastTick=n;sec++;
-  renderTop();if(fol)showFol();
+  renderTopSoft();if(fol)showFol();
   if($('modal').style.display==='flex')return;
   if((tab==='home'&&!edit)||tab==='trip')renderPanel(true);
   if(sec%10===0)save();

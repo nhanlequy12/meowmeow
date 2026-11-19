@@ -164,7 +164,7 @@ function pwTick(dt,sim){
   let genSec=0;
   if(cut>0){let rem=cut;pwGens().forEach(g=>{const R=FURN[g.fid].gen.run*60,av=(g.ge||0)*R;if(av<=0||rem<=0)return;const u=Math.min(av,rem);g.ge=Math.max(0,g.ge-u/R);rem-=u;genSec+=u;
     if(!g.gu){g.gu=1;if(!sim)notify(FURN[g.fid].n+' đã chuyển sang nguồn dự phòng.',{icon:'🔋',title:'Máy phát',key:'pwgen'})}
-    if(g.ge<=1e-6){g.ge=0;if(!sim)notify(FURN[g.fid].n+' đã hết năng lượng.',{icon:'🪫',title:'Máy phát',key:'pwgen'});if(typeof wxDirty==='function')wxDirty()}})}
+    if(g.ge<=1e-6){g.ge=0;if(!sim)notify(FURN[g.fid].n+' đã hết năng lượng.',{icon:'🔋',title:'Máy phát',key:'pwgen'});if(typeof wxDirty==='function')wxDirty()}})}
   const powSec=dt-cut+genSec;            // số giây có điện (lưới hoặc máy phát)
   if(p.out&&t1>=p.out.e)pwRestore(sim);  // hết 15 phút: có điện lại, máy phát đã chạy về 0%
   // điện mặt trời: tạo năng lượng theo nắng, kể cả lúc vắng (chỉ tích vào bộ lưu trữ, không tự sạc thiết bị nào)
@@ -187,8 +187,8 @@ function pwTick(dt,sim){
     if(it.charge&&powSec>0)return;
     const P=FURN[it.fid].pw,b0=pwCur(it),b=Math.max(0,b0-P.powerConsumption*dt/3600);it.currentBattery=b;
     const nm=FURN[it.fid].n+' ở '+ROOM[it.room].n;
-    if(b<=0&&b0>0){if(typeof wxDirty==='function')wxDirty();if(sim)PWAWAY.dead.push(nm);else notify(nm+' đã hết pin, ngừng chạy. Bấm vào máy rồi chọn Sạc thiết bị.',{icon:'🪫',title:'Hết pin',key:'pwdead'})}
-    else if(b/P.batteryCapacity<PWC.low&&!it.lw){it.lw=1;if(!sim)notify(nm+' sắp hết pin ('+Math.round(b/P.batteryCapacity*100)+'%).',{icon:'🪫',title:'Pin yếu',key:'pwlow'})}
+    if(b<=0&&b0>0){if(typeof wxDirty==='function')wxDirty();if(sim)PWAWAY.dead.push(nm);else notify(nm+' đã hết pin, ngừng chạy. Bấm vào máy rồi chọn Sạc thiết bị.',{icon:'🔋',title:'Hết pin',key:'pwdead'})}
+    else if(b/P.batteryCapacity<PWC.low&&!it.lw){it.lw=1;if(!sim)notify(nm+' sắp hết pin ('+Math.round(b/P.batteryCapacity*100)+'%).',{icon:'🔋',title:'Pin yếu',key:'pwlow'})}
   });
   pwFear(dt,sim,powSec>0);
 }

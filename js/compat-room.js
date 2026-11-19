@@ -170,7 +170,7 @@ document.head.insertAdjacentHTML('beforeend','<style id="cpr-css">'+
 '.cpr-gn{flex:none;font-size:13.5px;white-space:nowrap;color:var(--cp2)}.cpr-gn.dn{color:var(--cpx)}'+
 '.cpr-ac{display:flex;gap:8px;position:sticky;bottom:-14px;z-index:1;margin:10px 0 -14px;padding:6px 0 14px;background:var(--bg);box-shadow:0 -8px 8px -6px var(--bg)}'+
 '.cpr-ac button{flex:1 1 0;min-height:44px}.cpr-ac .cpr-go{flex:2 1 0;font-weight:700}'+
-'@media(pointer:coarse){button.cpr-arr,.cpr-w button,button.cpr-more{min-height:44px}.cpr-fit{padding-top:2px;padding-bottom:2px}}'+
+'@media(pointer:coarse){button.cpr-mi{min-height:40px}button.cpr-arr,.cpr-w button,button.cpr-more{min-height:44px}.cpr-fit{padding-top:2px;padding-bottom:2px}}'+
 '@media(orientation:landscape) and (max-height:520px){.cpr-fit{margin-bottom:6px}.cpr-lb{font-size:13px}.cpr-ws{gap:5px 8px;margin-bottom:6px}.cpr-w{flex-basis:360px}'+
   '.cpr-gh{margin:6px 0 3px}.cpr-ac{margin-top:6px}}'+
 '</style>');
