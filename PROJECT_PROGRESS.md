@@ -173,6 +173,8 @@ Người dùng bảo "còn làm gì nữa làm luôn". Claude tự làm độ th
 
 - 2026-11-19: bot kinh tế đo đủ (mèo ghé chơi, chơi với bé, phụ kiện, sticker; sửa lỗi bot không mua Phòng hoàng gia ở chế độ kết thân). Số đo ở `CLAUDE.md` mục 51: Phòng hoàng gia 182 → 156 giờ, đủ nội thất 222 → 199 giờ, cấp 18 41 → 55 giờ.
 
+- `999d9bc` (2026-11-20): bong bóng gợi ý vuốt ve (`js/petcue.js`, nạp sau `js/play-ui.js`, trước `js/bgm.js`): bé đã qua 10 phút chờ có bong bóng hồng hình bàn chân trên đầu, vuốt xong thì tắt; không vẽ cho khách lạ, phân thân, bé đang có ước muốn, lúc Sắp xếp đồ hay đang chơi với bé; công tắc Hiện/Ẩn `S.set.pcue` trong Cài đặt. Đã thử trong trình duyệt ở cỡ PC; chưa thử điện thoại, chủ đề tối, phòng đông.
+
 ## Quyết định kỹ thuật quan trọng
 
 Xem `CLAUDE.md`. Vài điểm hay bị quên:
