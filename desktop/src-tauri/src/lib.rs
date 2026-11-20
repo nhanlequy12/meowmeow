@@ -14,6 +14,11 @@
 //!   nên Ctrl+R không đè bản mới bằng bản cũ. Vì phải gắn script trước lần điều hướng đầu, cửa sổ mở bằng about:blank.
 //! - Thu nhỏ (hoặc ẩn bằng set_web_visible) thì báo WebView2 IsVisible=false: trang có document.hidden, rAF dừng,
 //!   timer vẫn chạy (không TrySuspend). Tắt IntensiveWakeUpThrottling để timer ẩn không bị dồn về 1 lần/phút.
+//! - Hành vi như app thật (desk.rs, winx.rs): splash, khay hệ thống, nút X hỏi lần đầu rồi nhớ, khởi động cùng Windows
+//!   (`--tray`), phím tắt toàn cục, luôn ở trên cùng, lịch thông báo toast, chấm đỏ trên taskbar, màu nền theo chủ đề.
+
+mod desk;
+mod winx;
 
 use serde::{Deserialize, Serialize};
 use std::{
@@ -62,13 +67,49 @@ struct WinState {
     full: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(default)]
 struct Config {
     mode: Option<String>,
     server: String,
     terms: u32,
     win: Option<WinState>,
+    /// Nút X, Alt+F4: "ask" (hỏi lần đầu rồi nhớ) | "tray" (thu vào khay) | "quit" (thoát).
+    close: String,
+    /// Khởi động cùng Windows (vào thẳng khay). Lúc mở app được đồng bộ theo registry thật.
+    autostart: bool,
+    /// Phím tắt toàn cục hiện/ẩn cửa sổ; "" là tắt.
+    hotkey: String,
+    #[serde(rename = "onTop")]
+    on_top: bool,
+    notify: bool,
+    /// Nhạc nền vẫn phát khi cửa sổ ẩn (trang đọc, lõi chỉ lưu).
+    #[serde(rename = "bgPlay")]
+    bg_play: bool,
+    /// "light" | "dark": màu nền cửa sổ, webview, splash ngay từ lúc mở (không lóe nền sáng ở chủ đề tối).
+    theme: String,
+    /// Đã báo "Mèo Xu vẫn chạy ở khay" lần đầu thu vào khay.
+    #[serde(rename = "trayTip")]
+    tray_tip: bool,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            mode: None,
+            server: String::new(),
+            terms: 0,
+            win: None,
+            close: "ask".into(),
+            autostart: false,
+            hotkey: desk::DEF_HOTKEY.into(),
+            on_top: false,
+            notify: true,
+            bg_play: false,
+            theme: "light".into(),
+            tray_tip: false,
+        }
+    }
 }
 
 impl Config {
@@ -97,6 +138,8 @@ struct Ctx {
     web_vis: AtomicBool,
     /// Lần điều hướng khung chính gần nhất: (NavigationId, địa chỉ) để biết lần nào thất bại.
     nav: Mutex<Option<(u64, String)>>,
+    /// Trạng thái của phần hành vi như app thật (desk.rs).
+    desk: desk::Desk,
 }
 
 impl Ctx {
@@ -158,6 +201,12 @@ fn load_cfg(dir: &Path) -> Config {
                 c.mode = None;
             }
             c.terms = c.terms.min(TERMS_VER);
+            if !matches!(c.close.as_str(), "ask" | "tray" | "quit") {
+                c.close = "ask".into();
+            }
+            if c.theme != "dark" {
+                c.theme = "light".into();
+            }
             c
         }
         Err(_) => {
@@ -290,6 +339,8 @@ fn init_script(ctx: &Ctx) -> String {
         "terms": c.terms,
         "termsVer": TERMS_VER,
         "base": ctx.base.origin().ascii_serialization(),
+        "app": desk::app_cfg(ctx),
+        "tray": ctx.desk.tray_start,
     });
     INIT_JS
         .replacen("/*__CFG__*/null", &data.to_string(), 1)
@@ -299,9 +350,9 @@ fn init_script(ctx: &Ctx) -> String {
 /// Script vá chạy sau init script: đưa giá trị mới của cấu hình vào MXAPP cho các trang nạp sau.
 fn patch_script(ctx: &Ctx) -> String {
     let c = ctx.cfg();
-    let data = serde_json::json!({ "mode": c.mode, "server": c.server, "terms": c.terms });
+    let data = serde_json::json!({ "mode": c.mode, "server": c.server, "terms": c.terms, "app": desk::app_cfg(ctx) });
     format!(
-        "(function(){{var M=window.MXAPP,v={data};if(M){{M.mode=v.mode;M.server=v.server||'';M.terms=+v.terms||0;}}}})();"
+        "(function(){{var M=window.MXAPP,v={data};if(M){{M.mode=v.mode;M.server=v.server||'';M.terms=+v.terms||0;if(M.cfg)for(var k in v.app)M.cfg[k]=v.app[k];}}}})();"
     )
 }
 
@@ -371,7 +422,7 @@ fn swap_script(_win: &WebviewWindow, _ctx: Arc<Ctx>, _slot: Slot, _script: Optio
 }
 
 /// Thay script vá (giá trị mới của cấu hình), rồi nếu có `then`: gắn script khôi phục cho origin của `then` và điều hướng.
-fn apply_patch(win: &WebviewWindow, ctx: Arc<Ctx>, then: Option<Url>) {
+pub(crate) fn apply_patch(win: &WebviewWindow, ctx: Arc<Ctx>, then: Option<Url>) {
     let script = patch_script(&ctx);
     let next: Then = match then {
         Some(u) => {
@@ -462,6 +513,7 @@ pub fn set_web_visible(win: &WebviewWindow, on: bool) {
             let _ = pw.controller().SetIsVisible(on);
         });
     }
+    desk::page_on(win.app_handle(), if on { "shown" } else { "hidden" }, serde_json::Value::Null);
 }
 
 /// Bắt lần điều hướng tới máy chủ thất bại (máy chủ tắt khi đang chơi rồi bấm F5, đường hầm hỏng…)
@@ -668,6 +720,7 @@ async fn mx_persist(app: AppHandle, webview: tauri::Webview, json: String, page:
         }
         if write_save(&save_path(&ctx, &key), &json).is_ok() {
             last.insert(key, (page, n));
+            ctx.desk.persist_n.fetch_add(1, Ordering::SeqCst);
         }
     })
     .await;
@@ -680,6 +733,64 @@ fn mx_restored(app: AppHandle) {
     if let Some(win) = main_win(&app) {
         swap_script(&win, ctx, Slot::Restore, None, Box::new(|| {}));
     }
+}
+
+/* ---- hành vi như app thật (desk.rs) ---- */
+
+#[tauri::command]
+fn mx_app_get(app: AppHandle) -> desk::AppCfg {
+    desk::app_cfg(&ctx_of(&app))
+}
+
+#[tauri::command]
+async fn mx_app_set(app: AppHandle, patch: serde_json::Value) -> desk::SetRes {
+    desk::app_set(&app, &patch)
+}
+
+#[tauri::command]
+fn mx_notify_plan(app: AppHandle, items: Vec<desk::NItem>) -> usize {
+    desk::set_plan(&app, items);
+    desk::plan_len(&app)
+}
+
+#[tauri::command]
+async fn mx_notify_now(app: AppHandle, title: String, body: String, tab: Option<String>) -> ModeRes {
+    match desk::notify_now(&app, &title, &body, tab) {
+        Ok(()) => ModeRes { ok: true, err: None },
+        Err(e) => ModeRes { ok: false, err: Some(e) },
+    }
+}
+
+#[tauri::command]
+fn mx_badge(app: AppHandle, n: f64) {
+    let n = if n.is_finite() && n > 0.0 { n.min(999.0) as u32 } else { 0 };
+    desk::set_badge(&app, n);
+}
+
+#[tauri::command]
+fn mx_theme(app: AppHandle, theme: String) {
+    desk::set_theme(&app, &theme);
+}
+
+#[tauri::command]
+fn mx_ready(app: AppHandle) {
+    desk::reveal(&app);
+}
+
+#[tauri::command]
+fn mx_hide(app: AppHandle) {
+    desk::hide_main(&app, true);
+}
+
+/// soon=true (Ctrl+Q): báo trang 'quit-soon' và chờ trang lưu; false (MXAPP.quit): trang đã tự lưu.
+#[tauri::command]
+fn mx_quit(app: AppHandle, soon: Option<bool>) {
+    desk::quit_app(&app, soon.unwrap_or(false));
+}
+
+#[tauri::command]
+fn mx_reset_window(app: AppHandle) {
+    desk::reset_window(&app);
 }
 
 #[tauri::command]
@@ -766,13 +877,15 @@ fn media_range(req: tauri::http::Request<Vec<u8>>, resp: &mut tauri::http::Respo
 
 fn build_window(app: &AppHandle, ctx: Arc<Ctx>, first: Url) -> tauri::Result<WebviewWindow> {
     let nav_ctx = ctx.clone();
+    let theme = ctx.cfg().theme;
     WebviewWindowBuilder::new(app, LABEL, WebviewUrl::External(first))
         .title("Mèo Xu")
         .inner_size(1280.0, 800.0)
         .min_inner_size(900.0, 560.0)
         .center()
         .visible(false)
-        .background_color(tauri::window::Color(0xe6, 0xda, 0xc8, 0xff))
+        .theme(Some(desk::theme_of(&theme)))
+        .background_color(desk::bg_of(&theme))
         .zoom_hotkeys_enabled(false) // game dùng Ctrl + lăn chuột để zoom phòng
         .disable_drag_drop_handler() // giữ kéo thả HTML5 của game (đổi phòng cho mèo)
         .data_directory(ctx.dir.join("WebView"))
@@ -841,7 +954,7 @@ fn remember_normal(win: &Window, ctx: &Ctx) {
     }
 }
 
-fn save_window(win: &Window, ctx: &Ctx) {
+pub(crate) fn save_window(win: &Window, ctx: &Ctx) {
     remember_normal(win, ctx);
     let max = win.is_maximized().unwrap_or(false);
     let full = win.is_fullscreen().unwrap_or(false);
@@ -849,15 +962,12 @@ fn save_window(win: &Window, ctx: &Ctx) {
     if let Some(mut ws) = base {
         ws.max = max;
         ws.full = full;
-        let _ = ctx.update(|c| c.win = Some(ws));
-    }
-}
-
-fn focus_main(app: &AppHandle) {
-    if let Some(w) = main_win(app) {
-        let _ = w.unminimize();
-        let _ = w.show();
-        let _ = w.set_focus();
+        let same = ctx.cfg().win.is_some_and(|o| {
+            (o.x, o.y, o.w, o.h, o.max, o.full) == (ws.x, ws.y, ws.w, ws.h, ws.max, ws.full)
+        });
+        if !same {
+            let _ = ctx.update(|c| c.win = Some(ws));
+        }
     }
 }
 
@@ -873,10 +983,12 @@ fn internal_base(app: &AppHandle) -> Url {
 pub fn run() {
     let dir = app_dir();
     let cfg = load_cfg(&dir);
+    let tray_start = desk::tray_arg();
     tauri::Builder::default()
-        // Phải đăng ký đầu tiên: mở app lần hai thì đưa cửa sổ cũ lên trước, tiến trình mới tự thoát.
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| focus_main(app)))
+        // Phải đăng ký đầu tiên: mở app lần hai thì đưa cửa sổ cũ lên trước (trừ khi lần hai là --tray), tiến trình mới tự thoát.
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| desk::second_instance(app, &args)))
         .plugin(tauri_plugin_opener::Builder::new().open_js_links_on_click(false).build())
+        .plugin(desk::hotkey_plugin())
         .invoke_handler(tauri::generate_handler![
             mx_ping,
             mx_set_mode,
@@ -886,7 +998,17 @@ pub fn run() {
             mx_open_external,
             mx_fullscreen,
             mx_persist,
-            mx_restored
+            mx_restored,
+            mx_app_get,
+            mx_app_set,
+            mx_notify_plan,
+            mx_notify_now,
+            mx_badge,
+            mx_theme,
+            mx_ready,
+            mx_hide,
+            mx_quit,
+            mx_reset_window
         ])
         .setup(move |app| {
             let handle = app.handle().clone();
@@ -901,8 +1023,13 @@ pub fn run() {
                 persist: Mutex::new(HashMap::new()),
                 web_vis: AtomicBool::new(true),
                 nav: Mutex::new(None),
+                desk: desk::Desk::new(tray_start),
             });
             app.manage(ctx.clone());
+            // Splash trước tiên (mở bằng --tray thì không): cửa sổ nhỏ hiện ngay trong lúc WebView2 và game nạp.
+            if !tray_start {
+                desk::build_splash(&handle, &ctx);
+            }
             let friend = cfg.friend_server().map(|u| clean_base(&u));
             let first = match &friend {
                 Some(s) => ctx.offline_url(s, None, true),
@@ -914,8 +1041,12 @@ pub fn run() {
             if let Some(ws) = cfg.win {
                 restore_window(&win, &ws);
             }
-            win.show()?;
-            let _ = win.set_focus();
+            // Cửa sổ chính còn ẩn: hiện khi trang gọi MXAPP.ready() (hoặc sau tối đa 8 giây). Mở bằng --tray thì ở khay,
+            // trang vẫn nạp và chạy luật nhưng không vẽ.
+            if tray_start {
+                set_web_visible(&win, false);
+            }
+            desk::setup(&handle, &ctx, &win);
             match friend.and_then(|s| Url::parse(&format!("{s}/")).ok().map(|u| (s, u))) {
                 Some((s, srv)) => {
                     // Trang chờ nội bộ trước (không khớp origin nên không dùng hết script khôi phục),
@@ -932,19 +1063,36 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|win, ev| {
+            if win.label() != LABEL {
+                return; // splash
+            }
             let Some(ctx) = win.try_state::<Arc<Ctx>>() else { return };
             let ctx = ctx.inner().clone();
+            let app = win.app_handle();
             match ev {
-                WindowEvent::Moved(_) => remember_normal(win, &ctx),
+                WindowEvent::Moved(_) => {
+                    remember_normal(win, &ctx);
+                    desk::schedule_win_save(app);
+                }
                 WindowEvent::Resized(sz) => {
                     remember_normal(win, &ctx);
                     // Thu nhỏ: WM_SIZE cỡ 0x0. Báo WebView2 để trang dừng vẽ; mở lại thì vẽ tiếp.
                     let min = sz.width == 0 || win.is_minimized().unwrap_or(false);
-                    if let Some(w) = main_win(win.app_handle()) {
+                    if let Some(w) = main_win(app) {
                         set_web_visible(&w, !min && w.is_visible().unwrap_or(true));
                     }
+                    if !min {
+                        desk::schedule_win_save(app);
+                    }
                 }
-                WindowEvent::CloseRequested { .. } => save_window(win, &ctx),
+                WindowEvent::Focused(f) => desk::on_focus(app, *f),
+                WindowEvent::CloseRequested { api, .. } => {
+                    save_window(win, &ctx);
+                    if !ctx.desk.quitting.load(Ordering::SeqCst) {
+                        api.prevent_close();
+                        desk::on_close_requested(app);
+                    }
+                }
                 _ => {}
             }
         })

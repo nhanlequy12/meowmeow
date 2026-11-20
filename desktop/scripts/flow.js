@@ -78,6 +78,10 @@ const warnLog = p => (p && p.log || []).filter(e => e.w).map(e => e.m || e.t || 
 /* ---------- mở, đóng app (như smoke.js) ---------- */
 async function launch(exe = EXE, dir = APPDIR) {
   cdpPort++;
+  // Từ phần B nút X mặc định là "hỏi" (hộp thoại Windows): closeApp gửi WM_CLOSE như nút X nên đặt sẵn "thoát" cho
+  // thư mục mới (các trường khác của config.json để mặc định, màn chào lần đầu vẫn hiện), và tắt phím tắt toàn cục.
+  const cf = path.join(dir, 'config.json');
+  if (!fs.existsSync(cf)) { fs.mkdirSync(dir, { recursive: true }); fs.writeFileSync(cf, JSON.stringify({ close: 'quit', hotkey: '' })); }
   const args = ['--remote-debugging-port=' + cdpPort, '--disable-features=CalculateNativeWinOcclusion'];
   if (MUTE) args.push('--mute-audio');
   const env = Object.assign({}, process.env, { MEOXU_APPDIR: dir, WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: args.join(' ') });
@@ -87,7 +91,8 @@ async function launch(exe = EXE, dir = APPDIR) {
   const ok = await waitFor(() => getJSON('http://127.0.0.1:' + cdpPort + '/json/version'), 40000, 300);
   if (!ok) throw new Error('không nối được CDP ở cổng ' + cdpPort);
   const browser = await chromium.connectOverCDP('http://127.0.0.1:' + cdpPort);
-  const page = await waitFor(() => browser.contexts()[0] && browser.contexts()[0].pages()[0], 15000);
+  // trang game, không phải màn chờ splash.html (cửa sổ riêng, đóng khi game sẵn sàng)
+  const page = await waitFor(() => browser.contexts()[0] && browser.contexts()[0].pages().find(pg => !/\/splash\.html/.test(pg.url())), 15000);
   if (!page) throw new Error('không thấy trang nào');
   page.on('pageerror', e => pageErrs.push({ at: Date.now(), url: page.url(), m: e.message }));
   return { p, browser, page, port: cdpPort };

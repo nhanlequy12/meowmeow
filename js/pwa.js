@@ -135,7 +135,7 @@ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();PWA.ask=e;i
 window.addEventListener('appinstalled',()=>{PWA.ask=null});
 if(pwaOK()){
   navigator.serviceWorker.register('sw.js').then(()=>navigator.serviceWorker.ready).then(r=>{PWA.reg=r;if(ntfOn())pushSub()}).catch(()=>{});
-  if(typeof S!=='undefined'&&S&&S.tut&&S.tut.done&&!S.nf4){S.nf4=1;save();
+  if(typeof S!=='undefined'&&S&&S.tut&&S.tut.done&&!S.nf4&&!window.MXAPP){S.nf4=1;save();   // bản app Windows không cài được, thông báo do app lo (js/app-win.js)
     const nf=()=>{if($('modal').style.display==='flex'||$('gz').classList.contains('on'))return setTimeout(nf,2000);
       toast('Mở ⚙️ Cài đặt để cài Mèo Xu thành ứng dụng và bật thông báo khi viễn chinh xong, bát ăn đổ lại được.',{type:'level',title:'Mới: ứng dụng và thông báo',icon:'📱',ms:10000})};setTimeout(nf,5000)}
 }

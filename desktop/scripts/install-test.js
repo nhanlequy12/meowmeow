@@ -123,7 +123,7 @@ async function main() {
     const ok = await waitFor(() => getJSON('http://127.0.0.1:' + port + '/json/version'), 40000);
     if (!ok) throw new Error('không nối được CDP');
     browser = await chromium.connectOverCDP('http://127.0.0.1:' + port);
-    const page = await waitFor(() => browser.contexts()[0] && browser.contexts()[0].pages()[0], 15000);
+    const page = await waitFor(() => browser.contexts()[0] && browser.contexts()[0].pages().find(pg => !/\/splash\.html/.test(pg.url())), 15000);
     const errs = [];
     page.on('pageerror', e => errs.push(e.message));
     await page.reload({ waitUntil: 'load' });
@@ -133,6 +133,8 @@ async function main() {
       JSON.stringify(st) + (errs.length ? ' lỗi: ' + errs.slice(0, 3).join(' | ') : ''));
     await page.evaluate(() => localStorage.setItem('mx_inst', 'giu-lai'));
     await page.evaluate(() => MXAPP.acceptTerms());
+    // nút X mặc định "hỏi": đặt "thoát" để taskkill (WM_CLOSE) đóng app ngay, không hiện hộp thoại
+    await page.evaluate(() => MXAPP.app && MXAPP.app.set({ close: 'quit' }));
   } finally {
     if (browser) { try { await browser.close(); } catch (e) {} }
     try { execFileSync('taskkill', ['/PID', String(p.pid)], { stdio: 'ignore' }); } catch (e) {}

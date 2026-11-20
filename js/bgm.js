@@ -143,7 +143,10 @@ function bgmSongSync(){
 // đặt ngay âm lượng đích (đổi nguồn nhạc làm đổi hệ số)
 function bgmGainNow(){if(BGM.ac&&BGM.run&&!BGM.off){const g=BGM.out.gain;g.cancelScheduledValues(BGM.ac.currentTime);g.setTargetAtTime(bgmGain(),BGM.ac.currentTime,.05)}}
 const bgmGz=()=>{const g=document.getElementById('gz');return !!(g&&g.classList.contains('on'))};
-const bgmWant=()=>!!(S&&S.set&&S.set.bgm)&&!document.hidden&&!bgmGz()&&!(typeof needLandscape==='function'&&needLandscape());
+// trang ẩn (thu nhỏ, ẩn vào khay của bản app: lõi báo qua window.__mxHidden) thì tạm dừng; bản app có tùy chọn "vẫn phát khi ẩn" (MXAPP.cfg.bgPlay)
+const bgmBgPlay=()=>!!(window.MXAPP&&MXAPP.cfg&&MXAPP.cfg.bgPlay);
+const bgmHidden=()=>!!(document.hidden||window.__mxHidden===true);
+const bgmWant=()=>!!(S&&S.set&&S.set.bgm)&&!(bgmHidden()&&!bgmBgPlay())&&!bgmGz()&&!(typeof needLandscape==='function'&&needLandscape());
 // tạo AudioContext (chỉ gọi trong một cú chạm, bấm phím của người chơi)
 function bgmEnsure(){
   if(!BGM.ac){try{BGM.ac=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return false}BGM.out=bgmChain(BGM.ac,BGM.ac.destination,0)}
@@ -155,7 +158,8 @@ function bgmTick(){
   if(bgmSongMode()){bgmSongSync();return}   // đang phát bài hát: không xếp lịch chiptune
   if(!BGM.cur){BGM.cur=bgmPick();BGM.pos=0;BGM.t=ac.currentTime+.1}
   if(BGM.t<ac.currentTime)BGM.t=ac.currentTime+.05;   // vừa chạy tiếp sau khi máy chậm: không dồn nốt
-  while(BGM.t<ac.currentTime+.3){
+  const ahead=bgmHidden()?1.5:.3;   // trang ẩn (vẫn phát): hẹn giờ có thể bị hãm, xếp lịch xa hơn để không hụt nốt
+  while(BGM.t<ac.currentTime+ahead){
     const T=BGM_T[BGM.cur];bgmStep(ac,BGM.out,T,BGM.pos,BGM.t);BGM.t+=T.dt;
     if(++BGM.pos>=T.steps){BGM.pos=0;const n=bgmPick();if(n!==BGM.cur){BGM.cur=n;BGM.t+=T.dt*2}}   // hết một vòng mới đổi bản
   }

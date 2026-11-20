@@ -11,6 +11,16 @@ fn main() {
             "mx_fullscreen",
             "mx_persist",
             "mx_restored",
+            "mx_app_get",
+            "mx_app_set",
+            "mx_notify_plan",
+            "mx_notify_now",
+            "mx_badge",
+            "mx_theme",
+            "mx_ready",
+            "mx_hide",
+            "mx_quit",
+            "mx_reset_window",
         ]),
     ))
     .expect("tauri-build lỗi");

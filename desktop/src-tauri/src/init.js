@@ -1,7 +1,8 @@
 /* Initialization script của app Mèo Xu (Tauri v2).
    Chạy TRƯỚC mọi script của trang, trên MỌI trang của cửa sổ: game nội bộ (chơi một mình), trang báo lỗi __offline.html,
    và trang game do server.py phục vụ (chơi cùng bạn bè). lib.rs thay hai chỗ đánh dấu:
-   - CFG: {version, dev, mode, server, terms, termsVer, base} (base là origin nội bộ của app, ví dụ http://tauri.localhost)
+   - CFG: {version, dev, mode, server, terms, termsVer, base, app, tray} (base là origin nội bộ của app, ví dụ
+     http://tauri.localhost; app là cấu hình phía app cho MXAPP.cfg; tray: app mở bằng --tray, đang ở khay)
    - NORM: nguyên văn desktop/norm.js
    Khi cấu hình đổi lúc đang chạy (đổi chế độ, đồng ý điều khoản), lib.rs thêm một script vá nhỏ chạy ngay sau script này
    để trang kế tiếp đọc đúng mode, server, terms.
@@ -12,7 +13,13 @@
      của trang (solo / srv-<8 hex>), bỏ lần gọi đến trễ (page = performance.timeOrigin, n tăng dần). Khôi phục lúc mở app
      do src/restore.js làm, không ở đây.
    - Origin nội bộ (chơi một mình): fetch tới api/… của chính origin bị từ chối ngay (TypeError như lỗi mạng) để net.js
-     thôi chờ và giữ NET.on=false như khi mở bằng file://. */
+     thôi chờ và giữ NET.on=false như khi mở bằng file://.
+   Thêm (phần B, hành vi như app thật; lõi ở desk.rs):
+   - MXAPP.cfg (ảnh chụp đồng bộ lúc nạp trang, được cập nhật tại chỗ), MXAPP.app.get/set, notifyPlan, notifyNow, setBadge,
+     setTheme, ready, hide, quit, resetWindow. Lõi gọi sang trang bằng window.__mxOn(type, data).
+   - Ctrl+Q: thoát thật (lõi báo trang 'quit-soon' và chờ trang lưu tối đa ~600 ms).
+   - Trang lỗi __offline.html (không phải trang chờ ?wait=1) tự gọi ready() khi nạp xong; trang khác chưa gọi ready()
+     thì tự gọi 2,5 giây sau sự kiện load (máy chủ chạy bản game cũ), lõi còn chốt chặn 8 giây. */
 (function () {
   'use strict';
   if (window.MXAPP) return;
@@ -37,6 +44,20 @@
   }
   var MAX_SAVE = 8 * 1024 * 1024, PAGE = performance.timeOrigin, pN = 0;
   var BAD_URL = 'Địa chỉ máy chủ không hợp lệ. Ví dụ: 192.168.1.5 hoặc https://ten-may.trycloudflare.com';
+
+  var APPKEYS = ['close', 'autostart', 'hotkey', 'onTop', 'notify', 'bgPlay', 'hotkeyErr'];
+  var cfg = {};
+  function setCfg(v) {
+    if (!v || typeof v !== 'object') return;
+    for (var i = 0; i < APPKEYS.length; i++) {
+      var k = APPKEYS[i];
+      if (k in v) cfg[k] = v[k]; else if (k === 'hotkeyErr') delete cfg[k];
+    }
+  }
+  setCfg(C.app || { close: 'ask', autostart: false, hotkey: 'Ctrl+Alt+M', onTop: false, notify: true, bgPlay: false });
+  function cfgCopy() { var o = {}; for (var k in cfg) o[k] = cfg[k]; return o; }
+  var readied = false;
+  function str(v, n) { return String(v == null ? '' : v).slice(0, n); }
 
   var M = {
     isApp: true,
@@ -81,6 +102,55 @@
       var s = String(u == null ? '' : u).trim();
       if (!/^https?:\/\//i.test(s)) return;
       inv('mx_open_external', { url: s }).catch(function () {});
+    },
+
+    /* ---- hành vi như app thật ---- */
+    cfg: cfg,
+    app: {
+      get: function () {
+        return inv('mx_app_get').then(function (c) { setCfg(c); return cfgCopy(); }, function () { return cfgCopy(); });
+      },
+      set: function (patch) {
+        return inv('mx_app_set', { patch: patch && typeof patch === 'object' ? patch : {} }).then(function (r) {
+          if (r && r.cfg) setCfg(r.cfg);
+          return { ok: !!(r && r.ok), err: r && r.err, cfg: cfgCopy() };
+        }, function (e) { return { ok: false, err: errText(e), cfg: cfgCopy() }; });
+      }
+    },
+    notifyPlan: function (items) {
+      var out = [];
+      (Array.isArray(items) ? items : []).forEach(function (it) {
+        if (!it || !isFinite(+it.t) || !it.title) return;
+        var o = { t: +it.t, title: str(it.title, 200), body: str(it.body, 500) };
+        if (it.tab) o.tab = str(it.tab, 40);
+        out.push(o);
+      });
+      inv('mx_notify_plan', { items: out }).catch(function () {});
+    },
+    notifyNow: function (title, body, tab) {
+      return inv('mx_notify_now', { title: str(title, 200), body: str(body, 500), tab: tab ? str(tab, 40) : null })
+        .catch(function (e) { return { ok: false, err: errText(e) }; });
+    },
+    setBadge: function (n) {
+      inv('mx_badge', { n: +n > 0 ? +n : 0 }).catch(function () {});
+    },
+    setTheme: function (t) {
+      if (t !== 'light' && t !== 'dark') return;
+      inv('mx_theme', { theme: t }).catch(function () {});
+    },
+    ready: function () {
+      if (readied) return;
+      readied = true;
+      inv('mx_ready').catch(function () {});
+    },
+    hide: function () {
+      inv('mx_hide').catch(function () {});
+    },
+    quit: function () {
+      inv('mx_quit', { soon: false }).catch(function () {});
+    },
+    resetWindow: function () {
+      inv('mx_reset_window').catch(function () {});
     }
   };
   try {
@@ -123,11 +193,24 @@
   /* Phím: F11 toàn màn hình; F5, Ctrl+R tải lại (trên trang báo lỗi thì thử kết nối lại); bản phát hành chặn
      F12, Ctrl+Shift+I/J/C. Các tổ hợp khác (Ctrl+Shift+A mở Admin, Ctrl + lăn chuột zoom phòng) đi thẳng vào trang. */
   var offlinePage = internal && /\/__offline\.html$/.test(location.pathname);
+
+  /* Hiện cửa sổ chính: trang lỗi hiện ngay khi nạp xong; trang khác chưa tự gọi ready() thì gọi 2,5 giây sau load. */
+  if (offlinePage && !/[?&]wait=1/.test(location.search)) {
+    document.addEventListener('DOMContentLoaded', function () { M.ready(); });
+  } else if (!offlinePage) {
+    window.addEventListener('load', function () { setTimeout(function () { M.ready(); }, 2500); });
+  }
   window.addEventListener('keydown', function (e) {
     var k = e.key, code = e.code, ctrl = e.ctrlKey || e.metaKey;
     if (k === 'F11') {
       e.preventDefault();
       if (!e.repeat) inv('mx_fullscreen').catch(function () {});
+      return;
+    }
+    if (ctrl && !e.altKey && !e.shiftKey && code === 'KeyQ') {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      if (!e.repeat) inv('mx_quit', { soon: true }).catch(function () {});
       return;
     }
     if (k === 'F5' || (ctrl && !e.altKey && code === 'KeyR')) {

@@ -1727,14 +1727,20 @@ function doDelete(){
   const it=S.items.find(i=>i.iid===sel); if(!it||!confirm('Xóa hẳn '+FURN[it.fid].n+'? Bạn được hoàn 25% giá mua.'))return;
   const v=sellItem(it.iid);sel=null;render();toast('Đã xóa món đồ',{type:'coin',title:FURN[it.fid].n,coins:v});
 }
-function applySet(){S.set=S.set||{theme:'soft',dim:0};document.documentElement.dataset.theme=S.set.theme}
-const scol=n=>S.set&&S.set.theme==='dark'?STAR[n].g:STAR[n]['c'];
+// chủ đề: 'soft' (sáng), 'dark' (tối) hoặc 'auto' (theo hệ điều hành: prefers-color-scheme). themeEff() trả chủ đề thực tế 'soft'|'dark'.
+const themeOS=()=>{try{return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'soft'}catch(e){return 'soft'}};
+const themeEff=()=>{const t=S&&S.set&&S.set.theme;return t==='auto'?themeOS():t==='dark'?'dark':'soft'};
+function applySet(){S.set=S.set||{theme:'soft',dim:0};document.documentElement.dataset.theme=themeEff()}
+const scol=n=>themeEff()==='dark'?STAR[n].g:STAR[n]['c'];
 function setTheme(t){S.set.theme=t;applySet();save();render();openSettings()}
+// chủ đề 'auto': máy đổi sáng/tối thì game đổi theo (vẽ lại panel; hộp Cài đặt đang mở thì vẽ lại giữ chỗ cuộn)
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(!S||!S.set||S.set.theme!=='auto')return;applySet();
+  if(typeof pwaTheme==='function')pwaTheme();render();const mb=$('mbox');if(mb&&$('modal').style.display==='flex'&&mb.querySelector('.tut-book')){const y=mb.scrollTop;openSettings();$('mbox').scrollTop=y}})}catch(e){}
 function setBead(v){S.set.bead=v;save();fitCanvas();camY=VH;clampCam();openSettings()}
 function openSettings(){
   applySet();
   modal('<h3>⚙️ Cài đặt</h3>'+
-   '<div class="card" style="flex-direction:column;align-items:stretch"><b>Giao diện</b><div class="row"><button style="flex:1" class="'+(S.set.theme==='soft'?'on':'')+'" onclick="setTheme(\'soft\')">🌤 Trầm dịu</button><button style="flex:1" class="'+(S.set.theme==='dark'?'on':'')+'" onclick="setTheme(\'dark\')">🌙 Tối</button></div></div>'+
+   '<div class="card" style="flex-direction:column;align-items:stretch"><b>Giao diện</b><div class="row wrap"><button style="flex:1" class="'+(S.set.theme==='soft'?'on':'')+'" onclick="setTheme(\'soft\')">🌤 Trầm dịu</button><button style="flex:1" class="'+(S.set.theme==='dark'?'on':'')+'" onclick="setTheme(\'dark\')">🌙 Tối</button><button style="flex:1" class="'+(S.set.theme==='auto'?'on':'')+'" onclick="setTheme(\'auto\')">🖥️ '+(window.MXAPP?'Theo Windows':'Theo hệ thống')+'</button></div>'+(S.set.theme==='auto'?'<small>Đang theo máy: '+(themeEff()==='dark'?'🌙 tối':'🌤 sáng')+'. Đổi chế độ sáng tối của máy thì game đổi theo.</small>':'')+'</div>'+
    '<div class="card" style="flex-direction:column;align-items:stretch"><b>Cỡ hạt cườm trong phòng</b><div class="row"><button style="flex:1" class="'+(S.set.bead?'':'on')+'" onclick="setBead(0)">Tự động</button><button style="flex:1" class="'+(S.set.bead?'on':'')+'" onclick="setBead(1)">Hạt to, rõ</button></div><small>'+(ZMIN>=6&&!S.set.bead?'Màn hình này đã đủ nét: mỗi hạt hiện '+ZMIN/2+' điểm ảnh nên thấy rõ dạng hạt.':'Tự động: thấy được nhiều phòng nhất, nhưng trên màn hình thường mỗi hạt chỉ 2 điểm ảnh. Hạt to: mỗi hạt ít nhất 3 điểm ảnh nên thấy rõ dạng hạt cườm, bù lại phải kéo để xem hết phòng.')+'</small></div>'+
    '<div class="card" style="flex-direction:column;align-items:stretch"><b>Độ tối nền phòng</b><input type="range" min="0" max="60" value="'+Math.round(S.set.dim*100)+'" oninput="S.set.dim=this.value/100" onchange="save()"><small>Kéo sang phải để nền phòng tối hơn. Mèo và đồ đạc không bị tối theo.</small></div>'+
    '<div class="card tut-book" style="flex-direction:column;align-items:stretch"><b>📖 Sổ tay hướng dẫn</b><div class="row wrap">'+(typeof openHandbook==='function'?'<button style="flex:1" class="on" onclick="openHandbook()">📖 Mở sổ tay</button>':'')+'<button style="flex:1" onclick="closeModal();TUT.startReplay()">▶ Chơi lại hướng dẫn</button></div><small>Xem lại cách chơi bất cứ lúc nào. Chơi lại hướng dẫn không tốn xu, vé và không phát quà lần nữa.</small></div>'+

@@ -13,6 +13,16 @@
     "allow-mx-open-external",
     "allow-mx-fullscreen",
     "allow-mx-persist",
-    "allow-mx-restored"
+    "allow-mx-restored",
+    "allow-mx-app-get",
+    "allow-mx-app-set",
+    "allow-mx-notify-plan",
+    "allow-mx-notify-now",
+    "allow-mx-badge",
+    "allow-mx-theme",
+    "allow-mx-ready",
+    "allow-mx-hide",
+    "allow-mx-quit",
+    "allow-mx-reset-window"
   ]
 }

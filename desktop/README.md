@@ -18,11 +18,14 @@ Hai chế độ là hai origin nên có hai bản lưu riêng. Đổi chế đ�
 | `scripts/smoke.js` | Kiểm thử khói qua CDP (bên dưới) |
 | `norm.js` | Chuẩn hoá địa chỉ máy chủ (`MXAPP.norm`). Rust nhúng nguyên file này vào initialization script; Node `require` được để thử |
 | `offline.html` | Trang chờ kết nối (`?wait=1`) và trang báo không vào được máy chủ: Thử lại, Chơi một mình, Đổi máy chủ |
+| `splash.html` | Màn chờ lúc mở app (cửa sổ nhỏ không viền, mèo hạt cườm, thanh tải), `stage.js` chép thành `web/splash.html` |
 | `legal/` | Điều khoản sử dụng và chính sách quyền riêng tư (UTF-8 không BOM), nhúng vào exe lúc build |
 | `src-tauri/src/lib.rs` | Lõi: cửa sổ, cấu hình, lệnh `mx_*`, chặn điều hướng, bắt lỗi điều hướng, Range cho file âm thanh |
+| `src-tauri/src/desk.rs` | Hành vi như app thật: splash, khay hệ thống, nút X, khởi động cùng Windows, phím tắt toàn cục, luôn ở trên cùng, lịch thông báo, chấm đỏ taskbar, chủ đề, nhớ vị trí, thoát |
+| `src-tauri/src/winx.rs` | Phần gọi thẳng Windows: toast WinRT (bắt cú bấm), đăng ký AUMID, khóa Run, hộp thoại TaskDialog, ảnh chấm đỏ |
 | `src-tauri/src/init.js` | Initialization script: `window.MXAPP`, chặn service worker, chặn `api/` khi chơi một mình, phím tắt, menu chuột phải |
 | `src-tauri/src/restore.js` | Script khôi phục bản lưu từ `saves\<khóa>.json`, chỉ gắn cho lần tải trang đầu tiên sau khi mở app hoặc đổi chế độ |
-| `src-tauri/capabilities/` | `mx-local` (trang nội bộ) và `mx-remote` (trang máy chủ): chỉ cấp chín lệnh `mx_*` của app, không cấp plugin nào |
+| `src-tauri/capabilities/` | `mx-local` (trang nội bộ) và `mx-remote` (trang máy chủ): chỉ cấp các lệnh `mx_*` của app (thêm lệnh mới thì thêm cả ở `build.rs`), không cấp quyền plugin nào cho trang |
 | `src-tauri/icons/` | Sinh bằng `npx tauri icon ../icons/icon-512.png` |
 
 `web/`, `dist/`, `node_modules/`, `src-tauri/target/`, `src-tauri/gen/`, `src-tauri/license_vi.txt` là file sinh ra, không vào git.
@@ -58,9 +61,12 @@ npm run smoke        # kiểm thử khói với bản phát hành (cần PLAYWRI
 
 Mọi thứ nằm ở `%APPDATA%\Mèo Xu\` (đổi bằng biến môi trường `MEOXU_APPDIR` khi thử):
 
-- `config.json`: `{ "mode": null | "solo" | "friend", "server": "…", "terms": 0 | 1, "win": { x, y, w, h, max, full } }`. Ghi bằng file tạm rồi đổi tên. File hỏng thì được đổi tên thành `config.json.bad` và app chạy với cấu hình mặc định.
+- `config.json`: `{ "mode": null | "solo" | "friend", "server": "…", "terms": 0 | 1, "win": { x, y, w, h, max, full }, "close": "ask" | "tray" | "quit", "autostart": false, "hotkey": "Ctrl+Alt+M", "onTop": false, "notify": true, "bgPlay": false, "theme": "light" | "dark", "trayTip": false }`. Ghi bằng file tạm rồi đổi tên. File hỏng thì được đổi tên thành `config.json.bad` và app chạy với cấu hình mặc định. Bản 1.0.0 không có các trường sau `win`: lấy mặc định.
+- `toast-icon.png`: biểu tượng cho thông báo Windows (ghi lần đầu hiện toast).
 - `WebView\`: dữ liệu WebView2 (localStorage `meoxu_v2`, IndexedDB ảnh và nhạc của người chơi…) của cả hai chế độ.
 - `saves\solo.json`, `saves\srv-<8 hex>.json`: bản sao bản lưu game do `MXAPP.persist` ghi (xem "Lưu an toàn"). `srv-…` là băm FNV-1a 32 bit của origin máy chủ (ví dụ `http://192.168.1.5:8765`), mỗi máy chủ một file.
+
+Ngoài thư mục này app chỉ ghi registry của người dùng (HKCU): giá trị `Mèo Xu` trong `Software\Microsoft\Windows\CurrentVersion\Run` khi bật khởi động cùng Windows (tắt thì xóa), và khóa `Software\Classes\AppUserModelId\vn.meoxu.app` lần đầu hiện thông báo. Trình gỡ (`nsis-hooks.nsh`) xóa cả hai; bản portable thì không ai xóa khóa AUMID (vô hại).
 
 Gỡ cài đặt không xóa thư mục này (ô "xóa dữ liệu ứng dụng" của trình gỡ chỉ xóa `%APPDATA%\vn.meoxu.app` và `%LOCALAPPDATA%\vn.meoxu.app`, app không dùng hai chỗ đó). Bản portable dùng chung thư mục với bản cài.
 
@@ -75,7 +81,23 @@ Gỡ cài đặt không xóa thư mục này (ô "xóa dữ liệu ứng dụng"
 - Giao thức nội bộ của Tauri không hỗ trợ Range, nên lõi tự trả 206 cho file âm thanh (`on_web_resource_request`) để nhạc nền tua và lặp được.
 - Thu nhỏ cửa sổ: lõi báo WebView2 `IsVisible=false` (`set_web_visible`, gọi từ sự kiện Resized cỡ 0×0); trang có `document.hidden=true`, `visibilitychange`, `requestAnimationFrame` dừng, timer vẫn chạy (không dùng TrySuspend). Mở lại thì `IsVisible=true`. Phần ẩn xuống khay dùng lại `set_web_visible(&cửa_sổ, false/true)` ngay sau `hide()`/`show()` (ẩn cửa sổ không sinh sự kiện Resized). Trình duyệt chạy với `--disable-features=…,IntensiveWakeUpThrottling` để timer của trang ẩn không bị dồn về 1 lần mỗi phút sau 5 phút.
 - Chơi một mình: `fetch` tới `api/…` cùng origin bị từ chối ngay bằng `TypeError` (như lỗi mạng), `net.js` đi nhánh "không có máy chủ" như khi mở bằng `file://`.
-- Cửa sổ mở `about:blank` trước rồi mới điều hướng tới game, để script khôi phục kịp được WebView2 nhận. Màu nền cửa sổ và WebView là `#e6dac8` (`--bg` chủ đề sáng); chủ đề tối vẫn thấy nền sáng trong khoảng 1 giây đầu (màu chủ đề nằm trong localStorage, lõi không đọc được).
+- Cửa sổ mở `about:blank` trước rồi mới điều hướng tới game, để script khôi phục kịp được WebView2 nhận. Màu nền cửa sổ, WebView và splash theo `theme` trong config.json (trang báo bằng `MXAPP.setTheme`), nên chủ đề tối không lóe nền sáng lúc mở; lần đầu đổi chủ đề trước khi trang báo thì vẫn là nền sáng.
+
+## Hành vi như app thật (desk.rs)
+
+- **Splash**: chạy exe là hiện ngay cửa sổ `splash.html` 420×280 không viền, giữa màn hình, không có trên taskbar, luôn trên cùng, màu theo chủ đề đã lưu (`?t=dark`). Cửa sổ chính tạo ẩn, hiện khi trang gọi `MXAPP.ready()`; trang lỗi `__offline.html` (không phải trang chờ) tự gọi khi nạp xong; trang chưa gọi thì init.js gọi 2,5 giây sau `load`; chốt chặn 8 giây. Splash dùng chung thư mục dữ liệu và tham số trình duyệt với cửa sổ chính (WebView2 bắt buộc).
+- **Khay hệ thống**: biểu tượng con mèo; bấm trái hiện/ẩn; menu: Mở Mèo Xu / Ẩn vào khay, 🎵 Tắt/Bật nhạc (`__mxOn('mute')`), 🔔 Thông báo, 📌 Luôn ở trên cùng (ô đánh dấu), Đặt lại cửa sổ, Thoát Mèo Xu. Tooltip "Mèo Xu · n việc đang chờ" khi có chấm đỏ.
+- **Nút X và Alt+F4** (cùng một sự kiện): `close` "ask" hiện hộp thoại Windows (TaskDialog, tiếng Việt: Thu vào khay / Thoát / Không đóng, Esc là không đóng) rồi nhớ lựa chọn; "tray" ẩn vào khay (lần đầu báo một toast "Mèo Xu vẫn chạy ở khay hệ thống", cờ `trayTip`); "quit" thoát. Cửa sổ đang ẩn mà nhận lệnh đóng (taskkill không /F, trình cài) thì thoát. **Thoát trong menu khay và Ctrl+Q luôn thoát thật.** Thoát: lõi gọi `__mxOn('quit-soon')`, chờ trang ghi bản lưu (`persist`) tối đa 600 ms, chờ lần ghi file đang dở, lưu vị trí cửa sổ rồi `exit(0)` (đo: 100–210 ms).
+- **Ẩn vào khay** = `hide()` + `set_web_visible(false)` (trang `document.hidden`, rAF dừng, timer chạy). Đo 60 giây ở khay: 1,6% một nhân (0,4% cả máy 4 nhân), như khi thu nhỏ.
+- **Khởi động cùng Windows**: tự ghi khóa Run của người dùng (`"<exe>" --tray`), không dùng tauri-plugin-autostart (khỏi kéo thêm crate, xét được StartupApproved: người chơi tắt trong Task Manager thì app coi là tắt). Lúc mở app, `autostart` được đồng bộ theo registry thật và đường dẫn được cập nhật nếu exe đã chuyển chỗ. Chạy với `--tray`: không splash, cửa sổ ẩn, trang vẫn nạp và chạy luật. Lần chạy thứ hai không `--tray` thì hiện cửa sổ; có `--tray` thì không làm gì. `MEOXU_RUNNAME` đổi tên giá trị Run khi thử.
+- **Phím tắt toàn cục** (tauri-plugin-global-shortcut), mặc định Ctrl+Alt+M: cửa sổ đang hiện và có tiêu điểm thì ẩn vào khay, ngược lại hiện, khôi phục, focus. Cú pháp: Ctrl/Alt/Shift/Super (Win) nối bằng `+`, cần Ctrl, Alt hoặc Win, phím là chữ cái, chữ số, F1–F24, Up/Down/Left/Right, Space, Home, End, PageUp, PageDown, Insert, Delete, Tab, Numpad0–9; lõi chuẩn hóa (`ctrl+shift+alt+k` → `Ctrl+Alt+Shift+K`). Sai cú pháp hoặc bị chương trình khác giữ thì `ok:false`, err tiếng Việt, giữ phím cũ. Phím đã lưu mà lúc mở app không đăng ký được thì `MXAPP.cfg.hotkeyErr` có lý do.
+- **Thông báo**: toast WinRT gọi thẳng (`windows` crate), không dùng tauri-plugin-notification vì plugin không báo sự kiện bấm trên Windows. Lịch (`notifyPlan`) nằm trong một luồng Rust ngủ trên Condvar (không tốn CPU), tối đa 64 mục, bỏ mục quá giờ hơn 10 phút, mỗi lần tới hạn tối đa 3 toast. Chỉ hiện khi `notify` bật và cửa sổ ẩn, thu nhỏ hoặc không có tiêu điểm. Toast có hạn 60 phút, nhóm `meoxu`; mở cửa sổ (có tiêu điểm) thì gỡ hết toast cũ khỏi Trung tâm thông báo. Bấm toast: hiện, focus cửa sổ rồi `__mxOn('tab', tab)`. `notifyNow` tối đa 1 lần mỗi 2 giây, báo lỗi khi `notify` tắt hoặc Windows tắt thông báo của app.
+- **AUMID**: Windows 10 nuốt im lặng toast của app không đóng gói nếu AUMID chưa đăng ký (đã thử: không khóa thì không hiện). Lần đầu hiện toast lõi ghi `HKCU\Software\Classes\AppUserModelId\vn.meoxu.app` (`DisplayName` "Mèo Xu", `IconUri` = `toast-icon.png`), nên cả bản cài lẫn bản portable đều hiện được. Không đặt AUMID cho tiến trình (để không tách nút taskbar khỏi lối tắt đã ghim).
+- **Chấm đỏ**: `set_overlay_icon` ảnh 32×32 vẽ trong Rust (tròn đỏ viền trắng, số 1–9 hoặc 9+). Đang nhìn vào game (hiện và có tiêu điểm) thì không hiện; có tiêu điểm lại thì tự xóa.
+- **Chủ đề**: `setTheme` đổi thanh tiêu đề Windows (`set_theme`) và màu nền cửa sổ, webview (`#e6dac8` sáng, `#27201b` tối = `--bg` của `html[data-theme=dark]` trong index.html), lưu `theme` để lần mở sau cửa sổ, webview, splash có màu đúng ngay từ đầu.
+- **Vị trí cửa sổ**: kéo, đổi cỡ thì ghi `config.json` tối đa 1 lần mỗi giây (tắt đột ngột vẫn nhớ), chỉ ghi khi khác. `resetWindow`: bỏ phóng to, toàn màn hình, về 1280×800 (vừa màn hình nếu nhỏ hơn) giữa màn hình chính.
+- **Luôn ở trên cùng**: `set_always_on_top`, khôi phục từ `onTop` khi mở.
+- **Bảo mật**: các lệnh mới cũng mở cho trang máy chủ (Cài đặt của chế độ bạn bè chạy ở đó). Máy chủ lạ tệ nhất bật được khởi động cùng Windows, đổi phím tắt, hiện toast (bị giới hạn tần suất, độ dài, số mục). Không lệnh nào đọc, ghi file hay chạy chương trình.
 
 ## Lưu an toàn
 
@@ -103,6 +125,17 @@ Có trên mọi trang của cửa sổ, đúng ngay khi script game chạy (js/a
 ```text
 isApp:true, version:'1.0.0', dev:boolean,
 persist(json) -> void                          // ghi bản lưu ra saves\<khóa>.json (xem "Lưu an toàn"), lỗi thì thôi
+cfg: {close:'ask'|'tray'|'quit', autostart, hotkey:'Ctrl+Alt+M'|'', onTop, notify, bgPlay, hotkeyErr?}  // ảnh chụp lúc nạp trang, cập nhật tại chỗ
+app.get() -> Promise<cfg>
+app.set(patch) -> Promise<{ok, err?, cfg}>     // áp dụng ngay; lỗi ở trường nào thì không đổi gì (phím cũ giữ nguyên)
+notifyPlan([{t, title, body, tab?}]) -> void   // thay cả lịch; [] xóa
+notifyNow(title, body, tab?) -> Promise<{ok, err?}>
+setBadge(n) -> void   setTheme('light'|'dark') -> void   ready() -> void   hide() -> void
+quit() -> void        // trang đã tự lưu; thoát ngay
+resetWindow() -> void
+// lõi gọi sang trang: window.__mxOn(type, data): 'tab' (tên tab), 'mute', 'shown', 'hidden', 'quit-soon',
+//                      'cfg' (cấu hình đổi từ menu khay; MXAPP.cfg đã được cập nhật trước)
+// phím: Ctrl+Q trong trang = thoát thật (init.js chặn phím, lõi báo 'quit-soon' rồi chờ trang lưu)
 mode:null|'solo'|'friend', server:'', terms:0, termsVer:1,
 norm(url) -> string
 ping(url) -> Promise<{ok, url, ms, err?}>
@@ -115,7 +148,7 @@ openExternal(url) -> void                      // chỉ http/https
 
 ## Kiểm thử khói qua CDP
 
-`scripts/smoke.js` mở exe với `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=<cổng>`, nối Playwright bằng `chromium.connectOverCDP`, dùng `MEOXU_APPDIR` và `MEOXU_DATA` tạm (không đụng bản lưu thật và `data/` của `server.py`). Nó kiểm: game nạp không lỗi JS, `MXAPP` đủ khóa, không có service worker, `NET.on`, `norm`, `legal`, `acceptTerms`, nhạc tua và lặp được, F11, localStorage còn sau khi mở lại, exe lần hai tự thoát, ping, `setMode('friend')` sang `server.py` thật, IPC từ trang máy chủ, máy chủ tắt thì sang trang lỗi (cả khi tải lại lẫn khi mở app), Chơi một mình từ trang lỗi, F12 bằng phím thật không mở DevTools ở bản phát hành. Cuối cùng dọn `MeoXu.exe` và `server.py` nó đã mở.
+`scripts/smoke.js` mở exe với `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=<cổng>`, nối Playwright bằng `chromium.connectOverCDP`, dùng `MEOXU_APPDIR` và `MEOXU_DATA` tạm (không đụng bản lưu thật và `data/` của `server.py`). Nó kiểm: splash đóng và cửa sổ chính hiện, `MXAPP.cfg` mặc định, `app.set` (onTop thật bằng WS_EX_TOPMOST, phím tắt sai và bị tiến trình khác giữ, đổi, tắt), setBadge, setTheme, notifyPlan, một toast thật khi cửa sổ ẩn (đếm trong lịch sử thông báo của Windows), notifyNow, MXAPP.hide, nút X thu vào khay, resetWindow, khởi động cùng Windows (ghi rồi xóa giá trị Run tên `Mèo Xu (thử smoke)`), Ctrl+Q (trang lưu kịp trước khi thoát), MXAPP.quit, `--tray` (trang hidden thật: đo bằng CDP thô vì Playwright giả lập tiêu điểm làm trang luôn visible), game nạp không lỗi JS, `MXAPP` đủ khóa, không có service worker, `NET.on`, `norm`, `legal`, `acceptTerms`, nhạc tua và lặp được, F11, localStorage còn sau khi mở lại, exe lần hai tự thoát, ping, `setMode('friend')` sang `server.py` thật, IPC từ trang máy chủ, máy chủ tắt thì sang trang lỗi (cả khi tải lại lẫn khi mở app), Chơi một mình từ trang lỗi, F12 bằng phím thật không mở DevTools ở bản phát hành. Cuối cùng dọn `MeoXu.exe` và `server.py` nó đã mở, giá trị Run thử, toast thử, và khóa AUMID nếu trước đó máy chưa có. Phép toast hiện một thông báo thật ở góc màn hình. `flow.js` và `install-test.js` đặt `close:"quit"` trước khi đóng app bằng WM_CLOSE (mặc định là hộp thoại hỏi).
 
 ```powershell
 cd desktop

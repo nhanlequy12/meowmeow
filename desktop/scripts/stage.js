@@ -2,7 +2,7 @@
 /* Dàn dựng frontend cho Tauri: chép đúng các file game cần đóng gói từ gốc repo vào desktop/web/ (frontendDist).
    - Chỉ lấy index.html, manifest.json và bốn thư mục js/, css/, icons/, audio/. Không kèm tools, docs, data, preview,
      server.py, *.wav, .git.
-   - desktop/offline.html thành web/__offline.html (trang báo không vào được máy chủ).
+   - desktop/offline.html thành web/__offline.html (trang báo không vào được máy chủ), desktop/splash.html thành web/splash.html (màn chờ).
    - Sinh desktop/src-tauri/license_vi.txt: điều khoản + quyền riêng tư, UTF-8 không BOM (Tauri tự thêm BOM để NSIS hiện đúng tiếng Việt).
    - Rồi gộp script, CSS liên tiếp của web/index.html thành vài bundle (scripts/bundle.js); MEOXU_NOBUNDLE=1 thì không gộp.
    Chạy tự động trước tauri dev/build (beforeDevCommand, beforeBuildCommand); chạy tay: node scripts/stage.js */
@@ -42,6 +42,7 @@ for (const d of DIRS) {
   const r = copyDir(s, path.join(OUT, d)); n += r.n; bytes += r.bytes;
 }
 fs.copyFileSync(path.join(DESK, 'offline.html'), path.join(OUT, '__offline.html')); n++;
+fs.copyFileSync(path.join(DESK, 'splash.html'), path.join(OUT, 'splash.html')); n++;   // màn chờ lúc mở app (desk.rs)
 
 // Điều khoản cho trình cài: bỏ BOM có sẵn (nếu có), gộp hai văn bản, ghi lại không BOM, xuống dòng CRLF.
 const strip = t => t.replace(/^﻿/, '').replace(/\r\n/g, '\n').trim();

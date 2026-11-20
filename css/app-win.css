@@ -1,0 +1,23 @@
+/* ============ BẢN APP WINDOWS: thẻ Cài đặt "🖥️ Ứng dụng" (js/app-win.js) ============ */
+.aw-card{gap:8px}
+.aw-card .aw-sec{display:flex;flex-direction:column;gap:5px;padding:8px 0 2px;border-top:2px dotted var(--soft)}
+.aw-card .aw-sec:first-of-type{border-top:0;padding-top:2px}
+.aw-card .aw-lb{font-weight:800}
+.aw-card .aw-v{font-size:13.5px;color:var(--dim)}
+.aw-card .row{gap:6px}
+.aw-card button:disabled{opacity:.55;cursor:default}
+.aw-card kbd{display:inline-block;min-width:1.4em;text-align:center;font:inherit;font-size:12.5px;font-weight:800;line-height:1.5;padding:0 6px;border-radius:6px;
+  background:var(--panel2);color:var(--ink);border:2px solid var(--line);border-bottom-width:3px}
+.aw-card .aw-plus{margin:0 3px;color:var(--dim);font-weight:800}
+.aw-card .aw-keys{color:var(--ink)}
+.aw-card .aw-cap{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;border-radius:12px;border:3px dashed #c97288;background:var(--panel);
+  font-weight:800;animation:awPulse 1.6s ease-in-out infinite}
+.aw-card .aw-cap small{flex:1 1 100%;font-weight:600;color:var(--dim)}
+.aw-card .aw-cap button{margin-left:auto}
+@keyframes awPulse{50%{border-color:var(--line)}}
+@media (prefers-reduced-motion:reduce){.aw-card .aw-cap{animation:none}}
+.aw-card .aw-chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.4;cursor:pointer;margin-top:2px}
+.aw-card .aw-chk input{width:18px;height:18px;flex:none;margin:1px 0 0;accent-color:#c97288}
+.aw-card .aw-acts{padding-top:8px;border-top:2px dotted var(--soft)}
+.aw-card .aw-hint{color:var(--dim);line-height:1.8}
+.aw-card .aw-hint kbd{font-size:11.5px}
