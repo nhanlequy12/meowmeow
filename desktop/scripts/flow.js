@@ -4,7 +4,7 @@
    File này thử những gì người chơi làm: màn chào lần đầu, Cài đặt, nhạc nền, gacha, ảnh, chơi cùng bạn bè, chuyển máy.
    Cách chạy (trong thư mục desktop/):
      PLAYWRIGHT_CORE=<thư mục playwright-core> node scripts/flow.js [exe] [thư mục tạm]
-   - exe mặc định: dist/MeoXu-1.0.0-portable.exe (rồi tới src-tauri/target/release/MeoXu.exe)
+   - exe mặc định: dist/MeoXu-<VER>-portable.exe (rồi tới src-tauri/target/release/MeoXu.exe)
    - thư mục tạm mặc định: %TEMP%\meoxu-flow-<thời điểm>; trong đó app\ (MEOXU_APPDIR) và srv\ (MEOXU_DATA của server.py)
    - PYTHON=<python.exe>, CHROMIUM=<chrome.exe> (tùy chọn; mặc định tìm chromium_headless_shell trong %LOCALAPPDATA%\ms-playwright)
    - MUTE=0 để nghe nhạc thật (mặc định app chạy với --mute-audio: nhạc vẫn phát, chỉ không ra loa)
@@ -12,6 +12,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const VER = require('../package.json').version;   // phiên bản app (đọc từ package.json, không ghi cứng)
 const net = require('net');
 const http = require('http');
 const { spawn, execFileSync } = require('child_process');
@@ -20,7 +21,7 @@ const DESK = path.resolve(__dirname, '..');
 const ROOT = path.resolve(DESK, '..');
 const PW = process.env.PLAYWRIGHT_CORE || 'playwright-core';
 const { chromium } = require(PW);
-const EXE = path.resolve(process.argv[2] || [path.join(DESK, 'dist', 'MeoXu-1.0.0-portable.exe'), path.join(DESK, 'src-tauri', 'target', 'release', 'MeoXu.exe')].find(p => fs.existsSync(p)) || 'MeoXu.exe');
+const EXE = path.resolve(process.argv[2] || [path.join(DESK, 'dist', 'MeoXu-' + VER + '-portable.exe'), path.join(DESK, 'src-tauri', 'target', 'release', 'MeoXu.exe')].find(p => fs.existsSync(p)) || 'MeoXu.exe');
 const TMP = path.resolve(process.argv[3] || path.join(os.tmpdir(), 'meoxu-flow-' + Date.now()));
 const APPDIR = path.join(TMP, 'app');
 const SRVDIR = path.join(TMP, 'srv');
@@ -295,7 +296,7 @@ async function main() {
     await tap(app.page, '.hdr button:has-text("Cài đặt")');
     await app.page.waitForSelector('#mbox #appcard', { timeout: 8000 });
     const r = await app.page.evaluate(() => ({ app: document.getElementById('appcard').innerText, pwa: document.querySelectorAll('#pwacard').length, pwaT: (document.getElementById('pwacard') || {}).innerText || '' }));
-    check('thẻ "Chế độ chơi" có "Phiên bản app 1.0.0" và chế độ đang chơi', /Chế độ chơi/.test(r.app) && /Phiên bản app 1\.0\.0/.test(r.app) && /Chơi một mình/.test(r.app), r.app.replace(/\s+/g, ' ').slice(0, 160));
+    check('thẻ "Chế độ chơi" có "Phiên bản app <VER>" và chế độ đang chơi', /Chế độ chơi/.test(r.app) && r.app.includes('Phiên bản app ' + VER) && /Chơi một mình/.test(r.app), r.app.replace(/\s+/g, ' ').slice(0, 160));
     check('#pwacard xuất hiện đúng một lần, là dòng của app', r.pwa === 1 && /Bạn đang chơi bằng app/.test(r.pwaT), 'số thẻ ' + r.pwa + ': ' + r.pwaT.replace(/\s+/g, ' ').slice(0, 80));
     await tap(app.page, '#appcard a:has-text("Điều khoản")');
     const lg = await waitFor(() => app.page.evaluate(() => { const b = document.querySelector('#mbox .app-legal'); return b && b.textContent.length > 300 && !/Đang tải/.test(b.textContent) && b.textContent.length; }), 8000);

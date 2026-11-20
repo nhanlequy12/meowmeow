@@ -2,7 +2,7 @@
 /* Kiểm thử cài thật rồi gỡ bộ cài NSIS của bản app Windows (Tauri).
    Cách chạy (trong thư mục desktop/):
      PLAYWRIGHT_CORE=<thư mục playwright-core> node scripts/install-test.js [bộ cài] [thư mục tạm]
-   - bộ cài mặc định: dist/MeoXu-Setup-1.0.0.exe
+   - bộ cài mặc định: dist/MeoXu-Setup-<VER>.exe
    - thư mục tạm mặc định: %TEMP%\meoxu-inst-<thời điểm>; app đã cài chạy với MEOXU_APPDIR=<tạm>\app
    Các bước: cài im lặng (/S, currentUser) → kiểm thư mục cài, lối tắt Start menu và Desktop, mục gỡ trong HKCU → chạy exe đã cài
    (nối CDP, game nạp không lỗi) → gỡ im lặng bằng uninstall.exe /S → kiểm mọi thứ đã mất, thư mục dữ liệu tạm còn nguyên.
@@ -11,14 +11,15 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const VER = require('../package.json').version;   // phiên bản app (đọc từ package.json, không ghi cứng)
 const http = require('http');
 const crypto = require('crypto');
 const { spawn, spawnSync, execFileSync } = require('child_process');
 
 const DESK = path.resolve(__dirname, '..');
 const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
-const SETUP = path.resolve(process.argv[2] || path.join(DESK, 'dist', 'MeoXu-Setup-1.0.0.exe'));
-const PORTABLE = path.join(DESK, 'dist', 'MeoXu-1.0.0-portable.exe');
+const SETUP = path.resolve(process.argv[2] || path.join(DESK, 'dist', 'MeoXu-Setup-' + VER + '.exe'));
+const PORTABLE = path.join(DESK, 'dist', 'MeoXu-' + VER + '-portable.exe');
 const TMP = path.resolve(process.argv[3] || path.join(os.tmpdir(), 'meoxu-inst-' + Date.now()));
 const APPDIR = path.join(TMP, 'app');
 const PRODUCT = 'Mèo Xu';
@@ -106,7 +107,7 @@ async function main() {
   check('lối tắt Start menu trỏ đúng exe', ls && path.resolve(ls) === INST_EXE, LNK_START + ' → ' + ls);
   check('lối tắt Desktop trỏ đúng exe', ld && path.resolve(ld) === INST_EXE, LNK_DESK + ' → ' + ld);
   const u = regRead(UKEY);
-  check('mục gỡ trong HKCU\\…\\Uninstall\\Mèo Xu', u && u.DisplayName === PRODUCT && u.DisplayVersion === '1.0.0' && /uninstall\.exe/i.test(u.UninstallString || ''),
+  check('mục gỡ trong HKCU\\…\\Uninstall\\Mèo Xu', u && u.DisplayName === PRODUCT && u.DisplayVersion === VER && /uninstall\.exe/i.test(u.UninstallString || ''),
     u ? JSON.stringify({ DisplayName: u.DisplayName, DisplayVersion: u.DisplayVersion, Publisher: u.Publisher, UninstallString: u.UninstallString, InstallLocation: u.InstallLocation }) : 'không có');
   const autorun = procsOf(INST_EXE);
   check('cài im lặng không tự mở app (không chạm %APPDATA%\\Mèo Xu thật)', !autorun.length, autorun.length ? 'đang chạy pid ' + autorun.join(',') : '');
@@ -129,7 +130,7 @@ async function main() {
     await page.reload({ waitUntil: 'load' });
     await sleep(3500);
     const st = await page.evaluate(() => ({ url: location.href, S: typeof S === 'object' && !!S, app: window.MXAPP && MXAPP.isApp, ver: window.MXAPP && MXAPP.version, wel: !!document.getElementById('appwel') }));
-    check('exe đã cài: game nạp, MXAPP 1.0.0, màn chào hiện, không lỗi JS', st.S && st.app && st.ver === '1.0.0' && st.wel && errs.length === 0 && st.url.startsWith('http://tauri.localhost/index.html'),
+    check('exe đã cài: game nạp, MXAPP <VER>, màn chào hiện, không lỗi JS', st.S && st.app && st.ver === VER && st.wel && errs.length === 0 && st.url.startsWith('http://tauri.localhost/index.html'),
       JSON.stringify(st) + (errs.length ? ' lỗi: ' + errs.slice(0, 3).join(' | ') : ''));
     await page.evaluate(() => localStorage.setItem('mx_inst', 'giu-lai'));
     await page.evaluate(() => MXAPP.acceptTerms());

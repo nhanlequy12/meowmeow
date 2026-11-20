@@ -1,6 +1,21 @@
-## Mèo Xu cho Windows, bản 1.0.0 (thử nghiệm)
+## Mèo Xu cho Windows, bản 1.1.0 (thử nghiệm)
 
-Đây là bản app Windows đầu tiên của Mèo Xu, đăng dưới dạng Pre-release. Nó dành cho bạn bè của chủ dự án, chưa phải bản chính thức. Mèo Xu là game fan-made phi thương mại: các mèo hóa trang theo nhân vật anime, phim, meme dùng tên và hình tượng thuộc về chủ sở hữu của chúng, và game không liên kết hay được họ bảo trợ.
+Bản app Windows của Mèo Xu, đăng dưới dạng Pre-release. Nó dành cho bạn bè của chủ dự án, chưa phải bản chính thức. Mèo Xu là game fan-made phi thương mại: các mèo hóa trang theo nhân vật anime, phim, meme dùng tên và hình tượng thuộc về chủ sở hữu của chúng, và game không liên kết hay được họ bảo trợ.
+
+### Có gì mới ở 1.1.0
+
+- **Chạy như app thật:** màn khởi động có mèo hạt cườm; biểu tượng ở khay hệ thống (bấm để hiện/ẩn, menu Tắt nhạc, Thông báo, Luôn ở trên cùng, Đặt lại cửa sổ, Thoát).
+- **Nút ✕:** lần đầu hỏi "Thu vào khay" hay "Thoát" rồi nhớ lựa chọn (Alt+F4 cũng vậy). Ctrl+Q và Thoát trong menu khay luôn thoát hẳn.
+- **Phím tắt Ctrl+Alt+M** gọi hoặc ẩn game ở bất cứ đâu (đổi hoặc tắt được).
+- **Khởi động cùng Windows** (mặc định tắt; khi bật thì game chạy thẳng vào khay).
+- **Luôn ở trên cùng** (mặc định tắt).
+- **Thông báo Windows:** viễn chinh về, bé xuất viện, bát cạn mà bé đói… Chỉ báo khi game đang ẩn, các việc gần nhau gộp làm một, yên tĩnh từ 23 tới 7 giờ, bấm vào thì mở đúng chỗ. Chấm số trên biểu tượng ở thanh taskbar.
+- **Cài đặt › Ứng dụng:** gom các tùy chọn trên; chủ đề sáng/tối thêm lựa chọn "Theo Windows"; nhạc khi ẩn vào khay dừng hay vẫn phát.
+- **Nhẹ hơn:** thu nhỏ hoặc ẩn vào khay thì game thôi vẽ (CPU khoảng 2%, trước khoảng 40%), RAM thấp hơn, mở nhanh hơn. Tùy chọn "Tiết kiệm pin" vẽ 30 khung/giây.
+- **Chắc hơn:** tắt đột ngột (mất điện, Task Manager) chỉ mất vài giây tiến độ thay vì gần một phút.
+- **Vui hơn:** âm bấm nhỏ (tắt được, chỉnh âm lượng trong Cài đặt › Âm thanh giao diện), chuyển tab và hộp thoại mượt hơn, linh vật Mèo Xu và thẻ "Chào mừng trở lại" tóm tắt những gì xảy ra lúc bạn vắng.
+
+Cài bản 1.1.0 đè lên bản 1.1.0 giữ nguyên tiến độ.
 
 ### Yêu cầu
 
@@ -13,8 +28,8 @@
 
 | File | Dùng khi | Dung lượng |
 | --- | --- | --- |
-| `MeoXu-Setup-1.0.0.exe` | Muốn cài như app thường, có lối tắt Desktop và Start menu, gỡ qua Settings > Apps | `<SIZE_SETUP>` |
-| `MeoXu-1.0.0-portable.exe` | Muốn chạy luôn, không cài (cần WebView2 có sẵn) | `<SIZE_PORTABLE>` |
+| `MeoXu-Setup-1.1.0.exe` | Muốn cài như app thường, có lối tắt Desktop và Start menu, gỡ qua Settings > Apps | `<SIZE_SETUP>` |
+| `MeoXu-1.1.0-portable.exe` | Muốn chạy luôn, không cài (cần WebView2 có sẵn) | `<SIZE_PORTABLE>` |
 
 Không chắc thì chọn bộ cài.
 
@@ -24,14 +39,14 @@ App chưa có chữ ký số, nên nên so mã SHA-256 để chắc file không 
 
 | File | SHA-256 |
 | --- | --- |
-| `MeoXu-Setup-1.0.0.exe` | `<SHA256_SETUP>` |
-| `MeoXu-1.0.0-portable.exe` | `<SHA256_PORTABLE>` |
+| `MeoXu-Setup-1.1.0.exe` | `<SHA256_SETUP>` |
+| `MeoXu-1.1.0-portable.exe` | `<SHA256_PORTABLE>` |
 
 Mở PowerShell trong thư mục đã tải và chạy:
 
 ```powershell
-Get-FileHash .\MeoXu-Setup-1.0.0.exe -Algorithm SHA256
-Get-FileHash .\MeoXu-1.0.0-portable.exe -Algorithm SHA256
+Get-FileHash .\MeoXu-Setup-1.1.0.exe -Algorithm SHA256
+Get-FileHash .\MeoXu-1.1.0-portable.exe -Algorithm SHA256
 ```
 
 Chuỗi in ra phải trùng với bảng trên. Lệch một ký tự thì xóa file và tải lại.
@@ -81,12 +96,14 @@ Hai chế độ có hai bản lưu riêng. Tiến độ chơi một mình không
 
 - F11: bật hoặc tắt toàn màn hình.
 - Ctrl+R: tải lại game.
+- Ctrl+Q: lưu và thoát hẳn.
+- Ctrl+Alt+M: gọi hoặc ẩn game (đổi trong Cài đặt › Ứng dụng).
 
 ### Hạn chế đã biết
 
 - Chưa có chữ ký số, nên SmartScreen và trình duyệt cảnh báo.
 - Chế độ một mình không tự cập nhật.
-- Bản app chưa có thông báo của game (viễn chinh xong, bát đổ lại được…). Muốn nhận thông báo thì chơi bằng trình duyệt qua server.py.
+- Thông báo chỉ có khi app đang chạy (cửa sổ hoặc khay). Thoát hẳn thì không có thông báo; muốn nhận cả khi đã thoát thì bật Khởi động cùng Windows và để game ở khay. Chế độ Tập trung (Focus Assist) của Windows có thể giấu thông báo.
 - Chế độ bạn bè qua http trong mạng nhà không mã hóa. Dùng https nếu đi qua Internet.
 - Mới thử trên ít máy. Nếu gặp lỗi, hãy báo.
 - Công cụ nhà phát triển bị khóa. Ở chế độ bạn bè, sửa bản lưu sẽ bị máy chủ từ chối và khôi phục.

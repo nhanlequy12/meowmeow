@@ -1,0 +1,82 @@
+/* ============ LINH VẬT MÈO XU VÀ THẺ "CHÀO MỪNG TRỞ LẠI" (js/welcome.js) ============
+   Hạt cườm pastel, viền nâu đậm #4e3026, màu theo biến chủ đề (--panel, --panel2, --ink, --dim, --line, --gold).
+   Chỉ animate transform và opacity; giảm chuyển động thì không nhún, không trượt. */
+.msc-cv{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+
+/* ---- thẻ chào mừng: góc dưới phải, không chặn bàn chơi ngoài phần thẻ ---- */
+#welc{position:fixed;z-index:18;right:calc(12px + var(--sr,0px));bottom:calc(12px + var(--wcb,0px) + var(--sb,0px));
+  width:min(340px,calc(100vw - 24px - var(--sl,0px) - var(--sr,0px)));
+  background:var(--panel);color:var(--ink);border:3px solid #4e3026;border-radius:16px;padding:10px 10px 8px;
+  box-shadow:0 0 0 3px var(--panel2) inset,0 3px 0 #4e3026,0 10px 26px rgba(40,24,12,.32);
+  background-image:radial-gradient(circle at 6px 6px,rgba(255,255,255,.35) 1.4px,transparent 1.8px);background-size:12px 12px;
+  opacity:0;transform:translateY(18px) scale(.96);transform-origin:100% 100%;
+  transition:opacity .24s ease-out,transform .32s cubic-bezier(.34,1.4,.64,1)}
+#welc.on{opacity:1;transform:none}
+#welc.out{opacity:0;transform:translateY(12px) scale(.97);transition:opacity .2s ease-in,transform .2s ease-in;pointer-events:none}
+html[data-theme=dark] #welc{border-color:#1c120c;box-shadow:0 0 0 3px var(--panel2) inset,0 3px 0 #1c120c,0 10px 26px rgba(0,0,0,.5);
+  background-image:radial-gradient(circle at 6px 6px,rgba(255,255,255,.06) 1.4px,transparent 1.8px)}
+
+#welc .wc-x{position:absolute;top:6px;right:6px;width:30px;height:30px;min-height:30px;padding:0;border-radius:50%;font-size:14px;line-height:1;
+  display:flex;align-items:center;justify-content:center;z-index:1}
+/* linh vật ngồi trên mép trên của thẻ (nửa trên thò ra ngoài) để thẻ thấp hơn; --mw, --mh là cỡ linh vật do js/welcome.js đặt */
+#welc .wc-hd{display:flex;align-items:flex-end;gap:8px;padding-right:30px;padding-left:calc(var(--mw,96px) + 4px);min-height:calc(var(--mh,110px) * .5)}
+#welc .wc-msc{position:absolute;left:8px;top:calc(var(--mh,110px) * -.5);animation:wcBob 2.6s ease-in-out infinite;transform-origin:50% 100%;pointer-events:none}
+#welc .wc-tx{display:flex;flex-direction:column;gap:2px;min-width:0;padding-bottom:4px}
+#welc .wc-tx small{font-size:11px;font-weight:800;color:var(--dim)}
+#welc .wc-tx b{font-size:16px;line-height:1.2}
+#welc .wc-tx span{font-size:12.5px;line-height:1.35;color:var(--dim)}
+#welc .wc-ls{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+#welc .wc-ln{display:flex;align-items:center;gap:7px;width:100%;min-height:34px;padding:5px 8px;text-align:left;font-size:12.5px;line-height:1.3;
+  background:var(--panel2);border:2px solid var(--line);border-radius:10px;color:var(--ink);font-weight:600;cursor:pointer}
+#welc .wc-ln:hover{border-color:#4e3026}
+#welc .wc-ln:active{transform:scale(.98)}
+#welc .wc-ic{flex:0 0 auto;font-size:15px;line-height:1}
+#welc .wc-ic img{width:18px;height:18px}
+#welc .wc-lt{flex:1;min-width:0}
+#welc .wc-ar{flex:0 0 auto;font-weight:800;color:var(--dim)}
+#welc .wc-ok{font-size:12.5px;color:var(--dim);padding:4px 2px}
+#welc .wc-ft{position:relative;display:flex;justify-content:flex-end;margin-top:8px;padding-top:6px}
+#welc .wc-go{min-height:36px;padding:4px 14px;font-weight:800}
+#welc .wc-bar{position:absolute;left:0;right:0;top:0;height:3px;border-radius:2px;background:var(--gold);opacity:.55;transform-origin:0 50%}
+@keyframes wcBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+
+/* màn thấp (cửa sổ nhỏ, điện thoại ngang): thẻ gọn hơn, linh vật nhỏ, các dòng thấp hơn để không che quá nửa khung phòng */
+@media (max-height:700px){
+  #welc{width:min(310px,calc(100vw - 100px));padding:7px 8px 6px;border-radius:13px;bottom:calc(8px + var(--wcb,0px) + var(--sb,0px));right:calc(8px + var(--sr,0px))}
+  #welc .wc-x{width:26px;height:26px;min-height:26px;top:4px;right:4px}
+  #welc .wc-tx b{font-size:14px}
+  #welc .wc-tx span{font-size:11.5px}
+  #welc .wc-ls{margin-top:5px;gap:3px}
+  #welc .wc-ln{min-height:28px;padding:3px 7px;font-size:11.5px;border-radius:8px}
+  #welc .wc-ft{margin-top:5px;padding-top:4px}
+  #welc .wc-go{min-height:30px;padding:2px 12px;font-size:12.5px}
+}
+/* điện thoại ngang: thẻ rộng hơn mà thấp hơn: bỏ câu phụ, mỗi dòng một hàng (dài thì cắt "…", rê hoặc nhấn giữ xem đủ qua title) */
+@media (max-height:520px){
+  #welc{width:min(380px,calc(100vw - 100px - var(--sl,0px) - var(--sr,0px)))}
+  #welc .wc-tx span{display:none}
+  #welc .wc-lt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+
+/* ---- thẻ Cài đặt ---- */
+.wcs .wcs-row{display:flex;align-items:center;gap:10px;margin:6px 0 8px}
+.wcs .wcs-msc{position:relative;flex:0 0 auto;padding:4px 6px 0;min-height:44px;border-radius:14px;background:var(--panel2);border:2px solid var(--line);cursor:pointer;
+  display:flex;align-items:flex-end;justify-content:center;touch-action:manipulation}
+.wcs .wcs-msc:hover{border-color:#4e3026}
+.wcs .wcs-msc.hop .msc-cv{animation:wcHop .45s cubic-bezier(.34,1.6,.64,1)}
+.wcs .wcs-bub{position:relative;flex:1;min-width:0;background:var(--panel);border:2px solid #4e3026;border-radius:12px;padding:7px 10px;font-size:12.5px;line-height:1.4;color:var(--ink)}
+.wcs .wcs-bub::before{content:"";position:absolute;left:-8px;top:50%;margin-top:-6px;border:6px solid transparent;border-right:8px solid #4e3026;border-left:0}
+.wcs .wcs-bub.pop{animation:wcPop .28s ease-out}
+.wcs .wcs-lb{font-size:13px;font-weight:700;margin-bottom:4px}
+.wcs-hrt{position:absolute;left:50%;top:14px;font-style:normal;font-size:16px;color:#e8607e;text-shadow:0 1px 0 #4e3026;pointer-events:none;
+  opacity:0;animation:wcHrt 1.1s ease-out forwards}
+html[data-theme=dark] .wcs .wcs-bub{border-color:#1c120c}
+@keyframes wcHop{0%{transform:translateY(0)}40%{transform:translateY(-8px)}100%{transform:translateY(0)}}
+@keyframes wcPop{0%{opacity:.4;transform:scale(.96)}100%{opacity:1;transform:none}}
+@keyframes wcHrt{0%{opacity:0;transform:translate(-50%,0) scale(.6)}20%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--dx,0px)),-38px) scale(1.1)}}
+
+@media (prefers-reduced-motion:reduce){
+  #welc,#welc.out{transition:opacity .15s linear;transform:none}
+  #welc .wc-msc,.wcs .wcs-msc.hop .msc-cv,.wcs .wcs-bub.pop{animation:none}
+  .wcs-hrt{animation-duration:.01s}
+}

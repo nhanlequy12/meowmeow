@@ -1,0 +1,24 @@
+/* ============ CHUYỂN CẢNH MƯỢT (Phần C2, 2026-11-20) ============
+   Đi kèm js/sfx.js. Chỉ transform và opacity, 120–200 ms, easing ra nhanh. Không đụng #pop (popup viễn chinh), #gz (gacha) và con của chúng,
+   không đổi bố cục, màu hay kiểu nút. Nút đã có phản hồi nhấn (button:active lún 2px, .tap/.card[onclick]:active tối nhẹ) nên không thêm.
+   Thông báo (#toast .tst) giữ nguyên hoạt ảnh trượt cũ. Mở hộp thoại giữ hoạt ảnh mIn cũ (.22s, scale .96→1, mờ → rõ), chỉ thêm nền mờ dần. */
+
+/* Nội dung #panel: trước đây mỗi lần vẽ lại cả panel (ở các tab không phải Phòng, Viễn chinh) mọi khối con nháy mờ 0,4→1 (keyframe pIn
+   trong index.html). Nay chỉ hiện ra khi đổi tab thật: js/sfx.js thêm lớp .mo-tab lên #panel trong setTab rồi gỡ khi xong.
+   Đặt lại pIn thành rỗng (keyframe khai báo sau thắng) để các quy tắc cũ vẫn nguyên chỗ nhưng không còn nháy. */
+@keyframes pIn{from{opacity:1}to{opacity:1}}
+html #app #panel.mo-tab>*{animation:moTab .2s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes moTab{from{opacity:0;transform:translateY(6px)}}
+
+/* Hộp thoại: nền tối mờ dần khi mở (hộp bên trong vẫn dùng mIn cũ). Đóng: bản sao .mo-ghost mờ đi 120 ms, nhanh hơn lúc mở. */
+#modal{animation:moBg .16s cubic-bezier(.2,.8,.2,1)}
+@keyframes moBg{from{opacity:0}}
+#modal.mo-ghost{display:flex!important;pointer-events:none;animation:moOut .12s cubic-bezier(.4,0,1,1) forwards}
+#modal.mo-ghost .box{animation:moBoxOut .12s cubic-bezier(.4,0,1,1) forwards}
+@keyframes moOut{to{opacity:0}}
+@keyframes moBoxOut{to{transform:scale(.97)}}
+
+@media (prefers-reduced-motion:reduce){
+  html #app #panel.mo-tab>*,#modal{animation:none}
+  #modal.mo-ghost{display:none!important}
+}

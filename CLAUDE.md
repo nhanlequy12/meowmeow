@@ -1075,3 +1075,23 @@ Người dùng duyệt kế hoạch bản app Windows (lúc đầu là Electron,
   - `node scripts/install-test.js`: cài im lặng thật, chạy, gỡ, kiểm lối tắt, registry, bản lưu còn (18 phép). Tự dừng nếu máy đã có bản cài.
 - Phát hành: tăng `version` trong `desktop/package.json` và `src-tauri/tauri.conf.json`, `Cargo.toml`, build, điền ghi chú, `gh release create app-v<phiên bản> dist\*.exe --prerelease --notes-file RELEASE_NOTES.md`. Không commit file `.exe`.
 - Chưa kiểm được: giao diện cài và gỡ có cửa sổ (trang điều khoản, ô xóa dữ liệu), máy chưa có WebView2, SmartScreen trên máy lạ, nhiều máy thật qua LAN hoặc đường hầm, chuột và bàn phím thật, âm thanh bằng tai, màn HiDPI.
+
+### 52b. "Như app thật" (bản 1.1.0, 2026-11-20)
+Người dùng yêu cầu app dùng như ứng dụng PC thật; đã nghiên cứu Bongo Cat, Rusty's Retirement, Desktop Goose, Melvor Idle, Discord, Spotify, Steam và hướng dẫn thông báo của Microsoft (chỉ học nguyên tắc). Người dùng chốt: làm phần A + B + C (chưa làm "mèo đi dạo trên taskbar"), nút X hỏi lần đầu, giữ khung Windows, phím tắt Ctrl+Alt+M.
+- **A. Nhẹ và chắc** (commit `cdcc7b7`):
+  - Lõi gọi WebView2 `SetIsVisible(false)` khi thu nhỏ hoặc ẩn (`set_web_visible` trong lib.rs; PHẢI gọi sau mỗi hide/show) nên `document.hidden` đúng, rAF dừng. CPU khi thu nhỏ 38% → 2%.
+  - `js/bg.js`: tick có dt dài thì chia bước 1 giây (mỗi bước đặt `Date.now` đúng giờ của bước, không dùng TOFF); quá 10 phút thì bù như `load()`. Khi ẩn bỏ vẽ giao diện, xếp hàng thông báo. Kiểm `tools/bgtest.js`.
+  - Lưu an toàn: `js/app.js` gọi `MXAPP.persist(bản lưu)` tối đa 3 giây/lần và ngay khi ẩn hoặc thoát. Lõi ghi `%APPDATA%\Mèo Xu\saves\<solo|srv-xxxxxxxx>.json` (file tạm, sync, đổi tên). Lúc mở app, `src/restore.js` chép bản file vào localStorage nếu `last` lớn hơn (`{"wiped":1}` thì xóa). Tắt đột ngột mất 1–6 giây thay vì 20–45.
+  - `desktop/scripts/bundle.js` gộp 172 script thành 48 thẻ (15 bundle; cắt bundle ở chỗ có `typeof` tên của file sau và chỗ đổi "use strict"), CSS thành 1 file. `MEOXU_NOBUNDLE=1` thì không gộp. Thêm file JS mới: kiểm lại rằng bản gộp không lỗi (smoke, flow).
+  - Game vẽ nhẹ hơn: `bufCanvas` ghi ImageData, `drawBg` đệm nền, `meLabel` đệm chữ, ảnh thẻ mèo nén sau khung đầu; `js/perf.js` tùy chọn Tiết kiệm pin `S.set.fps30`.
+- **B. Hành vi như app** (commit `f60670b`):
+  - Lõi `src/desk.rs`, `src/winx.rs`, `desktop/splash.html`: màn khởi động (hiện sau khoảng 0,17 giây; cửa sổ chính hiện khi trang gọi `MXAPP.ready()`); khay hệ thống; hộp thoại khi bấm X hoặc Alt+F4 (Thu vào khay / Thoát / Không đóng, nhớ trong `config.json` khóa `close`); Ctrl+Q thoát; luôn ở trên cùng; khởi động cùng Windows bằng khóa `HKCU\...\Run` với `--tray`; phím tắt toàn cục; toast Windows gọi thẳng WinRT (ghi khóa AUMID `HKCU\Software\Classes\AppUserModelId\vn.meoxu.app` để bản portable cũng hiện); chấm số trên taskbar.
+  - `MXAPP` thêm: `cfg`, `app.get/set`, `notifyPlan`, `notifyNow`, `setBadge`, `setTheme`, `ready`, `hide`, `quit`, `resetWindow`. Lõi gọi sang trang qua `window.__mxOn(type, data)`: `tab`, `mute`, `shown`, `hidden`, `quit-soon`, `cfg`.
+  - `js/app-win.js` + `css/app-win.css`: thẻ Cài đặt "🖥️ Ứng dụng"; lịch thông báo từ `ntfPlan()` cộng xuất viện, bé đi lạc về, kết quả cuộc thi, bát cạn mà bé sắp đói, bé lạ ghé, quà sự kiện. Gộp việc cách nhau ≤ 90 giây, việc thường cách nhau ít nhất 10 phút, giờ yên tĩnh 23–7 giờ (`S.set.ntfq`), tối đa 12 mục trong 36 giờ.
+  - `js/ui.js`: chủ đề `S.set.theme='auto'` theo hệ điều hành. `js/bgm.js`: nhạc dừng khi ẩn, trừ khi `cfg.bgPlay`.
+  - Các lệnh này mở cho cả trang máy chủ ở chế độ bạn bè; máy chủ lạ tệ nhất bật được khởi động cùng Windows, đổi phím tắt, hiện toast (có giới hạn tần suất).
+- **C. Sống động** (commit của bản 1.1.0):
+  - `js/sfx.js` + `css/motion.css`: 7 âm giao diện tự tổng hợp (tap, open, close, tab, coin, ok, err), chỉ kêu trong 1,5 giây sau một thao tác thật. Thẻ Cài đặt "🔊 Âm thanh giao diện" (`S.set.sfx`, `S.set.sfxv`). Chuyển tab và đóng hộp thoại mượt hơn; keyframe `pIn` cũ (nháy mờ mỗi lần vẽ lại panel) nay rỗng. Không đụng `#pop`, `#gz`.
+  - `js/welcome.js` + `css/welcome.css`: linh vật Mèo Xu là bé mèo mướp đeo đồng xu (phụ kiện riêng `mxcoin`, không bán), `mascotCv`. Thẻ "Chào mừng trở lại" hiện khi vắng từ 10 phút, gộp và thay toast "Lúc bạn vắng" (`S.set.welc`). Ảnh chụp lúc rời đi lưu ở localStorage `meoxu_welc`. Thẻ Cài đặt "🐱 Linh vật Mèo Xu" có linh vật chạm vào thì nói mẹo.
+- Kiểm thử trên bản 1.1.0: `smoke.js`, `flow.js`, `install-test.js` (đọc phiên bản từ `package.json`), 22 bộ `tools/*test.js`.
+- Chưa kiểm được: bấm chuột thật vào khay, menu khay và toast; nghe âm thanh; HiDPI; máy khác; Focus Assist.

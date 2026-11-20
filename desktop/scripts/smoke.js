@@ -16,6 +16,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const VER = require('../package.json').version;   // phiên bản app (đọc từ package.json, không ghi cứng)
 const net = require('net');
 const http = require('http');
 const { spawn, execFileSync } = require('child_process');
@@ -242,7 +243,7 @@ async function main() {
       if (!('mode' in M) || !(M.mode === null || M.mode === 'solo' || M.mode === 'friend')) miss.push('mode');
       return { miss, isApp: M.isApp, version: M.version, dev: M.dev, mode: M.mode, terms: M.terms, termsVer: M.termsVer };
     });
-    check('MXAPP đủ khóa và đúng kiểu', r.miss.length === 0 && r.isApp === true && r.version === '1.0.0' && r.mode === null && r.terms === 0 && r.termsVer === 1,
+    check('MXAPP đủ khóa và đúng kiểu', r.miss.length === 0 && r.isApp === true && r.version === VER && r.mode === null && r.terms === 0 && r.termsVer === 1,
       r.miss.length ? 'thiếu/sai: ' + r.miss.join(', ') : JSON.stringify(r));
     check('MXAPP.dev đúng loại bản build', r.dev === /[\\/]debug[\\/]/i.test(EXE), 'dev=' + r.dev);
   });
