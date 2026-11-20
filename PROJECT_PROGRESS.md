@@ -191,3 +191,4 @@ Không có lỗi chạy nào đã biết. Các hạn chế đã biết nằm ở
 - `bdf94f4` (2026-11-20): chữ pixel tiếng Việt (MeoXu Pixel cho tiêu đề, nút, nhãn; Nunito nhúng cho đoạn văn; CLAUDE.md mục 53, 52c). Dò chữ tràn 25 màn ở 5 cỡ màn bằng Playwright, 21 bộ test đạt. App đã tăng lên 1.2.0 nhưng chưa build (máy thiếu Rust, VS Build Tools). Chưa xem chủ đề tối.
 
 - 2026-11-20: cài Rust và VS Build Tools (đặt ở `D:\DevTools`, ổ C gần đầy), build app 1.2.0: flow 56/56, smoke 100/101 (mỗi lần hỏng một phép khác nhau về thời gian hoặc mức phóng màn hình). Chưa đăng Release.
+- 2026-11-20: đã đăng Pre-release `app-v1.2.0` (https://github.com/nhanlequy12/meowmeow/releases/tag/app-v1.2.0): bản cài 6,47 MB SHA-256 `202e9a27…cba373`, portable 8,27 MB SHA-256 `373eda21…dd9`; tải lại từ GitHub, mã khớp bản build.
