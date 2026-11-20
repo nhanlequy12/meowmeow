@@ -116,6 +116,7 @@ function welDrop(){WEL.pend=null;clearTimeout(WEL.wt);welRelease()}
 function welBlocked(){
   const on=id=>{const e=document.getElementById(id);return !!(e&&e.classList.contains('on'))};
   if(document.getElementById('appwel'))return true;
+  if(document.querySelector('.mxd-ov'))return true;   // hộp thoại pixel (js/dialog.js)
   if(on('gz'))return true;
   const m=document.getElementById('modal');if(m&&m.style.display==='flex')return true;
   if(['wxbook','pwbook','medbook','phalb'].some(on))return true;

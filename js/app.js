@@ -148,6 +148,7 @@ function appGo(mode,url){
 // đăng ký ở pha bắt trên window TRƯỚC js/tutorial.js (nạp sau) nên chạy trước bộ chặn phím của hướng dẫn
 addEventListener('keydown',ev=>{
   const w=document.getElementById('appwel');if(!w)return;
+  if(document.querySelector('.mxd-ov'))return;   // hộp thoại pixel (js/dialog.js) đang mở trên màn chào: để nó nhận phím
   ev.stopImmediatePropagation();
   const inW=w.contains(ev.target);
   if(ev.key==='Tab'){   // giữ tiêu điểm trong lớp phủ
@@ -189,19 +190,29 @@ function appSvGo(){
   const X=appX(),n=appNorm(APP.surl);
   if(!n){APP.smsg='Địa chỉ chưa hợp lệ. Ví dụ: 192.168.1.5 hoặc https://abc.trycloudflare.com';APP.sbad=1;appSetMsg('appsmsg',APP.smsg,'bad');return}
   if(X.mode==='friend'&&n===X.server){APP.smsg='Bạn đang chơi với máy chủ này rồi.';APP.sbad=2;appSetMsg('appsmsg',APP.smsg,'ok');return}
-  appKeepY();APP.cf={mode:'friend',url:n};
-  modal('<h3>👥 '+(X.mode==='friend'?'Đổi máy chủ?':'Chuyển sang chơi cùng bạn bè?')+'</h3>'+
-    '<div>Game sẽ tải lại và kết nối tới <b>'+appEsc(n)+'</b>.</div>'+
-    '<div class="dim" style="margin-top:6px">'+(X.mode==='friend'?'Mỗi máy chủ có hồ sơ riêng. Hồ sơ ở máy chủ cũ vẫn còn ở đó.':APP_SAVES)+'</div>'+
-    '<div class="app-msg" id="appcmsg"></div>'+
-    '<div class="row" style="justify-content:center;margin-top:8px"><button class="on" onclick="appConfirm(this)">Kết nối</button><button onclick="appBackSet()">Thôi</button></div>');
+  APP.cf={mode:'friend',url:n};
+  appAsk('👥 '+(X.mode==='friend'?'Đổi máy chủ?':'Chuyển sang chơi cùng bạn bè?'),
+    '<p>Game sẽ tải lại và kết nối tới <b>'+appEsc(n)+'</b>.</p>'+
+    '<p class="mxd-dim">'+(X.mode==='friend'?'Mỗi máy chủ có hồ sơ riêng. Hồ sơ ở máy chủ cũ vẫn còn ở đó.':APP_SAVES)+'</p>','🔗 Kết nối');
 }
 function appAskSolo(){
-  appKeepY();APP.cf={mode:'solo'};
-  modal('<h3>🐾 Chuyển sang chơi một mình?</h3><div>Game sẽ tải lại và mở bản lưu chơi một mình trên máy này.</div>'+
-    '<div class="dim" style="margin-top:6px">'+APP_SAVES+' Hồ sơ trên máy chủ vẫn giữ nguyên.</div>'+
-    '<div class="app-msg" id="appcmsg"></div>'+
-    '<div class="row" style="justify-content:center;margin-top:8px"><button class="on" onclick="appConfirm(this)">Chơi một mình</button><button onclick="appBackSet()">Thôi</button></div>');
+  APP.cf={mode:'solo'};
+  appAsk('🐾 Chuyển sang chơi một mình?','<p>Game sẽ tải lại và mở bản lưu chơi một mình trên máy này.</p>'+
+    '<p class="mxd-dim">'+APP_SAVES+' Hồ sơ trên máy chủ vẫn giữ nguyên.</p>','🐾 Chơi một mình');
+}
+// hộp xác nhận đổi chế độ (hộp thoại pixel của js/dialog.js, nằm trên hộp Cài đặt): đồng ý thì đổi, lỗi thì báo trong thẻ Chế độ chơi và hộp lỗi
+function appAsk(title,body,okLbl){
+  if(typeof mxDialog!=='function'){appKeepY();modal('<h3>'+title+'</h3>'+body+'<div class="app-msg" id="appcmsg"></div><div class="row" style="justify-content:center;margin-top:8px"><button class="on" onclick="appConfirm(this)">'+okLbl+'</button><button onclick="appBackSet()">Thôi</button></div>');return}
+  mxDialog({title,body,mascot:'ask',buttons:[{id:'go',label:okLbl,kind:'primary'},{id:'no',label:'Thôi'}],cancelId:'no',defaultId:'go'}).then(r=>{
+    if(r.id!=='go')return;
+    const c=APP.cf;if(!c)return;
+    APP.smsg='Đang chuyển…';APP.sbad=0;appSetMsg('appsmsg',APP.smsg,'');
+    appGo(c.mode,c.url).then(x=>{
+      if(x.ok)return;   // cửa sổ sẽ tự tải trang mới
+      APP.smsg='❌ '+appEsc(x.err||'Chưa chuyển được.');APP.sbad=1;appSetMsg('appsmsg',APP.smsg,'bad');
+      mxDialog({title:'Chưa chuyển được',kind:'err',mascot:'err',body:'<p>'+appEsc(x.err||'Chưa chuyển được.')+'</p>',buttons:[{id:'ok',label:'Đã hiểu',kind:'primary'}],cancelId:'ok',defaultId:'ok'});
+    });
+  });
 }
 function appConfirm(btn){
   const c=APP.cf;if(!c)return;

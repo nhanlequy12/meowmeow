@@ -17,9 +17,20 @@
    Thêm (phần B, hành vi như app thật; lõi ở desk.rs):
    - MXAPP.cfg (ảnh chụp đồng bộ lúc nạp trang, được cập nhật tại chỗ), MXAPP.app.get/set, notifyPlan, notifyNow, setBadge,
      setTheme, ready, hide, quit, resetWindow. Lõi gọi sang trang bằng window.__mxOn(type, data).
-   - Ctrl+Q: thoát thật (lõi báo trang 'quit-soon' và chờ trang lưu tối đa ~600 ms).
+   - Ctrl+Q: luôn lưu rồi thoát hẳn, không hỏi (quy trình thoát có lưu bên dưới, reason 'ctrlq').
    - Trang lỗi __offline.html (không phải trang chờ ?wait=1) tự gọi ready() khi nạp xong; trang khác chưa gọi ready()
-     thì tự gọi 2,5 giây sau sự kiện load (máy chủ chạy bản game cũ), lõi còn chốt chặn 8 giây. */
+     thì tự gọi 2,5 giây sau sự kiện load (máy chủ chạy bản game cũ), lõi còn chốt chặn 8 giây.
+   Thêm (mục 1: hành vi khi đóng app; lõi ở closeq.rs):
+   - Hỏi khi đóng: ✕/Alt+F4 với cfg.close==='ask' → lõi hiện, focus cửa sổ và gọi __mxOn('close-ask', {again}). Trang gọi
+     MXAPP.closeAck() trong 1,5 giây (không thì lõi dùng TaskDialog dự phòng) rồi MXAPP.closeChoice(choice, remember) với
+     choice 'tray' | 'quit' | 'stay'; remember chỉ được lưu cho 'tray' | 'quit'. again:true là người chơi bấm ✕ lần nữa khi
+     hộp đang mở: chỉ cần focus lại hộp (và ack lại).
+   - Thoát có lưu (mọi cách thoát): lõi gọi __mxOn('quit-soon', {reason: 'close'|'ctrlq'|'tray'|'api'|'shutdown'}). Trang gọi
+     MXAPP.quitAck() trong 1,5 giây, lưu bằng MXAPP.persistNow(json) → Promise<{ok, err?}>, rồi MXAPP.quitReady({ok:true})
+     (lõi thoát ngay) hoặc MXAPP.quitReady({ok:false, err}) (lõi không thoát; trang hỏi: Thử lại → lưu lại rồi quitReady,
+     Thoát không lưu → MXAPP.quitForce(), Ở lại → MXAPP.quitCancel()). Ack mà 10 giây chưa quitReady, hoặc không ack (trừ
+     trang cũ đã gửi persist) → hộp thoại Windows [Thoát] [Ở lại]. Lõi báo thêm __mxOn('quit-cancel') khi lượt thoát bị
+     hủy từ phía lõi (không bắt buộc xử lý). 'shutdown' là Windows tắt máy, đăng xuất: lõi chỉ chờ tối đa 2 giây. */
 (function () {
   'use strict';
   if (window.MXAPP) return;
@@ -98,6 +109,14 @@
       if (typeof json !== 'string' || !json || json.length > MAX_SAVE) return;
       inv('mx_persist', { json: json, page: PAGE, n: ++pN }).catch(function () {});
     },
+    /* Ghi bản lưu và chờ kết quả: {ok:true} hoặc {ok:false, err:'<lý do tiếng Việt>'} (đĩa đầy, không có quyền…). */
+    persistNow: function (json) {
+      if (typeof json !== 'string' || !json) return Promise.resolve({ ok: false, err: 'Bản lưu trống, không có gì để ghi.' });
+      if (json.length > MAX_SAVE) return Promise.resolve({ ok: false, err: 'Bản lưu quá lớn (hơn 8 MB), không ghi được.' });
+      return inv('mx_persist_now', { json: json, page: PAGE, n: ++pN }).then(function (r) {
+        return r && r.ok ? { ok: true } : { ok: false, err: (r && r.err) || 'Không ghi được bản lưu.' };
+      }, function (e) { return { ok: false, err: errText(e) }; });
+    },
     openExternal: function (u) {
       var s = String(u == null ? '' : u).trim();
       if (!/^https?:\/\//i.test(s)) return;
@@ -146,8 +165,30 @@
     hide: function () {
       inv('mx_hide').catch(function () {});
     },
+    /* Thoát có lưu: lõi gọi __mxOn('quit-soon', {reason:'api'}) rồi chờ trang quitReady như mọi cách thoát khác. */
     quit: function () {
-      inv('mx_quit', { soon: false }).catch(function () {});
+      inv('mx_quit', { reason: 'api' }).catch(function () {});
+    },
+    /* ---- hỏi khi đóng, thoát có lưu (xem chú thích đầu file) ---- */
+    closeAck: function () {
+      return inv('mx_close_ack').catch(function () {});
+    },
+    closeChoice: function (choice, remember) {
+      if (choice !== 'tray' && choice !== 'quit' && choice !== 'stay') return Promise.resolve();
+      return inv('mx_close_choice', { choice: choice, remember: !!remember }).catch(function () {});
+    },
+    quitAck: function () {
+      return inv('mx_quit_ack').catch(function () {});
+    },
+    quitReady: function (r) {
+      var ok = !!(r && r.ok === true);
+      return inv('mx_quit_ready', { ok: ok, err: ok ? null : str((r && r.err) || '', 300) }).catch(function () {});
+    },
+    quitForce: function () {
+      return inv('mx_quit_force').catch(function () {});
+    },
+    quitCancel: function () {
+      return inv('mx_quit_cancel').catch(function () {});
     },
     resetWindow: function () {
       inv('mx_reset_window').catch(function () {});
@@ -210,7 +251,7 @@
     if (ctrl && !e.altKey && !e.shiftKey && code === 'KeyQ') {
       e.preventDefault();
       e.stopImmediatePropagation();
-      if (!e.repeat) inv('mx_quit', { soon: true }).catch(function () {});
+      if (!e.repeat) inv('mx_quit', { reason: 'ctrlq' }).catch(function () {});
       return;
     }
     if (k === 'F5' || (ctrl && !e.altKey && code === 'KeyR')) {

@@ -16,7 +16,10 @@
 //!   timer vẫn chạy (không TrySuspend). Tắt IntensiveWakeUpThrottling để timer ẩn không bị dồn về 1 lần/phút.
 //! - Hành vi như app thật (desk.rs, winx.rs): splash, khay hệ thống, nút X hỏi lần đầu rồi nhớ, khởi động cùng Windows
 //!   (`--tray`), phím tắt toàn cục, luôn ở trên cùng, lịch thông báo toast, chấm đỏ trên taskbar, màu nền theo chủ đề.
+//! - Đóng và thoát có lưu (closeq.rs): hỏi khi đóng bằng hộp thoại của trang (dự phòng TaskDialog), mọi cách thoát đều
+//!   chờ trang lưu bằng MXAPP.persistNow rồi mới thoát; lưu lỗi thì không thoát. Tắt máy: chờ trang lưu tối đa 2 giây.
 
+mod closeq;
 mod desk;
 mod winx;
 
@@ -524,10 +527,12 @@ fn hook_nav_fail(win: &WebviewWindow, ctx: Arc<Ctx>) {
     use webview2_com::{take_pwstr, NavigationCompletedEventHandler, NavigationStartingEventHandler};
     use windows_core::{BOOL, PWSTR};
     let w = win.clone();
+    let app = win.app_handle().clone();
     let _ = win.with_webview(move |pw| unsafe {
         let Ok(core) = pw.controller().CoreWebView2() else { return };
         let c1 = ctx.clone();
         let start = NavigationStartingEventHandler::create(Box::new(move |_, args| {
+            closeq::on_nav_start(&app); // trang cũ mất hộp hỏi đóng, hộp lỗi lưu của nó
             if let Some(a) = args {
                 let mut id = 0u64;
                 let mut p = PWSTR::null();
@@ -697,33 +702,77 @@ async fn mx_accept_terms(app: AppHandle) -> Result<u32, String> {
     Ok(TERMS_VER)
 }
 
-/// MXAPP.persist(json): ghi bản lưu của trang đang gọi ra saves\<khóa>.json. `page` là performance.timeOrigin của trang,
-/// `n` tăng dần trong một trang: lần gọi đến trễ (cũ hơn lần đã ghi) bị bỏ. Sai, quá lớn, khác origin thì lặng lẽ bỏ qua.
+/// Lỗi ghi file bản lưu, nói bằng tiếng Việt cho người chơi.
+fn io_err_vi(e: &std::io::Error, path: &Path) -> String {
+    let dir = path.parent().unwrap_or(path);
+    if dir.exists() && !dir.is_dir() {
+        return format!("Thư mục bản lưu bị hỏng ({} không phải thư mục). Đổi tên hoặc xóa nó rồi thử lại.", dir.display());
+    }
+    match e.raw_os_error() {
+        Some(39) | Some(112) => "Ổ đĩa đã đầy nên không ghi được bản lưu. Hãy dọn bớt dung lượng rồi bấm Thử lại.".into(),
+        Some(5) => format!("Không có quyền ghi vào thư mục bản lưu ({}).", dir.display()),
+        Some(32) | Some(33) => "File bản lưu đang bị chương trình khác giữ (ví dụ phần mềm diệt virus, đồng bộ đám mây). Chờ vài giây rồi thử lại.".into(),
+        Some(19) => "Ổ đĩa đang chống ghi nên không lưu được.".into(),
+        _ => format!("Không ghi được bản lưu: {e}"),
+    }
+}
+
+/// Ghi bản lưu của trang `u` ra saves\<khóa>.json (chặn luồng; gọi trong spawn_blocking). `page` là performance.timeOrigin
+/// của trang, `n` tăng dần trong một trang: lần gọi đến trễ (cũ hơn lần đã ghi) bị bỏ và coi là thành công (file đã mới hơn).
+fn persist_blocking(ctx: &Ctx, u: &Url, json: &str, page: f64, n: u64) -> Result<(), String> {
+    let ok_origin = same_origin(u, &ctx.base) || ctx.cfg().friend_server().is_some_and(|s| same_origin(u, &s));
+    if !ok_origin {
+        return Err("Trang này không phải trang game của Mèo Xu nên không lưu vào app được.".into());
+    }
+    if json.len() > MAX_SAVE {
+        return Err("Bản lưu quá lớn (hơn 8 MB), không ghi được.".into());
+    }
+    let key = save_key(ctx, u).ok_or_else(|| "Trang này không lưu vào app được.".to_string())?;
+    if !valid_save(json) {
+        return Err("Bản lưu không hợp lệ (không phải dữ liệu game).".into());
+    }
+    let mut last = ctx.persist.lock().unwrap_or_else(|e| e.into_inner()); // giữ khóa suốt lúc ghi: các lần ghi không chồng nhau
+    if let Some(&(p0, n0)) = last.get(&key) {
+        if p0 == page && n <= n0 {
+            return Ok(());
+        }
+    }
+    let path = save_path(ctx, &key);
+    write_save(&path, json).map_err(|e| io_err_vi(&e, &path))?;
+    last.insert(key, (page, n));
+    ctx.desk.persist_n.fetch_add(1, Ordering::SeqCst);
+    Ok(())
+}
+
+/// MXAPP.persist(json): ghi bản lưu, không trả kết quả (sai, quá lớn, khác origin, lỗi đĩa thì lặng lẽ bỏ qua).
 #[tauri::command]
 async fn mx_persist(app: AppHandle, webview: tauri::Webview, json: String, page: f64, n: u64) {
     let ctx = ctx_of(&app);
     let Ok(u) = webview.url() else { return };
-    let ok_origin = same_origin(&u, &ctx.base) || ctx.cfg().friend_server().is_some_and(|s| same_origin(&u, &s));
-    if !ok_origin || json.len() > MAX_SAVE {
-        return;
+    let _ = tauri::async_runtime::spawn_blocking(move || persist_blocking(&ctx, &u, &json, page, n)).await;
+}
+
+#[derive(Serialize)]
+struct PersistRes {
+    ok: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    err: Option<String>,
+}
+
+/// MXAPP.persistNow(json): như persist nhưng chờ ghi xong (file tạm, sync, đổi tên) và trả {ok, err} (err tiếng Việt).
+#[tauri::command]
+async fn mx_persist_now(app: AppHandle, webview: tauri::Webview, json: String, page: f64, n: u64) -> PersistRes {
+    let ctx = ctx_of(&app);
+    let Ok(u) = webview.url() else {
+        return PersistRes { ok: false, err: Some("Không xác định được trang đang lưu.".into()) };
+    };
+    let r = tauri::async_runtime::spawn_blocking(move || persist_blocking(&ctx, &u, &json, page, n))
+        .await
+        .unwrap_or_else(|_| Err("Lỗi nội bộ khi ghi bản lưu.".into()));
+    match r {
+        Ok(()) => PersistRes { ok: true, err: None },
+        Err(e) => PersistRes { ok: false, err: Some(e) },
     }
-    let Some(key) = save_key(&ctx, &u) else { return };
-    let _ = tauri::async_runtime::spawn_blocking(move || {
-        if !valid_save(&json) {
-            return;
-        }
-        let mut last = ctx.persist.lock().unwrap(); // giữ khóa suốt lúc ghi: các lần ghi không chồng nhau
-        if let Some(&(p0, n0)) = last.get(&key) {
-            if p0 == page && n <= n0 {
-                return;
-            }
-        }
-        if write_save(&save_path(&ctx, &key), &json).is_ok() {
-            last.insert(key, (page, n));
-            ctx.desk.persist_n.fetch_add(1, Ordering::SeqCst);
-        }
-    })
-    .await;
 }
 
 /// Script khôi phục đã chạy trên trang đầu tiên của origin: gỡ nó để lần tải lại sau (Ctrl+R) không chép bản file cũ.
@@ -782,10 +831,46 @@ fn mx_hide(app: AppHandle) {
     desk::hide_main(&app, true);
 }
 
-/// soon=true (Ctrl+Q): báo trang 'quit-soon' và chờ trang lưu; false (MXAPP.quit): trang đã tự lưu.
+/// Thoát có lưu (closeq.rs). `reason`: 'ctrlq' (Ctrl+Q) | 'api' (MXAPP.quit). `soon` của bản 1.1.0 không còn ý nghĩa
+/// (mọi cách thoát đều báo trang 'quit-soon' và chờ trang lưu).
 #[tauri::command]
-fn mx_quit(app: AppHandle, soon: Option<bool>) {
-    desk::quit_app(&app, soon.unwrap_or(false));
+fn mx_quit(app: AppHandle, reason: Option<String>, soon: Option<bool>) {
+    let _ = soon;
+    let r = match reason.as_deref() {
+        Some("ctrlq") => "ctrlq",
+        _ => "api",
+    };
+    closeq::quit_begin(&app, r);
+}
+
+#[tauri::command]
+fn mx_close_ack(app: AppHandle) {
+    closeq::close_ack(&app);
+}
+
+#[tauri::command]
+fn mx_close_choice(app: AppHandle, choice: String, remember: Option<bool>) {
+    closeq::close_choice(&app, &choice, remember.unwrap_or(false));
+}
+
+#[tauri::command]
+fn mx_quit_ack(app: AppHandle) {
+    closeq::quit_ack(&app);
+}
+
+#[tauri::command]
+fn mx_quit_ready(app: AppHandle, ok: bool, err: Option<String>) {
+    closeq::quit_ready(&app, ok, err.map(|e| e.chars().take(300).collect()));
+}
+
+#[tauri::command]
+fn mx_quit_force(app: AppHandle) {
+    closeq::quit_force(&app);
+}
+
+#[tauri::command]
+fn mx_quit_cancel(app: AppHandle) {
+    closeq::quit_cancel(&app);
 }
 
 #[tauri::command]
@@ -998,6 +1083,7 @@ pub fn run() {
             mx_open_external,
             mx_fullscreen,
             mx_persist,
+            mx_persist_now,
             mx_restored,
             mx_app_get,
             mx_app_set,
@@ -1008,6 +1094,12 @@ pub fn run() {
             mx_ready,
             mx_hide,
             mx_quit,
+            mx_close_ack,
+            mx_close_choice,
+            mx_quit_ack,
+            mx_quit_ready,
+            mx_quit_force,
+            mx_quit_cancel,
             mx_reset_window
         ])
         .setup(move |app| {
@@ -1090,7 +1182,7 @@ pub fn run() {
                     save_window(win, &ctx);
                     if !ctx.desk.quitting.load(Ordering::SeqCst) {
                         api.prevent_close();
-                        desk::on_close_requested(app);
+                        closeq::on_close_requested(app);
                     }
                 }
                 _ => {}

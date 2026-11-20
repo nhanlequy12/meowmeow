@@ -1,0 +1,126 @@
+/* ============ HỘP THOẠI PIXEL DÙNG CHUNG (js/dialog.js) ============
+   Khung viền pixel góc vát bậc thang (clip-path), viền nâu đậm #4e3026, màu pastel theo biến chủ đề (--panel, --panel2, --ink, --dim, --pink),
+   bóng đổ pixel cứng. Font qua biến: --fx-pixel (tiêu đề, nút), --fx-text (thân); chưa gán thì dùng font hiện tại của game.
+   Lớp phủ: 62 (trên hộp thoại #modal 20, hướng dẫn tân thủ 45, thông báo 50; dưới màn chào #appwel 70); hộp của lõi app (.mxd-app): 90, trên tất cả.
+   Chỉ animate transform và opacity; giảm chuyển động thì không. */
+.mxd-ov{--mxd-ol:#4e3026;--mxd-lip:#2e1c14;--mxd-hl:#e9a93a;--mxd-shine:rgba(255,255,255,.6);--mxd-dot:rgba(255,255,255,.32);
+  position:fixed;inset:0;z-index:62;display:flex;align-items:center;justify-content:center;
+  padding:calc(12px + var(--st,0px)) calc(12px + var(--sr,0px)) calc(12px + var(--sb,0px)) calc(12px + var(--sl,0px));
+  background-color:rgba(46,28,18,.5);
+  background-image:linear-gradient(45deg,rgba(46,28,18,.12) 25%,transparent 25%,transparent 75%,rgba(46,28,18,.12) 75%),
+    linear-gradient(45deg,rgba(46,28,18,.12) 25%,transparent 25%,transparent 75%,rgba(46,28,18,.12) 75%);
+  background-size:4px 4px;background-position:0 0,2px 2px;
+  animation:mxdBg .14s ease-out both;touch-action:none;-webkit-tap-highlight-color:transparent;
+  color:var(--ink);font-family:var(--fx-text,inherit);font-weight:700}
+.mxd-ov.mxd-app{z-index:90}
+.mxd-ov.out{animation:mxdBgOut .1s ease-in forwards}
+html[data-theme=dark] .mxd-ov{--mxd-ol:#6a4630;--mxd-lip:#2a1a10;--mxd-hl:#f4cc66;--mxd-shine:rgba(255,255,255,.14);--mxd-dot:rgba(255,255,255,.05);background-color:rgba(8,5,3,.62)}
+html.need-land .mxd-ov:not(.mxd-app){visibility:hidden}
+
+/* góc vát hai bậc: --p là cỡ một bậc; khai báo trên từng phần tử để var(--p) lấy đúng cỡ của phần tử đó */
+.mxd-frame,.mxd-box,.mxd-bo,.mxd-bi,.mxd-ckb,.mxd-cki{--mxd-poly:polygon(0 calc(var(--p)*2),var(--p) calc(var(--p)*2),var(--p) var(--p),calc(var(--p)*2) var(--p),calc(var(--p)*2) 0,
+  calc(100% - var(--p)*2) 0,calc(100% - var(--p)*2) var(--p),calc(100% - var(--p)) var(--p),calc(100% - var(--p)) calc(var(--p)*2),100% calc(var(--p)*2),
+  100% calc(100% - var(--p)*2),calc(100% - var(--p)) calc(100% - var(--p)*2),calc(100% - var(--p)) calc(100% - var(--p)),calc(100% - var(--p)*2) calc(100% - var(--p)),calc(100% - var(--p)*2) 100%,
+  calc(var(--p)*2) 100%,calc(var(--p)*2) calc(100% - var(--p)),var(--p) calc(100% - var(--p)),var(--p) calc(100% - var(--p)*2),0 calc(100% - var(--p)*2));clip-path:var(--mxd-poly)}
+
+.mxd-wrap{position:relative;display:flex;width:min(480px,100%);max-height:calc(var(--vvh,100vh) - 24px);outline:none;
+  filter:drop-shadow(0 6px 0 rgba(40,24,12,.38));animation:mxdIn .14s cubic-bezier(.2,.9,.3,1.15) both}
+html[data-theme=dark] .mxd-wrap{filter:drop-shadow(0 6px 0 rgba(0,0,0,.55))}
+.mxd-ov.out .mxd-wrap{animation:mxdOut .1s ease-in forwards}
+.mxd-wrap.nudge{animation:mxdNudge .32s steps(6) both}
+.mxd-frame{--p:3px;flex:1;display:flex;min-width:0;background:var(--mxd-ol);padding:var(--p)}
+.mxd-box{--p:3px;flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;padding:12px 14px 12px;
+  background-color:var(--panel);
+  background-image:radial-gradient(circle at 6px 6px,var(--mxd-dot) 1.4px,transparent 1.8px);background-size:12px 12px;
+  box-shadow:inset 0 3px 0 var(--mxd-shine),inset 3px 0 0 var(--mxd-shine),inset 0 -3px 0 var(--panel2),inset -3px 0 0 var(--panel2)}
+
+.mxd-hd{display:flex;align-items:flex-end;gap:10px;flex:none;padding-bottom:6px;margin-bottom:8px;
+  background:linear-gradient(90deg,var(--mxd-ol) 50%,transparent 50%) 0 100%/6px 2px repeat-x}
+.mxd-msc{position:relative;flex:none;line-height:0;margin:-4px 0 -6px -2px}
+.mxd-cv{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.mxd-msc[data-m=ask] .mxd-cv{transform-origin:50% 100%;animation:mxdTilt 3.4s steps(1) infinite}
+.mxd-msc[data-m=ok] .mxd-cv{transform-origin:50% 100%;animation:mxdHop 1.6s steps(3) infinite}
+.mxd-msc[data-m=err] .mxd-cv,.mxd-msc[data-m=warn] .mxd-cv{animation:mxdShake 2.8s steps(1) infinite}
+.mxd-sweat{position:absolute;right:-2px;top:6px;width:10px;height:14px;image-rendering:pixelated;animation:mxdDrip 1.5s steps(5) infinite}
+.mxd-ti{margin:0 0 2px;font-family:var(--fx-pixel,inherit);font-size:19px;line-height:1.2;font-weight:900;letter-spacing:.2px;color:var(--ink);overflow-wrap:anywhere}
+.mxd-bd{flex:1 1 auto;min-height:0;overflow:auto;font-size:14px;line-height:1.45;color:var(--ink);text-align:left;overscroll-behavior:contain}
+.mxd-bd p{margin:0 0 7px}.mxd-bd p:last-child{margin-bottom:0}
+.mxd-bd b{color:var(--ink)}
+.mxd-bd .mxd-dim{color:var(--dim);font-size:13px}
+.mxd-bd ul.mxd-err{margin:0 0 8px;padding:7px 10px 7px 26px;background:var(--panel2);border-left:4px solid var(--bad,#7e1c10);color:var(--bad,#7e1c10);font-size:13px}
+.mxd-bd ul.mxd-err li+li{margin-top:3px}
+
+/* ô kiểm pixel */
+.mxd-chk{position:relative;display:flex;align-items:center;gap:9px;flex:none;margin:10px 0 0;min-height:32px;cursor:pointer;font-size:13.5px;user-select:none}
+.mxd-cb{position:absolute;left:0;top:50%;width:22px;height:22px;margin:-11px 0 0;opacity:0;cursor:pointer}
+.mxd-ckw{flex:none;display:block;line-height:0;outline-offset:3px}
+.mxd-ckb{--p:2px;display:block;width:24px;height:24px;padding:3px;box-sizing:border-box;background:var(--mxd-ol)}
+.mxd-cki{--p:1px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;background:var(--panel2);box-shadow:inset 0 2px 0 rgba(0,0,0,.12)}
+.mxd-cki svg{width:15px;height:15px;fill:var(--mxd-ol);opacity:0;transform:scale(.6);transition:opacity .08s,transform .1s steps(2)}
+html[data-theme=dark] .mxd-cki svg{fill:var(--ink)}
+.mxd-cb:checked+.mxd-ckw .mxd-cki{background:var(--pink)}
+.mxd-cb:checked+.mxd-ckw .mxd-cki svg{opacity:1;transform:none}
+.mxd-cb:focus-visible+.mxd-ckw{outline:2px dashed var(--ink)}
+.mxd-chk:hover .mxd-ckb{background:var(--mxd-hl)}
+
+/* nút kiểu game: viền nâu, mép dưới dày (lún 2px khi nhấn), góc vát */
+.mxd-btns{display:flex;flex-wrap:wrap;gap:8px 10px;flex:none;margin-top:12px;justify-content:flex-end}
+.mxd-ov button.mxd-btn{--bf:var(--panel2);--bk:var(--ink);flex:1 1 auto;min-width:0;min-height:0;margin:0;padding:0;border:0;border-radius:0;background:none;color:var(--bk);
+  font:inherit;cursor:pointer;transform:none;transition:transform .06s;outline-offset:3px;-webkit-tap-highlight-color:transparent}
+.mxd-ov button.mxd-btn.k-primary{--bf:var(--pink);--bk:#6a2438}
+.mxd-ov button.mxd-btn.k-danger{--bf:#f9d0d6;--bk:#8a3040}
+html[data-theme=dark] .mxd-ov button.mxd-btn.k-primary{--bk:#3a1020}
+html[data-theme=dark] .mxd-ov button.mxd-btn.k-danger{--bf:#e8a2ad;--bk:#4a0f1a}
+.mxd-bo{--p:2px;display:block;padding:var(--p) var(--p) calc(var(--p) + 4px);background:var(--mxd-ol);
+  background-image:linear-gradient(to top,var(--mxd-lip) 4px,transparent 4px)}
+.mxd-bi{--p:2px;position:relative;display:flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:5px 14px 5px 12px;box-sizing:border-box;
+  background:var(--bf);color:var(--bk);font-family:var(--fx-pixel,inherit);font-size:14.5px;font-weight:800;line-height:1.15;text-align:center;white-space:nowrap;
+  box-shadow:inset 0 2px 0 var(--mxd-shine),inset 0 -2px 0 rgba(0,0,0,.13)}
+/* con trỏ ▸ của nút đang chọn (luôn chừa chỗ để nút không đổi cỡ khi đổi lựa chọn) */
+.mxd-bi::before{content:"";flex:none;width:5px;height:9px;background:currentColor;visibility:hidden;
+  clip-path:polygon(0 0,40% 0,40% 22%,80% 22%,80% 44%,100% 44%,100% 56%,80% 56%,80% 78%,40% 78%,40% 100%,0 100%)}
+.mxd-ov button.mxd-btn.sel .mxd-bi::before{visibility:visible;animation:mxdBlink 1s steps(1) infinite}
+.mxd-ov button.mxd-btn.sel .mxd-bo{background-color:var(--mxd-hl)}
+.mxd-ov button.mxd-btn:hover:not(:disabled) .mxd-bi{filter:brightness(1.06) saturate(1.08)}
+.mxd-ov button.mxd-btn:hover:not(:disabled){transform:translateY(-1px)}
+.mxd-ov button.mxd-btn:active:not(:disabled),.mxd-ov button.mxd-btn.press{transform:translateY(2px)}
+.mxd-ov button.mxd-btn:active:not(:disabled) .mxd-bo,.mxd-ov button.mxd-btn.press .mxd-bo{padding-bottom:calc(var(--p) + 2px);background-image:linear-gradient(to top,var(--mxd-lip) 2px,transparent 2px)}
+.mxd-ov button.mxd-btn:active:not(:disabled) .mxd-bi,.mxd-ov button.mxd-btn.press .mxd-bi{box-shadow:inset 0 2px 0 rgba(0,0,0,.14)}
+.mxd-ov button.mxd-btn:focus{outline:none}
+.mxd-ov button.mxd-btn:focus-visible{outline:2px dashed var(--ink)}
+.mxd-ov button.mxd-btn:disabled{cursor:not-allowed;opacity:.5}
+.mxd-ov button.mxd-btn:disabled .mxd-bo{background-color:var(--mxd-ol)}
+.mxd-bi img{width:18px;height:18px}
+html.mxd-saving,html.mxd-saving *{cursor:progress}
+
+@keyframes mxdBg{from{opacity:0}}
+@keyframes mxdBgOut{to{opacity:0}}
+@keyframes mxdIn{from{opacity:0;transform:scale(.94)}}
+@keyframes mxdOut{to{opacity:0;transform:scale(.96)}}
+@keyframes mxdNudge{0%,100%{transform:none}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+@keyframes mxdTilt{0%,55%,100%{transform:none}60%,85%{transform:rotate(-7deg)}}
+@keyframes mxdHop{0%,100%{transform:none}50%{transform:translateY(-3px)}}
+@keyframes mxdShake{0%,70%,100%{transform:none}74%{transform:translateX(-2px)}78%{transform:translateX(2px)}82%{transform:translateX(-1px)}}
+@keyframes mxdDrip{0%{opacity:0;transform:translateY(-2px)}20%{opacity:1;transform:none}80%{opacity:1;transform:translateY(6px)}100%{opacity:0;transform:translateY(8px)}}
+@keyframes mxdBlink{50%{visibility:hidden}}
+
+/* màn hẹp: nút xếp dọc */
+@media (max-width:420px){
+  .mxd-btns{flex-direction:column;align-items:stretch}
+  .mxd-bi{white-space:normal}
+}
+/* màn thấp (điện thoại ngang, cửa sổ nhỏ): gọn hơn */
+@media (max-height:520px){
+  .mxd-wrap{width:min(560px,100%)}
+  .mxd-box{padding:8px 12px 9px}
+  .mxd-hd{margin-bottom:6px;padding-bottom:4px}
+  .mxd-ti{font-size:16.5px}
+  .mxd-bd{font-size:13px;line-height:1.38}
+  .mxd-chk{margin-top:6px;min-height:28px}
+  .mxd-btns{margin-top:8px}
+  .mxd-bi{min-height:30px;padding-top:3px;padding-bottom:3px;font-size:13.5px}
+}
+@media (prefers-reduced-motion:reduce){
+  .mxd-ov,.mxd-ov.out,.mxd-wrap,.mxd-ov.out .mxd-wrap,.mxd-wrap.nudge,.mxd-cv,.mxd-sweat,.mxd-msc .mxd-cv,.mxd-ov button.mxd-btn.sel .mxd-bi::before{animation:none!important}
+  .mxd-ov button.mxd-btn,.mxd-cki svg{transition:none}
+}

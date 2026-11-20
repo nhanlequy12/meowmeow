@@ -38,12 +38,15 @@ strip = true
 webview2-com = "0.39"
 windows-core = "0.62"
 winreg = "0.56"
-# Thông báo Windows (toast, bắt được cú bấm), hộp thoại đóng cửa sổ (TaskDialog). winreg: khởi động cùng Windows, AUMID.
+# Thông báo Windows (toast, bắt được cú bấm), hộp thoại dự phòng khi đóng, thoát (TaskDialog), giờ địa phương của bản lưu
+# (System_Time), bắt tắt máy bằng subclass cửa sổ (UI_Shell). winreg: khởi động cùng Windows, AUMID.
 windows = { version = "0.62", features = [
   "Foundation",
   "Data_Xml_Dom",
   "UI_Notifications",
   "Win32_Foundation",
+  "Win32_System_Time",
   "Win32_UI_Controls",
+  "Win32_UI_Shell",
   "Win32_UI_WindowsAndMessaging",
 ] }

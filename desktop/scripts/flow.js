@@ -93,7 +93,7 @@ async function launch(exe = EXE, dir = APPDIR) {
   if (!ok) throw new Error('không nối được CDP ở cổng ' + cdpPort);
   const browser = await chromium.connectOverCDP('http://127.0.0.1:' + cdpPort);
   // trang game, không phải màn chờ splash.html (cửa sổ riêng, đóng khi game sẵn sàng)
-  const page = await waitFor(() => browser.contexts()[0] && browser.contexts()[0].pages().find(pg => !/\/splash\.html/.test(pg.url())), 15000);
+  const page = await waitFor(() => browser.contexts()[0] && browser.contexts()[0].pages().find(pg => { const u = pg.url(); return u && u !== 'about:blank' && !/\/splash\.html/.test(u); }), 15000); // chờ địa chỉ ổn định (lúc tạo cả splash cũng là about:blank)
   if (!page) throw new Error('không thấy trang nào');
   page.on('pageerror', e => pageErrs.push({ at: Date.now(), url: page.url(), m: e.message }));
   return { p, browser, page, port: cdpPort };
@@ -409,8 +409,10 @@ async function main() {
     const ping = await waitFor(() => app.page.evaluate(() => /Kết nối được/.test($('appsmsg').textContent) && $('appsmsg').textContent), 10000);
     check('Kiểm tra hiện "Kết nối được"', ping, ping);
     await tap(app.page, '#appcard button:has-text("Chơi cùng bạn bè")');
-    await app.page.waitForSelector('#mbox button:has-text("Kết nối")', { timeout: 5000 });
-    await tap(app.page, '#mbox button:has-text("Kết nối")');
+    // hộp xác nhận: hộp thoại pixel của js/dialog.js (.mxd-ov), bản cũ là #mbox
+    const KN = '.mxd-ov .mxd-btn:has-text("Kết nối"), #mbox button:has-text("Kết nối")';
+    await app.page.waitForSelector(KN, { timeout: 5000 });
+    await tap(app.page, KN);
     const u = await waitUrl(app.page, u => u.startsWith(SRV + '/'), 25000);
     check('Kết nối + xác nhận: cửa sổ sang máy chủ', u, u || app.page.url());
     await waitLoaded(app.page);

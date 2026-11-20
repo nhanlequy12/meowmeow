@@ -139,9 +139,12 @@ function netCmd(tg,type){
   else if(type==='tickets')cmd.n=Math.round(+$('ntick').value||0);
   else if(type==='cat'){cmd.sp=$('nsp').value;cmd.star=+$('nst').value||0;cmd.coat=$('nct').value}
   else if(type==='msg')cmd.text=$('nmsg').value;
-  else if(type==='reset'&&!confirm('Đặt lại toàn bộ dữ liệu của người chơi này? Không hoàn tác được.'))return;
-  if(tg==='all'&&!confirm('Gửi cho TẤT CẢ người chơi?'))return;
+  let ask=Promise.resolve(true);
+  if(type==='reset')ask=ask.then(ok=>ok&&askYes('Đặt lại toàn bộ dữ liệu của người chơi này? Không hoàn tác được.',{title:'🛠 Đặt lại dữ liệu?',ok:'Đặt lại',danger:1}));
+  if(tg==='all')ask=ask.then(ok=>ok&&askYes('Gửi cho TẤT CẢ người chơi?',{title:'🛠 Gửi cho tất cả?',ok:'Gửi'}));
+  ask.then(ok=>{if(!ok)return;
   api('admin/cmd',{ids:tg==='all'?'all':[tg],cmd},1).then(j=>{toast('Đã xếp lệnh cho '+j.n+' người chơi. Lệnh tới nơi ở lần đồng bộ kế tiếp (trong 30 giây nếu họ đang chơi).',{icon:'🛠',title:'Admin'});if(tg!=='all')netPlayer(tg)}).catch(nerr);
+  });
 }
 function netGiftAll(){
   modal('<h3>🎁 Gửi cho tất cả người chơi</h3><div class="dim">Người đang chơi nhận trong vòng 30 giây; người vắng mặt nhận khi mở lại game.</div>'+netActs('all')+
@@ -169,7 +172,7 @@ function netPlayer(id){
 }
 const netPost=(ep,id,extra)=>api('admin/'+ep,Object.assign({id},extra||{}),1).then(()=>netPlayer(id)).catch(nerr);
 function netRename(id){netPost('rename',id,{name:$('nname').value})}
-function netDelete(id){if(confirm('Xóa người chơi này khỏi máy chủ? Bản lưu trên máy của họ vẫn còn; lần sau mở game họ sẽ được hỏi tên lại.'))api('admin/delete',{id},1).then(()=>netPlayers()).catch(nerr)}
+function netDelete(id){askYes('Xóa người chơi này khỏi máy chủ? Bản lưu trên máy của họ vẫn còn; lần sau mở game họ sẽ được hỏi tên lại.',{title:'🛠 Xóa người chơi?',ok:'Xóa',danger:1}).then(ok=>{if(ok)api('admin/delete',{id},1).then(()=>netPlayers()).catch(nerr)})}
 
 /* ---------- chuyển tiến độ sang máy khác ----------
    Máy cũ xin mã chuyển máy (8 ký tự, 10 phút, dùng một lần); máy mới nhập mã thì nhận đúng bản lưu hợp lệ máy chủ đang giữ
@@ -291,7 +294,8 @@ addEventListener('keydown',ev=>{if(ev.target&&ev.target.closest&&ev.target.close
   modal=function(h,l){if(NET.moved&&!XF.mv)return;return m.apply(this,arguments)};
   closeModal=function(){if(NET.moved)return;return c.apply(this,arguments)};}
 function netAdmXfer(id){
-  if(!confirm('Tạo mã chuyển máy cho người chơi này? Ai có mã sẽ lấy được hồ sơ, máy hiện tại của họ thôi lưu tiến độ. Chỉ đưa mã khi chắc đúng người.'))return;
+  askYes('Tạo mã chuyển máy cho người chơi này? Ai có mã sẽ lấy được hồ sơ, máy hiện tại của họ thôi lưu tiến độ. Chỉ đưa mã khi chắc đúng người.',{title:'🔑 Tạo mã chuyển máy?',ok:'Tạo mã',danger:1}).then(ok=>{if(ok)
   api('admin/xfer',{id},1).then(j=>modal('<h3>🔑 Mã chuyển máy</h3><div>Đưa mã này cho người chơi. Họ mở game trên máy mới và chọn Nhận tiến độ từ máy khác.</div>'+xfBig(j.code)+'<div class="dim">Dùng một lần, hết hạn sau 10 phút.</div><div class="row" style="justify-content:center;margin-top:8px"><button class="sm" onclick="netPlayer(\''+id+'\')">← Người chơi</button></div>')).catch(nerr);
+  });
 }
 netInit();

@@ -12,7 +12,11 @@
    Ctrl+Q và MXAPP.quit thoát thật, notifyPlan (kể cả một toast thật khi cửa sổ ẩn), notifyNow, setBadge, setTheme,
    resetWindow, --tray, khởi động cùng Windows (giá trị Run tên "Mèo Xu (thử smoke)" qua MEOXU_RUNNAME, luôn xóa lại).
    Khóa AUMID HKCU\Software\Classes\AppUserModelId\vn.meoxu.app chưa có trước khi thử thì xóa lại sau khi thử.
-   Phép toast hiện một thông báo thật ở góc màn hình. */
+   Phép toast hiện một thông báo thật ở góc màn hình.
+   Mục 1 (hành vi khi đóng app, closeq.rs): hỏi khi đóng bằng hộp của trang (ack, again, stay/tray/quit, nhớ hay không), Ctrl+Q,
+   persistNow (thành công, JSON sai, thư mục saves\ hỏng), lưu lỗi thì không thoát (Thử lại, quitCancel, quitForce), dự phòng khi
+   trang không ack (TaskDialog có ô Ghi nhớ; hộp "chưa xác nhận lưu được"), trang trả lời muộn đóng hộ hộp Windows, trang lỗi,
+   tắt máy (WM_QUERYENDSESSION, WM_ENDSESSION gửi thẳng vào cửa sổ chính). Hộp Windows được bấm bằng TDM_CLICK_BUTTON. */
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -87,7 +91,8 @@ async function launch(exe = EXE, args = []) {
   if (!ok) throw new Error('không nối được CDP ở cổng ' + cdpPort);
   const browser = await chromium.connectOverCDP('http://127.0.0.1:' + cdpPort);
   // Trang game: không phải màn chờ splash.html (cửa sổ splash có webview riêng, đóng khi game sẵn sàng)
-  const page = await waitFor(() => browser.contexts()[0] && browser.contexts()[0].pages().find(pg => !/\/splash\.html/.test(pg.url())), 15000);
+  // (chờ địa chỉ ổn định: lúc mới tạo, cả hai cửa sổ đều là about:blank nên có thể nhặt nhầm splash)
+  const page = await waitFor(() => browser.contexts()[0] && browser.contexts()[0].pages().find(pg => { const u = pg.url(); return u && u !== 'about:blank' && !/\/splash\.html/.test(u); }), 15000);
   if (!page) throw new Error('không thấy trang nào');
   return { p, browser, page, port: cdpPort };
 }
@@ -142,6 +147,49 @@ function regDelValue(key, name) { try { execFileSync('reg', ['delete', key, '/v'
 const TOAST_T = '[void][Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType=WindowsRuntime]; $h=[Windows.UI.Notifications.ToastNotificationManager]::History;';
 function toastCount() { try { return +psRun(TOAST_T + " $h.GetHistory('vn.meoxu.app').Count"); } catch (e) { return -1; } }
 function toastClear() { try { psRun(TOAST_T + " $h.Clear('vn.meoxu.app')"); } catch (e) {} }
+// Hộp thoại Windows (#32770: TaskDialog, MessageBox) đang hiện của tiến trình; HWND cửa sổ chính; gửi thông điệp.
+const DLG_TYPE = `Add-Type @"
+using System; using System.Text; using System.Runtime.InteropServices; using System.Collections.Generic; using System.Diagnostics;
+public class MxD {
+  public delegate bool EnumProc(IntPtr h, IntPtr l);
+  [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc f, IntPtr l);
+  [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr h, out uint pid);
+  [DllImport("user32.dll", CharSet=CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int n);
+  [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
+  [StructLayout(LayoutKind.Sequential)] public struct RECT { public int L, T, R, B; }
+  [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out RECT r);
+  [DllImport("user32.dll")] static extern bool PostMessage(IntPtr h, uint m, IntPtr w, IntPtr l);
+  [DllImport("user32.dll")] static extern IntPtr SendMessageTimeout(IntPtr h, uint m, IntPtr w, IntPtr l, uint f, uint t, out IntPtr r);
+  public static string Find(uint want, string cls, bool vis) {
+    var o = new List<string>(); int best = -1; string bh = "0";
+    EnumWindows((h, l) => { uint p; GetWindowThreadProcessId(h, out p); if (p == want) { var c = new StringBuilder(64); GetClassName(h, c, 64);
+      if (c.ToString() == cls && (!vis || IsWindowVisible(h))) { o.Add(h.ToInt64().ToString()); RECT r; GetWindowRect(h, out r); if (r.R - r.L > best) { best = r.R - r.L; bh = h.ToInt64().ToString(); } } } return true; }, IntPtr.Zero);
+    return cls == "Tauri Window" ? bh : string.Join(",", o);
+  }
+  public static bool Post(long h, uint m, long w, long l) { return PostMessage(new IntPtr(h), m, new IntPtr(w), new IntPtr(l)); }
+  public static string Send(long h, uint m, long w, long l, uint t) {
+    var sw = Stopwatch.StartNew(); IntPtr r; var ok = SendMessageTimeout(new IntPtr(h), m, new IntPtr(w), new IntPtr(l), 2, t, out r) != IntPtr.Zero;
+    return "{\\"ok\\":" + (ok ? "true" : "false") + ",\\"res\\":" + r.ToInt64() + ",\\"ms\\":" + sw.ElapsedMilliseconds + "}";
+  }
+}
+"@`;
+// Theo dõi hộp thoại bằng một PowerShell đã biên dịch sẵn (dò 50 ms một lần): trả Promise<epoch ms lúc thấy hộp | null>.
+// Gọi rồi chờ .ready trước khi gây ra hộp thoại (mỗi lần dlgs() tốn khoảng 1,5 giây nên không đo được thời gian ngắn).
+function watchDlg(pid, secs) {
+  const script = DLG_TYPE + '\n[Console]::Out.WriteLine("READY"); [Console]::Out.Flush(); $t=[DateTime]::UtcNow.AddSeconds(' + secs + ');' +
+    ' while ([DateTime]::UtcNow -lt $t) { if ([MxD]::Find(' + pid + ', "#32770", $true)) { [Console]::Out.WriteLine("FOUND " + [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()); [Console]::Out.Flush(); break }; Start-Sleep -Milliseconds 50 }';
+  const enc = Buffer.from(script, 'utf16le').toString('base64');
+  const p = spawn('powershell', ['-NoProfile', '-NonInteractive', '-EncodedCommand', enc], { stdio: ['ignore', 'pipe', 'ignore'] });
+  let b = '';
+  const out = { ready: null, found: null };
+  out.ready = new Promise(r => { p.stdout.on('data', d => { b += d; if (/READY/.test(b)) r(true); }); p.on('exit', () => r(false)); });
+  out.found = new Promise(r => { p.stdout.on('data', () => { const m = b.match(/FOUND (\d+)/); if (m) r(+m[1]); }); p.on('exit', () => { const m = b.match(/FOUND (\d+)/); r(m ? +m[1] : null); }); });
+  return out;
+}
+function dlgs(pid) { try { const s = psRun(DLG_TYPE + '\n[MxD]::Find(' + pid + ', "#32770", $true)'); return s ? s.split(',').map(Number) : []; } catch (e) { return []; } }
+function mainHwnd(pid) { try { return +psRun(DLG_TYPE + '\n[MxD]::Find(' + pid + ', "Tauri Window", $false)'); } catch (e) { return 0; } }
+function postMsg(h, msg, wp = 0, lp = 0) { if (!h) return false; try { return psRun(DLG_TYPE + '\n[MxD]::Post(' + h + ', ' + msg + ', ' + wp + ', ' + lp + ')') === 'True'; } catch (e) { return false; } }
+function sendTimed(h, msg, wp, lp, ms) { try { return JSON.parse(psRun(DLG_TYPE + '\n[MxD]::Send(' + h + ', ' + msg + ', ' + wp + ', ' + lp + ', ' + ms + ')', ms + 20000)); } catch (e) { return null; } }
 // Giữ một phím tắt toàn cục từ tiến trình khác (để thử "phím bị chương trình khác dùng"). Trả tiến trình PowerShell.
 function holdHotkey(mods, vk, secs) {
   const script = 'Add-Type @"\nusing System; using System.Runtime.InteropServices; public class HK { [DllImport("user32.dll")] public static extern bool RegisterHotKey(IntPtr h, int id, uint m, uint vk); }\n"@\n' +
@@ -557,6 +605,268 @@ async function main() {
     app = null;
     await sleep(1000);
   });
+  /* ---------- Mục 1: hỏi khi đóng, thoát có lưu (closeq.rs) ----------
+     Trang thử thay window.__mxOn bằng một móc có kịch bản (__T.close: 'ack' | 'none'; __T.quit: 'save' | 'fail' | 'ackonly' |
+     'none'), nên các phép này kiểm phía lõi, không phụ thuộc hộp thoại pixel của game (phép Ctrl+Q ở trên dùng trang thật).
+     Hộp thoại Windows dự phòng được bấm bằng TDM_CLICK_BUTTON / TDM_CLICK_VERIFICATION (không gửi phím, không dùng chuột). */
+  const HOOK = `(() => {
+    window.__T = { ev: [], close: 'ack', quit: 'save', marker: null, res: [] };
+    window.__mxOn = function (t, d) {
+      const T = window.__T; T.ev.push([t, d === undefined ? null : d]);
+      if (t === 'close-ask') { if (T.close === 'ack') MXAPP.closeAck(); return; }
+      if (t !== 'quit-soon' || T.quit === 'none') return;
+      MXAPP.quitAck();
+      if (T.quit === 'ackonly') return;
+      try { if (T.marker != null) S.coins = T.marker; save(); } catch (e) {}
+      MXAPP.persistNow(localStorage.getItem('meoxu_v2')).then(r => { T.res.push(r); MXAPP.quitReady(T.quit === 'fail' ? { ok: false, err: 'lỗi thử' } : r); });
+    };
+    return true;
+  })()`;
+  const solo = path.join(APPDIR, 'saves', 'solo.json');
+  const fileCoins = () => { try { return JSON.parse(fs.readFileSync(solo, 'utf8')).coins; } catch (e) { return null; } };
+  const cfgClose = () => JSON.parse(fs.readFileSync(path.join(APPDIR, 'config.json'), 'utf8')).close;
+  const evs = a => a.page.evaluate(() => window.__T.ev.map(e => e[0] + (e[1] && e[1].reason ? ':' + e[1].reason : '') + (e[1] && e[1].again ? ':again' : '')));
+  const running = a => a.p.exitCode === null;
+  const exitedIn = (a, ms) => Promise.race([a.p.exited.then(() => true), sleep(ms).then(() => false)]);
+  async function hooked(close = 'ask') {
+    const a = await launch();
+    await waitUrl(a.page, u => u.startsWith(INTERNAL + '/index.html'));
+    await waitLoaded(a.page);
+    await waitFor(() => a.page.evaluate(() => typeof S === 'object' && typeof save === 'function'), 15000);
+    await waitFor(() => { const w = mainWin(a.p.pid); return w && w.vis; }, 10000, 400);
+    await a.page.evaluate(c => MXAPP.app.set({ close: c }), close);
+    await a.page.evaluate(HOOK);
+    a.hwnd = mainHwnd(a.p.pid);
+    return a;
+  }
+  async function done(a) { if (a && running(a)) await closeApp(a); }
+
+  await step('mục 1: MXAPP có đủ hàm', async () => {
+    const a = await hooked();
+    const miss = await a.page.evaluate(() => ['closeAck', 'closeChoice', 'quitAck', 'quitReady', 'quitForce', 'quitCancel', 'persistNow'].filter(k => typeof MXAPP[k] !== 'function'));
+    check('MXAPP có closeAck, closeChoice, quitAck, quitReady, quitForce, quitCancel, persistNow', miss.length === 0, miss.join(', ') || 'đủ');
+    // persistNow thành công trả {ok:true} và ghi file
+    const r = await a.page.evaluate(() => { S.coins = 313131; save(); return MXAPP.persistNow(localStorage.getItem('meoxu_v2')); });
+    check('persistNow: {ok:true}, file saves\\solo.json có bản vừa ghi', r && r.ok === true && !r.err && fileCoins() === 313131, JSON.stringify(r) + ' file ' + fileCoins());
+    const bad = await a.page.evaluate(() => Promise.all([MXAPP.persistNow('không phải JSON'), MXAPP.persistNow('')]));
+    check('persistNow JSON sai hoặc rỗng: {ok:false, err tiếng Việt}', bad.every(x => x.ok === false && /bản lưu/i.test(x.err || '')), JSON.stringify(bad));
+    // saves\ là FILE: ghi lỗi
+    const SV = path.join(APPDIR, 'saves');
+    fs.renameSync(SV, SV + '.bak'); fs.writeFileSync(SV, 'không phải thư mục');
+    const e = await a.page.evaluate(() => { S.coins = 1; save(); return MXAPP.persistNow(localStorage.getItem('meoxu_v2')); });
+    check('persistNow khi saves\\ hỏng (là file): {ok:false, err tiếng Việt}', e && e.ok === false && /không phải thư mục/.test(e.err || ''), JSON.stringify(e));
+    // lượt thoát mà lưu lỗi: không thoát; sửa thư mục rồi "Thử lại" thì thoát được
+    await a.page.evaluate(() => { window.__T.quit = 'save'; window.__T.marker = 777001; });
+    a.page.evaluate(() => MXAPP.quit()).catch(() => {});
+    await sleep(2500);
+    const res = await a.page.evaluate(() => window.__T.res.slice(-1)[0]);
+    const wv = mainWin(a.p.pid);
+    check('thoát mà lưu lỗi (quitReady ok:false): KHÔNG thoát, cửa sổ hiện, không hộp thoại Windows', running(a) && res && res.ok === false && wv && wv.vis && dlgs(a.p.pid).length === 0, JSON.stringify(res) + ' ' + JSON.stringify(wv));
+    fs.rmSync(SV); fs.renameSync(SV + '.bak', SV);
+    a.page.evaluate(() => { S.coins = 777002; save(); return MXAPP.persistNow(localStorage.getItem('meoxu_v2')).then(r => MXAPP.quitReady(r)); }).catch(() => {});
+    const ex = await exitedIn(a, 5000);
+    check('Thử lại (lưu lại được rồi quitReady ok): thoát, file có bản mới', ex && fileCoins() === 777002, 'thoát ' + ex + ', file ' + fileCoins());
+    await done(a);
+  });
+
+  await step('mục 1: hỏi khi đóng, trang tự vẽ hộp', async () => {
+    const a = await hooked();
+    postMsg(a.hwnd, 0x10); // WM_CLOSE = nút ✕
+    await sleep(2500);
+    const e1 = await evs(a);
+    check('✕ với close="ask": trang nhận close-ask, ack kịp nên KHÔNG có hộp thoại Windows, app không thoát', e1.includes('close-ask') && dlgs(a.p.pid).length === 0 && running(a), e1.join(',') + ' hộp ' + dlgs(a.p.pid).length);
+    postMsg(a.hwnd, 0x10); postMsg(a.hwnd, 0x10);
+    await sleep(2200);
+    const e2 = await evs(a);
+    check('bấm ✕ thêm hai lần lúc hộp đang mở: chỉ gửi lại close-ask (again), không mở hộp Windows', e2.filter(x => x === 'close-ask:again').length >= 1 && dlgs(a.p.pid).length === 0, e2.join(','));
+    await a.page.evaluate(() => MXAPP.closeChoice('stay', true));
+    await sleep(800);
+    const w1 = mainWin(a.p.pid);
+    check("closeChoice('stay', true): không thoát, không ẩn, không lưu cfg.close (vẫn 'ask')", running(a) && w1 && w1.vis && cfgClose() === 'ask' && (await a.page.evaluate(() => MXAPP.cfg.close)) === 'ask', 'close ' + cfgClose());
+    postMsg(a.hwnd, 0x10);
+    await waitFor(() => evs(a).then(e => e.filter(x => /^close-ask/.test(x)).length >= 4), 3000);
+    await a.page.evaluate(() => MXAPP.closeChoice('tray', true));
+    await sleep(1200);
+    const w2 = mainWin(a.p.pid);
+    check("closeChoice('tray', true): ẩn vào khay, lưu cfg.close='tray' (config.json và MXAPP.cfg), app không thoát", running(a) && w2 && !w2.vis && cfgClose() === 'tray' && (await a.page.evaluate(() => MXAPP.cfg.close)) === 'tray', JSON.stringify(w2) + ' close ' + cfgClose());
+    // hiện lại, đặt về 'ask'
+    const p2 = spawn(EXE, [], { env: Object.assign({}, process.env, { MEOXU_APPDIR: APPDIR }), stdio: 'ignore' });
+    await new Promise(r => p2.on('exit', r));
+    await waitFor(() => { const w = mainWin(a.p.pid); return w && w.vis; }, 5000, 400);
+    await a.page.evaluate(() => MXAPP.app.set({ close: 'ask' }));
+    await a.page.evaluate(() => { window.__T.marker = 424201; });
+    postMsg(a.hwnd, 0x10);
+    await waitFor(() => evs(a).then(e => e.filter(x => /^close-ask/.test(x)).length >= 5), 3000);
+    const t0 = Date.now();
+    a.page.evaluate(() => MXAPP.closeChoice('quit', false)).catch(() => {});
+    const ex = await exitedIn(a, 6000);
+    check("closeChoice('quit', false): thoát có lưu (quit-soon reason 'close' → persistNow → quitReady), file có bản mới", ex && fileCoins() === 424201, 'thoát ' + ex + ' sau ' + (Date.now() - t0) + ' ms, file ' + fileCoins());
+    check("…và cfg.close vẫn là 'ask' (không nhớ)", cfgClose() === 'ask', cfgClose());
+    await done(a);
+  });
+
+  await step('mục 1: Ctrl+Q, lý do quit-soon', async () => {
+    const a = await hooked('tray');
+    await a.page.evaluate(() => { window.__T.quit = 'ackonly'; });
+    const t0 = Date.now();
+    await a.page.keyboard.press('Control+KeyQ');
+    await sleep(400);
+    const ev = await a.page.evaluate(() => window.__T.ev.map(e => e[0] + ':' + (e[1] && e[1].reason)));
+    a.page.evaluate(() => { S.coins = 424202; save(); return MXAPP.persistNow(localStorage.getItem('meoxu_v2')).then(r => MXAPP.quitReady(r)); }).catch(() => {});
+    const ex = await exitedIn(a, 5000);
+    check("Ctrl+Q: quit-soon reason 'ctrlq' (kể cả close='tray'), lưu rồi thoát, file có bản mới", ex && fileCoins() === 424202 && ev.includes('quit-soon:ctrlq'), 'thoát ' + ex + ' sau ' + (Date.now() - t0) + ' ms, file ' + fileCoins() + ', ' + ev.join(','));
+    await done(a);
+  });
+
+  await step('mục 1: lưu lỗi, quitCancel, quitForce', async () => {
+    const a = await hooked();
+    await a.page.evaluate(() => { window.__T.quit = 'fail'; });
+    a.page.evaluate(() => MXAPP.quit()).catch(() => {});
+    await sleep(2500);
+    const e1 = await evs(a);
+    check("quitReady({ok:false}): KHÔNG thoát, không hộp Windows; reason 'api'", running(a) && dlgs(a.p.pid).length === 0 && e1.includes('quit-soon:api'), e1.join(','));
+    await a.page.evaluate(() => MXAPP.quitCancel());
+    await sleep(500);
+    a.page.evaluate(() => MXAPP.quit()).catch(() => {});
+    await sleep(1500);
+    const e2 = await evs(a);
+    check('quitCancel: ở lại, lượt thoát sau bắt đầu lại từ đầu (quit-soon lần hai)', running(a) && e2.filter(x => x === 'quit-soon:api').length === 2, e2.join(','));
+    await a.page.evaluate(() => MXAPP.quit());
+    await sleep(800);
+    const e3 = await evs(a);
+    check('lúc đang hỏi lỗi mà gọi thoát lần nữa: mở hộp Windows (không bao giờ kẹt), không gửi quit-soon lần ba', dlgs(a.p.pid).length === 1 && e3.filter(x => x === 'quit-soon:api').length === 2, 'hộp ' + dlgs(a.p.pid).length);
+    const t0 = Date.now();
+    a.page.evaluate(() => MXAPP.quitForce()).catch(() => {});
+    const ex = await exitedIn(a, 5000);
+    check('quitForce (Thoát không lưu): thoát ngay, hộp Windows tự đóng', ex, 'sau ' + (Date.now() - t0) + ' ms');
+    await done(a);
+  });
+
+  await step('mục 1: dự phòng khi trang không ack quit-soon', async () => {
+    const a = await hooked();
+    await a.page.evaluate(() => { window.__T.quit = 'none'; });
+    const t0 = Date.now();
+    await a.page.evaluate(() => MXAPP.quit());
+    const d1 = await waitFor(() => { const d = dlgs(a.p.pid); return d.length ? d : null; }, 6000, 300);
+    const dt = Date.now() - t0;
+    check('trang không ack: sau khoảng 1,5 giây hiện hộp Windows "chưa xác nhận lưu được", app chưa thoát', d1 && d1.length === 1 && dt >= 1300 && running(a), 'hộp ' + (d1 && d1.length) + ' sau ' + dt + ' ms');
+    await a.page.evaluate(() => MXAPP.quit()); postMsg(a.hwnd, 0x10);
+    await sleep(1200);
+    check('gọi thoát, bấm ✕ thêm lúc hộp đang mở: vẫn chỉ một hộp', dlgs(a.p.pid).length === 1, 'hộp ' + dlgs(a.p.pid).length);
+    postMsg(d1[0], 0x466, 201); // TDM_CLICK_BUTTON "Ở lại"
+    await sleep(1200);
+    const e1 = await evs(a);
+    check('bấm "Ở lại": hộp đóng, app chạy tiếp, trang nhận quit-cancel', dlgs(a.p.pid).length === 0 && running(a) && e1.includes('quit-cancel'), e1.join(','));
+    // trang ack mà không quitReady: sau 10 giây dự phòng
+    await a.page.evaluate(() => { window.__T.quit = 'ackonly'; });
+    const t1 = Date.now();
+    await a.page.evaluate(() => MXAPP.quit());
+    await sleep(3000);
+    check('trang ack rồi im: chưa hiện hộp trong 3 giây đầu', dlgs(a.p.pid).length === 0 && running(a), 'hộp ' + dlgs(a.p.pid).length);
+    const d2 = await waitFor(() => { const d = dlgs(a.p.pid); return d.length ? d : null; }, 12000, 500);
+    check('…ack mà 10 giây chưa quitReady: hiện hộp Windows', d2 && Date.now() - t1 >= 9500, 'sau ' + (Date.now() - t1) + ' ms');
+    // trang trả lời muộn (quitReady ok) khi hộp Windows đang mở: hộp tự đóng, thoát
+    a.page.evaluate(() => MXAPP.persistNow(localStorage.getItem('meoxu_v2')).then(r => MXAPP.quitReady(r))).catch(() => {});
+    const ex = await exitedIn(a, 5000);
+    check('trang quitReady muộn lúc hộp Windows đang mở: hộp tự đóng, thoát', ex, 'thoát ' + ex);
+    await done(a);
+    // bấm "Thoát" trên hộp
+    const b = await hooked();
+    await b.page.evaluate(() => { window.__T.quit = 'none'; });
+    await b.page.evaluate(() => MXAPP.quit());
+    const d3 = await waitFor(() => { const d = dlgs(b.p.pid); return d.length ? d : null; }, 6000, 300);
+    postMsg(d3 && d3[0], 0x466, 200); // "Thoát"
+    const ex2 = await exitedIn(b, 5000);
+    check('bấm "Thoát" trên hộp Windows: thoát', d3 && ex2, 'thoát ' + ex2);
+    await done(b);
+  });
+
+  await step('mục 1: dự phòng khi trang không ack close-ask', async () => {
+    const a = await hooked();
+    await a.page.evaluate(() => { window.__T.close = 'none'; });
+    const t0 = Date.now();
+    postMsg(a.hwnd, 0x10);
+    const d1 = await waitFor(() => { const d = dlgs(a.p.pid); return d.length ? d : null; }, 6000, 300);
+    const dt = Date.now() - t0;
+    postMsg(a.hwnd, 0x10);
+    await sleep(800);
+    check('trang không ack close-ask: sau khoảng 1,5 giây hiện TaskDialog dự phòng; ✕ thêm không mở hộp thứ hai', d1 && dt >= 1300 && dlgs(a.p.pid).length === 1, 'sau ' + dt + ' ms, hộp ' + dlgs(a.p.pid).length);
+    postMsg(d1[0], 0x466, 102); // "Không đóng"
+    await sleep(1000);
+    check('"Không đóng": hộp đóng, app chạy, cfg.close vẫn ask', dlgs(a.p.pid).length === 0 && running(a) && cfgClose() === 'ask', cfgClose());
+    // trang trả lời muộn bằng closeChoice khi hộp Windows đang mở: hộp tự đóng
+    postMsg(a.hwnd, 0x10);
+    const d2 = await waitFor(() => { const d = dlgs(a.p.pid); return d.length ? d : null; }, 6000, 300);
+    await a.page.evaluate(() => MXAPP.closeChoice('stay', false));
+    await sleep(1200);
+    check('closeChoice muộn lúc TaskDialog đang mở: hộp tự đóng', d2 && dlgs(a.p.pid).length === 0 && running(a), 'hộp ' + dlgs(a.p.pid).length);
+    // "Thu vào khay" với ô Ghi nhớ mặc định đánh dấu
+    postMsg(a.hwnd, 0x10);
+    const d3 = await waitFor(() => { const d = dlgs(a.p.pid); return d.length ? d : null; }, 6000, 300);
+    postMsg(d3 && d3[0], 0x466, 100);
+    await sleep(1500);
+    const w = mainWin(a.p.pid);
+    check('TaskDialog "Thu vào khay" (ô Ghi nhớ mặc định đánh dấu): ẩn vào khay, cfg.close="tray"', w && !w.vis && running(a) && cfgClose() === 'tray', JSON.stringify(w) + ' close ' + cfgClose());
+    const p2 = spawn(EXE, [], { env: Object.assign({}, process.env, { MEOXU_APPDIR: APPDIR }), stdio: 'ignore' });
+    await new Promise(r => p2.on('exit', r));
+    await waitFor(() => { const w = mainWin(a.p.pid); return w && w.vis; }, 5000, 400);
+    await a.page.evaluate(() => MXAPP.app.set({ close: 'ask' }));
+    // "Thoát" sau khi bỏ đánh dấu ô Ghi nhớ: thoát có lưu, không nhớ
+    await a.page.evaluate(() => { window.__T.marker = 424203; });
+    postMsg(a.hwnd, 0x10);
+    const d4 = await waitFor(() => { const d = dlgs(a.p.pid); return d.length ? d : null; }, 6000, 300);
+    postMsg(d4 && d4[0], 0x471, 0, 0); // TDM_CLICK_VERIFICATION: bỏ đánh dấu
+    await sleep(300);
+    postMsg(d4 && d4[0], 0x466, 101);
+    const ex = await exitedIn(a, 6000);
+    check('TaskDialog bỏ ô Ghi nhớ rồi "Thoát": thoát có lưu (file có bản mới), cfg.close vẫn ask', ex && fileCoins() === 424203 && cfgClose() === 'ask', 'thoát ' + ex + ', file ' + fileCoins() + ', close ' + cfgClose());
+    await done(a);
+  });
+
+  await step('mục 1: trang lỗi', async () => {
+    const a = await hooked();
+    a.page.goto(INTERNAL + '/__offline.html?url=' + encodeURIComponent('http://127.0.0.1:1') + '&err=th%E1%BB%AD').catch(() => {});
+    await waitUrl(a.page, u => /__offline\.html/.test(u));
+    await waitLoaded(a.page);
+    const wd = watchDlg(a.p.pid, 8);
+    await wd.ready;
+    const t0 = Date.now();
+    postMsg(a.hwnd, 0x10);
+    const tf = await wd.found;
+    const d = dlgs(a.p.pid);
+    check('trang lỗi (không có game): ✕ hiện thẳng TaskDialog, không chờ 1,5 giây', tf && tf - t0 < 1200 && d.length === 1, (tf ? 'hộp hiện sau ' + (tf - t0) + ' ms' : 'không thấy hộp') + ' (đo bằng PowerShell dò 50 ms một lần)');
+    postMsg(d && d[0], 0x466, 102);
+    await sleep(600);
+    const t1 = Date.now();
+    a.page.evaluate(() => MXAPP.quit()).catch(() => {});
+    const ex = await exitedIn(a, 3000);
+    check('trang lỗi: MXAPP.quit thoát ngay (không có bản lưu game để chờ)', ex && Date.now() - t1 < 1500, 'sau ' + (Date.now() - t1) + ' ms');
+    await done(a);
+  });
+
+  await step('mục 1: tắt máy, đăng xuất', async () => {
+    const a = await hooked();
+    await a.page.evaluate(() => { window.__T.marker = 424204; });
+    const r = sendTimed(a.hwnd, 0x11, 0, 0, 8000); // WM_QUERYENDSESSION
+    const e1 = await evs(a);
+    check("WM_QUERYENDSESSION: trả TRUE trong ≤ 2,5 giây, trang nhận quit-soon 'shutdown' và đã lưu, không hộp thoại", r && r.ok && r.res === 1 && r.ms <= 2500 && e1.includes('quit-soon:shutdown') && fileCoins() === 424204 && dlgs(a.p.pid).length === 0, JSON.stringify(r) + ' ' + e1.join(',') + ' file ' + fileCoins());
+    // trang treo (không trả lời): vẫn trả lời Windows sau tối đa khoảng 2 giây
+    sendTimed(a.hwnd, 0x16, 0, 0, 3000); // WM_ENDSESSION FALSE: hủy tắt máy
+    await sleep(500);
+    const e2 = await evs(a);
+    check('WM_ENDSESSION(FALSE) (hủy tắt máy): app chạy tiếp, trang nhận quit-cancel', running(a) && e2.includes('quit-cancel'), e2.join(','));
+    await a.page.evaluate(() => { window.__T.quit = 'none'; });
+    const r2 = sendTimed(a.hwnd, 0x11, 0, 0, 8000);
+    check('WM_QUERYENDSESSION khi trang không trả lời: vẫn trả TRUE sau khoảng 2 giây, không hộp thoại', r2 && r2.ok && r2.res === 1 && r2.ms >= 1800 && r2.ms <= 3000 && dlgs(a.p.pid).length === 0, JSON.stringify(r2));
+    sendTimed(a.hwnd, 0x16, 0, 0, 3000);
+    await sleep(500);
+    await a.page.evaluate(() => { window.__T.quit = 'save'; window.__T.marker = 424205; });
+    a.page.evaluate(() => MXAPP.quit()).catch(() => {});
+    const ex = await exitedIn(a, 5000);
+    check('sau khi hủy tắt máy, thoát bình thường vẫn chạy (lưu rồi thoát)', ex && fileCoins() === 424205, 'thoát ' + ex + ', file ' + fileCoins());
+    await done(a);
+  });
+
   await step('--tray (không Playwright)', async () => {
     const r = await launchRaw(['--tray']);
     await sleep(3000);

@@ -61,7 +61,8 @@ function awMute(d){
   bgmQuick();
 }
 function awQuitSoon(){try{save()}catch(e){}try{if(APP&&APP.persist)APP.persist.flush()}catch(e){}}
-function awQuit(){awQuitSoon();awCall('quit')}
+// lõi mới (có quitReady): chỉ gọi quit(), lõi gửi 'quit-soon' và js/dialog.js lưu rồi báo quitReady (không lưu hai lần); lõi cũ: lưu rồi thoát
+function awQuit(){if(awHas('quitReady')){awCall('quit');return}awQuitSoon();awCall('quit')}
 if(AW.on){
   window.__mxOn=function(type,data){
     AW.log.push([type,data]);if(AW.log.length>40)AW.log.shift();
@@ -217,6 +218,11 @@ function awHide(){awQuitSoon();awCall('hide')}
 function awReset(){awCall('resetWindow');AW.msg='Đã đặt lại kích thước và vị trí cửa sổ.';AW.bad=0;awRe()}
 function awAskQuit(){
   const mb=$('mbox');AW.sy=mb?mb.scrollTop:0;
+  if(typeof mxDialog==='function'){   // hộp thoại pixel nằm trên hộp Cài đặt: Thôi thì Cài đặt còn nguyên
+    mxDialog({title:'🚪 Thoát Mèo Xu?',mascot:'ask',body:'<p>Tiến độ được lưu ngay trước khi thoát.'+(awCfg().close==='tray'?' Muốn game vẫn chạy để nhận thông báo thì chọn <b>Ẩn vào khay</b>.':'')+'</p>',
+      buttons:[{id:'quit',label:'🚪 Thoát',kind:'danger'},{id:'no',label:'Thôi'}],cancelId:'no',defaultId:'quit'}).then(r=>{if(r.id==='quit')awQuit()});
+    return;
+  }
   modal('<h3>🚪 Thoát Mèo Xu?</h3><div>Tiến độ được lưu ngay trước khi thoát.'+(awCfg().close==='tray'?' Muốn game vẫn chạy để nhận thông báo thì chọn <b>Ẩn vào khay</b>.':'')+'</div>'+
     '<div class="row" style="justify-content:center;margin-top:10px"><button class="bad" onclick="awQuit()">Thoát</button><button onclick="awBackSet()">Thôi</button></div>');
 }
@@ -227,8 +233,8 @@ function awCard(){
   const cap=AW.cap?'<div class="aw-cap" role="status">'+(AW.cap.mods.length?awKeyTxt(AW.cap.mods.join('+'))+'<span class="aw-plus">+</span>…':'Nhấn tổ hợp phím mới…')+
     '<small>Cần ít nhất một phím Ctrl, Alt, Shift hoặc Win cùng một phím khác. <kbd>Esc</kbd> để hủy.</small><button class="sm" onclick="awCap(0)">Hủy</button></div>':'';
   return '<div id="awcard" class="card aw-card" style="flex-direction:column;align-items:stretch"><b>🖥️ Ứng dụng</b>'+
-    '<div class="aw-sec"><span class="aw-lb">Khi bấm ✕ đóng cửa sổ</span><span class="aw-v">'+(cl==='ask'?'Chưa chọn (sẽ hỏi lần đầu)':cl==='tray'?'Thu vào khay':'Thoát hẳn')+'</span>'+
-      '<div class="row wrap">'+B(cl==='ask','awSet({close:\'ask\'})','❔ Hỏi lại')+B(cl==='tray','awSet({close:\'tray\'})','📥 Thu vào khay')+B(cl==='quit','awSet({close:\'quit\'})','🚪 Thoát hẳn')+'</div>'+
+    '<div class="aw-sec"><span class="aw-lb">Khi bấm ✕ đóng cửa sổ</span><span class="aw-v">'+(cl==='ask'?'Hỏi mỗi lần':cl==='tray'?'Thu vào khay':'Thoát hẳn')+'</span>'+
+      '<div class="row wrap">'+B(cl==='ask','awSet({close:\'ask\'})','❔ Hỏi mỗi lần')+B(cl==='tray','awSet({close:\'tray\'})','📥 Thu vào khay')+B(cl==='quit','awSet({close:\'quit\'})','🚪 Thoát hẳn')+'</div>'+
       '<small>Thu vào khay: game vẫn chạy ngầm (biểu tượng cạnh đồng hồ) để các bé được chăm và bạn nhận thông báo.</small></div>'+
     '<div class="aw-sec"><span class="aw-lb">Khởi động cùng Windows</span><div class="row">'+B(c.autostart,'awSet({autostart:true})','Bật')+B(!c.autostart,'awSet({autostart:false})','Tắt')+'</div>'+
       '<small>Mở máy là Mèo Xu chạy ẩn ở khay, không hiện cửa sổ.</small></div>'+
@@ -256,7 +262,7 @@ if(awApp()&&typeof pwaCard==='function'){
 }
 // bắt phím tắt mới: pha bắt trên window, đăng ký trước js/tutorial.js nên chạy trước mọi bộ chặn phím của game
 if(AW.on)addEventListener('keydown',ev=>{
-  if(AW.cap){
+  if(AW.cap&&!document.querySelector('.mxd-ov')){
     ev.preventDefault();ev.stopImmediatePropagation();
     if(ev.repeat)return;
     if(ev.key==='Escape'&&!ev.ctrlKey&&!ev.altKey&&!ev.shiftKey&&!ev.metaKey){awCap(0);return}

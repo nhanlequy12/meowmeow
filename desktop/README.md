@@ -21,7 +21,8 @@ Hai chế độ là hai origin nên có hai bản lưu riêng. Đổi chế đ�
 | `splash.html` | Màn chờ lúc mở app (cửa sổ nhỏ không viền, mèo hạt cườm, thanh tải), `stage.js` chép thành `web/splash.html` |
 | `legal/` | Điều khoản sử dụng và chính sách quyền riêng tư (UTF-8 không BOM), nhúng vào exe lúc build |
 | `src-tauri/src/lib.rs` | Lõi: cửa sổ, cấu hình, lệnh `mx_*`, chặn điều hướng, bắt lỗi điều hướng, Range cho file âm thanh |
-| `src-tauri/src/desk.rs` | Hành vi như app thật: splash, khay hệ thống, nút X, khởi động cùng Windows, phím tắt toàn cục, luôn ở trên cùng, lịch thông báo, chấm đỏ taskbar, chủ đề, nhớ vị trí, thoát |
+| `src-tauri/src/desk.rs` | Hành vi như app thật: splash, khay hệ thống, khởi động cùng Windows, phím tắt toàn cục, luôn ở trên cùng, lịch thông báo, chấm đỏ taskbar, chủ đề, nhớ vị trí |
+| `src-tauri/src/closeq.rs` | Nút X / Alt+F4 (hỏi bằng hộp thoại của trang, dự phòng TaskDialog), thoát có lưu cho mọi cách thoát, tắt máy và đăng xuất |
 | `src-tauri/src/winx.rs` | Phần gọi thẳng Windows: toast WinRT (bắt cú bấm), đăng ký AUMID, khóa Run, hộp thoại TaskDialog, ảnh chấm đỏ |
 | `src-tauri/src/init.js` | Initialization script: `window.MXAPP`, chặn service worker, chặn `api/` khi chơi một mình, phím tắt, menu chuột phải |
 | `src-tauri/src/restore.js` | Script khôi phục bản lưu từ `saves\<khóa>.json`, chỉ gắn cho lần tải trang đầu tiên sau khi mở app hoặc đổi chế độ |
@@ -87,7 +88,9 @@ Gỡ cài đặt không xóa thư mục này (ô "xóa dữ liệu ứng dụng"
 
 - **Splash**: chạy exe là hiện ngay cửa sổ `splash.html` 420×280 không viền, giữa màn hình, không có trên taskbar, luôn trên cùng, màu theo chủ đề đã lưu (`?t=dark`). Cửa sổ chính tạo ẩn, hiện khi trang gọi `MXAPP.ready()`; trang lỗi `__offline.html` (không phải trang chờ) tự gọi khi nạp xong; trang chưa gọi thì init.js gọi 2,5 giây sau `load`; chốt chặn 8 giây. Splash dùng chung thư mục dữ liệu và tham số trình duyệt với cửa sổ chính (WebView2 bắt buộc).
 - **Khay hệ thống**: biểu tượng con mèo; bấm trái hiện/ẩn; menu: Mở Mèo Xu / Ẩn vào khay, 🎵 Tắt/Bật nhạc (`__mxOn('mute')`), 🔔 Thông báo, 📌 Luôn ở trên cùng (ô đánh dấu), Đặt lại cửa sổ, Thoát Mèo Xu. Tooltip "Mèo Xu · n việc đang chờ" khi có chấm đỏ.
-- **Nút X và Alt+F4** (cùng một sự kiện): `close` "ask" hiện hộp thoại Windows (TaskDialog, tiếng Việt: Thu vào khay / Thoát / Không đóng, Esc là không đóng) rồi nhớ lựa chọn; "tray" ẩn vào khay (lần đầu báo một toast "Mèo Xu vẫn chạy ở khay hệ thống", cờ `trayTip`); "quit" thoát. Cửa sổ đang ẩn mà nhận lệnh đóng (taskkill không /F, trình cài) thì thoát. **Thoát trong menu khay và Ctrl+Q luôn thoát thật.** Thoát: lõi gọi `__mxOn('quit-soon')`, chờ trang ghi bản lưu (`persist`) tối đa 600 ms, chờ lần ghi file đang dở, lưu vị trí cửa sổ rồi `exit(0)` (đo: 100–210 ms).
+- **Nút X và Alt+F4** (cùng một sự kiện, `closeq.rs`): `close` "ask" thì lõi hiện, focus cửa sổ và gọi `__mxOn('close-ask', {again})`; trang (js/dialog.js) vẽ hộp kiểu pixel Thu vào khay / Thoát / Không đóng có ô "Ghi nhớ lựa chọn của tôi" (mặc định đánh dấu), gọi `closeAck()` trong 1,5 giây rồi `closeChoice(choice, remember)`. Không ack kịp (trang treo, trang lỗi, máy chủ chạy bản game cũ) thì dùng TaskDialog của Windows có cùng ba nút và ô ghi nhớ (không có common controls 6 thì MessageBox, luôn nhớ). "Không đóng" không bao giờ được nhớ. Bấm X lần nữa khi hộp đang mở: hộp Windows thì bỏ qua; hộp của trang thì gửi lại `close-ask` với `again:true` (trang chỉ focus lại hộp). Trang lỗi, trang chờ (`__offline.html`) dùng thẳng TaskDialog. "tray" ẩn vào khay (lần đầu báo toast "Mèo Xu vẫn đang chạy dưới khay hệ thống", cờ `trayTip` chỉ ghi khi toast hiện được); "quit" thoát có lưu. Cửa sổ đang ẩn mà nhận lệnh đóng (taskkill không /F, trình cài) thì thoát có lưu.
+- **Thoát có lưu** (mọi cách thoát: X/Alt+F4 khi đã chọn Thoát, Ctrl+Q, menu khay › Thoát, `MXAPP.quit`): lõi gọi `__mxOn('quit-soon', {reason})` ('close' | 'ctrlq' | 'tray' | 'api'), trang `quitAck()` trong 1,5 giây, lưu bằng `persistNow(json)`, rồi `quitReady({ok:true})` → lõi chờ lần ghi file đang dở, lưu vị trí cửa sổ, `exit(0)`. `quitReady({ok:false, err})` → lõi KHÔNG thoát, hiện và focus cửa sổ (kể cả khi thoát từ khay), chờ không hạn: trang hỏi Thử lại (lưu lại, được thì `quitReady({ok:true})`) / Thoát không lưu (`quitForce()`) / Ở lại (`quitCancel()`); lúc đó người chơi bấm X, Ctrl+Q hay Thoát ở khay lần nữa thì hiện hộp Windows [Thoát] [Ở lại] để không bao giờ bị kẹt. Dự phòng: không ack trong 1,5 giây, hoặc ack mà 10 giây chưa `quitReady` → hộp Windows "Mèo Xu không phản hồi nên chưa xác nhận lưu được. Bản lưu an toàn gần nhất: lúc HH:MM:SS hôm nay (n giây trước) | không có. Thoát ngay?" [Thoát] [Ở lại] ("Ở lại" gửi `__mxOn('quit-cancel')`). Trang trả lời muộn lúc hộp Windows đang mở thì hộp tự đóng. Trang cũ (không ack nhưng đã gửi `persist` khi nhận 'quit-soon', như js/app-win.js bản 1.1.0) thì coi là đã lưu, thoát sau 0,4 giây. Đang trong một lượt thoát thì yêu cầu thoát, đóng lặp lại bị bỏ qua. Trang lỗi, trang chờ không có bản lưu game: thoát ngay. **Thoát trong menu khay và Ctrl+Q luôn thoát thật (sau khi lưu), không hỏi.**
+- **Tắt máy, đăng xuất**: subclass cửa sổ chính bắt `WM_QUERYENDSESSION`: gửi 'quit-soon' với reason 'shutdown', bơm thông điệp và chờ tối đa 2 giây tới khi trang `quitReady` (hoặc trang cũ đã gửi bản lưu), không hiện hộp nào, rồi trả TRUE (không chặn tắt máy); tao tự thoát ở `WM_ENDSESSION`. Windows hủy tắt máy (`WM_ENDSESSION` FALSE) thì về trạng thái thường, gửi `quit-cancel`. Chromium hoãn ghi nên khi Windows giết tiến trình trước, tối đa mất phần chưa `persist` (game gửi 3 giây một lần).
 - **Ẩn vào khay** = `hide()` + `set_web_visible(false)` (trang `document.hidden`, rAF dừng, timer chạy). Đo 60 giây ở khay: 1,6% một nhân (0,4% cả máy 4 nhân), như khi thu nhỏ.
 - **Khởi động cùng Windows**: tự ghi khóa Run của người dùng (`"<exe>" --tray`), không dùng tauri-plugin-autostart (khỏi kéo thêm crate, xét được StartupApproved: người chơi tắt trong Task Manager thì app coi là tắt). Lúc mở app, `autostart` được đồng bộ theo registry thật và đường dẫn được cập nhật nếu exe đã chuyển chỗ. Chạy với `--tray`: không splash, cửa sổ ẩn, trang vẫn nạp và chạy luật. Lần chạy thứ hai không `--tray` thì hiện cửa sổ; có `--tray` thì không làm gì. `MEOXU_RUNNAME` đổi tên giá trị Run khi thử.
 - **Phím tắt toàn cục** (tauri-plugin-global-shortcut), mặc định Ctrl+Alt+M: cửa sổ đang hiện và có tiêu điểm thì ẩn vào khay, ngược lại hiện, khôi phục, focus. Cú pháp: Ctrl/Alt/Shift/Super (Win) nối bằng `+`, cần Ctrl, Alt hoặc Win, phím là chữ cái, chữ số, F1–F24, Up/Down/Left/Right, Space, Home, End, PageUp, PageDown, Insert, Delete, Tab, Numpad0–9; lõi chuẩn hóa (`ctrl+shift+alt+k` → `Ctrl+Alt+Shift+K`). Sai cú pháp hoặc bị chương trình khác giữ thì `ok:false`, err tiếng Việt, giữ phím cũ. Phím đã lưu mà lúc mở app không đăng ký được thì `MXAPP.cfg.hotkeyErr` có lý do.
@@ -125,17 +128,24 @@ Có trên mọi trang của cửa sổ, đúng ngay khi script game chạy (js/a
 ```text
 isApp:true, version:'1.0.0', dev:boolean,
 persist(json) -> void                          // ghi bản lưu ra saves\<khóa>.json (xem "Lưu an toàn"), lỗi thì thôi
+persistNow(json) -> Promise<{ok, err?}>        // như persist nhưng chờ ghi xong; err tiếng Việt (đĩa đầy, không có quyền, file bị giữ…)
 cfg: {close:'ask'|'tray'|'quit', autostart, hotkey:'Ctrl+Alt+M'|'', onTop, notify, bgPlay, hotkeyErr?}  // ảnh chụp lúc nạp trang, cập nhật tại chỗ
 app.get() -> Promise<cfg>
 app.set(patch) -> Promise<{ok, err?, cfg}>     // áp dụng ngay; lỗi ở trường nào thì không đổi gì (phím cũ giữ nguyên)
 notifyPlan([{t, title, body, tab?}]) -> void   // thay cả lịch; [] xóa
 notifyNow(title, body, tab?) -> Promise<{ok, err?}>
 setBadge(n) -> void   setTheme('light'|'dark') -> void   ready() -> void   hide() -> void
-quit() -> void        // trang đã tự lưu; thoát ngay
+quit() -> void        // thoát có lưu (reason 'api'): lõi gửi 'quit-soon' và chờ trang như mọi cách thoát
 resetWindow() -> void
-// lõi gọi sang trang: window.__mxOn(type, data): 'tab' (tên tab), 'mute', 'shown', 'hidden', 'quit-soon',
-//                      'cfg' (cấu hình đổi từ menu khay; MXAPP.cfg đã được cập nhật trước)
-// phím: Ctrl+Q trong trang = thoát thật (init.js chặn phím, lõi báo 'quit-soon' rồi chờ trang lưu)
+closeAck() -> void                       // đã nhận 'close-ask', đang hiện hộp (trong 1,5 giây, không thì lõi dùng TaskDialog)
+closeChoice('tray'|'quit'|'stay', remember:boolean) -> void   // remember chỉ lưu cho 'tray'|'quit'; 'quit' → thoát có lưu
+quitAck() -> void                        // đã nhận 'quit-soon' (trong 1,5 giây)
+quitReady({ok:true}) | quitReady({ok:false, err}) -> void   // ok: lõi thoát ngay; lỗi: lõi ở lại, hiện cửa sổ, chờ
+quitForce() -> void   quitCancel() -> void                  // thoát không lưu / ở lại (chỉ khi đang trong lượt thoát)
+// lõi gọi sang trang: window.__mxOn(type, data): 'tab' (tên tab), 'mute', 'shown', 'hidden',
+//   'cfg' (cấu hình đổi từ menu khay hoặc hộp hỏi đóng; MXAPP.cfg đã được cập nhật trước),
+//   'close-ask' {again}, 'quit-soon' {reason:'close'|'ctrlq'|'tray'|'api'|'shutdown'}, 'quit-cancel' (không bắt buộc xử lý)
+// phím: Ctrl+Q trong trang = luôn lưu rồi thoát, không hỏi (init.js chặn phím, lõi bắt đầu lượt thoát có lưu)
 mode:null|'solo'|'friend', server:'', terms:0, termsVer:1,
 norm(url) -> string
 ping(url) -> Promise<{ok, url, ms, err?}>

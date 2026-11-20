@@ -2,13 +2,14 @@
 //! khởi động cùng Windows (`--tray`), phím tắt toàn cục, luôn ở trên cùng, lịch thông báo, chấm đỏ trên taskbar,
 //! màu nền theo chủ đề, nhớ vị trí cửa sổ khi kéo, thoát an toàn.
 //!
-//! Nguyên tắc: không bao giờ khó thoát (Thoát trong menu khay và Ctrl+Q luôn thoát thật; Alt+F4 theo cùng cài đặt với
-//! nút X), thông báo ít (chỉ khi cửa sổ đang ẩn, thu nhỏ hoặc không có tiêu điểm, có hạn), ẩn thì báo WebView2
+//! Nguyên tắc: không bao giờ khó thoát (Thoát trong menu khay và Ctrl+Q luôn thoát thật, có lưu trước; Alt+F4 theo cùng
+//! cài đặt với nút X; quy trình đóng và thoát có lưu ở closeq.rs), thông báo ít (chỉ khi cửa sổ đang ẩn, thu nhỏ hoặc không có tiêu điểm, có hạn), ẩn thì báo WebView2
 //! IsVisible=false để trang thôi vẽ (CPU như khi thu nhỏ). Hẹn giờ thông báo là một luồng ngủ trên Condvar: không tốn CPU.
 //!
-//! Gọi sang trang: `window.__mxOn(type, data)` với type 'tab' | 'mute' | 'shown' | 'hidden' | 'quit-soon' | 'cfg'.
+//! Gọi sang trang: `window.__mxOn(type, data)` với type 'tab' | 'mute' | 'shown' | 'hidden' | 'cfg', và của closeq.rs:
+//! 'close-ask' | 'quit-soon' | 'quit-cancel'.
 
-use crate::{ctx_of, main_win, save_window, set_web_visible, winx, Ctx};
+use crate::{closeq, ctx_of, main_win, save_window, set_web_visible, winx, Ctx};
 use serde::{Deserialize, Serialize};
 use std::{
     str::FromStr,
@@ -31,8 +32,6 @@ pub const DEF_HOTKEY: &str = "Ctrl+Alt+M";
 const TRAY_ID: &str = "meoxu";
 /// Cửa sổ chính hiện chậm nhất sau chừng này kể từ lúc mở app (trang chưa gọi MXAPP.ready).
 const REVEAL_MAX: Duration = Duration::from_secs(8);
-/// Chờ trang lưu (gọi persist) sau 'quit-soon' tối đa chừng này rồi thoát.
-const QUIT_WAIT: Duration = Duration::from_millis(600);
 /// Mục lịch thông báo đã quá giờ hơn chừng này thì bỏ.
 const LATE_MAX_MS: f64 = 10.0 * 60_000.0;
 const PLAN_MAX: usize = 64;
@@ -74,10 +73,12 @@ pub struct Desk {
     /// Mở bằng `--tray` (khởi động cùng Windows): không splash, cửa sổ ẩn ở khay.
     pub tray_start: bool,
     revealed: AtomicBool,
-    asking: AtomicBool,
+    /// Đã quyết thoát hẳn (closeq::do_exit): mọi yêu cầu đóng, thông báo sau đó bị bỏ qua.
     pub quitting: AtomicBool,
-    /// Tăng mỗi lần mx_persist ghi xong (để biết trang đã lưu sau 'quit-soon').
+    /// Tăng mỗi lần ghi saves\*.json xong (mx_persist, mx_persist_now): trang cũ không ack 'quit-soon' nhưng đã gửi bản lưu.
     pub persist_n: AtomicU64,
+    /// Máy trạng thái hỏi khi đóng và thoát có lưu (closeq.rs).
+    pub flow: closeq::Flow,
     plan: Mutex<Vec<NItem>>,
     plan_cv: Condvar,
     badge: AtomicU32,
@@ -95,9 +96,9 @@ impl Desk {
         Desk {
             tray_start,
             revealed: AtomicBool::new(false),
-            asking: AtomicBool::new(false),
             quitting: AtomicBool::new(false),
             persist_n: AtomicU64::new(0),
+            flow: closeq::Flow::default(),
             plan: Mutex::new(Vec::new()),
             plan_cv: Condvar::new(),
             badge: AtomicU32::new(0),
@@ -154,8 +155,8 @@ pub fn page_on(app: &AppHandle, typ: &str, data: serde_json::Value) {
     }
 }
 
-/// Đưa cấu hình mới vào MXAPP.cfg của trang đang mở (đổi từ menu khay) và báo __mxOn('cfg').
-fn push_cfg(app: &AppHandle) {
+/// Đưa cấu hình mới vào MXAPP.cfg của trang đang mở (đổi từ menu khay, hộp hỏi đóng) và báo __mxOn('cfg').
+pub(crate) fn push_cfg(app: &AppHandle) {
     let ctx = ctx_of(app);
     let cfg = serde_json::to_value(app_cfg(&ctx)).unwrap_or_default();
     if let Some(w) = main_win(app) {
@@ -236,7 +237,7 @@ pub fn show_main(app: &AppHandle) {
     tray_label(app, true);
 }
 
-/// Ẩn vào khay. `tip`: lần đầu thì báo một lần "Mèo Xu vẫn chạy ở khay hệ thống".
+/// Ẩn vào khay. `tip`: lần đầu thì báo một lần "Mèo Xu vẫn đang chạy dưới khay hệ thống" (ghi nhớ đã báo chỉ khi toast hiện được).
 pub fn hide_main(app: &AppHandle, tip: bool) {
     let ctx = ctx_of(app);
     let Some(w) = main_win(app) else { return };
@@ -245,12 +246,11 @@ pub fn hide_main(app: &AppHandle, tip: bool) {
     set_web_visible(&w, false);
     tray_label(app, false);
     if tip && !ctx.cfg().tray_tip {
-        let _ = ctx.update(|c| c.tray_tip = true);
         let a = app.clone();
-        let _ = show_toast(
+        let shown = show_toast(
             app,
-            "Mèo Xu vẫn chạy ở khay hệ thống",
-            "Bấm biểu tượng con mèo ở góc phải thanh tác vụ để mở lại. Muốn thoát hẳn: bấm chuột phải vào biểu tượng › Thoát Mèo Xu.",
+            "Mèo Xu vẫn đang chạy dưới khay hệ thống",
+            "Game vẫn chạy, mèo vẫn được chăm. Bấm biểu tượng con mèo ở góc phải thanh tác vụ để mở lại. Muốn thoát hẳn: chuột phải vào biểu tượng › Thoát Mèo Xu.",
             None,
             30,
             Some(Box::new(move || {
@@ -258,6 +258,9 @@ pub fn hide_main(app: &AppHandle, tip: bool) {
                 let _ = a.run_on_main_thread(move || show_main(&b));
             })),
         );
+        if shown.is_ok() {
+            let _ = ctx.update(|c| c.tray_tip = true);
+        }
     }
 }
 
@@ -281,89 +284,6 @@ fn toggle_hotkey(app: &AppHandle) {
         Some(_) => show_main(app),
         None => {}
     }
-}
-
-/* ---------------- đóng, thoát ---------------- */
-
-/// Nút X hoặc Alt+F4 trên cửa sổ chính (lõi đã chặn đóng mặc định).
-pub fn on_close_requested(app: &AppHandle) {
-    let ctx = ctx_of(app);
-    if ctx.desk.quitting.load(Ordering::SeqCst) {
-        return;
-    }
-    let Some(w) = main_win(app) else { return };
-    // Cửa sổ đang ẩn mà vẫn nhận lệnh đóng (taskkill không /F, trình cài đặt): người chơi không thấy hộp thoại, thoát luôn.
-    if !w.is_visible().unwrap_or(true) {
-        return quit_app(app, true);
-    }
-    match ctx.cfg().close.as_str() {
-        "tray" => hide_main(app, true),
-        "quit" => quit_app(app, true),
-        _ => ask_close(app, &w),
-    }
-}
-
-fn ask_close(app: &AppHandle, w: &WebviewWindow) {
-    let ctx = ctx_of(app);
-    if ctx.desk.asking.swap(true, Ordering::SeqCst) {
-        return;
-    }
-    let owner = w.hwnd().map(|h| h.0 as isize).unwrap_or(0);
-    let app = app.clone();
-    std::thread::spawn(move || {
-        let r = winx::ask_close(owner);
-        let ctx = ctx_of(&app);
-        ctx.desk.asking.store(false, Ordering::SeqCst);
-        let mode = match r {
-            winx::CloseAsk::Tray => "tray",
-            winx::CloseAsk::Quit => "quit",
-            winx::CloseAsk::Cancel => return,
-        };
-        let _ = ctx.update(|c| c.close = mode.into());
-        let a2 = app.clone();
-        let _ = app.run_on_main_thread(move || {
-            push_cfg(&a2);
-            if mode == "tray" {
-                hide_main(&a2, true);
-            } else {
-                quit_app(&a2, true);
-            }
-        });
-    });
-}
-
-/// Thoát thật. `soon`: báo trang 'quit-soon' rồi chờ tối đa QUIT_WAIT tới khi trang ghi bản lưu (persist).
-/// Không soon (trang đã tự lưu rồi mới gọi MXAPP.quit): chỉ chờ lần ghi file đang dở xong.
-pub fn quit_app(app: &AppHandle, soon: bool) {
-    let ctx = ctx_of(app);
-    if ctx.desk.quitting.swap(true, Ordering::SeqCst) {
-        return;
-    }
-    let n0 = ctx.desk.persist_n.load(Ordering::SeqCst);
-    if soon {
-        page_on(app, "quit-soon", serde_json::Value::Null);
-    }
-    let app = app.clone();
-    std::thread::spawn(move || {
-        let ctx = ctx_of(&app);
-        if soon {
-            let t0 = Instant::now();
-            while t0.elapsed() < QUIT_WAIT && ctx.desk.persist_n.load(Ordering::SeqCst) == n0 {
-                std::thread::sleep(Duration::from_millis(15));
-            }
-        }
-        drop(ctx.persist.lock().unwrap()); // lần ghi saves\*.json đang dở (nếu có) phải xong
-        let a2 = app.clone();
-        let _ = app.run_on_main_thread(move || {
-            let ctx = ctx_of(&a2);
-            if let Some(w) = main_win(&a2) {
-                if w.is_visible().unwrap_or(false) {
-                    save_window(&w.as_ref().window(), &ctx);
-                }
-            }
-            a2.exit(0);
-        });
-    });
 }
 
 /* ---------------- khay hệ thống ---------------- */
@@ -405,7 +325,7 @@ pub fn build_tray(app: &AppHandle) -> tauri::Result<()> {
                 push_cfg(app);
             }
             "reset" => reset_window(app),
-            "quit" => quit_app(app, true),
+            "quit" => closeq::quit_begin(app, "tray"),
             _ => {}
         })
         .on_tray_icon_event(|tray, ev| {
@@ -938,6 +858,14 @@ pub fn setup(app: &AppHandle, ctx: &Arc<Ctx>, win: &WebviewWindow) {
         let _ = win.set_always_on_top(true);
     }
     sync_autostart(ctx);
+    if let Ok(h) = win.hwnd() {
+        let (a1, a2) = (app.clone(), app.clone());
+        winx::hook_session(
+            h.0 as isize,
+            Box::new(move || closeq::on_query_end_session(&a1)),
+            Box::new(move |ending| closeq::on_end_session(&a2, ending)),
+        );
+    }
     start_scheduler(app);
     if !ctx.desk.tray_start {
         start_reveal_timer(app);

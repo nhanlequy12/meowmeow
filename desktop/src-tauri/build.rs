@@ -21,6 +21,13 @@ fn main() {
             "mx_hide",
             "mx_quit",
             "mx_reset_window",
+            "mx_persist_now",
+            "mx_close_ack",
+            "mx_close_choice",
+            "mx_quit_ack",
+            "mx_quit_ready",
+            "mx_quit_force",
+            "mx_quit_cancel",
         ]),
     ))
     .expect("tauri-build lỗi");

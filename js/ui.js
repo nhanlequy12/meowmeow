@@ -1625,7 +1625,9 @@ function doPlace(iid){const it=S.items.find(i=>i.iid===iid);if(!it)return;it.roo
 function doRepair(iid){if(repairItem(iid)){toast('Đã sửa xong, hiệu ứng hoạt động lại',{type:'fix'});render()}else toast('Không đủ xu để sửa.',{type:'warn'})}
 function doBuyRoom(rid){const b=buyRoom(rid);if(b){if(b.moved)syncEnts();toast('Đã mở phòng mới, chứa được '+ROOM[rid].cap+' mèo'+(b.moved?'. Đã chuyển '+b.moved+' bé từ Phòng chờ vào các phòng còn chỗ, phòng mua trước được lấp trước.':''),{type:'room',title:ROOM[rid].n});setRoom(rid)}}
 function doSkip(){skipTime();syncEnts();render();toast('Đã tua nhanh 10 phút',{icon:'⏩'})}
-function resetAll(){if(confirm('Xóa toàn bộ dữ liệu và chơi lại?')){fresh();save();cur='living';camX=0;ents=[];syncEnts();render()}}
+// hộp có/không kiểu game (js/dialog.js); chưa nạp js/dialog.js thì dùng confirm() của trình duyệt
+const askYes=(text,o)=>typeof mxConfirm==='function'?mxConfirm(text,o):Promise.resolve(confirm(text));
+function resetAll(){askYes('Xóa toàn bộ dữ liệu và chơi lại?',{title:'🗑 Chơi lại từ đầu?',ok:'Xóa và chơi lại',danger:1}).then(ok=>{if(ok){fresh();save();cur='living';camX=0;ents=[];syncEnts();render()}})}
 
 /* ============ CÁC TAB ============ */
 /* Lưới nội thất của Cửa hàng. Cả mục dùng chung một tỉ lệ k (điểm ảnh màn hình mỗi ô gốc; chẵn để hạt cườm đều, chỉ khi quá to mới xuống 1)
@@ -1724,8 +1726,11 @@ function mgMove(uid,rid){
   else{toast(onTrip(uid)?'Bé '+awayTxt(catBy(uid))+', chưa chuyển phòng được.':ROOM[rid].n+' đã đầy ('+catsIn(rid).length+'/'+ROOM[rid].cap+').',{type:'warn'});renderPanel()}
 }
 function doDelete(){
-  const it=S.items.find(i=>i.iid===sel); if(!it||!confirm('Xóa hẳn '+FURN[it.fid].n+'? Bạn được hoàn 25% giá mua.'))return;
-  const v=sellItem(it.iid);sel=null;render();toast('Đã xóa món đồ',{type:'coin',title:FURN[it.fid].n,coins:v});
+  const it=S.items.find(i=>i.iid===sel); if(!it)return;
+  askYes('Xóa hẳn '+FURN[it.fid].n+'? Bạn được hoàn 25% giá mua.',{title:'🗑 Xóa món đồ?',ok:'🗑 Xóa',danger:1}).then(ok=>{
+    if(!ok||!S.items.includes(it))return;
+    const v=sellItem(it.iid);if(sel===it.iid)sel=null;render();toast('Đã xóa món đồ',{type:'coin',title:FURN[it.fid].n,coins:v});
+  });
 }
 // chủ đề: 'soft' (sáng), 'dark' (tối) hoặc 'auto' (theo hệ điều hành: prefers-color-scheme). themeEff() trả chủ đề thực tế 'soft'|'dark'.
 const themeOS=()=>{try{return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'soft'}catch(e){return 'soft'}};
