@@ -2,7 +2,7 @@
 
 Người dùng bảo dừng giữa chừng. Đã xong và đã push: mục 1 "hành vi khi đóng app" và hộp thoại kiểu pixel (commit `5056a11`, CLAUDE.md mục 52b chưa ghi phần này).
 
-## 1. Font pixel tiếng Việt (mục 2): XONG ngày 2026-11-20, xem CLAUDE.md mục 53. Còn: build lại app (máy hiện tại thiếu Rust, VS Build Tools), chạy smoke.js, flow.js, xem chủ đề tối.
+## 1. Font pixel tiếng Việt (mục 2): XONG ngày 2026-11-20, xem CLAUDE.md mục 53. Còn: xem chủ đề tối. App 1.2.0 đã build (flow 56/56, smoke 100/101 hỏng chập chờn), chưa đăng Release.
 
 Ghi chú cũ khi đang làm dở:
 - Người dùng đã duyệt: **Galmuri11 + đậm giả (text-shadow)** cho tiêu đề, nút, nhãn, tab, chip; **Nunito** nhúng sẵn cho đoạn văn. Cả hai OFL 1.1, đủ 134 chữ tiếng Việt.
@@ -25,7 +25,7 @@ Ghi chú cũ khi đang làm dở:
 
 ## 3. Việc nhỏ còn treo
 - (Xong) Ghi mục đóng app an toàn và hộp thoại pixel vào CLAUDE.md mục 52c.
-- Build lại app: phiên bản đã tăng lên 1.2.0 (package.json, tauri.conf.json, Cargo.toml, RELEASE_NOTES.md) nhưng CHƯA build vì máy hiện tại thiếu Rust và VS Build Tools.
+- App 1.2.0 đã build (desktop/dist). Chưa đăng Release: cần người dùng đồng ý; điền kích thước và SHA-256 từ dòng [post] của lần build cuối vào RELEASE_NOTES.md.
 - Chưa thử bằng tay: bấm ✕ chuột thật, Alt+F4 thật, tắt máy thật, menu khay, toast, nghe âm.
 
 # Việc cần làm ngay (rà soát ngày 2026-11-12)
