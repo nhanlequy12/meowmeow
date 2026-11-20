@@ -9,6 +9,8 @@ fn main() {
             "mx_retry",
             "mx_open_external",
             "mx_fullscreen",
+            "mx_persist",
+            "mx_restored",
         ]),
     ))
     .expect("tauri-build lỗi");

@@ -7,15 +7,24 @@ let BS=4; // số điểm ảnh thật cho mỗi ô lưới trong phòng, luôn 
 const DPR=()=>window.devicePixelRatio||1;
 // k < 3: ô vuông đặc; k >= 3: mỗi ô là một hạt cườm, hở 1 điểm ảnh, có nền nhạt để không xuyên thấu
 // f = số điểm ảnh thật cho mỗi ô mịn của sprite (lưới mịn gấp đôi lưới gốc), luôn là số nguyên
+// (2026-11-20) Ghi thẳng vào ImageData rồi putImageData một lần, thay cho hàng nghìn lần fillRect với chuỗi màu: cùng hình (ô đặc màu gốc,
+// mép sáng hơn 14%, viền 'o' vẽ đặc), nhanh hơn nhiều lần. Bộ đệm CC (catCv) bị dọn LRU nên phòng đông mèo dựng lại sprite liên tục.
+// Ô bán trong suốt: mép sáng phủ lên ô theo đúng phép trộn source-over như hai lần fillRect cũ (lệch do làm tròn tối đa vài đơn vị trên 255).
 function bufCanvas(b,f){
-  const W=b.W,H=b.H,c=document.createElement('canvas');c.width=W*f;c.height=H*f;c.lw=b.w;c.lh=b.h;const g=c.getContext('2d'),d=f-1;
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=b.c[y*W+x];if(!p)continue;
-    const a=p.length===4?p[3]/255:1,L=v=>Math.round(v+(255-v)*.14),full='rgba('+p[0]+','+p[1]+','+p[2]+','+a+')',lite='rgba('+L(p[0])+','+L(p[1])+','+L(p[2])+','+a+')';
-    g.fillStyle=full;g.fillRect(x*f,y*f,f,f);
-    if(f<2||b.r[y*W+x]==='o')continue; // viền luôn vẽ đặc cho sắc nét
-    g.fillStyle=lite;
-    if(f===2)g.fillRect(x*f+1,y*f+1,1,1); // hạt nhỏ: chỉ chấm sáng một góc
-    else{g.fillRect(x*f+d,y*f,1,f);g.fillRect(x*f,y*f+d,d,1);if(f>=5){g.fillRect(x*f,y*f,1,1);g.fillRect(x*f+d-1,y*f,1,1);g.fillRect(x*f,y*f+d-1,1,1);g.fillRect(x*f+d-1,y*f+d-1,1,1)}}}
+  const W=b.W,H=b.H,cw=W*f,ch=H*f,c=document.createElement('canvas');c.width=cw;c.height=ch;c.lw=b.w;c.lh=b.h;
+  if(!cw||!ch)return c;
+  const g=c.getContext('2d'),im=g.createImageData(cw,ch),D=im.data,d=f-1,CB=b.c,RB=b.r;
+  const q=v=>v<=0?0:v>=255?255:Math.round(v),L=v=>q(Math.round(v+(255-v)*.14));
+  const box=(x0,y0,w,h,r,gg,bb,a)=>{for(let y=y0,ye=y0+h;y<ye;y++){let o=(y*cw+x0)*4;for(let x=0;x<w;x++,o+=4){D[o]=r;D[o+1]=gg;D[o+2]=bb;D[o+3]=a}}};
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const p=CB[y*W+x];if(!p)continue;
+    const A=p.length===4?q(p[3]):255,r=q(p[0]),gg=q(p[1]),bb=q(p[2]),X=x*f,Y=y*f;
+    box(X,Y,f,f,r,gg,bb,A);
+    if(f<2||RB[y*W+x]==='o')continue; // viền luôn vẽ đặc cho sắc nét
+    let lr=L(p[0]),lg=L(p[1]),lb=L(p[2]),la=A;
+    if(A<255){const a=A/255,ao=a+a*(1-a);lr=q((lr*a+r*a*(1-a))/ao);lg=q((lg*a+gg*a*(1-a))/ao);lb=q((lb*a+bb*a*(1-a))/ao);la=q(ao*255)} // mép sáng phủ lên ô bán trong suốt
+    if(f===2)box(X+1,Y+1,1,1,lr,lg,lb,la); // hạt nhỏ: chỉ chấm sáng một góc
+    else{box(X+d,Y,1,f,lr,lg,lb,la);box(X,Y+d,d,1,lr,lg,lb,la);if(f>=5){box(X,Y,1,1,lr,lg,lb,la);box(X+d-1,Y,1,1,lr,lg,lb,la);box(X,Y+d-1,1,1,lr,lg,lb,la);box(X+d-1,Y+d-1,1,1,lr,lg,lb,la)}}}
+  g.putImageData(im,0,0);
   return c;
 }
 const CC={},CI={},FC={},FI={};
@@ -38,7 +47,19 @@ const kk=k=>2*fk(k*DPR());
 // ảnh dựng từ canvas đưa vào thẻ <img> bằng đường dẫn blob ngắn thay cho chuỗi data URL dài: tab có hàng trăm biểu tượng (tab Mèo 150 bé)
 // dựng lại nhanh hơn nhiều vì trình duyệt không phải đọc lại chuỗi base64 cho từng thẻ. Ảnh được giữ trong bộ nhớ đệm suốt phiên chơi.
 const cvURL=cv=>{try{const b=atob(cv.toDataURL().slice(22)),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return URL.createObjectURL(new Blob([u],{type:'image/png'}))}catch(e){return cv.toDataURL()}};
-const catSrc=(sp,k,old)=>{const n=kk(k),key=sp+'|'+n+(old?'|old':'');return CI[key]||(CI[key]=cvURL(catCv(sp,'sit',n,old)))};
+// (2026-11-20) Lúc mở game, từ lần vẽ giao diện đầu tiên tới khi khung đầu đã lên màn hình (LZI.on), ảnh thẻ mèo chưa có thì không nén PNG
+// đồng bộ (toDataURL chiếm phần lớn thời gian dựng thẻ): trả ảnh trong suốt giữ chỗ (thẻ <img> vẫn đúng cỡ nên bố cục không xê dịch), rồi
+// ngay sau khung đầu nén bằng toBlob (không chặn) và vẽ lại thanh trên, panel. Thẻ mèo tab Phòng nằm dưới khung phòng nên thường chưa thấy ngay.
+const LZI={on:false,q:new Map(),px:'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'};
+const catSrc=(sp,k,old)=>{const n=kk(k),key=sp+'|'+n+(old?'|old':'');if(CI[key])return CI[key];
+  if(LZI.on){if(!LZI.q.has(key))LZI.q.set(key,[sp,n,old]);return LZI.px}
+  return CI[key]=cvURL(catCv(sp,'sit',n,old))};
+function lazyDone(){
+  LZI.on=false;const L=[...LZI.q.entries()];LZI.q.clear();if(!L.length)return;
+  let left=L.length;const fin=()=>{if(--left>0)return;try{renderTopSoft();if($('modal').style.display!=='flex')renderPanel(true)}catch(e){}};
+  L.forEach(([key,[sp,n,old]])=>{if(CI[key]){fin();return}
+    try{catCv(sp,'sit',n,old).toBlob(b=>{if(b&&!CI[key])CI[key]=URL.createObjectURL(b);fin()},'image/png')}catch(e){fin()}});
+}
 /* Dựng sẵn ảnh thẻ mèo lúc rảnh: toDataURL (nén PNG đồng bộ) chiếm hơn nửa thời gian mở tab Mèo lần đầu (150 bé: 1,1–1,4 giây, điện thoại 2,7 giây).
    Sau khi tải xong, cứ lúc trình duyệt rảnh (requestIdleCallback, không có thì setTimeout) dựng vài ảnh bằng canvas.toBlob (không chặn), theo thứ tự:
    mèo đang có ở cỡ thẻ (kk(1)), rồi mọi giống và mèo trang phục ở cỡ Sưu tập (kk(1.5)). Ảnh cần ngay mà chưa có thì catSrc vẫn đi đường đồng bộ như cũ;
@@ -693,7 +714,7 @@ const THEMES={
   rooftop:{w:['#8a97b4','#737f9c','#687490'],wp:'city',f:['#888684','#777573'],fp:'tile'},
   royal:{w:['#8a464e','#d9a83a','#6a343c'],wp:'royal',f:['#988662','#867452'],fp:'check'},
 };
-function drawBg(g,rid){
+function drawBgRaw(g,rid){
   const T=THEMES[rid]||THEMES.living,[w0,w1,w2]=T.w,[f0,f1]=T.f,W=WORLD_W,Y=WALL_Y,FH=VH-Y;
   const F=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)};
   F(0,0,W,Y,w0);
@@ -726,6 +747,18 @@ function drawBg(g,rid){
   }
   if(rid==='royal')F(0,Y+26,W,22,'#8a3a44');
   const dm=(S.set&&S.set.dim)||0;if(dm>0)F(0,0,W,VH,'rgba(24,14,8,'+dm+')'); // độ tối nền chỉnh trong Cài đặt
+}
+// (2026-11-20) Nền tường và sàn không đổi giữa các khung: vẽ một lần vào canvas 1 điểm ảnh mỗi ô (480 × 170, thêm 32 ô mỗi chiều vì vài hoa văn vẽ lố ra ngoài thế giới; khoảng 0,4 MB) rồi phóng lên bằng drawImage
+// không làm mượt. Mọi hình chữ nhật của nền đều ở toạ độ nguyên nên với hệ số phóng nguyên ra đúng từng điểm ảnh như vẽ thẳng; hệ số không nguyên
+// (đang chạy hiệu ứng zoom) hoặc canvas bị xoay thì vẽ thẳng như cũ. Đệm theo phòng và độ tối nền; đổi chủ đề sáng tối không ảnh hưởng (màu nền ghi cứng).
+const BGC={};
+function drawBg(g,rid){
+  const m=g.getTransform();if(m.b||m.c||m.a!==m.d||m.a!==Math.round(m.a)){drawBgRaw(g,rid);return}
+  const key=(THEMES[rid]?rid:'living')+'|'+((S.set&&S.set.dim)||0);
+  let cv=BGC[key];
+  if(!cv){for(const k in BGC)if(k.split('|')[0]===key.split('|')[0])delete BGC[k];   // chỉ giữ một độ tối cho mỗi phòng
+    cv=document.createElement("canvas");cv.width=WORLD_W+32;cv.height=VH+32;drawBgRaw(cv.getContext('2d'),rid);BGC[key]=cv}
+  const sm=g.imageSmoothingEnabled;g.imageSmoothingEnabled=false;g.drawImage(cv,0,0);g.imageSmoothingEnabled=sm;
 }
 function drawItem(i){
   const f=FURN[i.fid],B=f.bowl,cv=furnCv(i.fid,i.broken?'broken':(B&&i.left>0?'full':(typeof wxVar==='function'?wxVar(i):''))),x0=Math.round(i.x-f.w/2),y0=Math.round(i.y-f.h);
@@ -1907,7 +1940,7 @@ addEventListener('keydown',ev=>{if(ev.key==='Escape'&&$('modal').style.display==
 {let n=0,t0=0;document.querySelector('h1').addEventListener('click',()=>{const t=Date.now();n=t-t0<600?n+1:1;t0=t;if(n>=7){n=0;openAdmin()}})}
 
 /* ============ VÒNG LẶP ============ */
-load();applySet();$('app').dataset.tab=tab;fitCanvas();syncEnts();render();
+load();applySet();$('app').dataset.tab=tab;fitCanvas();syncEnts();LZI.on=true;render();requestAnimationFrame(()=>requestAnimationFrame(lazyDone)); // ảnh thẻ mèo nén sau khung đầu (LZI)
 fitCanvas();camY=VH;clampCam(); // đo lại sau khi thanh trên, tên phòng và menu đã có nội dung (nếu không khung phòng lần đầu cao quá cửa sổ), rồi nhìn lại sát sàn
 if(AWAY.n)setTimeout(()=>toast(AWAY.n+' suất đã được các bé tự ra ăn'+(AWAY.cost?' · máy cho ăn tốn '+AWAY.cost+' xu':''),{type:'feed',title:'Lúc bạn vắng',coins:AWAY.coins,ms:5200}),600);
 setTimeout(preSched,1200); // dựng sẵn ảnh thẻ mèo lúc rảnh, sau khi trang đã ổn định

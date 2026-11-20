@@ -6,7 +6,13 @@
    Khi cấu hình đổi lúc đang chạy (đổi chế độ, đồng ý điều khoản), lib.rs thêm một script vá nhỏ chạy ngay sau script này
    để trang kế tiếp đọc đúng mode, server, terms.
    Gọi lệnh Rust qua window.__TAURI_INTERNALS__.invoke (không bật withGlobalTauri để trang máy chủ không thấy API thừa);
-   capability chỉ cấp đúng bảy lệnh mx_* của app. */
+   capability chỉ cấp đúng các lệnh mx_* của app.
+   Thêm (2026-11-20):
+   - MXAPP.persist(json): gửi bản lưu cho lõi ghi ra saves\<khóa>.json (không chờ, lỗi thì thôi). Lõi tự lấy khóa theo origin
+     của trang (solo / srv-<8 hex>), bỏ lần gọi đến trễ (page = performance.timeOrigin, n tăng dần). Khôi phục lúc mở app
+     do src/restore.js làm, không ở đây.
+   - Origin nội bộ (chơi một mình): fetch tới api/… của chính origin bị từ chối ngay (TypeError như lỗi mạng) để net.js
+     thôi chờ và giữ NET.on=false như khi mở bằng file://. */
 (function () {
   'use strict';
   if (window.MXAPP) return;
@@ -29,6 +35,7 @@
     if (typeof e === 'string' && e) return e;
     return (e && e.message) || 'Lỗi không rõ.';
   }
+  var MAX_SAVE = 8 * 1024 * 1024, PAGE = performance.timeOrigin, pN = 0;
   var BAD_URL = 'Địa chỉ máy chủ không hợp lệ. Ví dụ: 192.168.1.5 hoặc https://ten-may.trycloudflare.com';
 
   var M = {
@@ -66,6 +73,10 @@
     retry: function () {
       inv('mx_retry').catch(function () {});
     },
+    persist: function (json) {
+      if (typeof json !== 'string' || !json || json.length > MAX_SAVE) return;
+      inv('mx_persist', { json: json, page: PAGE, n: ++pN }).catch(function () {});
+    },
     openExternal: function (u) {
       var s = String(u == null ? '' : u).trim();
       if (!/^https?:\/\//i.test(s)) return;
@@ -91,6 +102,23 @@
       });
     }
   } catch (e) {}
+
+  /* Chơi một mình: trang nội bộ không có máy chủ. net.js hỏi api/ping lúc tải; trả lỗi mạng ngay (không đợi giao thức
+     nội bộ trả 404) để game đi đúng nhánh "không có máy chủ". Chỉ chặn api/ cùng origin, mọi fetch khác giữ nguyên. */
+  if (internal && typeof window.fetch === 'function') {
+    var realFetch = window.fetch;
+    var apiOf = function (input) {
+      try {
+        var s = typeof input === 'string' ? input : (input && input.url) || String(input);
+        var u = new URL(s, location.href);
+        return u.origin === location.origin && /^\/api\//.test(u.pathname);
+      } catch (e) { return false; }
+    };
+    window.fetch = function (input, init) {
+      if (apiOf(input)) return Promise.reject(new TypeError('Failed to fetch (chơi một mình: không có máy chủ)'));
+      return realFetch.apply(window, arguments);
+    };
+  }
 
   /* Phím: F11 toàn màn hình; F5, Ctrl+R tải lại (trên trang báo lỗi thì thử kết nối lại); bản phát hành chặn
      F12, Ctrl+Shift+I/J/C. Các tổ hợp khác (Ctrl+Shift+A mở Admin, Ctrl + lăn chuột zoom phòng) đi thẳng vào trang. */

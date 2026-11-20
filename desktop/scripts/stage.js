@@ -4,6 +4,7 @@
      server.py, *.wav, .git.
    - desktop/offline.html thành web/__offline.html (trang báo không vào được máy chủ).
    - Sinh desktop/src-tauri/license_vi.txt: điều khoản + quyền riêng tư, UTF-8 không BOM (Tauri tự thêm BOM để NSIS hiện đúng tiếng Việt).
+   - Rồi gộp script, CSS liên tiếp của web/index.html thành vài bundle (scripts/bundle.js); MEOXU_NOBUNDLE=1 thì không gộp.
    Chạy tự động trước tauri dev/build (beforeDevCommand, beforeBuildCommand); chạy tay: node scripts/stage.js */
 const fs = require('fs');
 const path = require('path');
@@ -50,3 +51,7 @@ const lic = (eula + '\n\n' + '='.repeat(60) + '\n\n' + priv + '\n').replace(/\n/
 fs.writeFileSync(path.join(DESK, 'src-tauri', 'license_vi.txt'), lic, 'utf8');   // không BOM: Tauri tự thêm BOM khi đưa vào trình cài
 
 console.log('[stage] ' + n + ' file, ' + (bytes / 1048576).toFixed(1) + ' MB -> ' + path.relative(ROOT, OUT));
+
+// Gộp script và CSS cho mở nhanh hơn (xem scripts/bundle.js). MEOXU_NOBUNDLE=1 để giữ từng file như bản web (so sánh, gỡ lỗi).
+if (process.env.MEOXU_NOBUNDLE === '1') console.log('[stage] MEOXU_NOBUNDLE=1: không gộp script');
+else require('./bundle').bundle(OUT, s => console.log(s));

@@ -10,6 +10,8 @@
     "allow-mx-legal",
     "allow-mx-retry",
     "allow-mx-open-external",
-    "allow-mx-fullscreen"
+    "allow-mx-fullscreen",
+    "allow-mx-persist",
+    "allow-mx-restored"
   ]
 }

@@ -228,3 +228,40 @@ if(APP.on){
   document.documentElement.classList.add('mx-app');
   if(document.readyState==='loading')addEventListener('DOMContentLoaded',appWelOpen);else appWelOpen();
 }
+
+/* ---------- LƯU AN TOÀN: gửi bản lưu xuống file của app (2026-11-20) ----------
+   window.MXAPP.persist(chuỗi JSON) ghi bản lưu xuống file; lúc mở app, file có `last` lớn hơn bản trong localStorage thì app ghi đè
+   localStorage trước khi game chạy (phòng khi WebView2 mất localStorage). Chỉ chạy khi app có persist; bản web không có gì thay đổi.
+   - Trường `last`: save() của game.js đặt S.last=now() (ms, Date.now() + TOFF; TOFF chỉ khác 0 lúc bù thời gian vắng mặt trong load(),
+     lúc đó không có save()) ngay trước khi ghi, nên mỗi bản lưu đều có `last` là lúc lưu, tăng dần (js/bg.js hoãn các lần save() gọi
+     trong lúc bù giờ ẩn trang tới khi bù xong để không ghi `last` lùi về quá khứ). Đổi giờ máy lùi lại thì `last` cũng lùi theo.
+   - Mỗi lần save(): gửi tối đa một lần mỗi PS.gap (3 giây); các lần liền nhau gộp lại, lần cuối luôn được gửi bằng hẹn giờ.
+     Nội dung gửi luôn là đúng chuỗi đang nằm trong localStorage (đọc lại lúc gửi, không JSON.stringify lần nữa); nếu localStorage
+     không giữ được bản mới (đầy) thì gửi JSON.stringify(S).
+   - Trang ẩn (thu nhỏ, ẩn vào khay), pagehide, beforeunload: save() rồi gửi ngay, không chờ hẹn giờ.
+   - SAVE_OFF (js/net.js đang khôi phục bản lưu của máy chủ hoặc nhận tiến độ từ máy khác rồi tải lại trang): save() không ghi gì;
+     lúc gửi thì gửi đúng chuỗi net.js vừa ghi vào localStorage, để file không giữ bản cũ có `last` lớn hơn rồi đè lại bản vừa khôi phục.
+     net.js xóa bản lưu (bắt đầu ván mới) thì gửi {"v":0,"last":<bây giờ>,"wiped":1}: bản này không hợp lệ với load() nên game tạo ván mới. */
+if(APP.on&&typeof appX().persist==='function'){
+  const PS={gap:3000,t:0,tm:0,sent:'',n:0,err:0};
+  const appPersistStr=()=>{
+    let s=null;try{s=localStorage.getItem(KEY)}catch(e){}
+    if(SAVE_OFF)return s!=null?s:JSON.stringify({v:0,last:Date.now(),wiped:1});
+    if(s==null||(S&&S.last!=null&&s.indexOf('"last":'+S.last)<0))s=JSON.stringify(S);   // localStorage chưa có bản mới nhất (đầy, bị chặn)
+    return s;
+  };
+  const appFlush=()=>{
+    if(PS.tm){clearTimeout(PS.tm);PS.tm=0}
+    let s;try{s=appPersistStr()}catch(e){return}
+    if(!s||s===PS.sent)return;
+    PS.t=Date.now();PS.sent=s;PS.n++;
+    try{const r=appX().persist(s);if(r&&typeof r.catch==='function')r.catch(()=>{PS.err++;PS.sent=''})}catch(e){PS.err++;PS.sent=''}
+  };
+  const appQueue=()=>{if(PS.tm)return;PS.tm=setTimeout(appFlush,Math.max(50,PS.gap-(Date.now()-PS.t)))};
+  {const O=save;save=function(){const r=O.apply(this,arguments);appQueue();return r}}
+  const appNow=()=>{try{save()}catch(e){}appFlush()};
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)appNow()});
+  addEventListener('pagehide',appNow);
+  addEventListener('beforeunload',appNow);
+  APP.persist={st:PS,flush:appFlush};
+}

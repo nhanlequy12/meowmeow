@@ -154,7 +154,8 @@ async function main() {
     const r = await app.page.evaluate(() => {
       const M = window.MXAPP; if (!M) return { miss: ['MXAPP'] };
       const want = { isApp: 'boolean', version: 'string', dev: 'boolean', termsVer: 'number', terms: 'number', server: 'string',
-        norm: 'function', ping: 'function', setMode: 'function', acceptTerms: 'function', legal: 'function', retry: 'function', openExternal: 'function' };
+        norm: 'function', ping: 'function', setMode: 'function', acceptTerms: 'function', legal: 'function', retry: 'function', openExternal: 'function',
+        persist: 'function' };
       const miss = Object.keys(want).filter(k => typeof M[k] !== want[k]);
       if (!('mode' in M) || !(M.mode === null || M.mode === 'solo' || M.mode === 'friend')) miss.push('mode');
       return { miss, isApp: M.isApp, version: M.version, dev: M.dev, mode: M.mode, terms: M.terms, termsVer: M.termsVer };
@@ -162,6 +163,21 @@ async function main() {
     check('MXAPP đủ khóa và đúng kiểu', r.miss.length === 0 && r.isApp === true && r.version === '1.0.0' && r.mode === null && r.terms === 0 && r.termsVer === 1,
       r.miss.length ? 'thiếu/sai: ' + r.miss.join(', ') : JSON.stringify(r));
     check('MXAPP.dev đúng loại bản build', r.dev === /[\\/]debug[\\/]/i.test(EXE), 'dev=' + r.dev);
+  });
+  await step('chặn api/ khi chơi một mình', async () => {
+    const r = await app.page.evaluate(async () => {
+      const t = performance.now();
+      const a = await fetch('api/ping').then(() => 'trả lời', e => e.name);
+      const b = await fetch('icons/icon-192.png').then(x => x.status, e => e.name);
+      return { a, b, ms: Math.round(performance.now() - t) };
+    });
+    check('fetch api/ping bị từ chối ngay (TypeError), file thường vẫn tải', r.a === 'TypeError' && r.b === 200, JSON.stringify(r));
+  });
+  await step('persist', async () => {
+    const f = path.join(APPDIR, 'saves', 'solo.json');
+    await app.page.evaluate(() => { S.coins = 424242; save(); MXAPP.persist(localStorage.getItem('meoxu_v2')); MXAPP.persist('không phải JSON'); });
+    const ok = await waitFor(() => { try { return JSON.parse(fs.readFileSync(f, 'utf8')).coins === 424242; } catch (e) { return false; } }, 6000, 100);
+    check('MXAPP.persist ghi saves\\solo.json (bỏ qua JSON sai)', ok, fs.existsSync(f) ? fs.statSync(f).size + ' byte' : 'không có file');
   });
   await step('không có service worker', async () => {
     const r = await app.page.evaluate(async () => {

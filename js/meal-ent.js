@@ -177,11 +177,25 @@ drawItem=function(i){
 };
 // nhãn số suất còn lại trên sức chứa, đặt ngay DƯỚI chân bát (bát ăn tông cam nâu; bát nước tông xanh, có 💧).
 // Vẽ ở lượt critDraw (sau mèo và đồ) nên không bị che, và nằm dưới bát nên không che mặt bé đang cúi ăn.
+// (2026-11-20) Nhãn chỉ đổi khi số suất đổi: vẽ một lần vào canvas phụ (theo chữ, màu, mức zoom và phần lẻ điểm ảnh của vị trí) rồi drawImage
+// đúng điểm ảnh, thay cho measureText + fillText mỗi khung (chữ có 💧 là emoji màu, vẽ rất tốn). Canvas phụ dùng cùng phép biến đổi, cùng phông
+// và cùng phần lẻ toạ độ như khi vẽ thẳng nên nhìn y hệt. Bộ đệm tối đa MELC.max nhãn, đầy thì xóa hết làm lại.
+const MELC={m:new Map(),w:new Map(),max:160};
+function meLabelRaw(g,k,n,tx,tw,nx,ny){const L=MEL[k];g.fillStyle=n>0?L.bd:MEL.no;g.fillRect(nx-.5,ny-.5,tw+1,7);g.fillStyle=L.bg;g.fillRect(nx,ny,tw,6);g.fillStyle=n>0?L.ok:MEL.no;g.textBaseline='top';g.fillText(tx,nx+1.5,ny+.6)}
 function meLabel(i){
   const k=mbOf(i);if(!k||i.broken)return;
-  const n=meCount(k,i),L=MEL[k],tx=(k==='w'?'💧':'')+n+'/'+MK[k].cap(i);RX.font='bold 4.5px system-ui,sans-serif';
-  const tw=Math.ceil(RX.measureText(tx).width)+3,nx=Math.round(i.x-tw/2),ny=Math.round(i.y)+2,fg=n>0?L.ok:MEL.no;
-  RX.fillStyle=n>0?L.bd:MEL.no;RX.fillRect(nx-.5,ny-.5,tw+1,7);RX.fillStyle=L.bg;RX.fillRect(nx,ny,tw,6);RX.fillStyle=fg;RX.textBaseline='top';RX.fillText(tx,nx+1.5,ny+.6);
+  const n=meCount(k,i),tx=(k==='w'?'💧':'')+n+'/'+MK[k].cap(i),FT='bold 4.5px system-ui,sans-serif';
+  const T=RX.getTransform(),z=T.a,wk=tx+'|'+z;
+  let tw=MELC.w.get(wk);if(tw==null){RX.font=FT;tw=Math.ceil(RX.measureText(tx).width)+3;if(MELC.w.size>MELC.max)MELC.w.clear();MELC.w.set(wk,tw)}
+  const nx=Math.round(i.x-tw/2),ny=Math.round(i.y)+2;
+  if(T.b||T.c||T.a!==T.d){RX.font=FT;meLabelRaw(RX,k,n,tx,tw,nx,ny);return}   // canvas bị xoay, méo: vẽ thẳng như cũ
+  // điểm ảnh thật của góc nhãn (nx-.5, ny-.5): phần nguyên để đặt ảnh, phần lẻ đưa vào canvas phụ
+  const dx=(nx-.5)*z+T.e,dy=(ny-.5)*z+T.f,bx=Math.floor(dx+1e-6),by=Math.floor(dy+1e-6),fx=+(dx-bx).toFixed(3),fy=+(dy-by).toFixed(3);
+  const key=k+'|'+(n>0?1:0)+'|'+tx+'|'+z+'|'+fx+'|'+fy;let cv=MELC.m.get(key);
+  if(!cv){cv=document.createElement('canvas');cv.width=Math.ceil((tw+1)*z+fx)+1;cv.height=Math.ceil(7*z+fy)+1;const g=cv.getContext('2d');
+    g.setTransform(z,0,0,z,fx-(nx-.5)*z,fy-(ny-.5)*z);g.font=FT;meLabelRaw(g,k,n,tx,tw,nx,ny);
+    if(MELC.m.size>MELC.max)MELC.m.clear();MELC.m.set(key,cv)}
+  RX.save();RX.setTransform(1,0,0,1,0,0);RX.imageSmoothingEnabled=false;RX.drawImage(cv,bx,by);RX.restore();
 }
 {const C0=critDraw;critDraw=function(g){
   const r=C0.apply(this,arguments);

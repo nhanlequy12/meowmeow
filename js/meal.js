@@ -172,7 +172,7 @@ function mealTick(dt,sim){
     const b=S.items.find(i=>i.iid===m.iid);
     if(!b||b.broken||b.room!==c.room||!MK[m.k].ok(b)||!mealHome(c)){mealStop(c,'cancel');return}
     if(m.st==='eat'){if(sim||mealProg(m)>=1)mealEnd(c,b);return}
-    const vis=!sim&&typeof ents!=='undefined'&&typeof cur!=='undefined'&&c.room===cur&&ents.some(e=>e.uid===c.uid&&!e.clone);
+    const vis=!sim&&!(typeof document!=='undefined'&&document.hidden)&&typeof ents!=='undefined'&&typeof cur!=='undefined'&&c.room===cur&&ents.some(e=>e.uid===c.uid&&!e.clone); // trang ẩn: hoạt ảnh dừng nên bé tới bát theo eta như ở phòng khác (js/bg.js)
     if(m.st==='go'){
       if(vis?!m.arr&&now()>m.eta+MEALC.grace*1000:false){mealStop(c,'stuck');return}
       if(!(sim||m.arr||(!vis&&now()>=m.eta)))return;

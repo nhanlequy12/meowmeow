@@ -5,15 +5,27 @@
 //! - Hai chế độ: chơi một mình (game nhúng trong app, origin nội bộ http://tauri.localhost) và chơi cùng bạn bè
 //!   (cửa sổ mở thẳng trang game do server.py phục vụ). Hai origin khác nhau nên có hai bản lưu riêng.
 //! - Thư mục gốc: %APPDATA%\Mèo Xu (đổi bằng biến môi trường MEOXU_APPDIR khi thử):
-//!   config.json {mode, server, terms, win} ghi an toàn (file tạm rồi đổi tên), WebView\ là dữ liệu WebView2.
+//!   config.json {mode, server, terms, win} ghi an toàn (file tạm rồi đổi tên), WebView\ là dữ liệu WebView2,
+//!   saves\<khóa>.json là bản sao bản lưu game do MXAPP.persist ghi (khóa `solo` cho origin nội bộ, `srv-<8 hex>` cho máy chủ).
+//! - Lưu an toàn: Chromium hoãn ghi localStorage nên tắt đột ngột (taskkill /F, mất điện) mất vài chục giây tiến độ.
+//!   Game gọi MXAPP.persist(json) → mx_persist ghi saves\<khóa>.json (file tạm + sync_all + đổi tên). Lúc mở app hoặc đổi
+//!   chế độ, lõi gắn một script khôi phục (src/restore.js, có dữ liệu file) chạy trước script game: localStorage trống hoặc
+//!   cũ hơn (trường `last`) thì chép bản file vào. Script này chỉ dùng cho lần tải trang đầu tiên rồi bị gỡ (mx_restored),
+//!   nên Ctrl+R không đè bản mới bằng bản cũ. Vì phải gắn script trước lần điều hướng đầu, cửa sổ mở bằng about:blank.
+//! - Thu nhỏ (hoặc ẩn bằng set_web_visible) thì báo WebView2 IsVisible=false: trang có document.hidden, rAF dừng,
+//!   timer vẫn chạy (không TrySuspend). Tắt IntensiveWakeUpThrottling để timer ẩn không bị dồn về 1 lần/phút.
 
 use serde::{Deserialize, Serialize};
 use std::{
     borrow::Cow,
+    collections::HashMap,
     fs,
     io::Write,
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc, Mutex,
+    },
     time::{Duration, Instant},
 };
 use tauri::{
@@ -29,6 +41,12 @@ const INIT_JS: &str = include_str!("init.js");
 const NORM_JS: &str = include_str!("../../norm.js");
 const EULA: &str = include_str!("../../legal/eula_vi.txt");
 const PRIVACY: &str = include_str!("../../legal/privacy_vi.txt");
+const RESTORE_JS: &str = include_str!("restore.js");
+/// Bản lưu lớn hơn mức này thì bỏ qua (bản lưu thường khoảng 16–60 KB).
+const MAX_SAVE: usize = 8 << 20;
+/// Mặc định của wry + tắt dồn timer khi trang ẩn quá 5 phút (game cần timer 1 giây để tính giờ, gửi thông báo).
+const BROWSER_ARGS: &str =
+    "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection,IntensiveWakeUpThrottling";
 
 /* ---------------- cấu hình ---------------- */
 
@@ -71,6 +89,12 @@ struct Ctx {
     normal: Mutex<Option<WinState>>,
     /// id của script vá đang gắn vào WebView2 (thay mỗi lần cấu hình đổi).
     patch_id: Mutex<Option<String>>,
+    /// id của script khôi phục bản lưu (chỉ cho lần tải trang đầu tiên của origin sắp mở).
+    restore_id: Mutex<Option<String>>,
+    /// Ghi saves\*.json lần lượt; nhớ lần gọi persist mới nhất của từng khóa: (timeOrigin của trang, số thứ tự).
+    persist: Mutex<HashMap<String, (f64, u64)>>,
+    /// Trạng thái IsVisible đã báo cho WebView2 (tránh gọi lặp khi kéo cỡ cửa sổ).
+    web_vis: AtomicBool,
     /// Lần điều hướng khung chính gần nhất: (NavigationId, địa chỉ) để biết lần nào thất bại.
     nav: Mutex<Option<(u64, String)>>,
 }
@@ -281,53 +305,162 @@ fn patch_script(ctx: &Ctx) -> String {
     )
 }
 
-/// Gắn (thay) script vá vào WebView2 rồi, nếu có, điều hướng tới `then` SAU KHI script đã được nhận.
-#[cfg(windows)]
-fn apply_patch(win: &WebviewWindow, ctx: Arc<Ctx>, then: Option<Url>) {
-    use webview2_com::AddScriptToExecuteOnDocumentCreatedCompletedHandler;
-    use windows_core::HSTRING;
-    let script = patch_script(&ctx);
-    let next = Arc::new(Mutex::new(then));
-    let w = win.clone();
-    let next2 = next.clone();
-    let r = win.with_webview(move |pw| unsafe {
-        let go = |w: &WebviewWindow, n: &Arc<Mutex<Option<Url>>>| {
-            if let Some(u) = n.lock().unwrap().take() {
-                let _ = w.navigate(u);
-            }
-        };
-        let core = match pw.controller().CoreWebView2() {
-            Ok(c) => c,
-            Err(_) => return go(&w, &next2),
-        };
-        if let Some(old) = ctx.patch_id.lock().unwrap().take() {
-            let _ = core.RemoveScriptToExecuteOnDocumentCreated(&HSTRING::from(old));
-        }
-        let (ctx2, w2, n2) = (ctx.clone(), w.clone(), next2.clone());
-        let handler = AddScriptToExecuteOnDocumentCreatedCompletedHandler::create(Box::new(
-            move |res: windows_core::Result<()>, id: String| {
-                if res.is_ok() {
-                    *ctx2.patch_id.lock().unwrap() = Some(id);
-                }
-                go(&w2, &n2);
-                Ok(())
-            },
-        ));
-        if core.AddScriptToExecuteOnDocumentCreated(&HSTRING::from(script), &handler).is_err() {
-            go(&w, &next2);
-        }
-    });
-    if r.is_err() {
-        if let Some(u) = next.lock().unwrap().take() {
-            let _ = win.navigate(u);
+/// Việc làm tiếp sau khi WebView2 đã nhận script (thường là điều hướng).
+type Then = Box<dyn FnOnce() + Send + 'static>;
+
+#[derive(Clone, Copy)]
+enum Slot {
+    Patch,
+    Restore,
+}
+
+impl Ctx {
+    fn slot(&self, s: Slot) -> &Mutex<Option<String>> {
+        match s {
+            Slot::Patch => &self.patch_id,
+            Slot::Restore => &self.restore_id,
         }
     }
 }
 
+/// Gỡ script cũ ở `slot`, gắn `script` (None: chỉ gỡ) vào WebView2 bằng AddScriptToExecuteOnDocumentCreated,
+/// rồi gọi `then` SAU KHI WebView2 đã nhận script (để trang kế tiếp chắc chắn chạy nó).
+#[cfg(windows)]
+fn swap_script(win: &WebviewWindow, ctx: Arc<Ctx>, slot: Slot, script: Option<String>, then: Then) {
+    use webview2_com::AddScriptToExecuteOnDocumentCreatedCompletedHandler;
+    use windows_core::HSTRING;
+    let then = Arc::new(Mutex::new(Some(then)));
+    let fire = |t: &Arc<Mutex<Option<Then>>>| {
+        let f = t.lock().unwrap().take();
+        if let Some(f) = f {
+            f();
+        }
+    };
+    let t2 = then.clone();
+    let r = win.with_webview(move |pw| unsafe {
+        let core = match pw.controller().CoreWebView2() {
+            Ok(c) => c,
+            Err(_) => return fire(&t2),
+        };
+        if let Some(old) = ctx.slot(slot).lock().unwrap().take() {
+            let _ = core.RemoveScriptToExecuteOnDocumentCreated(&HSTRING::from(old));
+        }
+        let Some(js) = script else { return fire(&t2) };
+        let (c2, t3) = (ctx.clone(), t2.clone());
+        let handler = AddScriptToExecuteOnDocumentCreatedCompletedHandler::create(Box::new(
+            move |res: windows_core::Result<()>, id: String| {
+                if res.is_ok() {
+                    *c2.slot(slot).lock().unwrap() = Some(id);
+                }
+                fire(&t3);
+                Ok(())
+            },
+        ));
+        if core.AddScriptToExecuteOnDocumentCreated(&HSTRING::from(js), &handler).is_err() {
+            fire(&t2);
+        }
+    });
+    if r.is_err() {
+        fire(&then);
+    }
+}
+
 #[cfg(not(windows))]
-fn apply_patch(win: &WebviewWindow, _ctx: Arc<Ctx>, then: Option<Url>) {
-    if let Some(u) = then {
-        let _ = win.navigate(u);
+fn swap_script(_win: &WebviewWindow, _ctx: Arc<Ctx>, _slot: Slot, _script: Option<String>, then: Then) {
+    then();
+}
+
+/// Thay script vá (giá trị mới của cấu hình), rồi nếu có `then`: gắn script khôi phục cho origin của `then` và điều hướng.
+fn apply_patch(win: &WebviewWindow, ctx: Arc<Ctx>, then: Option<Url>) {
+    let script = patch_script(&ctx);
+    let next: Then = match then {
+        Some(u) => {
+            let (w, c) = (win.clone(), ctx.clone());
+            Box::new(move || open_with_restore(&w, c, u))
+        }
+        None => Box::new(|| {}),
+    };
+    swap_script(win, ctx, Slot::Patch, Some(script), next);
+}
+
+/// Gắn script khôi phục bản lưu cho origin của `u` (gỡ bản cũ nếu có) rồi mới điều hướng tới `u`.
+fn open_with_restore(win: &WebviewWindow, ctx: Arc<Ctx>, u: Url) {
+    let script = restore_script(&ctx, &u);
+    let w = win.clone();
+    swap_script(win, ctx, Slot::Restore, script, Box::new(move || {
+        let _ = w.navigate(u);
+    }));
+}
+
+
+/* ---------------- lưu an toàn: saves\<khóa>.json ---------------- */
+
+/// Khóa file lưu theo origin: `solo` cho origin nội bộ, `srv-<FNV-1a 32 bit của origin>` cho máy chủ.
+fn save_key(ctx: &Ctx, u: &Url) -> Option<String> {
+    if !matches!(u.scheme(), "http" | "https") {
+        return None;
+    }
+    if same_origin(u, &ctx.base) {
+        return Some("solo".into());
+    }
+    let o = u.origin().ascii_serialization();
+    let mut h: u32 = 0x811c_9dc5;
+    for b in o.bytes() {
+        h ^= b as u32;
+        h = h.wrapping_mul(0x0100_0193);
+    }
+    Some(format!("srv-{h:08x}"))
+}
+
+fn save_path(ctx: &Ctx, key: &str) -> PathBuf {
+    ctx.dir.join("saves").join(format!("{key}.json"))
+}
+
+/// Bản lưu hợp lệ: JSON object, không quá MAX_SAVE.
+fn valid_save(raw: &str) -> bool {
+    raw.len() <= MAX_SAVE && matches!(serde_json::from_str::<serde_json::Value>(raw), Ok(serde_json::Value::Object(_)))
+}
+
+fn write_save(path: &Path, raw: &str) -> std::io::Result<()> {
+    if let Some(dir) = path.parent() {
+        fs::create_dir_all(dir)?;
+    }
+    let tmp = path.with_extension("json.tmp");
+    {
+        let mut f = fs::File::create(&tmp)?;
+        f.write_all(raw.as_bytes())?;
+        f.sync_all()?;
+    }
+    fs::rename(&tmp, path)
+}
+
+/// Script khôi phục cho origin của `u` (None nếu chưa có file lưu hợp lệ).
+fn restore_script(ctx: &Ctx, u: &Url) -> Option<String> {
+    let key = save_key(ctx, u)?;
+    let raw = fs::read_to_string(save_path(ctx, &key)).ok()?;
+    let raw = raw.trim_start_matches('\u{feff}');
+    if !valid_save(raw) {
+        return None;
+    }
+    let lit = serde_json::to_string(raw).ok()?; // chuỗi JSON cũng là chuỗi JS hợp lệ
+    let data = serde_json::json!({ "origin": u.origin().ascii_serialization(), "key": key });
+    Some(RESTORE_JS.replacen("/*__R__*/null", &data.to_string(), 1).replacen("/*__DATA__*/''", &lit, 1))
+}
+
+/// Báo WebView2 trang đang hiện hay không (thu nhỏ, ẩn xuống khay). false: document.hidden, visibilitychange,
+/// requestAnimationFrame dừng, nhưng timer vẫn chạy (không TrySuspend). Dùng chung cho phần khay:
+/// window.hide() rồi set_web_visible(&w, false); window.show() rồi set_web_visible(&w, true).
+pub fn set_web_visible(win: &WebviewWindow, on: bool) {
+    if let Some(ctx) = win.try_state::<Arc<Ctx>>() {
+        if ctx.web_vis.swap(on, Ordering::SeqCst) == on {
+            return;
+        }
+    }
+    #[cfg(windows)]
+    {
+        let _ = win.with_webview(move |pw| unsafe {
+            let _ = pw.controller().SetIsVisible(on);
+        });
     }
 }
 
@@ -512,6 +645,43 @@ async fn mx_accept_terms(app: AppHandle) -> Result<u32, String> {
     Ok(TERMS_VER)
 }
 
+/// MXAPP.persist(json): ghi bản lưu của trang đang gọi ra saves\<khóa>.json. `page` là performance.timeOrigin của trang,
+/// `n` tăng dần trong một trang: lần gọi đến trễ (cũ hơn lần đã ghi) bị bỏ. Sai, quá lớn, khác origin thì lặng lẽ bỏ qua.
+#[tauri::command]
+async fn mx_persist(app: AppHandle, webview: tauri::Webview, json: String, page: f64, n: u64) {
+    let ctx = ctx_of(&app);
+    let Ok(u) = webview.url() else { return };
+    let ok_origin = same_origin(&u, &ctx.base) || ctx.cfg().friend_server().is_some_and(|s| same_origin(&u, &s));
+    if !ok_origin || json.len() > MAX_SAVE {
+        return;
+    }
+    let Some(key) = save_key(&ctx, &u) else { return };
+    let _ = tauri::async_runtime::spawn_blocking(move || {
+        if !valid_save(&json) {
+            return;
+        }
+        let mut last = ctx.persist.lock().unwrap(); // giữ khóa suốt lúc ghi: các lần ghi không chồng nhau
+        if let Some(&(p0, n0)) = last.get(&key) {
+            if p0 == page && n <= n0 {
+                return;
+            }
+        }
+        if write_save(&save_path(&ctx, &key), &json).is_ok() {
+            last.insert(key, (page, n));
+        }
+    })
+    .await;
+}
+
+/// Script khôi phục đã chạy trên trang đầu tiên của origin: gỡ nó để lần tải lại sau (Ctrl+R) không chép bản file cũ.
+#[tauri::command]
+fn mx_restored(app: AppHandle) {
+    let ctx = ctx_of(&app);
+    if let Some(win) = main_win(&app) {
+        swap_script(&win, ctx, Slot::Restore, None, Box::new(|| {}));
+    }
+}
+
 #[tauri::command]
 fn mx_legal() -> Legal {
     let strip = |s: &str| s.trim_start_matches('\u{feff}').to_string();
@@ -606,6 +776,7 @@ fn build_window(app: &AppHandle, ctx: Arc<Ctx>, first: Url) -> tauri::Result<Web
         .zoom_hotkeys_enabled(false) // game dùng Ctrl + lăn chuột để zoom phòng
         .disable_drag_drop_handler() // giữ kéo thả HTML5 của game (đổi phòng cho mèo)
         .data_directory(ctx.dir.join("WebView"))
+        .additional_browser_args(BROWSER_ARGS)
         .initialization_script(init_script(&ctx))
         .on_web_resource_request(media_range)
         .on_navigation(move |u| {
@@ -713,7 +884,9 @@ pub fn run() {
             mx_legal,
             mx_retry,
             mx_open_external,
-            mx_fullscreen
+            mx_fullscreen,
+            mx_persist,
+            mx_restored
         ])
         .setup(move |app| {
             let handle = app.handle().clone();
@@ -724,6 +897,9 @@ pub fn run() {
                 base: internal_base(&handle),
                 normal: Mutex::new(None),
                 patch_id: Mutex::new(None),
+                restore_id: Mutex::new(None),
+                persist: Mutex::new(HashMap::new()),
+                web_vis: AtomicBool::new(true),
                 nav: Mutex::new(None),
             });
             app.manage(ctx.clone());
@@ -732,15 +908,26 @@ pub fn run() {
                 Some(s) => ctx.offline_url(s, None, true),
                 None => ctx.index_url(),
             };
-            let win = build_window(&handle, ctx.clone(), first)?;
+            // Mở about:blank trước: script khôi phục bản lưu phải được WebView2 nhận xong rồi mới tải trang thật.
+            let win = build_window(&handle, ctx.clone(), Url::parse("about:blank").unwrap())?;
             hook_nav_fail(&win, ctx.clone());
             if let Some(ws) = cfg.win {
                 restore_window(&win, &ws);
             }
             win.show()?;
             let _ = win.set_focus();
-            if let Some(s) = friend {
-                connect_friend(&handle, s, false); // cửa sổ đã mở sẵn trang chờ
+            match friend.and_then(|s| Url::parse(&format!("{s}/")).ok().map(|u| (s, u))) {
+                Some((s, srv)) => {
+                    // Trang chờ nội bộ trước (không khớp origin nên không dùng hết script khôi phục),
+                    // khôi phục áp cho trang máy chủ; ping được mới vào máy chủ.
+                    let script = restore_script(&ctx, &srv);
+                    let (h, w) = (handle.clone(), win.clone());
+                    swap_script(&win, ctx.clone(), Slot::Restore, script, Box::new(move || {
+                        let _ = w.navigate(first);
+                        connect_friend(&h, s, false); // cửa sổ đã mở sẵn trang chờ
+                    }));
+                }
+                None => open_with_restore(&win, ctx.clone(), first),
             }
             Ok(())
         })
@@ -748,7 +935,15 @@ pub fn run() {
             let Some(ctx) = win.try_state::<Arc<Ctx>>() else { return };
             let ctx = ctx.inner().clone();
             match ev {
-                WindowEvent::Moved(_) | WindowEvent::Resized(_) => remember_normal(win, &ctx),
+                WindowEvent::Moved(_) => remember_normal(win, &ctx),
+                WindowEvent::Resized(sz) => {
+                    remember_normal(win, &ctx);
+                    // Thu nhỏ: WM_SIZE cỡ 0x0. Báo WebView2 để trang dừng vẽ; mở lại thì vẽ tiếp.
+                    let min = sz.width == 0 || win.is_minimized().unwrap_or(false);
+                    if let Some(w) = main_win(win.app_handle()) {
+                        set_web_visible(&w, !min && w.is_visible().unwrap_or(true));
+                    }
+                }
                 WindowEvent::CloseRequested { .. } => save_window(win, &ctx),
                 _ => {}
             }
