@@ -1,0 +1,70 @@
+/* ============ ÁP FONT CHO TOÀN GAME (2026-11-20) ============
+   Nạp CUỐI danh sách CSS (sau css/dialog.css) để ghi đè cỡ chữ rải rác ở các file khác. Font và biến khai báo ở css/fonts.css.
+   - Đoạn văn, mô tả, chữ nhỏ (small, .dim), ô nhập, tooltip: Nunito 700 (--fx-text).
+   - Tiêu đề, nút, tab, chip thanh trên, nhãn, tên mèo trong thẻ: "MeoXu Pixel" (--fx-pixel), cỡ là bội số của 12px
+     (cỡ cũ 9,5–18px → --px1, 19–30px → --px2, 34–44px → --px3), đậm giả bằng text-shadow (--fx-bold), không giãn chữ
+     (letter-spacing lẻ làm lệch lưới điểm ảnh), dòng 1.5 cho chữ một dòng, 1.75 cho tiêu đề có thể xuống dòng.
+     Dùng !important vì cỡ chữ cũ nằm rải ở hơn 20 file CSS, trong media query và trong thuộc tính style của mã JS.
+   - Giữ nguyên font cũ: popup viễn chinh #pop, gacha #gz (người dùng dặn không sửa), hàng sao .stars, ký tự ✕ của nút đóng,
+     các nút chỉ có biểu tượng (＋ − phóng to, 📷 chụp ảnh…), chữ vẽ trên canvas.
+   Thêm vùng mới cần chữ pixel: thêm bộ chọn vào danh sách tương ứng bên dưới; chữ con có cỡ riêng thì thêm vào khối "chữ con". */
+
+body{font-family:var(--fx-text)}
+input,select,textarea,#tip{font-family:var(--fx-text)}
+
+/* ---- giữ font cũ (danh sách font cũ của body, trừ "Nunito" vì tên này nay là font nhúng) ---- */
+#gz,#pop{font-family:"Quicksand",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.stars{font-family:"Quicksand",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+/* nút chỉ có ký hiệu (✕, ◀ ▶, ＋ −, ⓘ): font hệ thống có các ký hiệu này, không đậm giả */
+:is(#mx,.mxd-x,.ph-x,.md-x,.wb-x,.wc-x,.cpf-x,.ml-pm,.wb-i){font-family:system-ui,"Segoe UI Symbol","Segoe UI",sans-serif!important;text-shadow:none!important}
+
+/* ---- chữ pixel cỡ 1 (12px) ---- */
+:where(button,.chip,.tag,.adf,.bd-tag,.qbadge,.mxd-bi,.mxd-chk,.cd-rank,.tst .bd b,
+    .card>b,.card>.g>b,.card>.g>b.n5,.cd-sec h4,h3,h4,h5,.shsec,.achh,.qhd,
+    .md-h,.md-nm,.md-tabs button):where(:not(#gz *,#pop *,.stars,#zoomb button,#mx,.mxd-x,#photobar button,.ph-x,.md-x,.wb-x,.wc-x,.cpf-x,.ml-pm,.wb-i,.wb-help,.tsp-dice,.ph-pol,.wcs-msc,.wb-room,.fc,button:has(div),
+         [aria-label="Thôi theo dõi"],[aria-label^="Phòng trước"],[aria-label^="Phòng sau"],[aria-label="Trang trước"],[aria-label="Trang sau"],[aria-label^="Ảnh "])){
+  font-family:var(--fx-pixel)!important;font-size:var(--px1)!important;line-height:1.5!important;
+  letter-spacing:0!important;text-shadow:var(--fx-bold)!important;font-synthesis:none;font-kerning:none;text-rendering:optimizeSpeed}
+/* tiêu đề có thể xuống nhiều dòng: dòng cao hơn để dấu chữ hoa (Ữ, Ỹ, Ặ) không chạm dòng trên */
+:where(h3,h4,h5,.shsec,.achh,.qhd,.md-h):where(:not(#gz *,#pop *)){line-height:1.75!important}
+
+/* ---- chữ pixel cỡ 2 (24px): tiêu đề lớn ---- */
+:where(h1,h2,.mxd-ti,.md-t1):where(:not(#gz *,#pop *)){
+  font-family:var(--fx-pixel)!important;font-size:var(--px2)!important;line-height:1.5!important;
+  letter-spacing:0!important;text-shadow:var(--fx-bold)!important;font-synthesis:none;font-kerning:none;text-rendering:optimizeSpeed}
+
+/* ---- chữ con bên trong vùng chữ pixel ----
+   b, span, i… theo đúng cỡ của cha (không để lại cỡ lẻ như 13px làm nhòe chữ pixel);
+   small và .dim (chú thích phụ) quay về Nunito, giữ cỡ nhỏ cũ, bỏ đậm giả. */
+:where(button,.chip,.tag,.adf,.bd-tag,.mxd-bi,.mxd-chk,.cd-rank,.tst .bd b,.card>b,.card>.g>b,h1,h2,h3,h4,h5,.shsec,.achh,.qhd,.md-h,.md-nm,.mxd-ti,.md-t1):where(:not(#gz *,#pop *))
+  :where(b,strong,i,em,u,a,span):where(:not(.stars,.stars *,.ico,[class*="ic"],.tabs button>span,.qbadge,.bq,[aria-hidden="true"],small *,.dim *,:has(>.ico:only-child,>img:only-child,>svg:only-child,>canvas:only-child))){
+  font-size:inherit!important;letter-spacing:0!important}
+:where(button,.chip,.tag,.adf,.bd-tag,.mxd-bi,.mxd-chk,.cd-rank,.tst .bd b,.card>b,.card>.g>b,h1,h2,h3,h4,h5,.shsec,.achh,.qhd,.md-h,.md-nm,.mxd-ti,.md-t1):where(:not(#gz *,#pop *)) :where(small,.dim){
+  font-family:var(--fx-text)!important;text-shadow:none!important;letter-spacing:normal}
+/* biểu tượng emoji trong nút tab: không đổ bóng đậm giả lên emoji màu */
+.tabs button>span,button .ico,.chip .ico{text-shadow:none!important}
+
+/* tên Nhà thuốc: chữ trắng trên nền sọc xanh cần viền xanh đậm như cũ (med.css), đậm giả đặt trước viền;
+   màn hẹp (med.css hạ còn 14,5–15px) thì về cỡ 1 */
+.md-t1{text-shadow:var(--fx-bold),1.5px 0 0 var(--mc3),-1.5px 0 0 var(--mc3),0 1.5px 0 var(--mc3),0 -1.5px 0 var(--mc3),1px 1px 0 var(--mc3),-1px 1px 0 var(--mc3),1px -1px 0 var(--mc3),-1px -1px 0 var(--mc3),0 2.5px 0 var(--mc3)!important}
+@media (max-width:620px),(max-height:520px){.md-t1{font-size:var(--px1)!important;line-height:1.5!important}}
+
+/* nút "Bỏ qua" của hướng dẫn tân thủ: tutorial.css ghi cỡ 13px kèm !important */
+.tut-skip{font-size:var(--px1)!important}
+
+/* ---- chỗ chật ---- */
+/* điện thoại ngang thấp: nút Cài đặt, Nhạc chỉ còn biểu tượng (mobile.css ẩn chữ bằng font-size:0) */
+@media (orientation:landscape) and (max-height:400px) and (max-width:1023px){
+  .hdr button{font-size:0!important}
+}
+/* thanh menu hẹp bên trái (điện thoại ngang, 76px): nhãn một dòng; bớt đệm hai bên thanh (6 → 3px) để "Viễn chinh",
+   "Thành tựu", "Nhà thuốc" (64px ở 12px) vừa nút 65px; nhãn dòng 12px để biểu tượng 24px + nhãn vừa nút cao 40px (dấu của
+   chữ cao như "ễ" lấn lên vùng trống dưới biểu tượng, không bị cắt) */
+@media (orientation:landscape) and (max-height:520px) and (max-width:1023px){
+  .tabs{padding-left:max(2px,var(--sl,0px));padding-right:2px}
+  .tabs button{white-space:nowrap;line-height:1!important}
+  .tabs button>span{line-height:1}
+  /* màn có hệ số điểm ảnh lẻ (1,5; 1,75; 2,625…): chữ pixel phải phóng lên 13–16px mới khớp lưới nên không vừa nút 66px:
+     nhãn tab ở đây giữ chữ Nunito 11px như cũ (js/fontfx.js gắn lớp fx-frac cho <html>) */
+  html.fx-frac .tabs button{font-family:var(--fx-text)!important;font-size:11px!important;text-shadow:none!important;letter-spacing:-.3px!important;line-height:1.1!important}
+}

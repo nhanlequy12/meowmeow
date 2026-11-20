@@ -1,0 +1,20 @@
+/* ============ FONT NHÚNG SẴN CỦA MÈO XU (2026-11-20) ============
+   Nạp SỚM nhất trong <head> (index.html), cùng hai thẻ <link rel="preload"> cho file font, để chữ hiện đúng font ngay lần vẽ đầu.
+   - "MeoXu Pixel": Galmuri11 Regular cắt còn Latin + tiếng Việt, đổi tên (giấy phép OFL: css/fonts/OFL-Galmuri.txt).
+     Font pixel cỡ gốc 12px (chữ hoa cao 11, chữ thường 8): chỉ dùng bội số --px1 12, --px2 24, --px3 36px để mỗi điểm ảnh của font
+     trùng đúng lưới điểm ảnh màn hình. Bản Bold thiếu tiếng Việt nên chỉ có Regular 400; chữ đậm là "đậm giả" (--fx-bold: nhân đôi
+     nét sang phải đúng 1 điểm ảnh font = 1em/12). Thiếu ✕ và ₫: hai ký tự này tự rơi sang font sau trong danh sách.
+   - "Nunito": biến thiên (độ đậm 200–1000), cắt Latin + tiếng Việt, cho đoạn văn dài (giấy phép: css/fonts/OFL-Nunito.txt).
+   Tạo lại hai file font: python tools/mkfonts.py <Galmuri11.ttf> <Nunito[wght].ttf>.
+   font-display:block: chữ chờ font (tối đa vài trăm ms, file nằm sẵn trên máy, đã preload) thay vì hiện font hệ thống rồi nhảy sang
+   font mới, nên mở app không bị nháy chữ.
+   Màn có hệ số điểm ảnh không nguyên (1,25; 1,5; 1,75): js/fontfx.js đặt lại --px1, --px2, --px3 = round(m × dpr) × 12 / dpr
+   để chữ pixel vẫn khớp lưới máy (ví dụ hệ số 1,5: 16px, 24px, 40px). Áp font cho từng vùng: css/fonts-apply.css (nạp CUỐI). */
+@font-face{font-family:"MeoXu Pixel";src:url(fonts/meoxu-pixel.woff2) format("woff2");font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:"Nunito";src:url(fonts/nunito.woff2) format("woff2");font-weight:200 1000;font-style:normal;font-display:block}
+:root{
+  --fx-pixel:"MeoXu Pixel","Nunito",system-ui,sans-serif;
+  --fx-text:"Nunito",system-ui,"Segoe UI",sans-serif;
+  --px1:12px;--px2:24px;--px3:36px;
+  --fx-bold:calc(1em / 12) 0 0 currentColor;
+}

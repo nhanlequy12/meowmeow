@@ -1,3 +1,31 @@
+# Việc cần làm tiếp: app Windows, font pixel, bản quyền (dừng ngày 2026-11-20)
+
+Người dùng bảo dừng giữa chừng. Đã xong và đã push: mục 1 "hành vi khi đóng app" và hộp thoại kiểu pixel (commit `5056a11`, CLAUDE.md mục 52b chưa ghi phần này).
+
+## 1. Font pixel tiếng Việt (mục 2, ĐANG LÀM DỞ)
+- Người dùng đã duyệt: **Galmuri11 + đậm giả (text-shadow)** cho tiêu đề, nút, nhãn, tab, chip; **Nunito** nhúng sẵn cho đoạn văn. Cả hai OFL 1.1, đủ 134 chữ tiếng Việt.
+- Đã có (commit cùng lúc dừng, CHƯA nạp trong index.html nên chưa ảnh hưởng game): `css/fonts/` (meoxu-pixel.woff2 = Galmuri11 cắt Latin+Việt, đổi tên "MeoXu Pixel" vì tên dành riêng "Galmuri"; nunito.woff2; OFL-Galmuri.txt, OFL-Nunito.txt), `css/fonts.css` (@font-face, biến `--fx-pixel`, `--fx-text`, `--px1/2/3`), `css/fonts-apply.css` (quy tắc áp dụng, chưa xong), `js/fontfx.js` (cỡ theo devicePixelRatio, chưa xong), `tools/mkfonts.py` (tạo lại font), server.py thêm MIME font/woff2.
+- Còn phải làm:
+  - Nạp lại trong index.html: hai dòng `<link rel="preload" as="font" type="font/woff2" crossorigin href="css/fonts/meoxu-pixel.woff2">` (và nunito.woff2), `<link rel="stylesheet" href="css/fonts.css">` đầu <head>; `<link rel="stylesheet" href="css/fonts-apply.css">` cuối danh sách CSS; `<script src="js/fontfx.js"></script>` sau js/dialog.js.
+  - Hoàn thiện fonts-apply.css và fontfx.js: cỡ chỉ bội số 12/24/36px (9,5–18px → 12; 19–30 → 24; 34–44 → 36); line-height 1,75 cho chữ pixel nhiều dòng, 1,5 cho nút; không overflow:hidden chỗ có chữ hoa có dấu; ✕ dùng font khác; loại trừ #pop (popup viễn chinh) và #gz (gacha); chữ vẽ trên canvas giữ nguyên.
+  - Dò chữ tràn ở mọi tab, Cài đặt, cửa hàng, thẻ mèo, hộp thoại, #appwel, Sổ tay ở 1280×800, 900×560, 844×390, sáng/tối, hệ số 1 và 1,5; chụp trước/sau; câu mẫu "Thu vào khay – Thoát – Không đóng. ĐÃ LƯU DỮ LIỆU. Ước mơ, nghỉ ngơi, Ữ, Ỹ, Ặ."
+  - Ảnh xem trước và số đo của bước nghiên cứu nằm ở scratchpad phiên cũ (có thể đã mất); tóm tắt: ở hệ số 1, chữ pixel 12px hơi mềm (ClearType), 24px và hệ số 1,5 sắc hoàn toàn.
+  - Chạy lại tools/*test.js, build app (desktop: npm run build), smoke.js, flow.js.
+
+## 2. Rà soát bản quyền và pháp lý (mục 3, CHƯA LÀM)
+- Lập bảng Tài nguyên | Nguồn | Giấy phép | Dùng thương mại? | Ghi công? | Rủi ro cho: font (Galmuri, Nunito), sprite/hình (vẽ thủ tục trong art.js, CatKit, js/cats/ do Codex vẽ), icon (tools/mkicons.js), âm thanh tự tổng hợp, bài hát "Nắng trên đệm mèo" (file WAV người dùng đưa, CHƯA RÕ NGUỒN — hỏi người dùng), thư viện: Tauri và crate Rust (đọc `cargo metadata`, cảnh báo GPL/AGPL), npm (@tauri-apps/cli), NSIS, WebView2 bootstrapper (giấy phép phân phối lại của Microsoft).
+- RỦI RO LỚN NHẤT: tên và hình nhân vật có bản quyền (Naruto, Goku, Gojo, Harry Potter, Darth Vader, Hello Kitty, Kuromi, Pusheen, Doraemon…) và người thật (Faker, Oner, Keria, Hackclaw). Trước đây chỉ host cho bạn bè; nay app đã đăng công khai trên GitHub Releases (repo công khai). Phải HỎI người dùng trước khi thay hay gỡ (thay đổi nội dung game rất lớn); các lựa chọn: chuyển repo riêng tư / gỡ Releases, hoặc làm bản phát hành công khai có mèo trang phục tự sáng tác.
+- Kiểm tên "Mèo Xu" và logo có trùng nhãn hiệu đã đăng ký không (tra cứu nhãn hiệu Cục Sở hữu trí tuệ Việt Nam, WIPO Global Brand Database).
+- Quyền riêng tư: đối chiếu `desktop/legal/privacy_vi.txt` với Nghị định 13/2023/NĐ-CP và Luật Bảo vệ dữ liệu cá nhân 2025 (hiệu lực 1/1/2026) — chế độ bạn bè gửi tên, bản lưu, IP tới máy chủ người host.
+- Nếu đưa lên Microsoft Store/Steam: chính sách nội dung và quyền sở hữu trí tuệ của nền tảng.
+- Tạo trang "Giấy phép & Ghi công" trong app (Cài đặt), liệt kê font, thư viện, giấy phép đầy đủ.
+- Cuối cùng: danh sách điểm cần luật sư xem.
+
+## 3. Việc nhỏ còn treo
+- Ghi mục đóng app an toàn và hộp thoại pixel vào CLAUDE.md (mục 52c): `js/dialog.js` (mxDialog, mxConfirm), `css/dialog.css`, `desktop/src-tauri/src/closeq.rs`, hợp đồng closeAck/closeChoice/quitAck/persistNow/quitReady/quitForce/quitCancel, reason 'shutdown', sự kiện 'quit-cancel'.
+- Build lại app (phiên bản 1.1.0 trong dist/ chưa có phần đóng app mới) và tăng phiên bản trước khi phát hành 1.2.0.
+- Chưa thử bằng tay: bấm ✕ chuột thật, Alt+F4 thật, tắt máy thật, menu khay, toast, nghe âm.
+
 # Việc cần làm ngay (rà soát ngày 2026-11-12)
 
 Người dùng nêu bốn yêu cầu về hiệu ứng của mèo 4★ và 5★ và bảo rà lại, thiếu gì thì ghi vào đây. Cách rà: chạy game trong Chrome không giao diện rồi đọc thẳng các bảng `INTRO`, `S5`, `MD`, `TRAIL`, `LOOKFX`, `COATS` (27 bé 5★, 67 bé 4★). Chưa sửa gì trong đợt rà này.

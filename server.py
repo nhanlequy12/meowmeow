@@ -739,7 +739,7 @@ class H(SimpleHTTPRequestHandler):
         except OSError:
             return self.send_error(404)
         ext = os.path.splitext(fp)[1].lower()
-        ctype = AUDIO_MIME.get(ext) or self.guess_type(fp)
+        ctype = AUDIO_MIME.get(ext) or ('font/woff2' if ext == '.woff2' else self.guess_type(fp))   # font nhúng css/fonts/*.woff2
         if ext in AUDIO_MIME:
             # nhạc: trình duyệt tải từng đoạn (Range) để tua và lặp lại bài
             rng = self.headers.get('Range', '')
