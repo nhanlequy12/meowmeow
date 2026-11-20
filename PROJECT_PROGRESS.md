@@ -187,3 +187,5 @@ Xem `CLAUDE.md`. Vài điểm hay bị quên:
 ## Lỗi chưa giải quyết
 
 Không có lỗi chạy nào đã biết. Các hạn chế đã biết nằm ở `CLAUDE.md` mục 7 và cuối mỗi mục đợt làm việc.
+
+- `bdf94f4` (2026-11-20): chữ pixel tiếng Việt (MeoXu Pixel cho tiêu đề, nút, nhãn; Nunito nhúng cho đoạn văn; CLAUDE.md mục 53, 52c). Dò chữ tràn 25 màn ở 5 cỡ màn bằng Playwright, 21 bộ test đạt. App đã tăng lên 1.2.0 nhưng chưa build (máy thiếu Rust, VS Build Tools). Chưa xem chủ đề tối.
