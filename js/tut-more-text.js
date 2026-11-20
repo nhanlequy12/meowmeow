@@ -16,12 +16,9 @@
     cpfit:[
       'Dòng này là các bé hợp với căn phòng đang xem: ♥ là rất hợp, ✓ là hợp.',
       'Mặt sáng là bé bạn đang có, bấm vào để chuyển bé sang phòng này. Rê chuột hoặc nhấn giữ để xem lý do.'],
-    cpwarn:[
-      'Ơ, dấu ! đỏ kìa: có bé đang ở phòng không hợp nên kém vui.',
-      'Chuyển bé sang phòng mà dòng này gợi ý nhé. Nhà đông thì vào tab Mèo bấm ✨ Xếp gợi ý, tớ tính giúp cả đàn.'],
-    cparr:[
-      'Nhà đông vui rồi đấy! Bấm ✨ Xếp gợi ý, tớ tính xem bé nào nên ở phòng nào để cả đàn vui nhất.',
-      'Bạn được xem trước danh sách chuyển phòng. Bấm Áp dụng thì các bé mới dọn đi.'],
+    cpwarn:['Ơ, dấu ! đỏ kìa: có bé đang ở phòng không hợp nên kém vui.',
+      'Chuyển bé sang phòng hợp hơn nhé.'],
+    cparr:['Nhà đông vui rồi đấy! Nút ✨ Xếp gợi ý giúp bạn chia các bé vào phòng hợp nhất.'],
     cpalbum:[
       'Bộ lọc này chỉ ra giống nào hợp một căn phòng hay thích một món ăn.',
       'Tiện lắm khi bạn muốn biết nên săn bé nào cho căn phòng mới mua!'],

@@ -31,13 +31,9 @@ const TUT_TEXT={
     ],
     room:['{cat} về tới phòng khách rồi! Từ nay đây là nhà của bé.'],
     pet:['Chạm vào {cat} để vuốt ve. Được cưng là bé tặng bạn vài xu 🪙.'],
-    fol:[
-      'Bé kêu grừ grừ kìa! Chạm vào bé nào thì camera đi theo bé đó.',
-      'Thẻ này hiện độ no 🍗, năng lượng ⚡ và độ vui 😊. Mỗi bé 10 phút mới cho xu vuốt ve một lần.',
-      'Độ no 🍗 tụt dần, hơn 3 tiếng là cạn. Dưới 20 là bé đói, không đi viễn chinh được.',
-      'Năng lượng ⚡ là sức để đi viễn chinh, mỗi chuyến tốn 25 tới 50. Ở nhà bé hồi khoảng 1 điểm mỗi phút.',
-      'Độ vui 😊 càng cao, chuyến đi càng nhiều xu: bé vui nhất kiếm gấp rưỡi bé buồn nhất. Phòng đẹp, đủ đồ chơi thì bé vui lâu.'
-    ],
+    fol:['Bé kêu grừ grừ kìa! Chạm vào bé nào thì camera đi theo bé đó.',
+      'Thẻ này cho biết bé đang no 🍗, còn sức ⚡ và vui 😊 tới đâu.',
+      'Bé no, khỏe và vui thì mỗi chuyến viễn chinh mang về nhiều xu hơn.'],
     poses:[
       'Bé tự sinh hoạt cả ngày: ngồi, vẫy đuôi, liếm lông, ngủ, đi dạo, chạy, nhảy.',
       'Có đồ leo trèo là bé trèo lên tận tầng cao. Mèo con hiếu động, còn mèo già thì hay ngủ.'
@@ -50,59 +46,42 @@ const TUT_TEXT={
     // {food}: món đã mở khóa hợp nhất với bé khởi đầu; {fav}: món khoái khẩu của bé. foodLock dùng khi món khoái khẩu còn khóa (Mèo trắng)
     food:['Món có ❤ kèm mặt {cat} là món bé khoái nhất. Tớ chọn sẵn {food} rồi, bấm Đổ nhé!'],
     foodLock:['Món {cat} khoái nhất là {fav}, lên cấp nữa mới mở. Giờ đổ {food} cho bé đã nhé!'],
-    fed:[
-      'Bé tự đi tới bát. Ăn hết một suất thì bát mới vơi, rồi bé cảm ơn bạn 4 xu.',
-      'Đổ thêm lúc nào cũng được. Bé đói dưới 20 thì không đi viễn chinh được đâu.'
-    ],
+    fed:['Bé tự đi tới bát, ăn xong còn cảm ơn bạn vài xu đấy.',
+      'Bát vơi thì đổ thêm lúc nào cũng được.'],
     water:['Ăn xong thì phải uống. Bấm 💧 Cho uống nào!'],
-    wpour:['Tớ để sẵn Nước lọc trong kho rồi. Bấm Đổ để rót vào bát nước.'],
-    wfull:['Bát nước đang đầy nên chưa cần rót. Khi bát vơi, bạn mở bảng này rồi bấm Đổ, nước lấy từ kho trước.'],
-    wdone:['Khát là bé tự ra bát uống. Hết nước trong kho thì mua thêm ngay trong bảng Cho uống.'],
-    compat:[
-      'Bí kíp của tớ đây: dấu trên mặt mèo cho biết bé hợp tới đâu với một căn phòng, một món ăn hay một loại nước.',
-      'Bạn sẽ gặp các dấu này dưới mỗi phòng, trong bảng Cho ăn và ở màn thông tin của bé. Rê chuột hoặc nhấn giữ để xem lý do.'
-    ],
+    wpour:['Tớ để sẵn ít nước lọc rồi. Bấm Đổ để rót vào bát nhé.'],
+    wfull:['Bát nước đang đầy nên chưa cần rót. Khi bát vơi thì mở lại bảng này nhé.'],
+    wdone:['Khát là bé tự ra bát uống. Hết nước thì mua thêm ngay trong bảng Cho uống.'],
+    compat:['Thấy dấu nhỏ trên mặt mèo không? Đó là cách các bé cho bạn biết bé thích phòng, món ăn hay nước uống nào.',
+      'Rê chuột hoặc nhấn giữ vào mặt bé để xem bé nghĩ gì.'],
     ticket:['Giờ tới phần vui nhất: hộp quà mèo! Tớ tặng bạn 1 vé 🎟 để mở thử.'],
     gtab:['Bấm vào tab Gacha nào.'],
-    stars:[
-      'Số sao là độ hiếm, mỗi bậc một màu. Sao càng nhiều, bé càng kiếm được nhiều xu.',
-      'Bé màu lông hiếm, mắt quý hiếm hay trang phục hiếm thì sao lấp lánh đủ 7 màu!',
-      'Có bảo hiểm: quá 9 lượt chưa ra 4★ thì lượt thứ 10 chắc chắn từ 4★ trở lên; quá 39 lượt chưa ra 5★ thì lượt thứ 40 chắc chắn 5★.'
-    ],
-    pull:['Bấm Dùng vé để mở hộp. Lần đầu tớ ém sẵn rồi: chắc chắn ra một bé 4★ Sử thi!'],
+    stars:['Số sao là độ hiếm, mỗi bậc một màu. Bé càng hiếm càng giỏi kiếm xu.',
+      'Có bé còn lấp lánh đủ 7 màu, gặp được là may lắm đấy!',
+      'Quay đủ nhiều lượt thì chắc chắn gặp bé hiếm, nên đừng nản nhé.'],
+    pull:['Bấm Dùng vé để mở hộp. Hộp đầu tiên luôn có một bé 4★ Sử thi đấy!'],
     reveal:['Xem ai tới này! Muốn thì đặt tên, rồi bấm Đón về nhà.'],
     dhead:['Đây là màn thông tin của {new}. Viền và hàng sao cho biết bé hiếm cỡ nào.'],
-    dprof:['Hồ sơ ghi giống, màu lông, tuổi và món khoái khẩu. Cho ăn đúng món khoái khẩu, bé no hơn và vui hơn.'],
-    dtrait:[
-      'Thuộc tính là tài lẻ của bé, số thuộc tính bằng số sao. Xanh là tốt, hồng là tật xấu, vàng là độc quyền.',
-      'Chạm vào một thuộc tính để đọc nó làm được gì.'
-    ],
-    dlike:['Khung Hợp với bé gom sẵn phòng, món ăn và nước uống tốt nhất cho {new}. Bấm vào một ô là tới ngay chỗ đó.'],
+    dprof:['Hồ sơ ghi giống, tuổi và món bé thích nhất.'],
+    dtrait:['Thuộc tính là tài lẻ của bé. Xanh là điểm mạnh, hồng là tật xấu, vàng là tài riêng hiếm có.',
+      'Chạm vào một thuộc tính để xem nó làm gì.'],
+    dlike:['Khung này gợi ý phòng, đồ ăn và nước uống mà {new} thích nhất.'],
     atab:['Giờ ghé Sưu tập xem nào.'],
-    album:['Giống nào bạn từng gặp đều sáng lên ở đây. Chạm vào để xem các màu lông, bé 5★ còn xem lại được intro.'],
-    rare:['Có 9 màu lông hiếm, mỗi lượt khoảng 4% cơ hội. Bé màu hiếm luôn 4★ và có thuộc tính riêng của màu.'],
+    album:['Bé nào bạn từng gặp đều hiện ở đây. Còn nhiều bé đang chờ bạn tìm ra lắm!'],
+    rare:['Thỉnh thoảng sẽ có bé mang màu lông hiếm, nhìn là nhận ra ngay.'],
     ttab:['Xu chủ yếu đến từ viễn chinh. Bấm tab Viễn chinh nào!'],
     slot:['Bấm Chọn mèo để cử một bé lên đường.'],
-    trip:['Mỗi điểm đến khác nhau về thời gian, xu và năng lượng ⚡. Chạm vào một bé để lên đường.'],
-    tinfo:[
-      'Bé đi rồi! Hết giờ thì bấm Nhận quà để lấy xu, kinh nghiệm, đôi khi cả vé.',
-      'Lên cấp 3, 5, 7, 9 sẽ mở thêm ô, cử được nhiều bé cùng lúc.'
-    ],
+    trip:['Mỗi nơi đi mất thời gian khác nhau và mang về số xu khác nhau. Chạm vào một bé để lên đường.'],
+    tinfo:['Bé đi rồi! Khi bé về, bấm Nhận quà để lấy xu và kinh nghiệm.',
+      'Lên cấp thì cử được nhiều bé đi cùng lúc hơn.'],
     stab:['Có xu rồi thì ghé Cửa hàng.'],
-    shop:[
-      'Ở đây bán phòng mới và nội thất. Đồ đạc làm mèo vui hơn, hồi sức nhanh hơn, có món còn tăng xu cho cả nhà.',
-      'Món có ổ khóa 🔒 sẽ mở khi bạn lên đủ cấp.'
-    ],
-    mtab:['Còn một chỗ hay nữa. Bấm tab Mèo nào!'],
-    arrange:[
-      'Đây là nơi quản lý cả đàn: lọc theo phòng, đổi phòng, tìm bé hợp một căn phòng hay một món ăn.',
-      'Nhà đông lên thì bấm ✨ Xếp gợi ý. Tớ tính giúp bé nào nên ở phòng nào, bạn xem trước rồi mới quyết.'
-    ],
+    shop:['Ở đây có phòng mới và đồ đạc. Nhà đẹp thì các bé vui hơn.',
+      'Món có ổ khóa 🔒 sẽ mở khi bạn lên cấp.'],
+    mtab:['Bấm tab Mèo để xem cả đàn nào!'],
+    arrange:['Cả đàn của bạn ở đây. Còn vài nút hay nữa, bạn cứ bấm thử dần nhé!'],
     more:['Còn nhiều thứ hay sẽ mở dần theo cấp. Tới lúc đó tớ lại chỉ cho, bạn chưa cần nhớ đâu!'],
-    level:[
-      'Đây là cấp của bạn. Viễn chinh, cho ăn, vuốt ve, gacha hay mua sắm đều cho kinh nghiệm.',
-      'Lên cấp sẽ mở thêm ô viễn chinh, điểm đến, phòng và món mới.'
-    ],
+    level:['Đây là cấp của bạn. Chăm mèo, cho bé đi viễn chinh là lên cấp dần.',
+      'Lên cấp sẽ mở thêm nhiều thứ mới.'],
     gift:['Bạn học nhanh ghê! Đây là quà tân thủ tớ chuẩn bị sẵn.'],
     next:['Tớ ghi sẵn vài việc nên làm tiếp. Quên gì thì mở Sổ tay trong ⚙ Cài đặt nhé!'],
     bye:['Chúc bạn nuôi mèo vui vẻ! Meo~']
@@ -172,7 +151,7 @@ const TUT_TEXT={
   /* ---------- thẻ chú giải dấu tương thích (bước compat) ---------- */
   compat:{
     title:'Dấu tương thích',
-    rows:{'2':'Bé thích hẳn: món khoái khẩu, phòng có thứ bé mê.','1':'Có lợi nhẹ, ví dụ món giúp bé đang mệt.','0':'Không có dấu: ở đâu, ăn gì cũng được.','-1':'Bé kém vui hoặc chịu thiệt, nên đổi.'},
+    rows:{'2':'Bé rất thích.','1':'Bé thích.','0':'Không có dấu: sao cũng được.','-1':'Bé không thích, nên đổi.'},
     foot:'Icon mờ là bé bạn chưa có, bóng đen là bé chưa từng gặp.'
   },
   /* ---------- thẻ "còn gì phía trước" (bước more); phần mở theo cấp đọc từ FEATS ---------- */
@@ -185,8 +164,8 @@ const TUT_TEXT={
   nextTitle:'Việc nên làm tiếp',
   nextList:[
     '🎒 Khi bé viễn chinh về, vào tab Viễn chinh bấm Nhận quà.',
-    '🍚 Cứ 10 phút cho cả phòng ăn một lần, và vuốt ve từng bé.',
-    '❤ Để ý dấu ❤ trên mặt mèo: đó là phòng và món ăn hợp nhất với từng bé.',
+    '🍚 Nhớ cho các bé ăn, uống và vuốt ve thường xuyên.',
+    '❤ Để ý dấu trên mặt mèo để biết bé thích gì.',
     '🎟 Dùng vé vừa nhận để mở thêm bạn mới ở tab Gacha.',
     '🧶 Đặt Chuột đồ chơi vào phòng: bấm ✏ Sắp xếp đồ, chọn trong Kho đồ.',
     '🚪 Gom xu mua Phòng ngủ khi lên cấp 2, nhà sẽ rộng hơn.'
@@ -195,7 +174,8 @@ const TUT_TEXT={
   /* ---------- mẹo theo ngữ cảnh: hiện một lần, lúc người chơi chạm tới lần đầu ---------- */
   hints:{
     edit:['Chế độ sắp xếp: kéo đồ để di chuyển, đồ tự bám theo lưới.','Chạm một món để xoay, cất kho hoặc xóa (hoàn 25% giá).'],
-    cats:['Đây là nơi quản lý cả đàn. Chạm ô phòng để lọc, đổi phòng bằng ô chọn trên thẻ hoặc kéo thẻ thả vào ô phòng.','Bật ☑ Chọn nhiều để phóng sinh nhiều bé một lúc.'],
+    cats:['Đây là nơi xem cả đàn. Bạn lọc được theo phòng và đổi phòng cho bé.',
+      'Muốn chia tay nhiều bé một lúc thì bật ☑ Chọn nhiều.'],
     release:['Phóng sinh thì bé rời nhà mãi mãi, bạn nhận lại ít xu theo số sao; bé 5★ tặng thêm 1 vé.','Sưu tập vẫn ghi là bạn đã từng nuôi bé.'],
     wait:['Các phòng đã đầy nên bé mới phải ngồi Phòng chờ, bị trừ 10 độ vui.','Mua thêm phòng ở Cửa hàng rồi chuyển bé sang nhé.'],
     levelup:['Lên cấp rồi! Ghé Cửa hàng xem món nào vừa mở khóa.'],
@@ -204,7 +184,8 @@ const TUT_TEXT={
     x10:['Đủ xu hoặc vé rồi thì thử Mở ×10: quay 10 lượt một lần rồi xem cả bảng kết quả.'],
     rare:['Sao 7 màu! Bé này mang màu lông hiếm, mắt quý hiếm hoặc trang phục hiếm.','Bé có ô riêng trong Sưu tập đấy.'],
     five:['Huyền thoại 5★! Trong phòng, bé có hành động riêng và trạng thái đặc biệt kéo dài 60 giây.','Muốn xem lại intro thì vào Sưu tập.'],
-    broken:['Ối, đồ bị cào rách nên mất hiệu ứng. Sửa tốn 30% giá.','Đặt trụ cào trong cùng phòng thì bé ít cào hơn.'],
+    broken:['Ối, đồ bị cào rách nên mất tác dụng rồi. Sửa lại là dùng như mới.',
+      'Đặt trụ cào trong phòng thì các bé ít cào đồ hơn.'],
     bowl:['Số suất trong bát ít hơn số mèo, có bé sẽ phải nhịn.','Mua thêm bát ở Cửa hàng, mục Bát ăn nhé.'],
     food:['Món mới đã mở! Mỗi món có tác dụng riêng, như thêm năng lượng hay tăng xu viễn chinh.','Dòng ❤ cho biết món đó là khoái khẩu của bé nào.'],
     room2:['Giờ bạn có nhiều phòng. Bấm ◀ ▶ hoặc tên phòng để chuyển qua lại.','Mỗi phòng có hiệu ứng riêng, chuyển mèo ở tab Mèo.'],
