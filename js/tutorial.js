@@ -123,7 +123,11 @@ const TUT=(()=>{
   function addFlow(id,f){FLOWS[id]=f;f.six=Object.fromEntries(f.steps.map((s,i)=>[s.id,i]));
     f.steps.forEach(s=>{if(s.act&&!subs['@'+s.act]){subs['@'+s.act]=1;on(s.act,(a,r)=>act(s.act,a,r))}})}
   function run(id,step){const f=FLOWS[id];if(!f||cs)return;build();fl=id;ST=f.steps;SX=f.six;go(step&&SX[step]!=null?step:ST[0].id)}
-  const quiet=()=>!cs&&!rp&&!modalOn()&&!$('gz').className&&!(typeof bookOn==='function'&&bookOn())&&!(typeof pwBookOn==='function'&&pwBookOn())&&!(typeof medOn==='function'&&medOn())&&!document.hidden;
+  const quiet=()=>!cs&&!rp&&!modalOn()&&!$('gz').className&&!(typeof bookOn==='function'&&bookOn())&&!(typeof pwBookOn==='function'&&pwBookOn())&&!(typeof medOn==='function'&&medOn())&&!document.hidden&&!(typeof popOn!=='undefined'&&(popOn||popQ.length));
+  /* Popup viễn chinh (#pop) và hướng dẫn nhường nhau (2026-11-21): luồng phụ (lên cấp 2, 3…) chỉ bắt đầu khi popup đã đóng (quiet ở trên);
+     bé viễn chinh về giữa lúc đang hướng dẫn thì popup nằm chờ trong hàng popQ, hướng dẫn xong mới hiện. Popup giữ nguyên, chỉ đổi lúc hiện. */
+  if(typeof nextPop==='function'&&typeof popQ!=='undefined'){const np0=nextPop;let hold=0;
+    nextPop=function(){if((cs||rp)&&popQ.length){popOn=false;if(!hold)hold=setInterval(()=>{if(cs||rp)return;clearInterval(hold);hold=0;if(!popOn&&popQ.length)nextPop()},600);return}return np0()}}
   function auto(){
     const t=S.tut;if(!t||!t.done||!S.cats.length||!quiet())return;
     if(t.fl&&FLOWS[t.fl.id]){run(t.fl.id,t.fl.step);return}

@@ -193,3 +193,4 @@ Không có lỗi chạy nào đã biết. Các hạn chế đã biết nằm ở
 - 2026-11-20: cài Rust và VS Build Tools (đặt ở `D:\DevTools`, ổ C gần đầy), build app 1.2.0: flow 56/56, smoke 100/101 (mỗi lần hỏng một phép khác nhau về thời gian hoặc mức phóng màn hình). Chưa đăng Release.
 - 2026-11-20: đã đăng Pre-release `app-v1.2.0` (https://github.com/nhanlequy12/meowmeow/releases/tag/app-v1.2.0): bản cài 6,47 MB SHA-256 `202e9a27…cba373`, portable 8,27 MB SHA-256 `373eda21…dd9`; tải lại từ GitHub, mã khớp bản build.
 - `270eb1c` (2026-11-21): điều khoản trong bộ cài không còn ngắt dòng giữa câu; hướng dẫn tân thủ đổi giọng cho người chơi, bỏ bớt số liệu và chi tiết. Chưa build lại app, chưa chạy hết hướng dẫn tân thủ trong trình duyệt (mới nạp chữ mới, không lỗi).
+- 2026-11-21: popup viễn chinh và hướng dẫn lên cấp không còn đè nhau (CLAUDE.md mục 54).
