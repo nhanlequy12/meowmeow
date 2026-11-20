@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mèo Xu</title>
+<style>
+:root{--bg:#e6dac8;--panel:#f4ecdf;--panel2:#e8d8c2;--ink:#4e3026;--dim:#6e5646;--line:#4e3026;--pink:#f2a3b3;--blue:#86b2dc;--bad:#8a2416;--good:#1c6340}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito","Quicksand",system-ui,"Segoe UI",Roboto,sans-serif;font-weight:700;font-size:16px;line-height:1.5;
+  background-image:radial-gradient(rgba(78,48,38,.12) 1.2px,transparent 1.3px);background-size:14px 14px;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:var(--panel);border:4px solid var(--line);border-radius:22px;box-shadow:0 6px 0 rgba(78,48,38,.35);max-width:560px;width:100%;padding:24px 26px;text-align:center}
+.cat{font-size:54px;line-height:1;margin-bottom:6px}
+h1{font-size:24px;margin:4px 0 10px}
+p{margin:6px 0;color:var(--dim)}
+.addr{display:inline-block;background:var(--panel2);border:2px dashed var(--line);border-radius:10px;padding:3px 10px;color:var(--ink);word-break:break-all;font-family:Consolas,monospace;font-size:15px}
+.why{background:#fde3de;border:2px solid var(--bad);color:var(--bad);border-radius:12px;padding:8px 12px;margin:12px 0}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+button{font:inherit;font-weight:800;color:var(--ink);background:var(--pink);border:3px solid var(--line);border-radius:14px;min-height:44px;padding:8px 18px;cursor:pointer;box-shadow:0 3px 0 var(--line)}
+button.alt{background:var(--blue)}
+button.plain{background:var(--panel2)}
+button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+button:disabled{opacity:.6;cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid #2b6cb0;outline-offset:2px}
+.wait .why,.wait #retry{display:none}
+.dots::after{content:'';animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none;content:'…'}}
+.change{margin-top:18px;border-top:3px dotted var(--line);padding-top:14px;display:none}
+.change.on{display:block}
+label{display:block;margin-bottom:6px}
+.inp{display:flex;gap:8px}
+input{flex:1;min-width:0;font:inherit;color:var(--ink);background:#fffaf2;border:3px solid var(--line);border-radius:12px;padding:8px 12px}
+.msg{min-height:1.5em;margin-top:8px}
+.msg.err{color:var(--bad)}
+.msg.ok{color:var(--good)}
+small{color:var(--dim)}
+</style>
+</head>
+<body>
+<main class="card" role="main" id="card">
+  <div class="cat" aria-hidden="true" id="cat">🙀</div>
+  <h1 id="ttl">Không vào được máy chủ</h1>
+  <p id="lead">Mèo Xu đang thử kết nối tới máy chủ của nhóm:</p>
+  <p><span class="addr" id="addr">(chưa có địa chỉ)</span></p>
+  <div class="why" id="why" role="alert">Không rõ lý do.</div>
+  <p id="hint"><small>Kiểm tra máy chạy <b>server.py</b> còn bật, hai máy cùng mạng, rồi bấm Thử lại. Hoặc chơi một mình trong lúc chờ (tiến độ chơi một mình lưu riêng trên máy này).</small></p>
+  <div class="row">
+    <button id="retry" type="button">🔄 Thử lại</button>
+    <button id="solo" class="alt" type="button">🐱 Chơi một mình</button>
+    <button id="chg" class="plain" type="button" aria-expanded="false">🔧 Đổi máy chủ</button>
+  </div>
+  <form class="change" id="box" autocomplete="off">
+    <label for="url">Địa chỉ máy chủ mới</label>
+    <div class="inp">
+      <input id="url" type="text" inputmode="url" spellcheck="false" placeholder="192.168.1.5 hoặc https://ten-may.trycloudflare.com">
+      <button id="go" type="submit">Kết nối</button>
+    </div>
+    <div class="msg" id="msg" aria-live="polite"></div>
+  </form>
+</main>
+<script>
+(function(){
+  var q = new URLSearchParams(location.search);
+  var url = q.get('url') || '', err = q.get('err') || '', wait = q.get('wait') === '1';
+  var $ = function(id){ return document.getElementById(id); };
+  var M = window.MXAPP;
+  $('addr').textContent = url || (M && M.server) || '(chưa có địa chỉ)';
+  $('why').textContent = err || 'Không kết nối được tới máy chủ.';
+  $('url').value = (M && M.server) || url;
+  if (wait) { // trang chờ lúc app đang kiểm tra máy chủ (chế độ chơi cùng bạn bè); phần lõi tự chuyển trang khi có kết quả
+    $('card').classList.add('wait'); $('cat').textContent = '🐱'; $('ttl').innerHTML = 'Đang kết nối<span class="dots"></span>';
+    $('lead').textContent = 'Mèo Xu đang vào máy chủ của nhóm:'; document.title = 'Mèo Xu · Đang kết nối';
+    $('hint').innerHTML = '<small>Thường chỉ mất một hai giây. Không đợi được thì chơi một mình hoặc đổi máy chủ.</small>';
+  }
+  function busy(on){ ['retry','solo','chg','go'].forEach(function(id){ $(id).disabled = on; }); }
+  function msg(t, kind){ var m = $('msg'); m.textContent = t || ''; m.className = 'msg' + (kind ? ' ' + kind : ''); }
+  if (!M) { busy(true); $('why').textContent += ' (Trang này chỉ dùng trong ứng dụng Mèo Xu.)'; return; }
+  $('retry').onclick = function(){ busy(true); M.retry(); setTimeout(function(){ busy(false); }, 6000); };
+  $('solo').onclick = function(){
+    busy(true);
+    M.setMode('solo').then(function(r){ if (!r || !r.ok) { busy(false); msg((r && r.err) || 'Không chuyển được.', 'err'); } });
+  };
+  $('chg').onclick = function(){
+    var b = $('box'), on = !b.classList.contains('on');
+    b.classList.toggle('on', on); $('chg').setAttribute('aria-expanded', on ? 'true' : 'false');
+    if (on) { $('box').classList.add('on'); $('url').focus(); $('url').select(); }
+  };
+  $('box').onsubmit = function(e){
+    e.preventDefault();
+    var v = $('url').value.trim(), n = M.norm(v);
+    if (!n) { msg('Địa chỉ không hợp lệ. Ví dụ: 192.168.1.5 hoặc https://ten-may.trycloudflare.com', 'err'); return; }
+    busy(true); msg('Đang kiểm tra ' + n + '…');
+    M.setMode('friend', v).then(function(r){
+      if (r && r.ok) { msg('Đã kết nối, đang vào game…', 'ok'); return; }
+      busy(false); msg((r && r.err) || 'Không kết nối được.', 'err');
+    }, function(){ busy(false); msg('Không kết nối được.', 'err'); });
+  };
+})();
+</script>
+</body>
+</html>

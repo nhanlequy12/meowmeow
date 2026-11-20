@@ -1,0 +1,65 @@
+ĐIỀU KHOẢN SỬ DỤNG MÈO XU (bản 1, ngày 20/11/2026)
+
+Vui lòng đọc kỹ trước khi cài đặt hoặc chạy Mèo Xu. Đây là bản thử đầu tiên của ứng dụng
+Windows, nên điều khoản được viết ngắn và nói thẳng.
+
+1. Chấp nhận điều khoản
+Khi cài đặt hoặc chạy Mèo Xu, bạn đồng ý với điều khoản này và với Chính sách quyền riêng
+tư đi kèm. Nếu không đồng ý, hãy bấm Hủy trong bộ cài, hoặc không chạy ứng dụng.
+
+2. Đây là dự án cá nhân, phi thương mại
+Mèo Xu là game nuôi mèo do một cá nhân làm cho vui và để chơi với bạn bè. Game không bán,
+không có quảng cáo, không thu phí. Xu và vé trong game chỉ là điểm số trong game, không
+mua được bằng tiền thật và không đổi ra tiền hay hiện vật.
+
+3. Quyền sử dụng
+Bạn được phép:
+  a) Cài đặt và chơi game cho mục đích cá nhân, miễn phí.
+  b) Chia sẻ nguyên vẹn bộ cài hoặc bản portable cho bạn bè, không thu tiền.
+Bạn không được phép:
+  a) Bán, cho thuê, hoặc đóng gói lại game để thu tiền hay chèn quảng cáo.
+  b) Gỡ hoặc sửa thông tin về nguồn gốc của game rồi phát hành lại như sản phẩm của mình.
+  c) Cố tình vượt qua các biện pháp bảo vệ của ứng dụng, như khóa công cụ nhà phát triển.
+
+4. Sở hữu trí tuệ và nhân vật của bên thứ ba
+Mã nguồn, hình vẽ mèo và nội dung do tác giả làm thuộc về tác giả. Bài hát nhạc nền "Nắng
+trên đệm mèo" đi kèm game cũng nằm trong phạm vi này.
+Game có mèo hóa trang theo nhân vật anime, phim, game và meme có thật (ví dụ Naruto, Gojo,
+Harry Potter, Darth Vader, Hello Kitty, Faker). Đó là sản phẩm của người hâm mộ. Tên, hình
+tượng và thương hiệu của các nhân vật này thuộc về chủ sở hữu tương ứng. Mèo Xu không liên
+kết với họ, không được họ cho phép hay bảo trợ. Nếu chủ sở hữu yêu cầu gỡ một nội dung, tác
+giả sẽ gỡ. Yêu cầu có thể gửi qua mục Issues của repo GitHub nhanlequy12/meowmeow.
+
+5. Khi chơi cùng bạn bè
+Chế độ "Chơi cùng bạn bè" kết nối tới máy chủ do một người chơi khác dựng (người host).
+Khi dùng chế độ này, bạn đồng ý:
+  a) Không gian lận: không sửa bản lưu, không tự cộng xu, vé hay mèo. Máy chủ kiểm tra bản
+     lưu, từ chối bản sai và khôi phục về bản hợp lệ gần nhất.
+  b) Không tấn công, làm quá tải hay tìm cách phá máy chủ.
+  c) Người host có quyền xem hồ sơ, tặng quà, đổi tên, đặt lại hoặc xóa hồ sơ của bạn, và
+     khóa kết nối nếu có dấu hiệu lạm dụng.
+Người host là một cá nhân, không phải tác giả game. Tác giả không điều hành máy chủ của họ.
+
+6. Dữ liệu của bạn
+Cách ứng dụng lưu và sử dụng dữ liệu được nêu trong Chính sách quyền riêng tư. Tóm lại,
+chế độ một mình giữ mọi thứ trên máy bạn.
+
+7. Không bảo hành
+Mèo Xu là bản thử và được cung cấp "nguyên trạng", không kèm bảo hành nào. Game có thể còn
+lỗi, có thể thay đổi cân bằng, và bản lưu có thể bị mất hoặc hỏng. Hãy đừng xem tiến độ
+trong game là thứ quan trọng đến mức không chịu mất.
+
+8. Giới hạn trách nhiệm
+Trong phạm vi pháp luật cho phép, tác giả không chịu trách nhiệm cho thiệt hại gián tiếp
+hay ngẫu nhiên phát sinh từ việc dùng hoặc không dùng được game, kể cả mất bản lưu, mất
+thời gian, hoặc sự cố trên máy chủ do người host điều hành.
+
+9. Cập nhật và chấm dứt
+Chế độ một mình không tự cập nhật. Bản mới được đăng trên GitHub Releases để bạn tự tải.
+Chế độ bạn bè nhận bản game mới khi người host cập nhật máy chủ. Bạn có thể ngừng dùng bất
+cứ lúc nào bằng cách gỡ ứng dụng. Tác giả có thể ngừng phát hành game, và có thể sửa điều
+khoản này; bản mới sẽ ghi số bản và ngày ở dòng đầu.
+
+10. Liên hệ
+Báo lỗi, góp ý hoặc yêu cầu gỡ nội dung: mở một Issue tại
+https://github.com/nhanlequy12/meowmeow/issues

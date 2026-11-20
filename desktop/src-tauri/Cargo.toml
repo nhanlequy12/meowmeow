@@ -1,0 +1,38 @@
+[package]
+name = "meoxu"
+version = "1.0.0"
+description = "Mèo Xu - game nuôi mèo (bản app Windows)"
+edition = "2021"
+publish = false
+
+[lib]
+name = "meoxu_lib"
+crate-type = ["rlib"]
+
+[[bin]]
+name = "MeoXu"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-single-instance = "2"
+tauri-plugin-opener = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = { version = "2", default-features = false, features = ["tls", "json"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+# Cùng phiên bản wry đang dùng (webview2-com 0.39, windows-core 0.62): để móc thẳng vào WebView2
+# (bắt điều hướng tới máy chủ thất bại, thay initialization script khi đổi chế độ).
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.39"
+windows-core = "0.62"

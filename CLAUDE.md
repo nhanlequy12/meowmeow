@@ -1045,3 +1045,33 @@ Mũ, nơ, kính (ô đầu) và vòng cổ, khăn (ô cổ) cho mọi bé, mở 
 - Đợt B làm cuối game nhanh hơn khoảng 10–14% (chủ yếu nhờ độ thân thiết: cuối lượt 115 bé 5 tim, +20% xu viễn chinh và thêm xu vuốt ve), nhưng cấp 18 chậm hơn (bot tiêu xu vào kết thân và nâng cấp phòng thay vì quay gacha, ít mèo hơn nên ít kinh nghiệm hơn). Nâng cấp phòng là chỗ tiêu xu lâu dài như thiết kế (khoảng 6.400 xu mỗi giờ).
 - Mỗi lượt 240 giờ: nhận nuôi 7 bé lạ, chơi với bé khoảng 2.500 lần, 12 phụ kiện (7.140 xu), 71 ảnh được 26/32 sticker, cuộc thi 55 Vàng trên 60 ngày (thưởng nhỏ: 0,4% tổng xu), sự kiện 12 ngày chơi.
 - Chưa mô phỏng: thăm nhà bạn (chỉ khi chơi qua `server.py`, dùng `--fr=N`), vườn, vật phẩm sinh tồn. Bot luôn kết thân mọi bé trùng nên số lần kết thân rất cao (khoảng 4.500 mỗi lượt); người chơi thật có thể kết thân ít hơn.
+
+## 52. Bản app Windows bằng Tauri (2026-11-20)
+
+Người dùng duyệt kế hoạch bản app Windows (lúc đầu là Electron, giữa chừng đổi sang **Tauri v2**). Hai chế độ chơi, ra cả bộ cài và bản chạy luôn, khóa công cụ nhà phát triển, đăng tạm lên GitHub Releases dạng Pre-release (chỉ đăng khi người dùng đồng ý).
+
+### Cấu trúc
+- `desktop/package.json`: Tauri CLI 2. Lệnh `npm start` (tauri dev, DevTools mở được), `npm run build` (tauri build rồi `scripts/post.js` chép ra `desktop/dist/MeoXu-Setup-<phiên bản>.exe` và `MeoXu-<phiên bản>-portable.exe`, in kích thước và SHA-256), `npm run smoke`.
+- `desktop/scripts/stage.js` (chạy trước dev/build): chép ĐÚNG `index.html`, `manifest.json`, `js/`, `css/`, `icons/`, `audio/` vào `desktop/web/` (frontendDist, khoảng 4 MB) cùng `desktop/offline.html` thành `__offline.html`; sinh `src-tauri/license_vi.txt` (điều khoản + quyền riêng tư, KHÔNG BOM vì Tauri tự thêm BOM). Thêm thư mục game mới mà app cần thì sửa danh sách ở đây.
+- `desktop/src-tauri/`: `tauri.conf.json` (productName "Mèo Xu", mainBinaryName MeoXu, identifier `vn.meoxu.app`, version 1.0.0; NSIS currentUser, tiếng Việt và English, trang điều khoản, WebView2 embedBootstrapper, móc `nsis-hooks.nsh`), `src/lib.rs` (lõi), `src/init.js` (initialization script định nghĩa `window.MXAPP`, chạy trên mọi trang kể cả trang máy chủ), `capabilities/mx-local.json` và `mx-remote.json` (chỉ 7 lệnh `mx_*` của app; remote mở cho mọi http/https vì máy chủ đổi lúc chạy), `build.rs`, `icons/` (sinh bằng `tauri icon ../icons/icon-512.png`).
+- `desktop/norm.js`: chuẩn hóa địa chỉ máy chủ (thêm `http://`, bỏ `/` cuối, IP hoặc localhost thiếu cổng thì `:8765`, giữ đường dẫn cho đường hầm); Rust nhúng bằng `include_str!`, Node vẫn `require` được.
+- `desktop/offline.html`: trang không vào được máy chủ (Thử lại, Chơi một mình, Đổi máy chủ; `?wait=1` là màn "Đang kết nối…").
+- `desktop/legal/eula_vi.txt`, `privacy_vi.txt`: Điều khoản sử dụng và Chính sách quyền riêng tư (bản 1). Đổi nội dung đáng kể thì tăng `termsVer` trong init.js để người chơi được hỏi lại.
+- `desktop/RELEASE_NOTES.md`: ghi chú cho trang Releases (các bước tải, kiểm SHA-256, SmartScreen, cài, hai chế độ, người host, bản lưu, gỡ). Điền `<SIZE_*>`, `<SHA256_*>` từ dòng `[post]` của lệnh build trước khi đăng.
+- `js/app.js` + `css/app.css` (nạp sau `js/pwa.js`, `css/fx.css`): chỉ chạy khi có `window.MXAPP`. Màn chào lần đầu `#appwel` (z-index 70: bước 1 điều khoản có ô đồng ý, bước 2 chọn chế độ); thẻ Cài đặt "🖥️ Chế độ chơi"; trong app thay thẻ `#pwacard` bằng một dòng giải thích (không có service worker nên không có nút cài, không có thông báo).
+
+### Cách app chạy
+- Chơi một mình: game nhúng trong exe, origin `http://tauri.localhost` (NET.on=false). Chơi cùng bạn bè: cửa sổ mở thẳng `server.py` của người host; `server.py`, `js/net.js`, trọng tài không đổi. Hai origin nên hai bản lưu riêng; chuyển giữa trình duyệt và app dùng "Chuyển sang máy khác".
+- Dữ liệu: `%APPDATA%\Mèo Xu\config.json` `{mode, server, terms, win}` và `%APPDATA%\Mèo Xu\WebView\` (localStorage, IndexedDB). Biến `MEOXU_APPDIR` đổi thư mục này khi thử. Gỡ app không xóa bản lưu, trừ khi đánh dấu ô "Xóa dữ liệu app" của trình gỡ (móc `nsis-hooks.nsh` xóa `%APPDATA%\Mèo Xu` và khóa HKCU sót lại).
+- `MXAPP`: `isApp, version, dev, mode, server, terms, termsVer, norm, ping, setMode, acceptTerms, legal, retry, openExternal`. Đổi chế độ không dựng lại cửa sổ: lõi thay script khởi tạo qua `AddScriptToExecuteOnDocumentCreated` của WebView2 rồi mới điều hướng, nên trang mới đọc đúng giá trị ngay.
+- Service worker bị chặn trên mọi trang trong app (kể cả trang máy chủ, để máy chủ tắt thì hiện trang lỗi chứ không phải bản cũ). Nhạc nền: giao thức nội bộ của Tauri không có Range, lõi tự trả 206 cho file âm thanh (`on_web_resource_request`) nên tua và lặp được.
+- Phím: F11 toàn màn hình, Ctrl+R/F5 tải lại, Ctrl+Shift+A vẫn mở Admin. Bản phát hành không bật feature `devtools`, chặn F12, Ctrl+Shift+I/J/C và menu chuột phải (trừ ô nhập). Một cửa sổ (plugin single-instance; bản cài và bản portable cũng không chạy cùng lúc).
+
+### Build và thử
+- Cần Rust stable-msvc (`%USERPROFILE%\.cargo\bin`, thêm vào PATH), VS Build Tools 2022 phần C++ (cài ngày 2026-11-20 qua winget), Node. Build lần đầu khoảng 10 phút, lần sau khoảng 1 phút.
+- Kiểm thử qua CDP (`WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=<cổng>` + playwright-core `connectOverCDP`), biến `PLAYWRIGHT_CORE`:
+  - `node scripts/smoke.js dist\MeoXu-1.0.0-portable.exe`: 36 phép (nạp game, MXAPP, không service worker, Range nhạc, F11, lưu cửa sổ, localStorage, một cửa sổ, ping, setMode, trang lỗi, F12 bị khóa). Phép F12 gửi phím thật: đừng dùng chuột, bàn phím lúc chạy.
+  - `node scripts/flow.js`: 56 phép luồng người chơi (màn chào, Cài đặt, nhạc, gacha 1 và 10 lượt, intro 5★, ảnh còn sau khi mở lại, chế độ bạn bè qua giao diện với server.py tạm, trọng tài nhận gacha, quà quản trị, chuyển máy trình duyệt → app, máy chủ tắt).
+  - `node scripts/install-test.js`: cài im lặng thật, chạy, gỡ, kiểm lối tắt, registry, bản lưu còn (18 phép). Tự dừng nếu máy đã có bản cài.
+- Phát hành: tăng `version` trong `desktop/package.json` và `src-tauri/tauri.conf.json`, `Cargo.toml`, build, điền ghi chú, `gh release create app-v<phiên bản> dist\*.exe --prerelease --notes-file RELEASE_NOTES.md`. Không commit file `.exe`.
+- Chưa kiểm được: giao diện cài và gỡ có cửa sổ (trang điều khoản, ô xóa dữ liệu), máy chưa có WebView2, SmartScreen trên máy lạ, nhiều máy thật qua LAN hoặc đường hầm, chuột và bàn phím thật, âm thanh bằng tai, màn HiDPI.

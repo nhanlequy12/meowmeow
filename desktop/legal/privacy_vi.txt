@@ -1,0 +1,45 @@
+CHÍNH SÁCH QUYỀN RIÊNG TƯ MÈO XU (bản 1, ngày 20/11/2026)
+
+Mèo Xu không có quảng cáo, không phân tích, không theo dõi. Bản này nói rõ dữ liệu nào nằm
+ở đâu.
+
+1. Dữ liệu lưu trên máy bạn
+Ứng dụng lưu trong thư mục %APPDATA%\Mèo Xu:
+  a) Bản lưu game (tiến độ, mèo, xu, nội thất).
+  b) Ảnh bạn chụp trong game và bài nhạc bạn tự chọn làm nhạc nền, nếu có.
+  c) Tệp config.json ghi chế độ chơi bạn đã chọn.
+Những thứ này không rời khỏi máy bạn khi chơi ở chế độ "Chơi một mình". Gỡ ứng dụng không
+xóa thư mục này, nên tiến độ vẫn còn khi cài lại.
+
+2. Chế độ "Chơi cùng bạn bè" gửi gì, cho ai
+Ứng dụng kết nối tới máy chủ do người host dựng, địa chỉ do bạn nhập. Máy chủ nhận:
+  a) Tên người chơi bạn đặt.
+  b) Bản lưu game của bạn, để kiểm tra chống gian lận và để bạn chơi tiếp khi đổi máy.
+  c) Địa chỉ IP của bạn, dùng để chống spam và khóa khi đoán sai mã.
+  d) Nhật ký sự kiện trong game, như lên cấp hay nhận mèo 5 sao.
+Người host (quản trị) xem được hồ sơ, tặng quà, xóa hồ sơ của bạn. Các người chơi khác chỉ
+thấy phần dùng cho thăm nhà và bảng xếp hạng, như tên, cấp, mèo và nội thất đang đặt. Họ
+không thấy xu, vé hay mã của bạn.
+Nếu địa chỉ máy chủ bắt đầu bằng http trong mạng nhà, dữ liệu đi dạng chữ thường và người
+cùng mạng có thể đọc được. Địa chỉ https (ví dụ qua đường hầm) thì được mã hóa.
+
+3. Điều ứng dụng không làm
+Ứng dụng không gửi dữ liệu tới tác giả hay bất kỳ bên thứ ba nào khác. Không quảng cáo,
+không công cụ phân tích, không theo dõi hành vi. Ứng dụng không dùng
+thông báo đẩy.
+
+4. Trẻ em
+Mèo Xu không nhắm vào việc thu thập thông tin của trẻ em. Trẻ dưới 13 tuổi nên có phụ huynh
+đồng ý trước khi chơi chế độ bạn bè, vì chế độ này gửi tên và bản lưu tới máy chủ của người
+khác.
+
+5. Xóa dữ liệu
+  a) Trên máy bạn: đóng ứng dụng rồi xóa thư mục %APPDATA%\Mèo Xu. Thao tác này xóa hết
+     bản lưu và không hoàn lại được.
+  b) Trên máy chủ: nhờ người host xóa hồ sơ của bạn. Tác giả không giữ bản sao nào.
+
+6. Thay đổi chính sách
+Nếu chính sách đổi, bản mới sẽ ghi số bản và ngày ở dòng đầu, đi kèm bản phát hành mới.
+
+7. Liên hệ
+Câu hỏi về quyền riêng tư: mở một Issue tại https://github.com/nhanlequy12/meowmeow/issues

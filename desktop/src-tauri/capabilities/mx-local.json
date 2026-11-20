@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "mx-local",
+  "description": "Các lệnh của app Mèo Xu cho trang nội bộ (game chơi một mình, trang báo lỗi). Không cấp quyền plugin nào.",
+  "windows": ["main"],
+  "permissions": [
+    "allow-mx-ping",
+    "allow-mx-set-mode",
+    "allow-mx-accept-terms",
+    "allow-mx-legal",
+    "allow-mx-retry",
+    "allow-mx-open-external",
+    "allow-mx-fullscreen"
+  ]
+}

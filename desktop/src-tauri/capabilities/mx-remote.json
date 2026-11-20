@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "mx-remote",
+  "description": "Cùng các lệnh đó cho trang game do server.py phục vụ (chế độ chơi cùng bạn bè). Địa chỉ máy chủ do người chơi nhập lúc chạy nên mẫu phải rộng; trang ngoài máy chủ đang chọn không bao giờ được nạp vào cửa sổ (on_navigation chặn).",
+  "windows": ["main"],
+  "remote": { "urls": ["http://*:*/*", "http://*/*", "https://*:*/*", "https://*/*"] },
+  "permissions": [
+    "allow-mx-ping",
+    "allow-mx-set-mode",
+    "allow-mx-accept-terms",
+    "allow-mx-legal",
+    "allow-mx-retry",
+    "allow-mx-open-external",
+    "allow-mx-fullscreen"
+  ]
+}
