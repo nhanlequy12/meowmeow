@@ -68,3 +68,7 @@ input,select,textarea,#tip{font-family:var(--fx-text)}
      nhãn tab ở đây giữ chữ Nunito 11px như cũ (js/fontfx.js gắn lớp fx-frac cho <html>) */
   html.fx-frac .tabs button{font-family:var(--fx-text)!important;font-size:11px!important;text-shadow:none!important;letter-spacing:-.3px!important;line-height:1.1!important}
 }
+
+/* bảng Cho ăn, Cho uống (js/meal-ui.js): tên món dài ("Nước bổ sung dinh dưỡng cho mèo") ở chữ pixel rộng hơn Nunito nên bị cắt
+   bằng dấu "…"; cho tên xuống dòng thay vì cắt (nút tự cao lên) */
+.ml-it .nm{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}

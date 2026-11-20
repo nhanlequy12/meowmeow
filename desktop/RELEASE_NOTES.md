@@ -1,6 +1,12 @@
-## Mèo Xu cho Windows, bản 1.1.0 (thử nghiệm)
+## Mèo Xu cho Windows, bản 1.2.0 (thử nghiệm)
 
 Bản app Windows của Mèo Xu, đăng dưới dạng Pre-release. Nó dành cho bạn bè của chủ dự án, chưa phải bản chính thức. Mèo Xu là game fan-made phi thương mại: các mèo hóa trang theo nhân vật anime, phim, meme dùng tên và hình tượng thuộc về chủ sở hữu của chúng, và game không liên kết hay được họ bảo trợ.
+
+### Có gì mới ở 1.2.0
+
+- **Chữ pixel tiếng Việt:** tiêu đề, nút, nhãn, tab dùng font pixel (Galmuri11, đổi tên "MeoXu Pixel") hợp với hình hạt cườm; đoạn văn dùng Nunito nhúng sẵn, không phụ thuộc font của máy. Cả hai theo giấy phép SIL Open Font License.
+- **Đóng app an toàn:** bấm ✕ hoặc Alt+F4 lần đầu hỏi Thu vào khay / Thoát / Không đóng, có ô "Ghi nhớ lựa chọn". Mọi cách thoát đều lưu trước; lưu lỗi thì báo và không thoát. Tắt máy cũng cố lưu.
+- **Hộp thoại kiểu pixel** có linh vật thay cho hộp hỏi mặc định của trình duyệt; dùng được phím mũi tên, Enter, Esc.
 
 ### Có gì mới ở 1.1.0
 
@@ -15,7 +21,7 @@ Bản app Windows của Mèo Xu, đăng dưới dạng Pre-release. Nó dành ch
 - **Chắc hơn:** tắt đột ngột (mất điện, Task Manager) chỉ mất vài giây tiến độ thay vì gần một phút.
 - **Vui hơn:** âm bấm nhỏ (tắt được, chỉnh âm lượng trong Cài đặt › Âm thanh giao diện), chuyển tab và hộp thoại mượt hơn, linh vật Mèo Xu và thẻ "Chào mừng trở lại" tóm tắt những gì xảy ra lúc bạn vắng.
 
-Cài bản 1.1.0 đè lên bản 1.1.0 giữ nguyên tiến độ.
+Cài bản 1.2.0 đè lên bản 1.0.0 hoặc 1.1.0 giữ nguyên tiến độ.
 
 ### Yêu cầu
 
@@ -28,8 +34,8 @@ Cài bản 1.1.0 đè lên bản 1.1.0 giữ nguyên tiến độ.
 
 | File | Dùng khi | Dung lượng |
 | --- | --- | --- |
-| `MeoXu-Setup-1.1.0.exe` | Muốn cài như app thường, có lối tắt Desktop và Start menu, gỡ qua Settings > Apps | `<SIZE_SETUP>` |
-| `MeoXu-1.1.0-portable.exe` | Muốn chạy luôn, không cài (cần WebView2 có sẵn) | `<SIZE_PORTABLE>` |
+| `MeoXu-Setup-1.2.0.exe` | Muốn cài như app thường, có lối tắt Desktop và Start menu, gỡ qua Settings > Apps | `<SIZE_SETUP>` |
+| `MeoXu-1.2.0-portable.exe` | Muốn chạy luôn, không cài (cần WebView2 có sẵn) | `<SIZE_PORTABLE>` |
 
 Không chắc thì chọn bộ cài.
 
@@ -39,14 +45,14 @@ App chưa có chữ ký số, nên nên so mã SHA-256 để chắc file không 
 
 | File | SHA-256 |
 | --- | --- |
-| `MeoXu-Setup-1.1.0.exe` | `<SHA256_SETUP>` |
-| `MeoXu-1.1.0-portable.exe` | `<SHA256_PORTABLE>` |
+| `MeoXu-Setup-1.2.0.exe` | `<SHA256_SETUP>` |
+| `MeoXu-1.2.0-portable.exe` | `<SHA256_PORTABLE>` |
 
 Mở PowerShell trong thư mục đã tải và chạy:
 
 ```powershell
-Get-FileHash .\MeoXu-Setup-1.1.0.exe -Algorithm SHA256
-Get-FileHash .\MeoXu-1.1.0-portable.exe -Algorithm SHA256
+Get-FileHash .\MeoXu-Setup-1.2.0.exe -Algorithm SHA256
+Get-FileHash .\MeoXu-1.2.0-portable.exe -Algorithm SHA256
 ```
 
 Chuỗi in ra phải trùng với bảng trên. Lệch một ký tự thì xóa file và tải lại.

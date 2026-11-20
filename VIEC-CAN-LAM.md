@@ -2,7 +2,9 @@
 
 Người dùng bảo dừng giữa chừng. Đã xong và đã push: mục 1 "hành vi khi đóng app" và hộp thoại kiểu pixel (commit `5056a11`, CLAUDE.md mục 52b chưa ghi phần này).
 
-## 1. Font pixel tiếng Việt (mục 2, ĐANG LÀM DỞ)
+## 1. Font pixel tiếng Việt (mục 2): XONG ngày 2026-11-20, xem CLAUDE.md mục 53. Còn: build lại app (máy hiện tại thiếu Rust, VS Build Tools), chạy smoke.js, flow.js, xem chủ đề tối.
+
+Ghi chú cũ khi đang làm dở:
 - Người dùng đã duyệt: **Galmuri11 + đậm giả (text-shadow)** cho tiêu đề, nút, nhãn, tab, chip; **Nunito** nhúng sẵn cho đoạn văn. Cả hai OFL 1.1, đủ 134 chữ tiếng Việt.
 - Đã có (commit cùng lúc dừng, CHƯA nạp trong index.html nên chưa ảnh hưởng game): `css/fonts/` (meoxu-pixel.woff2 = Galmuri11 cắt Latin+Việt, đổi tên "MeoXu Pixel" vì tên dành riêng "Galmuri"; nunito.woff2; OFL-Galmuri.txt, OFL-Nunito.txt), `css/fonts.css` (@font-face, biến `--fx-pixel`, `--fx-text`, `--px1/2/3`), `css/fonts-apply.css` (quy tắc áp dụng, chưa xong), `js/fontfx.js` (cỡ theo devicePixelRatio, chưa xong), `tools/mkfonts.py` (tạo lại font), server.py thêm MIME font/woff2.
 - Còn phải làm:
@@ -22,8 +24,8 @@ Người dùng bảo dừng giữa chừng. Đã xong và đã push: mục 1 "h�
 - Cuối cùng: danh sách điểm cần luật sư xem.
 
 ## 3. Việc nhỏ còn treo
-- Ghi mục đóng app an toàn và hộp thoại pixel vào CLAUDE.md (mục 52c): `js/dialog.js` (mxDialog, mxConfirm), `css/dialog.css`, `desktop/src-tauri/src/closeq.rs`, hợp đồng closeAck/closeChoice/quitAck/persistNow/quitReady/quitForce/quitCancel, reason 'shutdown', sự kiện 'quit-cancel'.
-- Build lại app (phiên bản 1.1.0 trong dist/ chưa có phần đóng app mới) và tăng phiên bản trước khi phát hành 1.2.0.
+- (Xong) Ghi mục đóng app an toàn và hộp thoại pixel vào CLAUDE.md mục 52c.
+- Build lại app: phiên bản đã tăng lên 1.2.0 (package.json, tauri.conf.json, Cargo.toml, RELEASE_NOTES.md) nhưng CHƯA build vì máy hiện tại thiếu Rust và VS Build Tools.
 - Chưa thử bằng tay: bấm ✕ chuột thật, Alt+F4 thật, tắt máy thật, menu khay, toast, nghe âm.
 
 # Việc cần làm ngay (rà soát ngày 2026-11-12)
